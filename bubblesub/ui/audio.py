@@ -71,7 +71,9 @@ class AudioPreviewWidget(QtWidgets.QWidget):
                     self.palette().text().color(),
                     i / 255))
 
-        for x in range(self.width()):
+        # since the task queue is a LIFO queue, in order to render the columns
+        # left-to-right, they need to be iterated backwards (hence reversed()).
+        for x in reversed(range(self.width())):
             column = self.spectrum.get_fft(self._pts_from_x(x))
             if column is None:
                 continue
