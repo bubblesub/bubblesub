@@ -16,32 +16,24 @@ class SpectrogramThread(SimpleThread):
         super().__init__(queue, callback)
         self._api = api
 
-        self._inp = pyfftw.empty_aligned(2 << DERIVATION_SIZE, dtype=np.float32)
-        out = pyfftw.empty_aligned((1 << DERIVATION_SIZE) + 1, dtype=np.complex64)
-        self._fftw = pyfftw.FFTW(self._inp, out, flags=('FFTW_MEASURE',))
+        self._input = pyfftw.empty_aligned(
+            2 << DERIVATION_SIZE, dtype=np.float32)
+        self._output = pyfftw.empty_aligned(
+            (1 << DERIVATION_SIZE) + 1, dtype=np.complex64)
+        self._fftw = pyfftw.FFTW(
+            self._input, self._output, flags=('FFTW_MEASURE',))
 
-        if api.video.path and api.video.path.exists():
-            self._audio_source = ffms.AudioSource(str(api.video.path))
-            self._sample_rate = self._audio_source.properties.SampleRate
-            self._channel_count = self._audio_source.properties.Channels
-            self._num_samples = self._audio_source.properties.NumSamples
+        self._audio_source = None
+
+    def start_work(self):
+        path = self._api.video.path
+        if path and path.exists():
+            self._api.log('audio: loading... ({})'.format(path))
+            self._audio_source = ffms.AudioSource(str(path))
+            self._api.log('audio: loaded')
         else:
+            self._api.log('audio: not found ({})'.format(path))
             self._audio_source = None
-            self._sample_rate = 0
-            self._channel_count = 0
-            self._num_samples = 0
-
-    def _get_samples(self, start, count):
-        if not self._audio_source:
-            return np.zeros(count)
-        if start + count > self._num_samples:
-            count = self._num_samples - start
-        self._audio_source.init_buffer(count)
-
-        samples = self._audio_source.get_audio(start)
-        my_samples = np.empty_like(samples)
-        my_samples[:] = samples
-        return np.mean(my_samples.reshape(self._channel_count, -1), axis=0)
 
     # TODO: something's wrong with it...
     def work(self, block_idx):
@@ -55,7 +47,7 @@ class SpectrogramThread(SimpleThread):
         # samples = np.random.random(sample_count)
 
         samples /= 32768.0
-        self._inp[:] = samples
+        self._input[:] = samples
         out = self._fftw()
 
         scale_factor = 9 / np.sqrt(1 * (1 << DERIVATION_SIZE))
@@ -70,6 +62,33 @@ class SpectrogramThread(SimpleThread):
         out = np.flip(out, axis=0)
         out = out.astype(dtype=np.uint8)
         return block_idx, out
+
+    @property
+    def _sample_rate(self):
+        if self._audio_source:
+            return self._audio_source.properties.SampleRate
+        return 0
+
+    @property
+    def _channel_count(self):
+        if self._audio_source:
+            return self._audio_source.properties.Channels
+        return 0
+
+    @property
+    def _sample_count(self):
+        if self._audio_source:
+            return self._audio_source.properties.NumSamples
+        return 0
+
+    def _get_samples(self, start, count):
+        if not self._audio_source:
+            return np.zeros(count)
+        if start + count > self._sample_count:
+            count = self._sample_count - start
+        self._audio_source.init_buffer(count)
+        samples = self._audio_source.get_audio(start)
+        return np.mean(samples.reshape(self._channel_count, -1), axis=0)
 
 
 class SpectrumProvider(QtCore.QObject):

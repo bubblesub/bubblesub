@@ -1,3 +1,5 @@
+import sys
+import time
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
@@ -64,11 +66,25 @@ class SimpleThread(QtCore.QThread):
         self.finished.connect(callback)
 
     def run(self):
+        self.start_work()
         while True:
             arg = self.queue.get()
             if arg is None:
-                return
-            self.finished.emit(ResultObj(self.work(arg)))
+                break
+            try:
+                value = self.work(arg)
+            except Exception as ex:
+                print(ex, file=sys.stderr)
+                time.sleep(1)
+            else:
+                self.finished.emit(ResultObj(value))
+        self.end_work()
+
+    def start_work(self):
+        pass
+
+    def end(self):
+        pass
 
     def work(self, arg):
         raise NotImplementedError()

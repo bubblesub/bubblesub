@@ -248,3 +248,6 @@ class Api(QtCore.QObject):
                 name=subtitle.actor,
                 text=subtitle.text))
         self._ass_source.save(path)
+
+    def log(self, text):
+        print(text)  # TODO: log to GUI console via events
