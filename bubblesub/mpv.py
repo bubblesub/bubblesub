@@ -976,6 +976,8 @@ class MPV(object):
                 _mpv_set_property(self.handle, ename, MpvFormat.NODE, pointer)
             else:
                 _mpv_set_property_string(self.handle, ename, _mpv_coax_proptype(value, str))
+        elif value is None:
+            _mpv_set_property(self.handle, None)
         else:
             _mpv_set_property_string(self.handle, ename, _mpv_coax_proptype(value, proptype))
 

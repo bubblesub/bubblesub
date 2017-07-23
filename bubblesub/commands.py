@@ -62,8 +62,15 @@ def cmd_select_nothing(api):
     api.selected_lines = []
 
 
+@command('play/current-line')
+def cmd_play_current_line(api):
+    if api.selected_lines:
+        sel = api.subtitles[api.selected_lines[0]]
+        api.video.play(sel.start, sel.end)
+
+
 @command('play/toggle-pause')
-def cmd_toggle_pause(api):
+def cmd_play_toggle_pause(api):
     if api.video.is_paused:
         api.video.unpause()
     else:
@@ -71,14 +78,14 @@ def cmd_toggle_pause(api):
 
 
 @command('play/unpause')
-def cmd_unpause(api):
+def cmd_play_unpause(api):
     if not api.video.is_paused:
         return
     api.video.unpause()
 
 
 @command('play/pause')
-def cmd_pause(api):
+def cmd_play_pause(api):
     if api.video.is_paused:
         return
     api.video.pause()

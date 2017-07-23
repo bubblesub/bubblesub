@@ -114,7 +114,7 @@ class AudioApi(QtCore.QObject):
 class VideoApi(QtCore.QObject):
     loaded = QtCore.pyqtSignal([])
     seek_requested = QtCore.pyqtSignal([int])
-    playback_requested = QtCore.pyqtSignal([object])
+    playback_requested = QtCore.pyqtSignal([object, object])
     pause_requested = QtCore.pyqtSignal([])
 
     def __init__(self):
@@ -127,11 +127,11 @@ class VideoApi(QtCore.QObject):
     def seek(self, pts):
         self.seek_requested.emit(pts)
 
-    def play(self, duration):
-        self.playback_requested.emit(duration)
+    def play(self, start, end):
+        self.playback_requested.emit(start, end)
 
     def unpause(self):
-        self.playback_requested.emit(None)
+        self.playback_requested.emit(None, None)
 
     def pause(self):
         self.pause_requested.emit()

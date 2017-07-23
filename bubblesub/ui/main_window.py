@@ -85,9 +85,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 # ('Play 500 ms after selection start', 'Alt+2', 'play/after-selection-start'),  # TODO
                 # ('Play 500 ms before selection end', 'Alt+3', 'play/after-selection-end'),  # TODO
                 # ('Play 500 ms after selection end', 'Alt+4', 'play/after-selection-end'),  # TODO
-                ('Toggle pause', 'Ctrl+P', 'play/toggle-pause'),
+                ('Play current line', 'Ctrl+R', 'play/current-line'),
                 ('Play until end of the file', None, 'play/unpause'),
                 ('Pause playback', None, 'play/pause'),
+                ('Toggle pause', 'Ctrl+P', 'play/toggle-pause'),
             ],
 
             '&Edit': [

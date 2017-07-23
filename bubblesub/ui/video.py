@@ -16,10 +16,15 @@ class Video(QtWidgets.QFrame):
         _, self._subs_path = tempfile.mkstemp(suffix='.ass')
 
         self._ready = False
-        self._end_pos = None
 
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = bubblesub.mpv.MPV(
+            # osd_bar=True,
+            # osc=True,
+            # input_cursor=True,
+            # input_vo_keyboard=True,
+            # input_default_bindings=True,
+            keep_open=True,  # end stops the playback, whereas we want it to pause
             wid=str(int(self.winId())),
             log_handler=mpv_log_handler)
         self._mpv.pause = True
@@ -40,12 +45,13 @@ class Video(QtWidgets.QFrame):
         api.video.playback_requested.connect(self._play)
         api.video.seek_requested.connect(self._seek)
 
-    def _play(self, duration):
-        if duration:
-            # TODO: handle _end_pos
-            self._end_pos = self._mpv.time_pos + duration
+    def _play(self, start, end):
+        if end:
+            self._mpv['end'] = bubblesub.util.ms_to_str(end)
         else:
-            self._end_pos = None
+            self._mpv['end'] = bubblesub.util.ms_to_str(self._mpv.duration * 1000)
+        if start:
+            self._seek(start)
         self._mpv.pause = False
         self._api.video.is_paused = False
 
