@@ -62,6 +62,14 @@ def cmd_select_nothing(api):
     api.selected_lines = []
 
 
+@command('play/toggle-pause')
+def cmd_toggle_pause(api):
+    if api.video.is_paused:
+        api.video.unpause()
+    else:
+        api.video.pause()
+
+
 @command('play/unpause')
 def cmd_unpause(api):
     if not api.video.is_paused:
