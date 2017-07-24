@@ -65,12 +65,13 @@ class SubsGridModel(QtCore.QAbstractTableModel):
             self.index(idx, len(self._header_labels)),
             [QtCore.Qt.EditRole])
 
-    def _proxy_items_inserted(self, a, b):
-        if b:
-            self.rowsInserted.emit(QtCore.QModelIndex(), a, b - a - 1)
+    def _proxy_items_inserted(self, idx, count):
+        if count:
+            self.rowsInserted.emit(QtCore.QModelIndex(), idx, idx + count - 1)
 
-    def _proxy_items_removed(self, a, b):
-        self.rowsRemoved.emit(QtCore.QModelIndex(), a, b)
+    def _proxy_items_removed(self, idx, count):
+        if count:
+            self.rowsRemoved.emit(QtCore.QModelIndex(), idx, idx + count - 1)
 
 
 class SubsGrid(QtWidgets.QTableView):
