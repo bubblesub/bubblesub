@@ -1,6 +1,7 @@
 import re
 import time
 import json
+from PyQt5 import QtCore
 from pathlib import Path
 import pysubs2.time
 
@@ -109,3 +110,34 @@ class ObservableProperty:
             instance._dirty = True
             if not instance._throttled:
                 instance._changed()
+
+
+# alternative to QtCore.QAbstractListModel that simplifies indexing
+class ListModel(QtCore.QObject):
+    items_inserted = QtCore.pyqtSignal([int, int])
+    items_removed = QtCore.pyqtSignal([int, int])
+    item_changed = QtCore.pyqtSignal([int])
+
+    def __init__(self):
+        super().__init__()
+        self._data = []
+
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, idx):
+        return self._data[idx]
+
+    def __setitem__(self, idx, value):
+        self._data[idx] = value
+        self.item_changed.emit(idx)
+
+    def insert(self, idx, data):
+        if not data:
+            return
+        self._data = self._data[:idx] + data + self._data[idx:]
+        self.items_inserted.emit(idx, len(data))
+
+    def remove(self, idx, count):
+        self._data = self._data[:idx] + self._data[:idx + count]
+        self.items_removed.emit(idx, count)

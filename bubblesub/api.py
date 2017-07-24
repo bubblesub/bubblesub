@@ -1,5 +1,4 @@
 import bubblesub.util
-import bubblesub.ui.util
 import ffms
 import pysubs2
 import numpy as np
@@ -50,6 +49,10 @@ class Subtitle(bubblesub.util.ObservableObject):
 
     def _changed(self):
         self._subtitles.item_changed.emit(self.number)
+
+
+class SubtitleList(bubblesub.util.ListModel):
+    pass
 
 
 class GuiApi(QtCore.QObject):
@@ -190,7 +193,7 @@ class Api(QtCore.QObject):
         self._ass_source = None
         self._ass_path = None
         self._selected_lines = []
-        self.subtitles = bubblesub.ui.util.ListModel()
+        self.subtitles = SubtitleList()
         self.video = VideoApi()
         self.audio = AudioApi(self)
         self.gui = GuiApi()
