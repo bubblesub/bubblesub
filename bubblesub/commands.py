@@ -1,6 +1,7 @@
 import bubblesub.ui.util
 
 
+DEFAULT_SUB_DURATION = 2000  # TODO: move this to config
 commands_dict = {}
 
 
@@ -29,6 +30,51 @@ def cmd_save(api):
 @command('file/quit')
 def cmd_quit(api):
     api.gui.quit()
+
+
+@command('edit/insert-above')
+def cmd_edit_insert_above(api):
+    if not api.selected_lines:
+        idx = 0
+        prev_sub = None
+        cur_sub = None
+    else:
+        idx = api.selected_lines[0]
+        prev_sub = api.subtitles.get(idx - 1)
+        cur_sub = api.subtitles[idx]
+
+    end = cur_sub.start if cur_sub else DEFAULT_SUB_DURATION
+    start = end - DEFAULT_SUB_DURATION
+    if start < 0:
+        start = 0
+    if prev_sub and start < prev_sub.end:
+        start = prev_sub.end
+    if start > end:
+        start = end
+    api.subtitles.insert_one(idx, start=start, end=end, style='Default')
+    api.selected_lines = [idx]
+
+
+@command('edit/insert-below')
+def cmd_edit_insert_below(api):
+    if not api.selected_lines:
+        idx = 0
+        cur_sub = None
+        next_sub = api.subtitles.get(0)
+    else:
+        idx = api.selected_lines[-1]
+        cur_sub = api.subtitles[idx]
+        idx += 1
+        next_sub = api.subtitles.get(idx)
+
+    start = cur_sub.end if cur_sub else 0
+    end = start + DEFAULT_SUB_DURATION
+    if next_sub and end > next_sub.start:
+        end = next_sub.start
+    if end < start:
+        end = start
+    api.subtitles.insert_one(idx, start=start, end=end, style='Default')
+    api.selected_lines = [idx]
 
 
 @command('select/prev-subtitle')

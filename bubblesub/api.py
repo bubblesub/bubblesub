@@ -25,7 +25,7 @@ class Subtitle(bubblesub.util.ObservableObject):
     actor = bubblesub.util.ObservableProperty('actor')
     text = bubblesub.util.ObservableProperty('text')
 
-    def __init__(self, subtitles, start, end, style, actor, text):
+    def __init__(self, subtitles, start, end, style, actor='', text=''):
         super().__init__()
         self._subtitles = subtitles
         self.begin_update()
@@ -52,7 +52,8 @@ class Subtitle(bubblesub.util.ObservableObject):
 
 
 class SubtitleList(bubblesub.util.ListModel):
-    pass
+    def insert_one(self, idx, **kwargs):
+        self.insert(idx, [Subtitle(self, **kwargs)])
 
 
 class GuiApi(QtCore.QObject):

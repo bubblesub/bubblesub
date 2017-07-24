@@ -110,8 +110,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 # ('Shift selection end (+10 ms)', 'Ctrl+Shift+4', 'edit/move-sel-end-short-right'),  # TODO
                 # ('Commit selection to subtitle', 'Ctrl+G', 'edit/commit-sel'),  # TODO
                 None,
-                # ('Add new subtitle above current line', None, 'edit/add-above'),  # TODO
-                # ('Add new subtitle below current line', None, 'edit/add-below'),  # TODO
+                ('Add new subtitle above current line', None, 'edit/insert-above'),
+                ('Add new subtitle below current line', 'Ctrl+Return', 'edit/insert-below'),
+                # ('Duplicate selected subtitle', None, 'edit/duplicate'),  # TODO
                 # ('Delete selected subtitles', None, 'edit/delete'),  # TODO
                 None,
                 # ('Split selection as karaoke', None, 'edit/split-karaoke'),  # TODO

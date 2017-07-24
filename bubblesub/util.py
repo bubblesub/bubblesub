@@ -132,6 +132,11 @@ class ListModel(QtCore.QObject):
         self._data[idx] = value
         self.item_changed.emit(idx)
 
+    def get(self, idx, default=None):
+        if idx < 0 or idx >= len(self):
+            return default
+        return self[idx]
+
     def insert(self, idx, data):
         if not data:
             return
