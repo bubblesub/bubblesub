@@ -37,7 +37,7 @@ class Editor(QtWidgets.QWidget):
         api.grid_selection_changed.connect(self._grid_selection_changed)
 
         self._index = None
-        self._model = api
+        self._api = api
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self.start_time_edit = TimeEdit(self)
@@ -53,17 +53,17 @@ class Editor(QtWidgets.QWidget):
             end = bubblesub.util.str_to_ms(self.end_time_edit.text())
             duration = end - start
             self.duration_edit.setText(bubblesub.util.ms_to_str(duration))
-            self._put_into_model()
+            self._push_selection()
 
         def duration_edited(*args):
             start = bubblesub.util.str_to_ms(self.start_time_edit.text())
             duration = bubblesub.util.str_to_ms(self.duration_edit.text())
             end = start + duration
             self.end_time_edit.setText(bubblesub.util.ms_to_str(end))
-            self._put_into_model()
+            self._push_selection()
 
         def text_edited(*args):
-            self._put_into_model()
+            self._push_selection()
 
         self.start_time_edit.textEdited.connect(text_edited)
         self.end_time_edit.textEdited.connect(end_edited)
@@ -90,9 +90,9 @@ class Editor(QtWidgets.QWidget):
         self.layout().addWidget(self.text_edit)
         self.text_edit.setFocus()
 
-    def _load_from_model(self, index):
+    def _fetch_selection(self, index):
         self._index = index
-        subtitle = self._model.subtitles[index]
+        subtitle = self._api.subtitles[index]
         self.start_time_edit.setText(bubblesub.util.ms_to_str(subtitle.start))
         self.end_time_edit.setText(bubblesub.util.ms_to_str(subtitle.end))
         self.duration_edit.setText(bubblesub.util.ms_to_str(subtitle.duration))
@@ -100,7 +100,7 @@ class Editor(QtWidgets.QWidget):
         self.actor_edit.setText(subtitle.actor)
         self.text_edit.document().setPlainText(subtitle.text)
 
-    def _put_into_model(self):
+    def _push_selection(self):
         if not self.isEnabled():
             return
 
@@ -110,26 +110,18 @@ class Editor(QtWidgets.QWidget):
         new_actor = self.actor_edit.text()
         new_text = self.text_edit.toPlainText()
 
-        subtitle = self._model.subtitles[self._index]
-        changed = (
-            new_start != subtitle.start or
-            new_end != subtitle.end or
-            new_style != subtitle.style or
-            new_actor != subtitle.actor or
-            new_text != subtitle.text)
-
+        subtitle = self._api.subtitles[self._index]
+        subtitle.begin_update()
         subtitle.start = bubblesub.util.str_to_ms(self.start_time_edit.text())
         subtitle.end = bubblesub.util.str_to_ms(self.end_time_edit.text())
         subtitle.style = self.style_edit.text()
         subtitle.actor = self.actor_edit.text()
         subtitle.text = self.text_edit.toPlainText()
-
-        if changed:
-            self._model.subtitles.item_changed.emit(self._index)
+        subtitle.end_update()
 
     def _grid_selection_changed(self, rows):
         if len(rows) == 1:
-            self._load_from_model(rows[0])
+            self._fetch_selection(rows[0])
             self.setEnabled(True)
         else:
             self.setEnabled(False)

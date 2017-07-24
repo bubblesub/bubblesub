@@ -19,17 +19,37 @@ def _get_timecodes(video_path):
     return timecodes
 
 
-class Subtitle:
-    def __init__(self, start, end, style, actor, text):
+class Subtitle(bubblesub.util.ObservableObject):
+    start = bubblesub.util.ObservableProperty('start')
+    end = bubblesub.util.ObservableProperty('end')
+    style = bubblesub.util.ObservableProperty('style')
+    actor = bubblesub.util.ObservableProperty('actor')
+    text = bubblesub.util.ObservableProperty('text')
+
+    def __init__(self, subtitles, start, end, style, actor, text):
+        super().__init__()
+        self._subtitles = subtitles
+        self.begin_update()
         self.start = start
         self.end = end
         self.style = style
         self.actor = actor
         self.text = text
+        self.end_update()
 
     @property
     def duration(self):
         return self.end - self.start
+
+    @property
+    def number(self):
+        for i, item in enumerate(self._subtitles):
+            if item == self:
+                return i
+        return None
+
+    def _changed(self):
+        self._subtitles.item_changed.emit(self.number)
 
 
 class GuiApi(QtCore.QObject):
@@ -185,19 +205,21 @@ class Api(QtCore.QObject):
 
         self.selected_lines = []
 
-        self.subtitles.remove(0, len(self.subtitles))
-        self.subtitles.insert(
-            0,
-            [
-                Subtitle(
-                    line.start,
-                    line.end,
-                    line.style,
-                    line.name,
-                    line.text)
-                for line in self._ass_source
-                if line.start and line.end
-            ])
+        with bubblesub.util.Benchmark('loading subs') as b:
+            self.subtitles.remove(0, len(self.subtitles))
+            self.subtitles.insert(
+                0,
+                [
+                    Subtitle(
+                        self.subtitles,
+                        line.start,
+                        line.end,
+                        line.style,
+                        line.name,
+                        line.text)
+                    for line in self._ass_source
+                    if line.start and line.end
+                ])
 
         if not self._ass_source \
                 or 'Video File' not in self._ass_source.aegisub_project:

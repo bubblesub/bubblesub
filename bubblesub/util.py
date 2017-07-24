@@ -66,12 +66,46 @@ class Benchmark:
 
     def __enter__(self):
         self._time = time.time()
-        print(self._msg)
+        print('{}: started'.format(self._msg))
         return self
 
     def __exit__(self, *args, **kwargs):
-        pass
+        print('{}: ended {:.02f} s'.format(
+            self._msg, time.time() - self._time))
 
     def mark(self, msg):
         print('{}: {:.02f} s'.format(msg, time.time() - self._time))
         self._time = time.time()
+
+
+class ObservableObject:
+    def __init__(self):
+        self._dirty = False
+        self._throttled = False
+
+    def begin_update(self):
+        self._throttled = True
+
+    def end_update(self):
+        self._throttled = False
+        if self._dirty:
+            self._changed()
+            self._dirty = False
+
+    def _changed(self):
+        pass
+
+
+class ObservableProperty:
+    def __init__(self, attr):
+        self.attr = attr
+
+    def __get__(self, instance, type):
+        return instance.__dict__.get(self.attr, None)
+
+    def __set__(self, instance, value):
+        if getattr(instance, self.attr) != value:
+            instance.__dict__[self.attr] = value
+            instance._dirty = True
+            if not instance._throttled:
+                instance._changed()
