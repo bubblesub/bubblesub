@@ -46,12 +46,9 @@ class Video(QtWidgets.QFrame):
         api.video.seek_requested.connect(self._seek)
 
     def _play(self, start, end):
-        if end:
-            self._mpv['end'] = bubblesub.util.ms_to_str(end)
-        else:
-            self._mpv['end'] = bubblesub.util.ms_to_str(self._mpv.duration * 1000)
         if start:
             self._seek(start)
+        self._set_end(end)
         self._mpv.pause = False
         self._api.video.is_paused = False
 
@@ -62,6 +59,7 @@ class Video(QtWidgets.QFrame):
     def _seek(self, pts):
         if not self._ready:
             return
+        self._set_end(None)  # mpv refuses to seek beyond --end
         pts = self._align_pts_to_next_frame(pts)
         self._mpv.seek(bubblesub.util.ms_to_str(pts), 'absolute+exact')
 
@@ -84,6 +82,12 @@ class Video(QtWidgets.QFrame):
         self._api.save_ass(self._subs_path)
         if self._mpv.sub:
             self._mpv.sub_reload()
+
+    def _set_end(self, end):
+        if not end:
+            # XXX: mpv doesn't accept None nor "" so we use max pts
+            end = self._mpv.duration * 1000
+        self._mpv['end'] = bubblesub.util.ms_to_str(end)
 
     def _grid_selection_changed(self, rows):
         if len(rows) == 1:
