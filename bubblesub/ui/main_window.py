@@ -14,6 +14,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self._api = api
 
         api.gui.quit_requested.connect(self.close)
+        api.gui.begin_update_requested.connect(
+            lambda: self.setUpdatesEnabled(False))
+        api.gui.end_update_requested.connect(
+            lambda: self.setUpdatesEnabled(True))
 
         audio = bubblesub.ui.audio.Audio(api)
         video = bubblesub.ui.video.Video(api)
@@ -130,9 +134,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 if not callback:
                     bubblesub.ui.util.error('Invalid command name:\n' + command_name)
                     return
-                # self.setUpdatesEnabled(False)
                 callback(self._api, *args)
-                # self.setUpdatesEnabled(True)
 
         actions = []
         for name, items in menu.items():

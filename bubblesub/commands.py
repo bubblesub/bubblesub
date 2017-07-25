@@ -82,6 +82,7 @@ def cmd_edit_duplicate(api):
     if not api.selected_lines:
         return
     new_selection = []
+    api.gui.begin_update()
     for idx in reversed(sorted(api.selected_lines)):
         sub = api.subtitles[idx]
         api.subtitles.insert_one(
@@ -93,6 +94,7 @@ def cmd_edit_duplicate(api):
             text=sub.text)
         new_selection.append(idx + len(api.selected_lines) - len(new_selection))
     api.selected_lines = new_selection
+    api.gui.end_update()
 
 
 @command('edit/delete')
