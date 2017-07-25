@@ -1,3 +1,4 @@
+import enum
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -6,8 +7,13 @@ from bubblesub.ui.util import blend_colors
 from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
 
 
-# TODO: audio selection
 # TODO: draw position of video frame
+
+
+class DragMode(enum.Enum):
+    Off = 0
+    SelectionStart = 1
+    SelectionEnd = 2
 
 
 class BaseAudioWidget(QtWidgets.QWidget):
@@ -107,6 +113,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         self.setMinimumHeight(50)
         self.spectrum = None
         self._need_repaint = False
+        self._drag_mode = DragMode.Off
 
         timer = QtCore.QTimer(self)
         timer.setInterval(100)
@@ -129,6 +136,33 @@ class AudioPreviewWidget(BaseAudioWidget):
         painter.end()
 
         self._need_repaint = False
+
+    def mousePressEvent(self, e):
+        if e.button() == QtCore.Qt.LeftButton:
+            self._drag_mode = DragMode.SelectionStart
+            self.setCursor(QtCore.Qt.SizeHorCursor)
+            self.mouseMoveEvent(e)
+        elif e.button() == QtCore.Qt.RightButton:
+            self._drag_mode = DragMode.SelectionEnd
+            self.setCursor(QtCore.Qt.SizeHorCursor)
+            self.mouseMoveEvent(e)
+
+    def mouseReleaseEvent(self, e):
+        self._drag_mode = DragMode.Off
+        self.setCursor(QtCore.Qt.ArrowCursor)
+
+    def mouseMoveEvent(self, e):
+        pts = self._pts_from_x(e.x())
+        if self._drag_mode == DragMode.SelectionStart:
+            if self._api.audio.has_selection:
+                self._api.audio.select(
+                    min(self._api.audio.selection_end, pts),
+                    self._api.audio.selection_end)
+        elif self._drag_mode == DragMode.SelectionEnd:
+            if self._api.audio.has_selection:
+                self._api.audio.select(
+                    self._api.audio.selection_start,
+                    max(self._api.audio.selection_start, pts))
 
     def _repaint_if_needed(self):
         if self._need_repaint:
