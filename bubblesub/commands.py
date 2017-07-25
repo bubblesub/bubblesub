@@ -99,6 +99,24 @@ def cmd_glue_sel_start(api):
         api.subtitles[api.selected_lines[-1] + 1].start)
 
 
+@command('edit/move-sel-start')
+def cmd_move_sel_start(api, ms):
+    if not api.audio.selection_size:
+        return
+    api.audio.select(
+        min(api.audio.selection_end, api.audio.selection_start + ms),
+        api.audio.selection_end)
+
+
+@command('edit/move-sel-end')
+def cmd_move_sel_end(api, ms):
+    if not api.audio.selection_size:
+        return
+    api.audio.select(
+        api.audio.selection_start,
+        max(api.audio.selection_start, api.audio.selection_end + ms))
+
+
 @command('edit/commit-sel')
 def cmd_edit_commit_selection(api):
     for idx in api.selected_lines:

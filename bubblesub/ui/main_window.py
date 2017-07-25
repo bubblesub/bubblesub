@@ -100,14 +100,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 ('Glue selection start to previous subtitle', None, 'edit/glue-sel-start'),
                 ('Glue selection end to next subtitle', None, 'edit/glue-sel-end'),
                 # ('Shift selected subtitles', None, 'edit/shift-times'),  # TODO
-                # ('Shift selection start (-100 ms)', 'Ctrl+1', 'edit/move-sel-start-far-left'),  # TODO
-                # ('Shift selection start (+100 ms)', 'Ctrl+2', 'edit/move-sel-start-short-right'),  # TODO
-                # ('Shift selection end (-100 ms)', 'Ctrl+3', 'edit/move-sel-end-far-left'),  # TODO
-                # ('Shift selection end (+100 ms)', 'Ctrl+4', 'edit/move-sel-end-short-right'),  # TODO
-                # ('Shift selection start (-10 ms)', 'Ctrl+Shift+1', 'edit/move-sel-start-short-left'),  # TODO
-                # ('Shift selection start (+10 ms)', 'Ctrl+Shift+2', 'edit/move-sel-start-short-right'),  # TODO
-                # ('Shift selection end (-10 ms)', 'Ctrl+Shift+3', 'edit/move-sel-end-short-left'),  # TODO
-                # ('Shift selection end (+10 ms)', 'Ctrl+Shift+4', 'edit/move-sel-end-short-right'),  # TODO
+                ('Shift selection start (-250 ms)', 'Ctrl+1', 'edit/move-sel-start', -250),
+                ('Shift selection start (+250 ms)', 'Ctrl+2', 'edit/move-sel-start', 250),
+                ('Shift selection end (-250 ms)', 'Ctrl+3', 'edit/move-sel-end', -250),
+                ('Shift selection end (+250 ms)', 'Ctrl+4', 'edit/move-sel-end', 250),
+                ('Shift selection start (-25 ms)', 'Ctrl+Shift+1', 'edit/move-sel-start', -25),
+                ('Shift selection start (+25 ms)', 'Ctrl+Shift+2', 'edit/move-sel-start', 25),
+                ('Shift selection end (-25 ms)', 'Ctrl+Shift+3', 'edit/move-sel-end', -25),
+                ('Shift selection end (+25 ms)', 'Ctrl+Shift+4', 'edit/move-sel-end', 25),
                 ('Commit selection to subtitle', 'Ctrl+G', 'edit/commit-sel'),
                 None,
                 ('Add new subtitle above current line', None, 'edit/insert-above'),
@@ -123,12 +123,12 @@ class MainWindow(QtWidgets.QMainWindow):
         }
 
         def trigger(action):
-            command_name = action.data()
+            command_name, args = action.data()
             callback = bubblesub.commands.commands_dict.get(command_name, None)
             if not callback:
                 bubblesub.ui.util.error('Invalid command name:\n' + command_name)
                 return
-            callback(self._api)
+            callback(self._api, *args)
 
         actions = []
         for name, items in menu.items():
@@ -139,9 +139,9 @@ class MainWindow(QtWidgets.QMainWindow):
                     actions.append(submenu.addSeparator())
                     continue
 
-                action_name, shortcut, command_name = item
+                action_name, shortcut, command_name, *args = item
                 action = submenu.addAction(action_name)
-                action.setData(command_name)
+                action.setData([command_name, args])
                 if shortcut:
                     action.setShortcut(shortcut)
 
