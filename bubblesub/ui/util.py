@@ -47,6 +47,7 @@ class SimpleThread(QtCore.QThread):
                 time.sleep(1)
             else:
                 self.finished.emit(ResultObj(value))
+            self.queue.task_done()
         self.end_work()
 
     def start_work(self):
