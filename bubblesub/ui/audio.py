@@ -38,6 +38,7 @@ class AudioPreviewWidget(QtWidgets.QWidget):
         painter.begin(self)
         self._draw_scale(painter)
         self._draw_subtitle_rects(painter)
+        self._draw_selection(painter)
         painter.end()
 
         self._need_repaint = False
@@ -143,6 +144,19 @@ class AudioPreviewWidget(QtWidgets.QWidget):
             x2 = self._pts_to_x(line.end)
             painter.drawRect(x1, 30, x2 - x1, h - 30)
 
+    def _draw_selection(self, painter):
+        w = self.width()
+        h = self.height()
+        painter.setPen(QtGui.QPen(
+            QtGui.QColor(0xFF, 0xA0, 0x00), 2, QtCore.Qt.SolidLine))
+        painter.setBrush(QtGui.QBrush(
+            QtGui.QColor(0xFF, 0xA0, 0x00, 0x40)))
+        if not self._api.audio.selection_size:
+            return
+        x1 = self._pts_to_x(self._api.audio.selection_start)
+        x2 = self._pts_to_x(self._api.audio.selection_end)
+        painter.drawRect(x1, 30, x2 - x1, h - 30)
+
     def _pts_to_x(self, pts):
         scale = self.width() / max(1, self._api.audio.view_size)
         return (pts - self._api.audio.view_start) * scale
@@ -201,6 +215,7 @@ class Audio(QtWidgets.QWidget):
         vbox.addWidget(self._audio_slider)
         self.setLayout(vbox)
 
+        api.audio.selection_changed.connect(self._audio_view_changed)
         api.audio.view_changed.connect(self._audio_view_changed)
         api.grid_selection_changed.connect(self._grid_selection_changed)
 
@@ -211,6 +226,9 @@ class Audio(QtWidgets.QWidget):
         if len(rows) == 1:
             sub = self._api.subtitles[rows[0]]
             self._api.audio.view(sub.start - 10000, sub.end + 10000)
+            self._api.audio.select(sub.start, sub.end)
+        else:
+            self._api.audio.unselect()
 
     def _audio_preview_zoomed(self, delta):
         cur_factor = (

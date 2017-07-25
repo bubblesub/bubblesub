@@ -65,6 +65,7 @@ class GuiApi(QtCore.QObject):
 
 class AudioApi(QtCore.QObject):
     view_changed = QtCore.pyqtSignal([])
+    selection_changed = QtCore.pyqtSignal([])
 
     def __init__(self, api):
         super().__init__()
@@ -72,6 +73,8 @@ class AudioApi(QtCore.QObject):
         self._max = 0
         self._view_start = 0
         self._view_end = 0
+        self._selection_start = None
+        self._selection_size = None
         self._api = api
 
     @property
@@ -98,6 +101,30 @@ class AudioApi(QtCore.QObject):
     def view_size(self):
         return self._view_end - self._view_start
 
+    @property
+    def selection_start(self):
+        return self._selection_start
+
+    @property
+    def selection_end(self):
+        return self._selection_end
+
+    @property
+    def selection_size(self):
+        if self._selection_start is None or self._selection_end is None:
+            return 0
+        return self._selection_end - self._selection_start
+
+    def unselect(self):
+        self._selection_start = None
+        self._selection_end = None
+        self.selection_changed.emit()
+
+    def select(self, start_pts, end_pts):
+        self._selection_start = self._clip(start_pts)
+        self._selection_end = self._clip(end_pts)
+        self.selection_changed.emit()
+
     def view(self, start_pts, end_pts):
         self._view_start = self._clip(start_pts)
         self._view_end = self._clip(end_pts)
@@ -116,15 +143,11 @@ class AudioApi(QtCore.QObject):
     def move(self, distance):
         view_size = self.view_size
         if self._view_start + distance < self.min:
-            self._view_start = self.min
-            self._view_end = self._clip(self.min + view_size)
+            self.view(self.min, self.min + view_size)
         elif self._view_end + distance > self.max:
-            self._view_start = self._clip(self.max - view_size)
-            self._view_end = self.max
+            self.view(self.max - view_size, self.max)
         else:
-            self._view_start = self._clip(self._view_start + distance)
-            self._view_end = self._clip(self._view_end + distance)
-        self.view_changed.emit()
+            self.view(self._view_start + distance, self._view_end + distance)
 
     def _set_max_pts(self, max_pts):
         self._min = 0
