@@ -77,6 +77,15 @@ def cmd_edit_insert_below(api):
     api.selected_lines = [idx]
 
 
+@command('edit/delete')
+def cmd_edit_delete(api):
+    if not api.selected_lines:
+        return
+    for idx in reversed(sorted(api.selected_lines)):
+        api.subtitles.remove(idx, 1)
+    api.selected_lines = []
+
+
 @command('edit/glue-sel-start')
 def cmd_glue_sel_start(api):
     if api.audio.has_selection \

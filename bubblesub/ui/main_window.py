@@ -114,7 +114,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 ('Add new subtitle above current line', None, 'edit/insert-above'),
                 ('Add new subtitle below current line', 'Ctrl+Return', 'edit/insert-below'),
                 # ('Duplicate selected subtitle', None, 'edit/duplicate'),  # TODO
-                # ('Delete selected subtitles', None, 'edit/delete'),  # TODO
+                ('Delete selected subtitles', 'Ctrl+Delete', 'edit/delete'),
                 None,
                 # ('Split selection as karaoke', None, 'edit/split-karaoke'),  # TODO
                 # ('Split selection as karaoke', None, 'edit/join-karaoke'),  # TODO
