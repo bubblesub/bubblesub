@@ -74,21 +74,21 @@ class MainWindow(QtWidgets.QMainWindow):
             ],
 
             '&Playback': [
-                # ('Jump to line', 'Ctrl+G', 'select/line'),  # TODO
-                # ('Jump to time', 'Ctrl+Shift+G', 'select/time'),  # TODO
-                ('Select previous subtitle', 'Ctrl+K', 'select/prev-subtitle'),
-                ('Select next subtitle', 'Ctrl+J', 'select/next-subtitle'),
-                ('Select all subtitles', 'Ctrl+A', 'select/all'),
-                ('Clear selection', 'Ctrl+Shift+A', 'select/nothing'),
+                # ('Jump to line', 'Ctrl+G', 'grid/select-line'),  # TODO
+                # ('Jump to time', 'Ctrl+Shift+G', 'grid/select-time'),  # TODO
+                ('Select previous subtitle', 'Ctrl+K', 'grid/select-prev-subtitle'),
+                ('Select next subtitle', 'Ctrl+J', 'grid/select-next-subtitle'),
+                ('Select all subtitles', 'Ctrl+A', 'grid/select-all'),
+                ('Clear selection', 'Ctrl+Shift+A', 'grid/select-nothing'),
                 None,
-                # ('Play 500 ms before selection start', 'Alt+1', 'play/before-selection-start'),  # TODO
-                # ('Play 500 ms after selection start', 'Alt+2', 'play/after-selection-start'),  # TODO
-                # ('Play 500 ms before selection end', 'Alt+3', 'play/after-selection-end'),  # TODO
-                # ('Play 500 ms after selection end', 'Alt+4', 'play/after-selection-end'),  # TODO
-                ('Play current line', 'Ctrl+R', 'play/current-line'),
-                ('Play until end of the file', None, 'play/unpause'),
-                ('Pause playback', None, 'play/pause'),
-                ('Toggle pause', 'Ctrl+P', 'play/toggle-pause'),
+                # ('Play 500 ms before selection start', 'Alt+1', 'video/play-before-sel-start'),  # TODO
+                # ('Play 500 ms after selection start', 'Alt+2', 'video/play-after-sel-start'),  # TODO
+                # ('Play 500 ms before selection end', 'Alt+3', 'video/play-after-sel-end'),  # TODO
+                # ('Play 500 ms after selection end', 'Alt+4', 'video/play-after-sel-end'),  # TODO
+                ('Play current line', 'Ctrl+R', 'video/play-current-line'),
+                ('Play until end of the file', None, 'video/unpause'),
+                ('Pause playback', None, 'video/pause'),
+                ('Toggle pause', 'Ctrl+P', 'video/toggle-pause'),
             ],
 
             '&Edit': [

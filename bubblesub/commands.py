@@ -77,8 +77,8 @@ def cmd_edit_insert_below(api):
     api.selected_lines = [idx]
 
 
-@command('select/prev-subtitle')
-def cmd_select_prev_sub(api):
+@command('grid/select-prev-subtitle')
+def cmd_grid_select_prev_sub(api):
     if not api.selected_lines:
         if not api.subtitles:
             return
@@ -87,8 +87,8 @@ def cmd_select_prev_sub(api):
         api.selected_lines = [max(0, api.selected_lines[0] - 1)]
 
 
-@command('select/next-subtitle')
-def cmd_select_next_sub(api):
+@command('grid/select-next-subtitle')
+def cmd_grid_select_next_sub(api):
     if not api.selected_lines:
         if not api.subtitles:
             return
@@ -98,40 +98,40 @@ def cmd_select_next_sub(api):
             min(api.selected_lines[0] + 1, len(api.subtitles) - 1)]
 
 
-@command('select/all')
-def cmd_select_all(api):
+@command('grid/select-all')
+def cmd_grid_select_all(api):
     api.selected_lines = list(range(len(api.subtitles)))
 
 
-@command('select/nothing')
-def cmd_select_nothing(api):
+@command('grid/select-nothing')
+def cmd_grid_select_nothing(api):
     api.selected_lines = []
 
 
-@command('play/current-line')
-def cmd_play_current_line(api):
+@command('video/play-current-line')
+def cmd_video_play_current_line(api):
     if api.selected_lines:
         sel = api.subtitles[api.selected_lines[0]]
         api.video.play(sel.start, sel.end)
 
 
-@command('play/toggle-pause')
-def cmd_play_toggle_pause(api):
+@command('video/toggle-pause')
+def cmd_video_toggle_pause(api):
     if api.video.is_paused:
         api.video.unpause()
     else:
         api.video.pause()
 
 
-@command('play/unpause')
-def cmd_play_unpause(api):
+@command('video/unpause')
+def cmd_video_unpause(api):
     if not api.video.is_paused:
         return
     api.video.unpause()
 
 
-@command('play/pause')
-def cmd_play_pause(api):
+@command('video/pause')
+def cmd_video_pause(api):
     if api.video.is_paused:
         return
     api.video.pause()
