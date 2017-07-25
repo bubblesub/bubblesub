@@ -252,5 +252,5 @@ class Audio(QtWidgets.QWidget):
         self._repaint()
 
     def _repaint(self):
-        self._audio_slider.repaint()
-        self._audio_preview.repaint()
+        self._audio_slider.update()
+        self._audio_preview.update()
