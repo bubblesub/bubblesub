@@ -77,6 +77,38 @@ def cmd_edit_insert_below(api):
     api.selected_lines = [idx]
 
 
+@command('edit/glue-sel-start')
+def cmd_glue_sel_start(api):
+    if not api.audio.selection_size:
+        return
+    if not api.selected_lines or api.selected_lines[0] == 0:
+        return
+    api.audio.select(
+        api.subtitles[api.selected_lines[0] - 1].end,
+        api.audio.selection_end)
+
+
+@command('edit/glue-sel-end')
+def cmd_glue_sel_start(api):
+    if not api.audio.selection_size:
+        return
+    if not api.selected_lines or api.selected_lines[-1] >= len(api.subtitles):
+        return
+    api.audio.select(
+        api.audio.selection_start,
+        api.subtitles[api.selected_lines[-1] + 1].start)
+
+
+@command('edit/commit-sel')
+def cmd_edit_commit_selection(api):
+    for idx in api.selected_lines:
+        subtitle = api.subtitles[idx]
+        subtitle.begin_update()
+        subtitle.start = api.audio.selection_start
+        subtitle.end = api.audio.selection_end
+        subtitle.end_update()
+
+
 @command('grid/select-prev-subtitle')
 def cmd_grid_select_prev_sub(api):
     if not api.selected_lines:

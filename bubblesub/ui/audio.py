@@ -215,6 +215,13 @@ class Audio(QtWidgets.QWidget):
         vbox.addWidget(self._audio_slider)
         self.setLayout(vbox)
 
+        api.subtitles.items_inserted.connect(
+            lambda *args: self._audio_view_changed())
+        api.subtitles.items_removed.connect(
+            lambda *args: self._audio_view_changed())
+        api.subtitles.item_changed.connect(
+            lambda *args: self._audio_view_changed())
+
         api.audio.selection_changed.connect(self._audio_view_changed)
         api.audio.view_changed.connect(self._audio_view_changed)
         api.grid_selection_changed.connect(self._grid_selection_changed)

@@ -97,8 +97,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 None,
                 # ('Copy to clipboard', 'Ctrl+C', 'edit/copy'),  # TODO
                 None,
-                # ('Glue selection start to previous subtitle', None, 'edit/glue-sel-start'),  # TODO
-                # ('Glue selection end to next subtitle', None, 'edit/glue-sel-end'),  # TODO
+                ('Glue selection start to previous subtitle', None, 'edit/glue-sel-start'),
+                ('Glue selection end to next subtitle', None, 'edit/glue-sel-end'),
                 # ('Shift selected subtitles', None, 'edit/shift-times'),  # TODO
                 # ('Shift selection start (-100 ms)', 'Ctrl+1', 'edit/move-sel-start-far-left'),  # TODO
                 # ('Shift selection start (+100 ms)', 'Ctrl+2', 'edit/move-sel-start-short-right'),  # TODO
@@ -108,7 +108,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 # ('Shift selection start (+10 ms)', 'Ctrl+Shift+2', 'edit/move-sel-start-short-right'),  # TODO
                 # ('Shift selection end (-10 ms)', 'Ctrl+Shift+3', 'edit/move-sel-end-short-left'),  # TODO
                 # ('Shift selection end (+10 ms)', 'Ctrl+Shift+4', 'edit/move-sel-end-short-right'),  # TODO
-                # ('Commit selection to subtitle', 'Ctrl+G', 'edit/commit-sel'),  # TODO
+                ('Commit selection to subtitle', 'Ctrl+G', 'edit/commit-sel'),
                 None,
                 ('Add new subtitle above current line', None, 'edit/insert-above'),
                 ('Add new subtitle below current line', 'Ctrl+Return', 'edit/insert-below'),
