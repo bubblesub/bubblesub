@@ -33,12 +33,12 @@ class BaseAudioWidget(QtWidgets.QWidget):
             (self._api.audio.view_end - self._api.audio.view_start) /
             (self._api.audio.max - self._api.audio.min))
         new_factor = cur_factor * (1.1 if delta < 0 else 0.9)
-        self._api.audio.zoom(new_factor)
+        self._api.audio.zoom_view(new_factor)
 
     def _scrolled(self, delta):
         distance = 1 if delta < 0 else -1
         distance *= self._api.audio.view_size * 0.05
-        self._api.audio.move(distance)
+        self._api.audio.move_view(distance)
 
 
 class AudioScaleWidget(BaseAudioWidget):
@@ -223,6 +223,19 @@ class AudioSliderWidget(BaseAudioWidget):
         self._draw_frame(painter)
         painter.end()
 
+    def mousePressEvent(self, e):
+        self.setCursor(QtCore.Qt.SizeHorCursor)
+        self.mouseMoveEvent(e)
+
+    def mouseReleaseEvent(self, e):
+        self.setCursor(QtCore.Qt.ArrowCursor)
+
+    def mouseMoveEvent(self, e):
+        old_center = self._api.audio.view_start + self._api.audio.view_size / 2
+        new_center = self._pts_from_x(e.x())
+        distance = new_center - old_center
+        self._api.audio.move_view(distance)
+
     def _draw_slider(self, painter):
         w, h = self.width(), self.height()
         brush = QtGui.QBrush(self.palette().highlight())
@@ -244,6 +257,9 @@ class AudioSliderWidget(BaseAudioWidget):
         scale = self.width() / max(1, self._api.audio.size)
         return (pts - self._api.audio.min) * scale
 
+    def _pts_from_x(self, x):
+        scale = self._api.audio.size / self.width()
+        return x * scale + self._api.audio.min
 
 
 class Audio(QtWidgets.QWidget):
