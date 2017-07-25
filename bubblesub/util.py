@@ -144,5 +144,5 @@ class ListModel(QtCore.QObject):
         self.items_inserted.emit(idx, len(data))
 
     def remove(self, idx, count):
-        self._data = self._data[:idx] + self._data[:idx + count]
+        self._data = self._data[:idx] + self._data[idx + count:]
         self.items_removed.emit(idx, count)
