@@ -239,6 +239,7 @@ class Api(QtCore.QObject):
         self.video._path = video_path
 
         if video_path and video_path.exists():
+            # TODO: refactor this
             timecodes = _get_timecodes(video_path)
             self.video._timecodes = timecodes
             self.audio._set_max_pts(timecodes[-1])

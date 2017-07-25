@@ -28,15 +28,30 @@ class AudioPreviewWidget(QtWidgets.QWidget):
 
         api.video.loaded.connect(self._video_loaded)
 
-    def _video_loaded(self):
-        if self.spectrum is not None:
-            self.spectrum.stop()
-        self.spectrum = SpectrumProvider(self._api)
-        self.spectrum.updated.connect(self._spectrum_updated)
+    def paintEvent(self, e):
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        self._draw_spectrogram(painter, e)
+        painter.end()
+
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        self._draw_scale(painter)
+        self._draw_subtitle_rects(painter)
+        painter.end()
+
+        self._need_repaint = False
 
     def _repaint_if_needed(self):
         if self._need_repaint:
             self.repaint()
+
+    def _video_loaded(self):
+        # TODO: refactor this
+        if self.spectrum is not None:
+            self.spectrum.stop()
+        self.spectrum = SpectrumProvider(self._api)
+        self.spectrum.updated.connect(self._spectrum_updated)
 
     def _spectrum_updated(self):
         self._need_repaint = True
@@ -47,21 +62,10 @@ class AudioPreviewWidget(QtWidgets.QWidget):
         else:
             self.scroll.emit(e.angleDelta().y())
 
-    def paintEvent(self, e):
-        qp = QtGui.QPainter()
-        qp.begin(self)
-        self.drawSpectrogram(qp, e)
-        qp.end()
-        qp = QtGui.QPainter()
-        qp.begin(self)
-        self.drawWidget(qp)
-        qp.end()
-        self._need_repaint = False
-
-    def drawSpectrogram(self, qp, event):
+    def _draw_spectrogram(self, painter, event):
         if self.spectrum is None:
             return
-        qp.scale(1, self.height() / (1 << DERIVATION_SIZE))
+        painter.scale(1, self.height() / (1 << DERIVATION_SIZE))
 
         color_table = []
         for i in range(256):
@@ -84,18 +88,17 @@ class AudioPreviewWidget(QtWidgets.QWidget):
                 column.strides[0],
                 QtGui.QImage.Format_Indexed8)
             image.setColorTable(color_table)
-            qp.drawPixmap(x, 0, QtGui.QPixmap.fromImage(image))
+            painter.drawPixmap(x, 0, QtGui.QPixmap.fromImage(image))
 
-    def drawWidget(self, qp):
-        font = QtGui.QFont('Serif', 7, QtGui.QFont.Light)
-        qp.setFont(font)
-        size = self.size()
-        w = size.width()
-        h = size.height()
+    def _draw_scale(self, painter):
+        painter.setFont(QtGui.QFont('Serif', 7, QtGui.QFont.Light))
+        w = self.width()
+        h = self.height()
 
-        qp.setPen(QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
-        qp.setBrush(QtCore.Qt.NoBrush)
-        qp.drawRect(0, 0, w - 1, h - 1)
+        painter.setPen(
+            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.drawRect(0, 0, w - 1, h - 1)
 
         one_second = 1000
         one_minute = 60 * one_second
@@ -108,13 +111,6 @@ class AudioPreviewWidget(QtWidgets.QWidget):
             (self._api.audio.view_end - self._api.audio.view_start)
             / self.width() / 1000.0)
 
-        if seconds_per_pixel > 2.5:
-            every_nth_minute = 5
-        elif seconds_per_pixel > 0.1:
-            every_nth_second = 15
-        else:
-            every_nth_second = 1
-
         for pts in range(start_pts, end_pts, one_second):
             if pts % one_minute == 0:
                 gap = 8
@@ -122,8 +118,8 @@ class AudioPreviewWidget(QtWidgets.QWidget):
                 gap = 4
 
             x = self._pts_to_x(pts)
-            qp.drawLine(x, 0, x, gap)
-            metrics = qp.fontMetrics()
+            painter.drawLine(x, 0, x, gap)
+            metrics = painter.fontMetrics()
             if pts % one_minute == 0:
                 text = '{:02}:{:02}'.format(pts // one_minute, 0)
             elif pts % (10 * one_second) == 0:
@@ -132,18 +128,20 @@ class AudioPreviewWidget(QtWidgets.QWidget):
                 text = ''
             fw = metrics.width(text)
             fh = metrics.height()
-            qp.drawText(x, gap + fh, text)
+            painter.drawText(x, gap + fh, text)
 
-        qp.setPen(
+    def _draw_subtitle_rects(self, painter):
+        w = self.width()
+        h = self.height()
+        painter.setPen(
             QtGui.QPen(self.palette().highlight(), 1, QtCore.Qt.SolidLine))
-        last_line = None
         for i, line in enumerate(self._api.subtitles):
-            qp.setBrush(QtGui.QBrush(
+            painter.setBrush(QtGui.QBrush(
                 self.palette().highlight().color(),
                 QtCore.Qt.FDiagPattern if i & 1 else QtCore.Qt.BDiagPattern))
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
-            qp.drawRect(x1, 30, x2 - x1, h - 30)
+            painter.drawRect(x1, 30, x2 - x1, h - 30)
 
     def _pts_to_x(self, pts):
         scale = self.width() / max(1, self._api.audio.view_size)
@@ -161,28 +159,28 @@ class AudioSliderWidget(QtWidgets.QWidget):
         self._api = api
 
     def paintEvent(self, e):
-        qp = QtGui.QPainter()
-        qp.begin(self)
-        self.drawWidget(qp)
-        qp.end()
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        self._draw_slider(painter)
+        painter.end()
 
-    def drawWidget(self, qp):
+    def _draw_slider(self, painter):
         size = self.size()
         w = size.width()
         h = size.height()
 
         brush = QtGui.QBrush(self.palette().highlight())
-        qp.setPen(QtCore.Qt.NoPen)
-        qp.setBrush(brush)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(brush)
         x1 = self._pts_to_x(self._api.audio.view_start)
         x2 = self._pts_to_x(self._api.audio.view_end)
-        qp.drawRect(x1, 0, x2 - x1, h - 1)
+        painter.drawRect(x1, 0, x2 - x1, h - 1)
 
         brush = QtGui.QBrush(self.palette().highlight())
         pen = QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        qp.setPen(pen)
-        qp.setBrush(QtCore.Qt.NoBrush)
-        qp.drawRect(0, 0, w - 1, h - 1)
+        painter.setPen(pen)
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.drawRect(0, 0, w - 1, h - 1)
 
     def _pts_to_x(self, pts):
         scale = self.width() / max(1, self._api.audio.size)
@@ -195,8 +193,8 @@ class Audio(QtWidgets.QWidget):
         self._api = api
         self._audio_slider = AudioSliderWidget(self._api)
         self._audio_preview = AudioPreviewWidget(self._api)
-        self._audio_preview.zoom[int].connect(self.on_audio_preview_zoom)
-        self._audio_preview.scroll[int].connect(self.on_audio_preview_scroll)
+        self._audio_preview.zoom.connect(self._audio_preview_zoomed)
+        self._audio_preview.scroll.connect(self._audio_preview_scrolled)
 
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self._audio_preview)
@@ -214,7 +212,7 @@ class Audio(QtWidgets.QWidget):
             sub = self._api.subtitles[rows[0]]
             self._api.audio.view(sub.start - 10000, sub.end + 10000)
 
-    def on_audio_preview_zoom(self, delta):
+    def _audio_preview_zoomed(self, delta):
         cur_factor = (
             (self._api.audio.view_end - self._api.audio.view_start) /
             (self._api.audio.max - self._api.audio.min))
@@ -222,7 +220,7 @@ class Audio(QtWidgets.QWidget):
         self._api.audio.zoom(new_factor)
         self._repaint()
 
-    def on_audio_preview_scroll(self, delta):
+    def _audio_preview_scrolled(self, delta):
         distance = 1 if delta < 0 else -1
         distance *= self._api.audio.view_size * 0.05
         self._api.audio.move(distance)
