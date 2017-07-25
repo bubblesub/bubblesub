@@ -125,11 +125,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         def trigger(action):
             command_name, args = action.data()
-            callback = bubblesub.commands.commands_dict.get(command_name, None)
-            if not callback:
-                bubblesub.ui.util.error('Invalid command name:\n' + command_name)
-                return
-            callback(self._api, *args)
+            with bubblesub.util.Benchmark('Executing command {}'.format(command_name)) as b:
+                callback = bubblesub.commands.commands_dict.get(command_name, None)
+                if not callback:
+                    bubblesub.ui.util.error('Invalid command name:\n' + command_name)
+                    return
+                # self.setUpdatesEnabled(False)
+                callback(self._api, *args)
+                # self.setUpdatesEnabled(True)
 
         actions = []
         for name, items in menu.items():
