@@ -35,7 +35,6 @@ class SpectrogramThread(SimpleThread):
             self._api.log('audio: not found ({})'.format(path))
             self._audio_source = None
 
-    # TODO: something's wrong with it...
     def work(self, block_idx):
         pts = block_idx * HORIZONTAL_RES
         audio_frame = int(pts * self._sample_rate / 1000.0)
@@ -43,10 +42,8 @@ class SpectrogramThread(SimpleThread):
             audio_frame >> DERIVATION_DISTANCE) << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
-        samples = self._get_samples(first_sample, sample_count)
-        # samples = np.random.random(sample_count)
+        samples = self._get_samples(first_sample, sample_count) / 32768.0
 
-        samples /= 32768.0
         self._input[:] = samples
         out = self._fftw()
 
@@ -88,7 +85,7 @@ class SpectrogramThread(SimpleThread):
             count = self._sample_count - start
         self._audio_source.init_buffer(count)
         samples = self._audio_source.get_audio(start)
-        return np.mean(samples.reshape(self._channel_count, -1), axis=0)
+        return np.mean(samples, axis=1)
 
 
 class SpectrumProvider(QtCore.QObject):
