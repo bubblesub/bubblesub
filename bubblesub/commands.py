@@ -165,6 +165,33 @@ def cmd_video_play_current_line(api):
         api.video.play(sel.start, sel.end)
 
 
+@command('video/play-around-sel')
+def cmd_video_play_around_sel_start(api, delta_start, delta_end):
+    if not api.audio.selection_size:
+        return
+    api.video.play(
+        api.audio.selection_start + delta_start,
+        api.audio.selection_end + delta_end)
+
+
+@command('video/play-around-sel-start')
+def cmd_video_play_around_sel_start(api, delta_start, delta_end):
+    if not api.audio.selection_size:
+        return
+    api.video.play(
+        api.audio.selection_start + delta_start,
+        api.audio.selection_start + delta_end)
+
+
+@command('video/play-around-sel-end')
+def cmd_video_play_around_sel_end(api, delta_start, delta_end):
+    if not api.audio.selection_size:
+        return
+    api.video.play(
+        api.audio.selection_end + delta_start,
+        api.audio.selection_end + delta_end)
+
+
 @command('video/toggle-pause')
 def cmd_video_toggle_pause(api):
     if api.video.is_paused:

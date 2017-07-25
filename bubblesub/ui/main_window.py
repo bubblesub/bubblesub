@@ -81,10 +81,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 ('Select all subtitles', 'Ctrl+A', 'grid/select-all'),
                 ('Clear selection', 'Ctrl+Shift+A', 'grid/select-nothing'),
                 None,
-                # ('Play 500 ms before selection start', 'Alt+1', 'video/play-before-sel-start'),  # TODO
-                # ('Play 500 ms after selection start', 'Alt+2', 'video/play-after-sel-start'),  # TODO
-                # ('Play 500 ms before selection end', 'Alt+3', 'video/play-after-sel-end'),  # TODO
-                # ('Play 500 ms after selection end', 'Alt+4', 'video/play-after-sel-end'),  # TODO
+                ('Play 500 ms before selection start', 'Alt+1', 'video/play-around-sel-start', -500, 0),
+                ('Play 500 ms after selection start', 'Alt+2', 'video/play-around-sel-start', 0, 500),
+                ('Play 500 ms before selection end', 'Alt+3', 'video/play-around-sel-end', -500, 0),
+                ('Play 500 ms after selection end', 'Alt+4', 'video/play-around-sel-end', 0, 500),
+                ('Play selection', None, 'video/play-around-sel', 0, 0),
                 ('Play current line', 'Ctrl+R', 'video/play-current-line'),
                 ('Play until end of the file', None, 'video/unpause'),
                 ('Pause playback', None, 'video/pause'),
