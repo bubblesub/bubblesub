@@ -185,13 +185,13 @@ class AudioPreviewWidget(BaseAudioWidget):
             painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_selection(self, painter):
+        if not self._api.audio.has_selection:
+            return
         w, h = self.width(), self.height()
         painter.setPen(QtGui.QPen(
             QtGui.QColor(0xFF, 0xA0, 0x00), 1, QtCore.Qt.SolidLine))
         painter.setBrush(QtGui.QBrush(
             QtGui.QColor(0xFF, 0xA0, 0x00, 0x40)))
-        if not self._api.audio.selection_size:
-            return
         x1 = self._pts_to_x(self._api.audio.selection_start)
         x2 = self._pts_to_x(self._api.audio.selection_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)

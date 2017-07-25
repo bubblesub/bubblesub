@@ -110,8 +110,13 @@ class AudioApi(QtCore.QObject):
         return self._selection_end
 
     @property
+    def has_selection(self):
+        return not (
+            self._selection_start is None or self._selection_end is None)
+
+    @property
     def selection_size(self):
-        if self._selection_start is None or self._selection_end is None:
+        if not self.has_selection:
             return 0
         return self._selection_end - self._selection_start
 

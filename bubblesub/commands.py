@@ -79,42 +79,37 @@ def cmd_edit_insert_below(api):
 
 @command('edit/glue-sel-start')
 def cmd_glue_sel_start(api):
-    if not api.audio.selection_size:
-        return
-    if not api.selected_lines or api.selected_lines[0] == 0:
-        return
-    api.audio.select(
-        api.subtitles[api.selected_lines[0] - 1].end,
-        api.audio.selection_end)
+    if api.audio.has_selection \
+            and api.selected_lines and api.selected_lines[0] > 0:
+        api.audio.select(
+            api.subtitles[api.selected_lines[0] - 1].end,
+            api.audio.selection_end)
 
 
 @command('edit/glue-sel-end')
 def cmd_glue_sel_start(api):
-    if not api.audio.selection_size:
-        return
-    if not api.selected_lines or api.selected_lines[-1] >= len(api.subtitles):
-        return
-    api.audio.select(
-        api.audio.selection_start,
-        api.subtitles[api.selected_lines[-1] + 1].start)
+    if api.audio.has_selection and \
+            api.selected_lines and \
+            api.selected_lines[-1] + 1 < len(api.subtitles):
+        api.audio.select(
+            api.audio.selection_start,
+            api.subtitles[api.selected_lines[-1] + 1].start)
 
 
 @command('edit/move-sel-start')
 def cmd_move_sel_start(api, ms):
-    if not api.audio.selection_size:
-        return
-    api.audio.select(
-        min(api.audio.selection_end, api.audio.selection_start + ms),
-        api.audio.selection_end)
+    if api.audio.has_selection:
+        api.audio.select(
+            min(api.audio.selection_end, api.audio.selection_start + ms),
+            api.audio.selection_end)
 
 
 @command('edit/move-sel-end')
 def cmd_move_sel_end(api, ms):
-    if not api.audio.selection_size:
-        return
-    api.audio.select(
-        api.audio.selection_start,
-        max(api.audio.selection_start, api.audio.selection_end + ms))
+    if api.audio.has_selection:
+        api.audio.select(
+            api.audio.selection_start,
+            max(api.audio.selection_start, api.audio.selection_end + ms))
 
 
 @command('edit/commit-sel')
@@ -167,29 +162,26 @@ def cmd_video_play_current_line(api):
 
 @command('video/play-around-sel')
 def cmd_video_play_around_sel_start(api, delta_start, delta_end):
-    if not api.audio.selection_size:
-        return
-    api.video.play(
-        api.audio.selection_start + delta_start,
-        api.audio.selection_end + delta_end)
+    if api.audio.has_selection:
+        api.video.play(
+            api.audio.selection_start + delta_start,
+            api.audio.selection_end + delta_end)
 
 
 @command('video/play-around-sel-start')
 def cmd_video_play_around_sel_start(api, delta_start, delta_end):
-    if not api.audio.selection_size:
-        return
-    api.video.play(
-        api.audio.selection_start + delta_start,
-        api.audio.selection_start + delta_end)
+    if api.audio.has_selection:
+        api.video.play(
+            api.audio.selection_start + delta_start,
+            api.audio.selection_start + delta_end)
 
 
 @command('video/play-around-sel-end')
 def cmd_video_play_around_sel_end(api, delta_start, delta_end):
-    if not api.audio.selection_size:
-        return
-    api.video.play(
-        api.audio.selection_end + delta_start,
-        api.audio.selection_end + delta_end)
+    if api.audio.has_selection:
+        api.video.play(
+            api.audio.selection_end + delta_start,
+            api.audio.selection_end + delta_end)
 
 
 @command('video/toggle-pause')
