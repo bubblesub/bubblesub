@@ -2,7 +2,6 @@ import enum
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
-import bubblesub.util
 from bubblesub.ui.util import blend_colors
 from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
 
@@ -21,18 +20,20 @@ class BaseAudioWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self._api = api
 
-        upd = lambda *_: self.update()
+        def upd(*_):
+            self.update()
+
         api.audio.selection_changed.connect(upd)
         api.audio.view_changed.connect(upd)
         api.subtitles.items_inserted.connect(upd)
         api.subtitles.items_removed.connect(upd)
         api.subtitles.item_changed.connect(upd)
 
-    def wheelEvent(self, e):
-        if e.modifiers() & QtCore.Qt.ControlModifier:
-            self._zoomed(e.angleDelta().y())
+    def wheelEvent(self, event):
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            self._zoomed(event.angleDelta().y())
         else:
-            self._scrolled(e.angleDelta().y())
+            self._scrolled(event.angleDelta().y())
 
     def _zoomed(self, delta):
         cur_factor = (
@@ -52,7 +53,7 @@ class AudioScaleWidget(BaseAudioWidget):
         super().__init__(api, parent)
         self.setFixedHeight(20)
 
-    def paintEvent(self, e):
+    def paintEvent(self, event):
         painter = QtGui.QPainter()
         painter.begin(self)
         self._draw_scale(painter)
@@ -122,10 +123,10 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         api.video.loaded.connect(self._video_loaded)
 
-    def paintEvent(self, e):
+    def paintEvent(self, event):
         painter = QtGui.QPainter()
         painter.begin(self)
-        self._draw_spectrogram(painter, e)
+        self._draw_spectrogram(painter, event)
         painter.end()
 
         painter = QtGui.QPainter()
@@ -137,22 +138,22 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         self._need_repaint = False
 
-    def mousePressEvent(self, e):
-        if e.button() == QtCore.Qt.LeftButton:
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
             self._drag_mode = DragMode.SelectionStart
             self.setCursor(QtCore.Qt.SizeHorCursor)
-            self.mouseMoveEvent(e)
-        elif e.button() == QtCore.Qt.RightButton:
+            self.mouseMoveEvent(event)
+        elif event.button() == QtCore.Qt.RightButton:
             self._drag_mode = DragMode.SelectionEnd
             self.setCursor(QtCore.Qt.SizeHorCursor)
-            self.mouseMoveEvent(e)
+            self.mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, e):
+    def mouseReleaseEvent(self, event):
         self._drag_mode = DragMode.Off
         self.setCursor(QtCore.Qt.ArrowCursor)
 
-    def mouseMoveEvent(self, e):
-        pts = self._pts_from_x(e.x())
+    def mouseMoveEvent(self, event):
+        pts = self._pts_from_x(event.x())
         if self._drag_mode == DragMode.SelectionStart:
             if self._api.audio.has_selection:
                 self._api.audio.select(
@@ -250,23 +251,23 @@ class AudioSliderWidget(BaseAudioWidget):
         super().__init__(api, parent)
         self.setFixedHeight(20)
 
-    def paintEvent(self, e):
+    def paintEvent(self, event):
         painter = QtGui.QPainter()
         painter.begin(self)
         self._draw_slider(painter)
         self._draw_frame(painter)
         painter.end()
 
-    def mousePressEvent(self, e):
+    def mousePressEvent(self, event):
         self.setCursor(QtCore.Qt.SizeHorCursor)
-        self.mouseMoveEvent(e)
+        self.mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, e):
+    def mouseReleaseEvent(self, event):
         self.setCursor(QtCore.Qt.ArrowCursor)
 
-    def mouseMoveEvent(self, e):
+    def mouseMoveEvent(self, event):
         old_center = self._api.audio.view_start + self._api.audio.view_size / 2
-        new_center = self._pts_from_x(e.x())
+        new_center = self._pts_from_x(event.x())
         distance = new_center - old_center
         self._api.audio.move_view(distance)
 
