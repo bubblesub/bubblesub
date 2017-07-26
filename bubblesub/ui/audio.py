@@ -223,10 +223,13 @@ class AudioPreviewWidget(BaseAudioWidget):
         if not self._api.audio.has_selection:
             return
         w, h = self.width(), self.height()
-        painter.setPen(QtGui.QPen(
-            QtGui.QColor(0xFF, 0xA0, 0x00), 1, QtCore.Qt.SolidLine))
-        painter.setBrush(QtGui.QBrush(
-            QtGui.QColor(0xFF, 0xA0, 0x00, 0x40)))
+        if self.parent().hasFocus():
+            color = QtGui.QColor(0xFF, 0xA0, 0x00)
+        else:
+            color = QtGui.QColor(0xA0, 0xA0, 0x60)
+        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
+        color.setAlpha(0x40)
+        painter.setBrush(QtGui.QBrush(color))
         x1 = self._pts_to_x(self._api.audio.selection_start)
         x2 = self._pts_to_x(self._api.audio.selection_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)
@@ -304,6 +307,8 @@ class Audio(QtWidgets.QWidget):
         self._slider = AudioSliderWidget(self._api, self)
         self._scale = AudioScaleWidget(self._api, self)
         self._preview = AudioPreviewWidget(self._api, self)
+
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         vbox = QtWidgets.QVBoxLayout()
         vbox.setSpacing(0)
