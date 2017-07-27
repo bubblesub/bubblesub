@@ -33,6 +33,12 @@ def cmd_file_quit(api):
     api.gui.quit()
 
 
+@command('audio/scroll')
+def cmd_audio_scroll(api, delta):
+    distance = delta * api.audio.view_size * 0.05
+    api.audio.move_view(distance)
+
+
 @command('edit/insert-above')
 def cmd_edit_insert_above(api):
     if not api.subs.selected_lines:

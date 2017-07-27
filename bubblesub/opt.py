@@ -70,6 +70,8 @@ class Options:
                 ('J', 'edit/insert-below'),
                 ('Shift+K', 'grid/select-prev-subtitle'),
                 ('Shift+J', 'grid/select-next-subtitle'),
+                ('A', 'audio/scroll', -1),
+                ('F', 'audio/scroll', 1),
             ],
         }
 
@@ -100,6 +102,9 @@ class Options:
                 ('Play until end of the file', 'video/unpause'),
                 ('Pause playback', 'video/pause'),
                 ('Toggle pause', 'video/toggle-pause'),
+                None,
+                ('Scroll waveform backward', 'audio/scroll', -1),
+                ('Scroll waveform forward', 'audio/scroll', 1),
             ],
 
             '&Edit': [
