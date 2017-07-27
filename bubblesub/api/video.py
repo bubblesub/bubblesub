@@ -1,4 +1,18 @@
+import ffms
+import bubblesub.util
 from PyQt5 import QtCore
+
+
+# TODO: do this somewhere else asynchronously
+def _get_timecodes(video_path):
+    cache_key = str(video_path)
+    timecodes = bubblesub.util.load_cache('index', cache_key)
+    if not timecodes:
+        print('Reading video time codes, please wait.')
+        video = ffms.VideoSource(str(video_path))
+        timecodes = video.track.timecodes
+        bubblesub.util.save_cache('index', cache_key, timecodes)
+    return timecodes
 
 
 class VideoApi(QtCore.QObject):
@@ -7,8 +21,9 @@ class VideoApi(QtCore.QObject):
     playback_requested = QtCore.pyqtSignal([object, object])
     pause_requested = QtCore.pyqtSignal([])
 
-    def __init__(self):
+    def __init__(self, audio_api):
         super().__init__()
+        self._audio_api = audio_api
         self._timecodes = []
         self._path = None
         self._is_paused = False
@@ -50,5 +65,17 @@ class VideoApi(QtCore.QObject):
     def timecodes(self):
         return self._timecodes
 
+    def load(self, video_path):
+        self._path = video_path
 
+        if video_path and video_path.exists():
+            # TODO: refactor this
+            timecodes = _get_timecodes(video_path)
+            self._timecodes = timecodes
+            self._audio_api._set_max_pts(timecodes[-1])
+        else:
+            self._timecodes = []
+            self._audio_api._set_max_pts(0)
+
+        self.loaded.emit()
 

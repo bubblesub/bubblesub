@@ -23,7 +23,7 @@ def _ask_about_unsaved_changes(api):
 
 @command('file/save')
 def cmd_save(api):
-    api.save_ass(api.ass_path)
+    api.subs.save_ass(api.subs.path)
     # TODO: log in console
 
 
@@ -34,14 +34,14 @@ def cmd_quit(api):
 
 @command('edit/insert-above')
 def cmd_edit_insert_above(api):
-    if not api.selected_lines:
+    if not api.subs.selected_lines:
         idx = 0
         prev_sub = None
         cur_sub = None
     else:
-        idx = api.selected_lines[0]
-        prev_sub = api.subtitles.get(idx - 1)
-        cur_sub = api.subtitles[idx]
+        idx = api.subs.selected_lines[0]
+        prev_sub = api.subs.lines.get(idx - 1)
+        cur_sub = api.subs.lines[idx]
 
     end = cur_sub.start if cur_sub else DEFAULT_SUB_DURATION
     start = end - DEFAULT_SUB_DURATION
@@ -51,21 +51,21 @@ def cmd_edit_insert_above(api):
         start = prev_sub.end
     if start > end:
         start = end
-    api.subtitles.insert_one(idx, start=start, end=end, style='Default')
-    api.selected_lines = [idx]
+    api.subs.lines.insert_one(idx, start=start, end=end, style='Default')
+    api.subs.selected_lines = [idx]
 
 
 @command('edit/insert-below')
 def cmd_edit_insert_below(api):
-    if not api.selected_lines:
+    if not api.subs.selected_lines:
         idx = 0
         cur_sub = None
-        next_sub = api.subtitles.get(0)
+        next_sub = api.subs.lines.get(0)
     else:
-        idx = api.selected_lines[-1]
-        cur_sub = api.subtitles[idx]
+        idx = api.subs.selected_lines[-1]
+        cur_sub = api.subs.lines[idx]
         idx += 1
-        next_sub = api.subtitles.get(idx)
+        next_sub = api.subs.lines.get(idx)
 
     start = cur_sub.end if cur_sub else 0
     end = start + DEFAULT_SUB_DURATION
@@ -73,56 +73,56 @@ def cmd_edit_insert_below(api):
         end = next_sub.start
     if end < start:
         end = start
-    api.subtitles.insert_one(idx, start=start, end=end, style='Default')
-    api.selected_lines = [idx]
+    api.subs.lines.insert_one(idx, start=start, end=end, style='Default')
+    api.subs.selected_lines = [idx]
 
 
 @command('edit/duplicate')
 def cmd_edit_duplicate(api):
-    if not api.selected_lines:
+    if not api.subs.selected_lines:
         return
     new_selection = []
     api.gui.begin_update()
-    for idx in reversed(sorted(api.selected_lines)):
-        sub = api.subtitles[idx]
-        api.subtitles.insert_one(
+    for idx in reversed(sorted(api.subs.selected_lines)):
+        sub = api.subs.lines[idx]
+        api.subs.lines.insert_one(
             idx + 1,
             start=sub.start,
             end=sub.end,
             actor=sub.actor,
             style=sub.style,
             text=sub.text)
-        new_selection.append(idx + len(api.selected_lines) - len(new_selection))
-    api.selected_lines = new_selection
+        new_selection.append(idx + len(api.subs.selected_lines) - len(new_selection))
+    api.subs.selected_lines = new_selection
     api.gui.end_update()
 
 
 @command('edit/delete')
 def cmd_edit_delete(api):
-    if not api.selected_lines:
+    if not api.subs.selected_lines:
         return
-    for idx in reversed(sorted(api.selected_lines)):
-        api.subtitles.remove(idx, 1)
-    api.selected_lines = []
+    for idx in reversed(sorted(api.subs.selected_lines)):
+        api.subs.lines.remove(idx, 1)
+    api.subs.selected_lines = []
 
 
 @command('edit/glue-sel-start')
 def cmd_glue_sel_start(api):
     if api.audio.has_selection \
-            and api.selected_lines and api.selected_lines[0] > 0:
+            and api.subs.selected_lines and api.subs.selected_lines[0] > 0:
         api.audio.select(
-            api.subtitles[api.selected_lines[0] - 1].end,
+            api.subs.lines[api.subs.selected_lines[0] - 1].end,
             api.audio.selection_end)
 
 
 @command('edit/glue-sel-end')
 def cmd_glue_sel_start(api):
     if api.audio.has_selection and \
-            api.selected_lines and \
-            api.selected_lines[-1] + 1 < len(api.subtitles):
+            api.subs.selected_lines and \
+            api.subs.selected_lines[-1] + 1 < len(api.subs.lines):
         api.audio.select(
             api.audio.selection_start,
-            api.subtitles[api.selected_lines[-1] + 1].start)
+            api.subs.lines[api.subs.selected_lines[-1] + 1].start)
 
 
 @command('edit/move-sel-start')
@@ -143,8 +143,8 @@ def cmd_move_sel_end(api, ms):
 
 @command('edit/commit-sel')
 def cmd_edit_commit_selection(api):
-    for idx in api.selected_lines:
-        subtitle = api.subtitles[idx]
+    for idx in api.subs.selected_lines:
+        subtitle = api.subs.lines[idx]
         subtitle.begin_update()
         subtitle.start = api.audio.selection_start
         subtitle.end = api.audio.selection_end
@@ -153,39 +153,39 @@ def cmd_edit_commit_selection(api):
 
 @command('grid/select-prev-subtitle')
 def cmd_grid_select_prev_sub(api):
-    if not api.selected_lines:
-        if not api.subtitles:
+    if not api.subs.selected_lines:
+        if not api.subs.lines:
             return
-        api.selected_lines = [len(api.subtitles) - 1, 0]
+        api.subs.selected_lines = [len(api.subs.lines) - 1, 0]
     else:
-        api.selected_lines = [max(0, api.selected_lines[0] - 1)]
+        api.subs.selected_lines = [max(0, api.subs.selected_lines[0] - 1)]
 
 
 @command('grid/select-next-subtitle')
 def cmd_grid_select_next_sub(api):
-    if not api.selected_lines:
-        if not api.subtitles:
+    if not api.subs.selected_lines:
+        if not api.subs.lines:
             return
-        api.selected_lines = [0]
+        api.subs.selected_lines = [0]
     else:
-        api.selected_lines = [
-            min(api.selected_lines[0] + 1, len(api.subtitles) - 1)]
+        api.subs.selected_lines = [
+            min(api.subs.selected_lines[0] + 1, len(api.subs.lines) - 1)]
 
 
 @command('grid/select-all')
 def cmd_grid_select_all(api):
-    api.selected_lines = list(range(len(api.subtitles)))
+    api.subs.selected_lines = list(range(len(api.subs.lines)))
 
 
 @command('grid/select-nothing')
 def cmd_grid_select_nothing(api):
-    api.selected_lines = []
+    api.subs.selected_lines = []
 
 
 @command('video/play-current-line')
 def cmd_video_play_current_line(api):
-    if api.selected_lines:
-        sel = api.subtitles[api.selected_lines[0]]
+    if api.subs.selected_lines:
+        sel = api.subs.lines[api.subs.selected_lines[0]]
         api.video.play(sel.start, sel.end)
 
 

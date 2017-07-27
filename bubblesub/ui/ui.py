@@ -42,7 +42,7 @@ class Ui:
         main_window = bubblesub.ui.main_window.MainWindow(self._opt, self._api)
 
         if self._args.file:
-            self._api.load_ass(self._args.file)
+            self._api.subs.load_ass(self._args.file)
 
         main_window.show()
         app.exec_()

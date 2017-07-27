@@ -42,8 +42,8 @@ class Video(QtWidgets.QFrame):
 
         # TODO: buttons for play/pause like aegisub
 
-        api.grid_selection_changed.connect(self._grid_selection_changed)
-        api.subtitles.item_changed.connect(self._refresh_subs)
+        api.subs.selection_changed.connect(self._grid_selection_changed)
+        api.subs.lines.item_changed.connect(self._refresh_subs)
         api.video.loaded.connect(self._reload_video)
         api.video.pause_requested.connect(self._pause)
         api.video.playback_requested.connect(self._play)
@@ -68,7 +68,7 @@ class Video(QtWidgets.QFrame):
         self._mpv.seek(bubblesub.util.ms_to_str(pts), 'absolute+exact')
 
     def _reload_video(self, *args, **kwargs):
-        self._api.save_ass(self._subs_path)
+        self._api.subs.save_ass(self._subs_path)
         if not self._api.video.path or not self._api.video.path.exists():
             self._mpv.loadfile('')
             self._ready = False
@@ -83,7 +83,7 @@ class Video(QtWidgets.QFrame):
     def _refresh_subs(self, *args, **kwargs):
         if not self._ready:
             return
-        self._api.save_ass(self._subs_path)
+        self._api.subs.save_ass(self._subs_path)
         if self._mpv.sub:
             self._mpv.sub_reload()
 
@@ -96,7 +96,7 @@ class Video(QtWidgets.QFrame):
     def _grid_selection_changed(self, rows):
         if len(rows) == 1:
             self._api.video.pause()
-            self._api.video.seek(self._api.subtitles[rows[0]].start)
+            self._api.video.seek(self._api.subs.lines[rows[0]].start)
 
     def _align_pts_to_next_frame(self, pts):
         if self._api.video.timecodes:

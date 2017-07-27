@@ -34,7 +34,7 @@ class Editor(QtWidgets.QWidget):
         super().__init__(parent)
         self.setEnabled(False)
 
-        api.grid_selection_changed.connect(self._grid_selection_changed)
+        api.subs.selection_changed.connect(self._grid_selection_changed)
 
         self._index = None
         self._api = api
@@ -92,7 +92,7 @@ class Editor(QtWidgets.QWidget):
 
     def _fetch_selection(self, index):
         self._index = index
-        subtitle = self._api.subtitles[index]
+        subtitle = self._api.subs.lines[index]
         self.start_time_edit.setText(bubblesub.util.ms_to_str(subtitle.start))
         self.end_time_edit.setText(bubblesub.util.ms_to_str(subtitle.end))
         self.duration_edit.setText(bubblesub.util.ms_to_str(subtitle.duration))
@@ -110,7 +110,7 @@ class Editor(QtWidgets.QWidget):
         new_actor = self.actor_edit.text()
         new_text = self.text_edit.toPlainText()
 
-        subtitle = self._api.subtitles[self._index]
+        subtitle = self._api.subs.lines[self._index]
         subtitle.begin_update()
         subtitle.start = bubblesub.util.str_to_ms(self.start_time_edit.text())
         subtitle.end = bubblesub.util.str_to_ms(self.end_time_edit.text())

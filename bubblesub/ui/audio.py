@@ -25,9 +25,9 @@ class BaseAudioWidget(QtWidgets.QWidget):
 
         api.audio.selection_changed.connect(upd)
         api.audio.view_changed.connect(upd)
-        api.subtitles.items_inserted.connect(upd)
-        api.subtitles.items_removed.connect(upd)
-        api.subtitles.item_changed.connect(upd)
+        api.subs.lines.items_inserted.connect(upd)
+        api.subs.lines.items_removed.connect(upd)
+        api.subs.lines.item_changed.connect(upd)
 
     def wheelEvent(self, event):
         if event.modifiers() & QtCore.Qt.ControlModifier:
@@ -211,7 +211,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         w, h = self.width(), self.height()
         painter.setPen(
             QtGui.QPen(self.palette().highlight(), 1, QtCore.Qt.SolidLine))
-        for i, line in enumerate(self._api.subtitles):
+        for i, line in enumerate(self._api.subs.lines):
             painter.setBrush(QtGui.QBrush(
                 self.palette().highlight().color(),
                 QtCore.Qt.FDiagPattern if i & 1 else QtCore.Qt.BDiagPattern))
@@ -317,11 +317,11 @@ class Audio(QtWidgets.QWidget):
         vbox.addWidget(self._slider)
         self.setLayout(vbox)
 
-        api.grid_selection_changed.connect(self._grid_selection_changed)
+        api.subs.selection_changed.connect(self._grid_selection_changed)
 
     def _grid_selection_changed(self, rows):
         if len(rows) == 1:
-            sub = self._api.subtitles[rows[0]]
+            sub = self._api.subs.lines[rows[0]]
             self._api.audio.view(sub.start - 10000, sub.end + 10000)
             self._api.audio.select(sub.start, sub.end)
         else:

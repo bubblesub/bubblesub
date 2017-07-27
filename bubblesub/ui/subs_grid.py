@@ -78,14 +78,14 @@ class SubsGrid(QtWidgets.QTableView):
     def __init__(self, api):
         super().__init__()
         self._api = api
-        self.setModel(SubsGridModel(api.subtitles))
+        self.setModel(SubsGridModel(api.subs.lines))
         self.horizontalHeader().setSectionResizeMode(
             4, QtWidgets.QHeaderView.Stretch)
         self.verticalHeader().setDefaultSectionSize(24)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
 
-        api.grid_selection_changed.connect(self._api_selection_changed)
+        api.subs.selection_changed.connect(self._api_selection_changed)
         self.selectionModel().selectionChanged.connect(
             self._widget_selection_changed)
 
@@ -96,15 +96,15 @@ class SubsGrid(QtWidgets.QTableView):
         return list(rows)
 
     def _widget_selection_changed(self, selected, deselected):
-        if self._collect_rows() != self._api.selected_lines:
-            self._api.selected_lines = self._collect_rows()
+        if self._collect_rows() != self._api.subs.selected_lines:
+            self._api.subs.selected_lines = self._collect_rows()
 
     def _api_selection_changed(self):
-        if self._collect_rows() == self._api.selected_lines:
+        if self._collect_rows() == self._api.subs.selected_lines:
             return
 
         selection = QtCore.QItemSelection()
-        for row in self._api.selected_lines:
+        for row in self._api.subs.selected_lines:
             idx = self.model().index(row, 0)
             selection.select(idx, idx)
 
@@ -114,5 +114,5 @@ class SubsGrid(QtWidgets.QTableView):
             QtCore.QItemSelectionModel.Rows |
             QtCore.QItemSelectionModel.Select)
 
-        if self._api.selected_lines:
-            self.scrollTo(self.model().index(self._api.selected_lines[0], 0))
+        if self._api.subs.selected_lines:
+            self.scrollTo(self.model().index(self._api.subs.selected_lines[0], 0))

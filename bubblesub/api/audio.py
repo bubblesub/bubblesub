@@ -5,7 +5,7 @@ class AudioApi(QtCore.QObject):
     view_changed = QtCore.pyqtSignal([])
     selection_changed = QtCore.pyqtSignal([])
 
-    def __init__(self, api):
+    def __init__(self):
         super().__init__()
         self._min = 0
         self._max = 0
@@ -13,7 +13,6 @@ class AudioApi(QtCore.QObject):
         self._view_end = 0
         self._selection_start = None
         self._selection_size = None
-        self._api = api
 
     @property
     def min(self):
