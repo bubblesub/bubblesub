@@ -24,13 +24,13 @@ def _ask_about_unsaved_changes(api):
 
 
 @command('file/save')
-def cmd_save(api):
+def cmd_file_save(api):
     api.subs.save_ass(api.subs.path)
     # TODO: log in console
 
 
 @command('file/quit')
-def cmd_quit(api):
+def cmd_file_quit(api):
     api.gui.quit()
 
 
@@ -109,7 +109,7 @@ def cmd_edit_delete(api):
 
 
 @command('edit/glue-sel-start')
-def cmd_glue_sel_start(api):
+def cmd_edit_glue_sel_start(api):
     if api.audio.has_selection \
             and api.subs.selected_lines and api.subs.selected_lines[0] > 0:
         api.audio.select(
@@ -118,7 +118,7 @@ def cmd_glue_sel_start(api):
 
 
 @command('edit/glue-sel-end')
-def cmd_glue_sel_start(api):
+def cmd_edit_glue_sel_start(api):
     if api.audio.has_selection and \
             api.subs.selected_lines and \
             api.subs.selected_lines[-1] + 1 < len(api.subs.lines):
@@ -174,7 +174,7 @@ def cmd_edit_move_subs_with_gui(api):
 
 
 @command('edit/move-sel-start')
-def cmd_move_sel_start(api, ms):
+def cmd_edit_move_sel_start(api, ms):
     if api.audio.has_selection:
         api.audio.select(
             min(api.audio.selection_end, api.audio.selection_start + ms),
@@ -182,7 +182,7 @@ def cmd_move_sel_start(api, ms):
 
 
 @command('edit/move-sel-end')
-def cmd_move_sel_end(api, ms):
+def cmd_edit_move_sel_end(api, ms):
     if api.audio.has_selection:
         api.audio.select(
             api.audio.selection_start,
