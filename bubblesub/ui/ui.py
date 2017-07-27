@@ -2,7 +2,6 @@ import sys
 import time
 import traceback
 import io
-import bubblesub.api
 import bubblesub.ui.main_window
 import bubblesub.ui.util
 from PyQt5 import QtWidgets
@@ -33,18 +32,17 @@ sys.excepthook = excepthook
 
 
 class Ui:
-    def __init__(self, config_location, args):
-        self._config_location = config_location
+    def __init__(self, opt, api, args):
+        self._opt = opt
+        self._api = api
         self._args = args
 
     def run(self):
-        api = bubblesub.api.Api()
-
         app = QtWidgets.QApplication(sys.argv)
-        main_window = bubblesub.ui.main_window.MainWindow(api)
+        main_window = bubblesub.ui.main_window.MainWindow(self._opt, self._api)
 
         if self._args.file:
-            api.load_ass(self._args.file)
+            self._api.load_ass(self._args.file)
 
         main_window.show()
         app.exec_()

@@ -2,6 +2,8 @@
 import sys
 import argparse
 from pathlib import Path
+import bubblesub.api
+import bubblesub.opt
 import bubblesub.ui
 
 
@@ -11,17 +13,17 @@ def parse_args():
     return parser.parse_args()
 
 
-def get_config_location():
-    return Path('~/.config/bubblesub').expanduser()
-
-
 def main():
     args = parse_args()
 
-    config_location = get_config_location()
-    config_location.mkdir(parents=True, exist_ok=True)
-    ui = bubblesub.ui.Ui(config_location, args)
+    cfg_path = Path('~/.config/bubblesub').expanduser()
+
+    api = bubblesub.api.Api()
+    opt = bubblesub.opt.Options()
+    opt.load(cfg_path)
+    ui = bubblesub.ui.Ui(opt, api, args)
     ui.run()
+    opt.save(cfg_path)
 
 
 if __name__ == '__main__':
