@@ -37,7 +37,7 @@ class Options:
                 ('Ctrl+S', 'file/save'),
                 ('Ctrl+Shift+S', 'file/save-as'),  # TODO
                 ('Ctrl+Q', 'file/quit'),
-                ('Ctrl+G', 'grid/select-line'),  # TODO
+                ('Ctrl+G', 'grid/jump-to-line'),
                 ('Ctrl+Shift+G', 'grid/select-time'),  # TODO
                 ('Ctrl+K', 'grid/select-prev-subtitle'),
                 ('Ctrl+J', 'grid/select-next-subtitle'),
@@ -86,7 +86,7 @@ class Options:
             ],
 
             '&Playback': [
-                # ('Jump to line', 'grid/select-line'),  # TODO
+                ('Jump to line', 'grid/jump-to-line'),
                 # ('Jump to time', 'grid/select-time'),  # TODO
                 ('Select previous subtitle', 'grid/select-prev-subtitle'),
                 ('Select next subtitle', 'grid/select-next-subtitle'),

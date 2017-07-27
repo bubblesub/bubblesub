@@ -146,17 +146,16 @@ def cmd_edit_move_subs_with_gui(api):
                 self, allow_negative=True)
 
             label = QtWidgets.QLabel('Time to add:')
-
             strip = QtWidgets.QDialogButtonBox(self)
             strip.addButton(strip.Ok)
             strip.addButton(strip.Cancel)
             strip.accepted.connect(self.accept)
             strip.rejected.connect(self.reject)
 
-            layout = QtWidgets.QGridLayout()
-            layout.addWidget(label, 0, 0)
-            layout.addWidget(self.time_widget, 0, 1, 1, 2)
-            layout.addWidget(strip, 1, 0, 1, 3)
+            layout = QtWidgets.QVBoxLayout()
+            layout.addWidget(label)
+            layout.addWidget(self.time_widget)
+            layout.addWidget(strip)
             self.setLayout(layout)
 
         def ok_clicked(self):
@@ -202,6 +201,19 @@ def cmd_edit_commit_selection(api):
         subtitle.start = api.audio.selection_start
         subtitle.end = api.audio.selection_end
         subtitle.end_update()
+
+
+@command('grid/jump-to-line')
+def cmd_grid_jump_to_line(api):
+    if not api.subs.lines:
+        return
+    dialog = QtWidgets.QInputDialog(api.gui.main_window)
+    dialog.setLabelText('Line number to jump to:')
+    dialog.setIntMinimum(1)
+    dialog.setIntMaximum(len(api.subs.lines))
+    dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+    if dialog.exec_():
+        api.subs.selected_lines = [dialog.intValue() - 1]
 
 
 @command('grid/select-prev-subtitle')
