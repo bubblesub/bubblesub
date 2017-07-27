@@ -45,6 +45,7 @@ class TimeEdit(QtWidgets.QLineEdit):
             self.setText('+0:00:00.000')
         else:
             self.setText('0:00:00.000')
+        self.setCursorPosition(0)
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)
