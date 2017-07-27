@@ -1,4 +1,5 @@
 import enum
+import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -121,6 +122,14 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._need_repaint = False
         self._drag_mode = DragMode.Off
 
+        self._color_table = []
+        for i in range(256):
+            self._color_table.append(
+                blend_colors(
+                    self.palette().window().color(),
+                    self.palette().text().color(),
+                    i / 255))
+
         timer = QtCore.QTimer(self)
         timer.setInterval(100)
         timer.timeout.connect(self._repaint_if_needed)
@@ -184,15 +193,10 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._need_repaint = True
 
     def _draw_spectrogram(self, painter, event):
-        painter.scale(1, self.height() / (1 << DERIVATION_SIZE))
+        width = self.width()
+        height = (1 << DERIVATION_SIZE) + 1
 
-        color_table = []
-        for i in range(256):
-            color_table.append(
-                blend_colors(
-                    self.palette().window().color(),
-                    self.palette().text().color(),
-                    i / 255))
+        pixels = np.zeros([width, height], dtype='byte')
 
         # since the task queue is a LIFO queue, in order to render the columns
         # left-to-right, they need to be iterated backwards (hence reversed()).
@@ -206,15 +210,18 @@ class AudioPreviewWidget(BaseAudioWidget):
                 continue
             if column is CACHING:
                 continue
+            pixels[x] = column
 
-            image = QtGui.QImage(
-                column.data,
-                1,
-                column.shape[0],
-                column.strides[0],
-                QtGui.QImage.Format_Indexed8)
-            image.setColorTable(color_table)
-            painter.drawPixmap(x, 0, QtGui.QPixmap.fromImage(image))
+        pixels = pixels.transpose().copy()
+        image = QtGui.QImage(
+            pixels.data,
+            pixels.shape[1],
+            pixels.shape[0],
+            pixels.strides[0],
+            QtGui.QImage.Format_Indexed8)
+        image.setColorTable(self._color_table)
+        painter.scale(1, self.height() / (height - 1))
+        painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
 
     def _draw_subtitle_rects(self, painter):
         w, h = self.width(), self.height()
