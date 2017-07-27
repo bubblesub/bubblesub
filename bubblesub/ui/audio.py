@@ -7,7 +7,6 @@ from bubblesub.ui.util import blend_colors
 from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
 
 
-# TODO: draw position of video frame
 HORIZONTAL_RES = 10
 NOT_CACHED = object()
 CACHING = object()
@@ -132,10 +131,11 @@ class AudioPreviewWidget(BaseAudioWidget):
                     i / 255))
 
         timer = QtCore.QTimer(self)
-        timer.setInterval(100)
+        timer.setInterval(50)
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
+        api.video.pos_changed.connect(self._video_pos_changed)
         api.video.loaded.connect(self._video_loaded)
 
     def paintEvent(self, event):
@@ -149,6 +149,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._draw_subtitle_rects(painter)
         self._draw_selection(painter)
         self._draw_frame(painter)
+        self._draw_video_pos(painter)
         painter.end()
 
         self._need_repaint = False
@@ -193,6 +194,9 @@ class AudioPreviewWidget(BaseAudioWidget):
     def _video_loaded(self):
         self._spectrum_cache.clear()
         self.update()
+
+    def _video_pos_changed(self):
+        self._need_repaint = True
 
     def _spectrum_updated(self, result):
         pts, column = result
@@ -262,6 +266,19 @@ class AudioPreviewWidget(BaseAudioWidget):
             QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
         painter.setBrush(QtCore.Qt.NoBrush)
         painter.drawRect(0, 0, self.width() - 1, self.height() - 1)
+
+    def _draw_video_pos(self, painter):
+        if not self._api.video.current_pts:
+            return
+        base_x = self._pts_to_x(self._api.video.current_pts)
+        width = 4
+        for dist in range(width):
+            x = base_x + 1 - dist
+            painter.setPen(
+                QtGui.QPen(
+                    QtGui.QColor(0, 160, 0, 255 - dist * 255 / width),
+                    1, QtCore.Qt.SolidLine))
+            painter.drawLine(x, 0, x, self.height() - 1)
 
     def _pts_to_x(self, pts):
         scale = self.width() / max(1, self._api.audio.view_size)

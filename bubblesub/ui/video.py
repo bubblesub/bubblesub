@@ -38,7 +38,10 @@ class Video(QtWidgets.QFrame):
         def pause_handler(*args):
             self._api.video.is_paused = True
 
-        # TODO: handle tick, update api.video.current_pts
+        def time_pos_handler(prop_name, time_pos):
+            self._api.video.current_pts = time_pos * 1000
+
+        self._mpv.observe_property('time-pos', time_pos_handler)
 
         # TODO: buttons for play/pause like aegisub
 
