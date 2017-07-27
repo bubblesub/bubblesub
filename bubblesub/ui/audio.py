@@ -17,6 +17,7 @@ class DragMode(enum.Enum):
     Off = 0
     SelectionStart = 1
     SelectionEnd = 2
+    VideoPosition = 3
 
 
 class BaseAudioWidget(QtWidgets.QWidget):
@@ -161,6 +162,10 @@ class AudioPreviewWidget(BaseAudioWidget):
             self._drag_mode = DragMode.SelectionEnd
             self.setCursor(QtCore.Qt.SizeHorCursor)
             self.mouseMoveEvent(event)
+        elif event.button() == QtCore.Qt.MiddleButton:
+            self._drag_mode = DragMode.VideoPosition
+            self.setCursor(QtCore.Qt.SizeHorCursor)
+            self.mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
         self._drag_mode = DragMode.Off
@@ -178,6 +183,8 @@ class AudioPreviewWidget(BaseAudioWidget):
                 self._api.audio.select(
                     self._api.audio.selection_start,
                     max(self._api.audio.selection_start, pts))
+        elif self._drag_mode == DragMode.VideoPosition:
+            self._api.video.seek(pts)
 
     def _repaint_if_needed(self):
         if self._need_repaint:
