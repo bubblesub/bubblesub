@@ -110,7 +110,7 @@ class Options:
                 None,
                 ('Glue selection start to previous subtitle', 'edit/glue-sel-start'),
                 ('Glue selection end to next subtitle', 'edit/glue-sel-end'),
-                # ('Shift selected subtitles', 'edit/shift-times'),  # TODO
+                ('Shift selected subtitles', 'edit/move-subs-with-gui'),
                 ('Shift selection start (-250 ms)', 'edit/move-sel-start', -250),
                 ('Shift selection start (+250 ms)', 'edit/move-sel-start', 250),
                 ('Shift selection end (-250 ms)', 'edit/move-sel-end', -250),

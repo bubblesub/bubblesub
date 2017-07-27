@@ -26,18 +26,22 @@ def ms_to_str(ms):
 
 def str_to_ms(text):
     result = re.match('''
-        ^(?:(?P<hour>\\d+):)?
+        ^(?P<sign>[+-])?
+        (?:(?P<hour>\\d+):)?
         (?P<minute>\\d\\d):
         (?P<second>\\d\\d)\\.
         (?P<millisecond>\\d\\d\\d)$''', text.strip(), re.VERBOSE)
 
     if result:
+        sign = result.group('sign')
         hour = int(result.group('hour'))
         minute = int(result.group('minute'))
         second = int(result.group('second'))
         millisecond = int(result.group('millisecond'))
-        return pysubs2.time.make_time(
-            h=hour, m=minute, s=second, ms=millisecond)
+        ret = (((hour * 60) + minute * 60) + second) * 1000 + millisecond
+        if sign == '-':
+            ret = -ret
+        return ret
     raise ValueError('Invalid time')
 
 

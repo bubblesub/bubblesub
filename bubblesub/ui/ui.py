@@ -40,6 +40,7 @@ class Ui:
     def run(self):
         app = QtWidgets.QApplication(sys.argv)
         main_window = bubblesub.ui.main_window.MainWindow(self._opt, self._api)
+        self._api.gui.main_window = main_window
 
         if self._args.file:
             self._api.subs.load_ass(self._args.file)

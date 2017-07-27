@@ -3,31 +3,6 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
-class TimeEdit(QtWidgets.QLineEdit):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.resetText()
-        self.setInputMask('9:99:99.999')
-
-    def resetText(self):
-        self.setText('0:00:00.000')
-
-    def keyPressEvent(self, event):
-        super().keyPressEvent(event)
-
-        delta = 10
-        if event.key() == QtCore.Qt.Key_Up:
-            self.setText(
-                bubblesub.util.ms_to_str(
-                    bubblesub.util.str_to_ms(self.text()) + delta))
-            self.textEdited.emit(self.text())
-        elif event.key() == QtCore.Qt.Key_Down:
-            self.setText(
-                bubblesub.util.ms_to_str(
-                    bubblesub.util.str_to_ms(self.text()) - delta))
-            self.textEdited.emit(self.text())
-
-
 class Editor(QtWidgets.QWidget):
     # TODO: allow editing layer, margins and comment
     def __init__(self, api, parent=None):
@@ -40,9 +15,9 @@ class Editor(QtWidgets.QWidget):
         self._api = api
         self.setLayout(QtWidgets.QVBoxLayout())
 
-        self.start_time_edit = TimeEdit(self)
-        self.end_time_edit = TimeEdit(self)
-        self.duration_edit = TimeEdit(self)
+        self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
+        self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
+        self.duration_edit = bubblesub.ui.util.TimeEdit(self)
         self.actor_edit = QtWidgets.QLineEdit(self)
         self.style_edit = QtWidgets.QLineEdit(self)
         self.text_edit = QtWidgets.QPlainTextEdit(self)

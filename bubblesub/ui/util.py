@@ -1,4 +1,6 @@
+import bubblesub.util
 from PyQt5 import QtGui
+from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
@@ -23,3 +25,43 @@ def blend_colors(color1, color2, ratio):
     g = color1.green() * (1 - ratio) + color2.green() * ratio
     b = color1.blue() * (1 - ratio) + color2.blue() * ratio
     return QtGui.qRgb(r, g, b)
+
+
+class TimeEdit(QtWidgets.QLineEdit):
+    def __init__(self, parent=None, allow_negative=False):
+        super().__init__(parent)
+        self._allow_negative = allow_negative
+        if allow_negative:
+            self.setInputMask('X9:99:99.999')
+            self.setValidator(
+                QtGui.QRegExpValidator(
+                    QtCore.QRegExp(r'[+-]\d:\d\d:\d\d\.\d\d\d'), parent))
+        else:
+            self.setInputMask('9:99:99.999')
+        self.resetText()
+
+    def resetText(self):
+        if self._allow_negative:
+            self.setText('+0:00:00.000')
+        else:
+            self.setText('0:00:00.000')
+
+    def keyPressEvent(self, event):
+        super().keyPressEvent(event)
+
+        if not event.key() in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Down):
+            return
+
+        text = self.text()
+        delta = 10
+        if event.key() == QtCore.Qt.Key_Up:
+            time = bubblesub.util.str_to_ms(text) + delta
+        elif event.key() == QtCore.Qt.Key_Down:
+            time = bubblesub.util.str_to_ms(text) - delta
+
+        text = bubblesub.util.ms_to_str(time)
+        if self._allow_negative and time >= 0:
+            text = '+' + text
+
+        self.setText(text)
+        self.textEdited.emit(self.text())

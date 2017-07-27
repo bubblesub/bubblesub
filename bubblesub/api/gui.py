@@ -6,6 +6,10 @@ class GuiApi(QtCore.QObject):
     begin_update_requested = QtCore.pyqtSignal([])
     end_update_requested = QtCore.pyqtSignal([])
 
+    def __init__(self):
+        super().__init__()
+        self.main_window = None
+
     def quit(self):
         self.quit_requested.emit()
 

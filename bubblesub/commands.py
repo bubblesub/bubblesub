@@ -1,4 +1,6 @@
 import bubblesub.ui.util
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
 
 DEFAULT_SUB_DURATION = 2000  # TODO: move this to config
@@ -123,6 +125,52 @@ def cmd_glue_sel_start(api):
         api.audio.select(
             api.audio.selection_start,
             api.subs.lines[api.subs.selected_lines[-1] + 1].start)
+
+
+@command('edit/move-subs-with-gui')
+def cmd_edit_move_subs_with_gui(api):
+    if not api.subs.selected_lines:
+        return
+
+    class ShiftTimesDialog(QtWidgets.QDialog):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+
+            self.time_widget = bubblesub.ui.util.TimeEdit(
+                self, allow_negative=True)
+
+            label = QtWidgets.QLabel('Time to add:')
+
+            strip = QtWidgets.QDialogButtonBox(self)
+            strip.addButton(strip.Ok)
+            strip.addButton(strip.Cancel)
+            strip.accepted.connect(self.accept)
+            strip.rejected.connect(self.reject)
+
+
+            layout = QtWidgets.QGridLayout()
+            layout.addWidget(label, 0, 0)
+            layout.addWidget(self.time_widget, 0, 1, 1, 2)
+            layout.addWidget(strip, 1, 0, 1, 3)
+            self.setLayout(layout)
+
+        def ok_clicked(self):
+            self.close()
+
+        def cancel_clicked(self):
+            self.close()
+
+        def result(self):
+            return bubblesub.util.str_to_ms(self.time_widget.text())
+
+    dialog = ShiftTimesDialog()
+    if dialog.exec_():
+        delta = dialog.result()
+        for i in api.subs.selected_lines:
+            api.subs.lines[i].begin_update()
+            api.subs.lines[i].start += delta
+            api.subs.lines[i].end += delta
+            api.subs.lines[i].end_update()
 
 
 @command('edit/move-sel-start')
