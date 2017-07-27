@@ -216,6 +216,55 @@ def cmd_grid_jump_to_line(api):
         api.subs.selected_lines = [dialog.intValue() - 1]
 
 
+@command('grid/jump-to-time')
+def cmd_grid_jump_to_time(api):
+    if not api.subs.lines:
+        return
+
+    class JumpToTimeDialog(QtWidgets.QDialog):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+
+            self.time_widget = bubblesub.ui.util.TimeEdit(
+                self, allow_negative=False)
+
+            label = QtWidgets.QLabel('Time to jump to:')
+            strip = QtWidgets.QDialogButtonBox(self)
+            strip.addButton(strip.Ok)
+            strip.addButton(strip.Cancel)
+            strip.accepted.connect(self.accept)
+            strip.rejected.connect(self.reject)
+
+            layout = QtWidgets.QVBoxLayout()
+            layout.addWidget(label)
+            layout.addWidget(self.time_widget)
+            layout.addWidget(strip)
+            self.setLayout(layout)
+
+        def ok_clicked(self):
+            self.close()
+
+        def cancel_clicked(self):
+            self.close()
+
+        def result(self):
+            return bubblesub.util.str_to_ms(self.time_widget.text())
+
+    dialog = JumpToTimeDialog()
+    if dialog.exec_():
+        target_pts = dialog.result()
+        best_distance = None
+        best_idx = None
+        for i, sub in enumerate(api.subs.lines):
+            center = (sub.start + sub.end) / 2
+            distance = abs(target_pts - center)
+            if best_distance is None or distance < best_distance:
+                best_distance = distance
+                best_idx = i
+        if best_idx is not None:
+            api.subs.selected_lines = [best_idx]
+
+
 @command('grid/select-prev-subtitle')
 def cmd_grid_select_prev_sub(api):
     if not api.subs.selected_lines:
