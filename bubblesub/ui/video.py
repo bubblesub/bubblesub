@@ -24,7 +24,7 @@ class Video(QtWidgets.QFrame):
             # input_cursor=True,
             # input_vo_keyboard=True,
             # input_default_bindings=True,
-            keep_open=True,  # end stops the playback, whereas we want it to pause
+            keep_open=True,  # without this reaching mpv['end'] borks playback
             wid=str(int(self.winId())),
             log_handler=mpv_log_handler)
         self._mpv.pause = True

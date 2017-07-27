@@ -1,5 +1,4 @@
 import bubblesub.ui.util
-from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 
@@ -94,7 +93,8 @@ def cmd_edit_duplicate(api):
             actor=sub.actor,
             style=sub.style,
             text=sub.text)
-        new_selection.append(idx + len(api.subs.selected_lines) - len(new_selection))
+        new_selection.append(
+            idx + len(api.subs.selected_lines) - len(new_selection))
     api.subs.selected_lines = new_selection
     api.gui.end_update()
 
@@ -118,7 +118,7 @@ def cmd_edit_glue_sel_start(api):
 
 
 @command('edit/glue-sel-end')
-def cmd_edit_glue_sel_start(api):
+def cmd_edit_glue_sel_end(api):
     if api.audio.has_selection and \
             api.subs.selected_lines and \
             api.subs.selected_lines[-1] + 1 < len(api.subs.lines):
@@ -146,7 +146,6 @@ def cmd_edit_move_subs_with_gui(api):
             strip.addButton(strip.Cancel)
             strip.accepted.connect(self.accept)
             strip.rejected.connect(self.reject)
-
 
             layout = QtWidgets.QGridLayout()
             layout.addWidget(label, 0, 0)
@@ -238,7 +237,7 @@ def cmd_video_play_current_line(api):
 
 
 @command('video/play-around-sel')
-def cmd_video_play_around_sel_start(api, delta_start, delta_end):
+def cmd_video_play_around_sel(api, delta_start, delta_end):
     if api.audio.has_selection:
         api.video.play(
             api.audio.selection_start + delta_start,

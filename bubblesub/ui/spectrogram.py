@@ -54,11 +54,11 @@ class SpectrumProviderContext(bubblesub.util.ProviderContext):
     def _load_audio(self):
         path = self._api.video.path
         if path and path.exists():
-            self._api.gui.log('audio: loading... ({})'.format(path))
+            self._api.log.info('audio: loading... ({})'.format(path))
             self._audio_source = ffms.AudioSource(str(path))
-            self._api.gui.log('audio: loaded')
+            self._api.log.info('audio: loaded')
         else:
-            self._api.gui.log('audio: not found ({})'.format(path))
+            self._api.log.info('audio: not found ({})'.format(path))
             self._audio_source = None
         self._audio_path = self._api.video.path
 

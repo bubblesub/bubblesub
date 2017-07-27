@@ -5,7 +5,7 @@ class AudioApi(QtCore.QObject):
     view_changed = QtCore.pyqtSignal([])
     selection_changed = QtCore.pyqtSignal([])
 
-    def __init__(self):
+    def __init__(self, video_api):
         super().__init__()
         self._min = 0
         self._max = 0
@@ -13,6 +13,9 @@ class AudioApi(QtCore.QObject):
         self._view_end = 0
         self._selection_start = None
         self._selection_size = None
+
+        self._video_api = video_api
+        self._video_api.timecodes_updated.connect(self._timecodes_updated)
 
     @property
     def min(self):
@@ -95,6 +98,12 @@ class AudioApi(QtCore.QObject):
         self._min = 0
         self._max = max_pts
         self.zoom_view(1)  # emits selection changed
+
+    def _timecodes_updated(self):
+        if self._video_api.timecodes:
+            self._set_max_pts(self._video_api.timecodes[-1])
+        else:
+            self._set_max_pts(0)
 
     def _clip(self, value):
         return max(min(self._max, value), self._min)

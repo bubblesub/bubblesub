@@ -1,4 +1,3 @@
-import queue
 import ffms
 import bubblesub.util
 from PyQt5 import QtCore
@@ -10,14 +9,14 @@ class TimecodesProviderContext(bubblesub.util.ProviderContext):
         self._log_api = log_api
 
     def work(self, path):
-        self._log_api.log('timecodes: loading... ({})'.format(path))
+        self._log_api.info('timecodes: loading... ({})'.format(path))
         cache_key = str(path)
         timecodes = bubblesub.util.load_cache('index', cache_key)
         if not timecodes:
             video = ffms.VideoSource(str(path))
             timecodes = video.track.timecodes
             bubblesub.util.save_cache('index', cache_key, timecodes)
-        self._log_api.log('timecodes: loaded')
+        self._log_api.info('timecodes: loaded')
         return path, timecodes
 
 
@@ -27,14 +26,14 @@ class TimecodesProvider(bubblesub.util.Provider):
 
 
 class VideoApi(QtCore.QObject):
-    loaded = QtCore.pyqtSignal([])
-    seek_requested = QtCore.pyqtSignal([int])
+    loaded = QtCore.pyqtSignal()
+    seek_requested = QtCore.pyqtSignal(int)
     playback_requested = QtCore.pyqtSignal([object, object])
-    pause_requested = QtCore.pyqtSignal([])
+    pause_requested = QtCore.pyqtSignal()
+    timecodes_updated = QtCore.pyqtSignal()
 
-    def __init__(self, log_api, audio_api):
+    def __init__(self, log_api):
         super().__init__()
-        self._audio_api = audio_api
         self._timecodes = []
         self._path = None
         self._is_paused = False
@@ -82,12 +81,12 @@ class VideoApi(QtCore.QObject):
     def load(self, video_path):
         self._path = video_path
         self._timecodes = []
+        self.timecodes_updated.emit()
         self._timecodes_provider.schedule(video_path)
-        self._audio_api._set_max_pts(0)
         self.loaded.emit()
 
     def _got_timecodes(self, result):
         video_path, timecodes = result
         if video_path == self.path:
             self._timecodes = timecodes
-            self._audio_api._set_max_pts(timecodes[-1])
+            self.timecodes_updated.emit()

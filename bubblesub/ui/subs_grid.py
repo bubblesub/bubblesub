@@ -115,4 +115,5 @@ class SubsGrid(QtWidgets.QTableView):
             QtCore.QItemSelectionModel.Select)
 
         if self._api.subs.selected_lines:
-            self.scrollTo(self.model().index(self._api.subs.selected_lines[0], 0))
+            self.scrollTo(
+                self.model().index(self._api.subs.selected_lines[0], 0))

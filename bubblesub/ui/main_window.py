@@ -75,7 +75,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not callback:
             bubblesub.ui.util.error('Invalid command name:\n' + cmd_name)
             return
-        with bubblesub.util.Benchmark('Executing command {}'.format(cmd_name)) as b:
+        with bubblesub.util.Benchmark('Executing command {}'.format(cmd_name)):
             callback(self._api, *args)
 
     def _setup_menu(self, opt):

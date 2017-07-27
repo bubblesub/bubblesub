@@ -1,11 +1,10 @@
 import re
-import threading
 import sys
 import time
 import json
 import queue
-from PyQt5 import QtCore
 from pathlib import Path
+from PyQt5 import QtCore
 import pysubs2.time
 
 

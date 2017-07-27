@@ -75,7 +75,7 @@ class SubtitlesApi(QtCore.QObject):
 
         self.selected_lines = []
 
-        with bubblesub.util.Benchmark('loading subs') as b:
+        with bubblesub.util.Benchmark('loading subs'):
             self.lines.remove(0, len(self.lines))
             self.lines.insert(
                 0,
@@ -92,7 +92,8 @@ class SubtitlesApi(QtCore.QObject):
                 ])
 
         self._loaded_video_path = None
-        if self._ass_source and 'Video File' in self._ass_source.aegisub_project:
+        if self._ass_source and 'Video File' \
+                in self._ass_source.aegisub_project:
             self._loaded_video_path = (
                 self._path.parent /
                 self._ass_source.aegisub_project['Video File'])
@@ -112,7 +113,7 @@ class SubtitlesApi(QtCore.QObject):
                 name=subtitle.actor,
                 text=subtitle.text))
         if self._video_api.path != self._loaded_video_path:
-            self._ass_source.aegisub_project['Video File'] = \
-            self._ass_source.aegisub_project['Audio File'] = \
-                str(self._video_api.path)
+            path = str(self._video_api.path)
+            self._ass_source.aegisub_project['Video File'] = path
+            self._ass_source.aegisub_project['Audio File'] = path
         self._ass_source.save(path)
