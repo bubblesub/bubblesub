@@ -1,4 +1,5 @@
 import bubblesub.util
+from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
@@ -21,6 +22,15 @@ class Editor(QtWidgets.QWidget):
         self.style_edit = QtWidgets.QLineEdit(self)
         self.text_edit = QtWidgets.QPlainTextEdit(self)
         self.text_edit.setTabChangesFocus(True)
+
+        self.actor_edit.setCompleter(QtWidgets.QCompleter())
+        self.actor_edit.completer().setModel(QtCore.QStringListModel())
+        self.actor_edit.completer().setCaseSensitivity(
+            QtCore.Qt.CaseInsensitive)
+        self.style_edit.setCompleter(QtWidgets.QCompleter())
+        self.style_edit.completer().setModel(QtCore.QStringListModel())
+        self.style_edit.completer().setCaseSensitivity(
+            QtCore.Qt.CaseInsensitive)
 
         def end_edited(*args):
             start = bubblesub.util.str_to_ms(self.start_time_edit.text())
@@ -73,6 +83,12 @@ class Editor(QtWidgets.QWidget):
         self.style_edit.setText(subtitle.style)
         self.actor_edit.setText(subtitle.actor)
 
+        self.actor_edit.completer().model().setStringList(
+            sorted(list(set(sub.actor for sub in self._api.subs.lines))))
+
+        self.style_edit.completer().model().setStringList(
+            sorted(list(set(sub.style for sub in self._api.subs.lines))))
+
         text = subtitle.text
         if self._api.opt.general['convert_newlines']:
             text = text.replace('\\N', '\n')
@@ -86,15 +102,15 @@ class Editor(QtWidgets.QWidget):
         new_end = bubblesub.util.str_to_ms(self.end_time_edit.text())
         new_style = self.style_edit.text()
         new_actor = self.actor_edit.text()
-        new_text = self.text_edit.toPlainText()
+        new_text = self.text_edit.toPlainText().replace('\n', '\\N')
 
         subtitle = self._api.subs.lines[self._index]
         subtitle.begin_update()
-        subtitle.start = bubblesub.util.str_to_ms(self.start_time_edit.text())
-        subtitle.end = bubblesub.util.str_to_ms(self.end_time_edit.text())
-        subtitle.style = self.style_edit.text()
-        subtitle.actor = self.actor_edit.text()
-        subtitle.text = self.text_edit.toPlainText().replace('\n', '\\N')
+        subtitle.start = new_start
+        subtitle.end = new_end
+        subtitle.style = new_style
+        subtitle.actor = new_actor
+        subtitle.text = new_text
         subtitle.end_update()
 
     def _grid_selection_changed(self, rows):
