@@ -1,6 +1,9 @@
 import re
+import threading
+import sys
 import time
 import json
+import queue
 from PyQt5 import QtCore
 from pathlib import Path
 import pysubs2.time
@@ -146,3 +149,60 @@ class ListModel(QtCore.QObject):
     def remove(self, idx, count):
         self._data = self._data[:idx] + self._data[idx + count:]
         self.items_removed.emit(idx, count)
+
+
+class ProviderContext:
+    def start_work(self):
+        pass
+
+    def end_work(self):
+        pass
+
+    def work(self, task):
+        raise NotImplementedError('Not implemented')
+
+
+class ProviderThread(QtCore.QThread):
+    finished = QtCore.pyqtSignal(object)
+
+    # executed in main thread
+    def __init__(self, queue_, context):
+        super().__init__()
+        self._queue = queue_
+        self._context = context
+
+    # executed in child thread
+    def run(self):
+        self._context.start_work()
+        work = self._context.work
+        while True:
+            arg = self._queue.get()
+            if arg is None:
+                break
+            try:
+                result = work(arg)
+            except Exception as ex:
+                print(type(ex), ex, file=sys.stderr)
+                time.sleep(1)
+            else:
+                self.finished.emit(result)
+            self._queue.task_done()
+        self._context.end_work()
+
+
+class Provider(QtCore.QObject):
+    finished = QtCore.pyqtSignal(object)
+
+    def __init__(self, parent, context):
+        super().__init__()
+        self._queue = queue.LifoQueue()
+        worker = ProviderThread(self._queue, context)
+        worker.setParent(parent)
+        worker.finished.connect(self._work_finished)
+        worker.start()
+
+    def schedule(self, task_data):
+        self._queue.put(task_data)
+
+    def _work_finished(self, result):
+        self.finished.emit(result)

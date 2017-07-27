@@ -1,42 +1,29 @@
-import queue
-from PyQt5 import QtCore
+import bubblesub.util
 import numpy as np
 import ffms
 import pyfftw
-from bubblesub.ui.util import SimpleThread
 
 
-HORIZONTAL_RES = 10
 DERIVATION_SIZE = 10
 DERIVATION_DISTANCE = 6
 
 
-class SpectrogramThread(SimpleThread):
-    def __init__(self, queue, callback, api):
-        super().__init__(queue, callback)
+class SpectrumProviderContext(bubblesub.util.ProviderContext):
+    def __init__(self, api):
+        super().__init__()
         self._api = api
-
         self._input = pyfftw.empty_aligned(
             2 << DERIVATION_SIZE, dtype=np.float32)
         self._output = pyfftw.empty_aligned(
             (1 << DERIVATION_SIZE) + 1, dtype=np.complex64)
         self._fftw = pyfftw.FFTW(
             self._input, self._output, flags=('FFTW_MEASURE',))
-
         self._audio_source = None
+        self._audio_path = None
 
-    def start_work(self):
-        path = self._api.video.path
-        if path and path.exists():
-            self._api.log('audio: loading... ({})'.format(path))
-            self._audio_source = ffms.AudioSource(str(path))
-            self._api.log('audio: loaded')
-        else:
-            self._api.log('audio: not found ({})'.format(path))
-            self._audio_source = None
+    def work(self, pts):
+        self._load_audio_if_needed()
 
-    def work(self, block_idx):
-        pts = block_idx * HORIZONTAL_RES
         audio_frame = int(pts * self._sample_rate / 1000.0)
         first_sample = (
             audio_frame >> DERIVATION_DISTANCE) << DERIVATION_DISTANCE
@@ -58,25 +45,22 @@ class SpectrogramThread(SimpleThread):
         out = np.clip(out, 0, 255)
         out = np.flip(out, axis=0)
         out = out.astype(dtype=np.uint8)
-        return block_idx, out
+        return pts, out
 
-    @property
-    def _sample_rate(self):
-        if self._audio_source:
-            return self._audio_source.properties.SampleRate
-        return 0
+    def _load_audio_if_needed(self):
+        if self._audio_path != self._api.video.path:
+            self._load_audio()
 
-    @property
-    def _channel_count(self):
-        if self._audio_source:
-            return self._audio_source.properties.Channels
-        return 0
-
-    @property
-    def _sample_count(self):
-        if self._audio_source:
-            return self._audio_source.properties.NumSamples
-        return 0
+    def _load_audio(self):
+        path = self._api.video.path
+        if path and path.exists():
+            self._api.gui.log('audio: loading... ({})'.format(path))
+            self._audio_source = ffms.AudioSource(str(path))
+            self._api.gui.log('audio: loaded')
+        else:
+            self._api.gui.log('audio: not found ({})'.format(path))
+            self._audio_source = None
+        self._audio_path = self._api.video.path
 
     def _get_samples(self, start, count):
         if not self._audio_source:
@@ -87,29 +71,20 @@ class SpectrogramThread(SimpleThread):
         samples = self._audio_source.get_audio(start)
         return np.mean(samples, axis=1)
 
+    @property
+    def _sample_rate(self):
+        if self._audio_source:
+            return self._audio_source.properties.SampleRate
+        return 0
 
-class SpectrumProvider(QtCore.QObject):
-    updated = QtCore.pyqtSignal()
+    @property
+    def _sample_count(self):
+        if self._audio_source:
+            return self._audio_source.properties.NumSamples
+        return 0
 
-    def __init__(self, api):
-        super().__init__()
-        self._api = api
+
+class SpectrumProvider(bubblesub.util.Provider):
+    def __init__(self, parent, api):
         self._cache = {}
-        self._queue = queue.LifoQueue()
-
-        # TODO: handle video source changes
-        self._worker = SpectrogramThread(
-            self._queue, self._fft_rendering_finished, self._api)
-        self._worker.start()
-
-    def get_fft(self, pts):
-        block_idx = pts // HORIZONTAL_RES
-        if block_idx in self._cache:
-            return self._cache[block_idx]
-        self._queue.put(block_idx)
-        return None
-
-    def _fft_rendering_finished(self, result):
-        block_idx, out = result.value
-        self._cache[block_idx] = out
-        self.updated.emit()
+        super().__init__(parent, SpectrumProviderContext(api))

@@ -1,18 +1,29 @@
+import queue
 import ffms
 import bubblesub.util
 from PyQt5 import QtCore
 
 
-# TODO: do this somewhere else asynchronously
-def _get_timecodes(video_path):
-    cache_key = str(video_path)
-    timecodes = bubblesub.util.load_cache('index', cache_key)
-    if not timecodes:
-        print('Reading video time codes, please wait.')
-        video = ffms.VideoSource(str(video_path))
-        timecodes = video.track.timecodes
-        bubblesub.util.save_cache('index', cache_key, timecodes)
-    return timecodes
+class TimecodesProviderContext(bubblesub.util.ProviderContext):
+    def __init__(self, log_api):
+        super().__init__()
+        self._log_api = log_api
+
+    def work(self, path):
+        self._log_api.log('timecodes: loading... ({})'.format(path))
+        cache_key = str(path)
+        timecodes = bubblesub.util.load_cache('index', cache_key)
+        if not timecodes:
+            video = ffms.VideoSource(str(path))
+            timecodes = video.track.timecodes
+            bubblesub.util.save_cache('index', cache_key, timecodes)
+        self._log_api.log('timecodes: loaded')
+        return path, timecodes
+
+
+class TimecodesProvider(bubblesub.util.Provider):
+    def __init__(self, parent, log_api):
+        super().__init__(parent, TimecodesProviderContext(log_api))
 
 
 class VideoApi(QtCore.QObject):
@@ -21,13 +32,16 @@ class VideoApi(QtCore.QObject):
     playback_requested = QtCore.pyqtSignal([object, object])
     pause_requested = QtCore.pyqtSignal([])
 
-    def __init__(self, audio_api):
+    def __init__(self, log_api, audio_api):
         super().__init__()
         self._audio_api = audio_api
         self._timecodes = []
         self._path = None
         self._is_paused = False
         self._current_pts = None
+
+        self._timecodes_provider = TimecodesProvider(self, log_api)
+        self._timecodes_provider.finished.connect(self._got_timecodes)
 
     def seek(self, pts):
         self.seek_requested.emit(pts)
@@ -67,15 +81,13 @@ class VideoApi(QtCore.QObject):
 
     def load(self, video_path):
         self._path = video_path
-
-        if video_path and video_path.exists():
-            # TODO: refactor this
-            timecodes = _get_timecodes(video_path)
-            self._timecodes = timecodes
-            self._audio_api._set_max_pts(timecodes[-1])
-        else:
-            self._timecodes = []
-            self._audio_api._set_max_pts(0)
-
+        self._timecodes = []
+        self._timecodes_provider.schedule(video_path)
+        self._audio_api._set_max_pts(0)
         self.loaded.emit()
 
+    def _got_timecodes(self, result):
+        video_path, timecodes = result
+        if video_path == self.path:
+            self._timecodes = timecodes
+            self._audio_api._set_max_pts(timecodes[-1])

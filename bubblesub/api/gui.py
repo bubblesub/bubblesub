@@ -15,4 +15,5 @@ class GuiApi(QtCore.QObject):
     def end_update(self):
         self.end_update_requested.emit()
 
-
+    def log(self, text):
+        print(text)  # TODO: log to GUI console via events

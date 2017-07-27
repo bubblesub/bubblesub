@@ -1,4 +1,5 @@
 import enum
+import threading
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -7,6 +8,9 @@ from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
 
 
 # TODO: draw position of video frame
+HORIZONTAL_RES = 10
+NOT_CACHED = object()
+CACHING = object()
 
 
 class DragMode(enum.Enum):
@@ -112,7 +116,9 @@ class AudioPreviewWidget(BaseAudioWidget):
     def __init__(self, api, parent=None):
         super().__init__(api, parent)
         self.setMinimumHeight(50)
-        self.spectrum = None
+        self._spectrum_provider = SpectrumProvider(self, self._api)
+        self._spectrum_provider.finished.connect(self._spectrum_updated)
+        self._spectrum_cache = {}
         self._need_repaint = False
         self._drag_mode = DragMode.Off
 
@@ -167,21 +173,18 @@ class AudioPreviewWidget(BaseAudioWidget):
 
     def _repaint_if_needed(self):
         if self._need_repaint:
-            self.repaint()
+            self.update()
 
     def _video_loaded(self):
-        # TODO: refactor this
-        if self.spectrum is not None:
-            self.spectrum.stop()
-        self.spectrum = SpectrumProvider(self._api)
-        self.spectrum.updated.connect(self._spectrum_updated)
+        self._spectrum_cache.clear()
+        self.update()
 
-    def _spectrum_updated(self):
+    def _spectrum_updated(self, result):
+        pts, column = result
+        self._spectrum_cache[pts] = column
         self._need_repaint = True
 
     def _draw_spectrogram(self, painter, event):
-        if self.spectrum is None:
-            return
         painter.scale(1, self.height() / (1 << DERIVATION_SIZE))
 
         color_table = []
@@ -195,9 +198,16 @@ class AudioPreviewWidget(BaseAudioWidget):
         # since the task queue is a LIFO queue, in order to render the columns
         # left-to-right, they need to be iterated backwards (hence reversed()).
         for x in reversed(range(self.width())):
-            column = self.spectrum.get_fft(self._pts_from_x(x))
-            if column is None:
+            pts = self._pts_from_x(x)
+            pts = (pts // HORIZONTAL_RES) * HORIZONTAL_RES
+            column = self._spectrum_cache.get(pts, NOT_CACHED)
+            if column is NOT_CACHED:
+                self._spectrum_provider.schedule(pts)
+                self._spectrum_cache[pts] = CACHING
                 continue
+            if column is CACHING:
+                continue
+
             image = QtGui.QImage(
                 column.data,
                 1,
