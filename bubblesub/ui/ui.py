@@ -32,14 +32,13 @@ sys.excepthook = excepthook
 
 
 class Ui:
-    def __init__(self, opt, api, args):
-        self._opt = opt
+    def __init__(self, api, args):
         self._api = api
         self._args = args
 
     def run(self):
         app = QtWidgets.QApplication(sys.argv)
-        main_window = bubblesub.ui.main_window.MainWindow(self._opt, self._api)
+        main_window = bubblesub.ui.main_window.MainWindow(self._api)
         self._api.gui.main_window = main_window
 
         if self._args.file:

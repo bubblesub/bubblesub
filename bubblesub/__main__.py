@@ -18,11 +18,11 @@ def main():
 
     cfg_path = Path('~/.config/bubblesub').expanduser()
 
-    api = bubblesub.api.Api()
     opt = bubblesub.opt.Options()
     if not args.no_config:
         opt.load(cfg_path)
-    bubblesub.ui.Ui(opt, api, args).run()
+    api = bubblesub.api.Api(opt)
+    bubblesub.ui.Ui(api, args).run()
     if not args.no_config:
         opt.save(cfg_path)
 

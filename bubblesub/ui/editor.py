@@ -72,7 +72,11 @@ class Editor(QtWidgets.QWidget):
         self.duration_edit.setText(bubblesub.util.ms_to_str(subtitle.duration))
         self.style_edit.setText(subtitle.style)
         self.actor_edit.setText(subtitle.actor)
-        self.text_edit.document().setPlainText(subtitle.text)
+
+        text = subtitle.text
+        if self._api.opt.general['convert_newlines']:
+            text = text.replace('\\N', '\n')
+        self.text_edit.document().setPlainText(text)
 
     def _push_selection(self):
         if not self.isEnabled():
@@ -90,7 +94,7 @@ class Editor(QtWidgets.QWidget):
         subtitle.end = bubblesub.util.str_to_ms(self.end_time_edit.text())
         subtitle.style = self.style_edit.text()
         subtitle.actor = self.actor_edit.text()
-        subtitle.text = self.text_edit.toPlainText()
+        subtitle.text = self.text_edit.toPlainText().replace('\n', '\\N')
         subtitle.end_update()
 
     def _grid_selection_changed(self, rows):

@@ -6,8 +6,9 @@ import bubblesub.api.subs
 
 
 class Api:
-    def __init__(self):
+    def __init__(self, opt):
         super().__init__()
+        self.opt = opt
         self.log = bubblesub.api.log.LogApi()
         self.gui = bubblesub.api.gui.GuiApi()
         self.video = bubblesub.api.video.VideoApi(self.log)

@@ -11,7 +11,7 @@ import bubblesub.ui.video
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, opt, api):
+    def __init__(self, api):
         super().__init__()
         self._api = api
 
@@ -65,8 +65,8 @@ class MainWindow(QtWidgets.QMainWindow):
         splitter.setStretchFactor(1, 5)
         self.setCentralWidget(splitter)
 
-        action_map = self._setup_menu(opt)
-        self._setup_hotkeys(opt, action_map)
+        action_map = self._setup_menu(api.opt)
+        self._setup_hotkeys(api.opt, action_map)
 
         subs_grid.setFocus()
 

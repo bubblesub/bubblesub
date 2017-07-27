@@ -13,6 +13,10 @@ class Serializer:
     def _menu_path(self):
         return self._location / 'menu.json'
 
+    @property
+    def _general_path(self):
+        return self._location / 'general.json'
+
     def load(self):
         hotkeys = None
         menu = None
@@ -20,16 +24,23 @@ class Serializer:
             hotkeys = json.loads(self._hotkeys_path.read_text())
         if self._menu_path.exists():
             menu = json.loads(self._menu_path.read_text())
-        return hotkeys, menu
+        if self._general_path.exists():
+            general = json.loads(self._general_path.read_text())
+        return hotkeys, menu, general
 
-    def write(self, hotkeys, menu):
+    def write(self, hotkeys, menu, general):
         self._location.mkdir(parents=True, exist_ok=True)
         self._hotkeys_path.write_text(json.dumps(hotkeys, indent=4))
         self._menu_path.write_text(json.dumps(menu, indent=4))
+        self._general_path.write_text(json.dumps(general, indent=4))
 
 
 class Options:
     def __init__(self):
+        self.general = {
+            'convert_newlines': True,
+        }
+
         self.hotkeys = {
             'global': [
                 ('Ctrl+N', 'file/new'),  # TODO
@@ -140,12 +151,14 @@ class Options:
 
     def load(self, location):
         serializer = Serializer(location)
-        hotkeys, menu = serializer.load()
+        hotkeys, menu, general = serializer.load()
         if hotkeys:
             self.hotkeys = hotkeys
         if menu:
             self.menu = menu
+        if general:
+            self.general = general
 
     def save(self, location):
         serializer = Serializer(location)
-        serializer.write(self.hotkeys, self.menu)
+        serializer.write(self.hotkeys, self.menu, self.general)
