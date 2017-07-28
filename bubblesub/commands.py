@@ -462,8 +462,6 @@ class VideoStepFrameCommand(BaseCommand):
 class VideoTogglePauseCommand(BaseCommand):
     name = 'video/toggle-pause'
 
-    # TODO: only if video is available
-
     def run(self, api):
         if api.video.is_paused:
             api.video.unpause()
@@ -474,8 +472,6 @@ class VideoTogglePauseCommand(BaseCommand):
 class VideoUnpauseCommand(BaseCommand):
     name = 'video/unpause'
 
-    # TODO: only if video is available
-
     def run(self, api):
         if not api.video.is_paused:
             return
@@ -484,8 +480,6 @@ class VideoUnpauseCommand(BaseCommand):
 
 class VideoPauseCommand(BaseCommand):
     name = 'video/pause'
-
-    # TODO: only if video is available
 
     def run(self, api):
         if api.video.is_paused:
