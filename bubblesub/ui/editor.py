@@ -10,38 +10,37 @@ class Editor(QtWidgets.QWidget):
 
         self._index = None
         self._api = api
-        self.setLayout(QtWidgets.QVBoxLayout())
 
-        self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
-        self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
-        self.duration_edit = bubblesub.ui.util.TimeEdit(self)
-        self.actor_edit = QtWidgets.QComboBox(
-            self,
-            editable=True,
-            minimumWidth=200,
-            insertPolicy=QtWidgets.QComboBox.NoInsert)
         self.style_edit = QtWidgets.QComboBox(
             self,
             editable=True,
             minimumWidth=200,
             insertPolicy=QtWidgets.QComboBox.NoInsert)
-        self.text_edit = QtWidgets.QPlainTextEdit(self)
-        self.text_edit.setTabChangesFocus(True)
+        self.actor_edit = QtWidgets.QComboBox(
+            self,
+            editable=True,
+            minimumWidth=200,
+            insertPolicy=QtWidgets.QComboBox.NoInsert)
+        self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
+        self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
+        self.duration_edit = bubblesub.ui.util.TimeEdit(self)
+        self.text_edit = QtWidgets.QPlainTextEdit(self, tabChangesFocus=True)
 
-        top_bar = QtWidgets.QWidget()
-        top_bar.setLayout(QtWidgets.QHBoxLayout())
+        top_bar = QtWidgets.QWidget(self)
+        top_bar.setLayout(QtWidgets.QHBoxLayout(self))
         top_bar.layout().setContentsMargins(0, 0, 0, 0)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Style:'))
+        top_bar.layout().addWidget(QtWidgets.QLabel('Style:', self))
         top_bar.layout().addWidget(self.style_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Actor:'))
+        top_bar.layout().addWidget(QtWidgets.QLabel('Actor:', self))
         top_bar.layout().addWidget(self.actor_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Start time:'))
+        top_bar.layout().addWidget(QtWidgets.QLabel('Start time:', self))
         top_bar.layout().addWidget(self.start_time_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('End time:'))
+        top_bar.layout().addWidget(QtWidgets.QLabel('End time:', self))
         top_bar.layout().addWidget(self.end_time_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Duration:'))
+        top_bar.layout().addWidget(QtWidgets.QLabel('Duration:', self))
         top_bar.layout().addWidget(self.duration_edit)
 
+        self.setLayout(QtWidgets.QVBoxLayout(self))
         self.layout().addWidget(top_bar)
         self.layout().addWidget(self.text_edit)
         self.setEnabled(False)

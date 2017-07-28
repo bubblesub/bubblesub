@@ -350,12 +350,11 @@ class Audio(QtWidgets.QWidget):
 
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
-        vbox = QtWidgets.QVBoxLayout()
-        vbox.setSpacing(0)
-        vbox.addWidget(self._scale)
-        vbox.addWidget(self._preview)
-        vbox.addWidget(self._slider)
-        self.setLayout(vbox)
+        self.setLayout(QtWidgets.QVBoxLayout(self))
+        self.layout().setSpacing(0)
+        self.layout().addWidget(self._scale)
+        self.layout().addWidget(self._preview)
+        self.layout().addWidget(self._slider)
 
         api.subs.selection_changed.connect(self._grid_selection_changed)
 

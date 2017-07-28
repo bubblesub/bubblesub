@@ -50,8 +50,8 @@ class MainWindow(QtWidgets.QMainWindow):
         api.gui.end_update_requested.connect(
             lambda: self.setUpdatesEnabled(True))
 
-        self._audio = bubblesub.ui.audio.Audio(api)
-        self._video = bubblesub.ui.video.Video(api)
+        self._video = bubblesub.ui.video.Video(api, self)
+        self._audio = bubblesub.ui.audio.Audio(api, self)
         self._editor = bubblesub.ui.editor.Editor(api, self)
         self._subs_grid = bubblesub.ui.subs_grid.SubsGrid(api)
 
