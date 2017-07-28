@@ -20,6 +20,7 @@ class Serializer:
     def load(self):
         hotkeys = None
         menu = None
+        general = None
         if self._hotkeys_path.exists():
             hotkeys = json.loads(self._hotkeys_path.read_text())
         if self._menu_path.exists():
