@@ -44,51 +44,36 @@ class MainWindow(QtWidgets.QMainWindow):
         self._audio = bubblesub.ui.audio.Audio(api)
         self._video = bubblesub.ui.video.Video(api)
         self._editor = bubblesub.ui.editor.Editor(api, self)
+        self._subs_grid = bubblesub.ui.subs_grid.SubsGrid(api)
 
-        editor_box = QtWidgets.QWidget()
-        editor_box.setLayout(QtWidgets.QVBoxLayout())
-        editor_box.layout().setContentsMargins(0, 0, 0, 0)
-        editor_box.layout().addWidget(self._audio)
-        editor_box.layout().addWidget(self._editor)
+        editor_splitter = QtWidgets.QSplitter(self)
+        editor_splitter.setOrientation(QtCore.Qt.Vertical)
+        editor_splitter.addWidget(self._audio)
+        editor_splitter.addWidget(self._editor)
 
-        top_bar = QtWidgets.QWidget()
-        top_bar.setLayout(QtWidgets.QHBoxLayout())
-        top_bar.layout().setContentsMargins(0, 0, 0, 0)
-        top_bar.layout().addWidget(self._video)
-        top_bar.layout().addWidget(editor_box)
+        top_bar = QtWidgets.QSplitter(self)
+        top_bar.setOrientation(QtCore.Qt.Horizontal)
+        top_bar.addWidget(self._video)
+        top_bar.addWidget(editor_splitter)
 
         # TODO: console with logs
-        # TODO: replace layouts with splitters
         # TODO: remember position of splitters in a config file
 
-        sp_once = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sp_once.setHorizontalStretch(1)
-        sp_once.setVerticalStretch(1)
-        sp_twice = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sp_twice.setHorizontalStretch(2)
-        sp_twice.setVerticalStretch(2)
-
-        editor_box.setSizePolicy(sp_twice)
-        self._video.setSizePolicy(sp_once)
-        self._audio.setSizePolicy(sp_twice)
-        self._editor.setSizePolicy(sp_once)
-
-        subs_grid = bubblesub.ui.subs_grid.SubsGrid(api)
-
-        splitter = QtWidgets.QSplitter()
-        splitter.setOrientation(QtCore.Qt.Vertical)
-        splitter.addWidget(top_bar)
-        splitter.addWidget(subs_grid)
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 5)
-        self.setCentralWidget(splitter)
+        main_splitter = QtWidgets.QSplitter(self)
+        main_splitter.setOrientation(QtCore.Qt.Vertical)
+        main_splitter.addWidget(top_bar)
+        main_splitter.addWidget(self._subs_grid)
+        self.setCentralWidget(main_splitter)
 
         action_map = self._setup_menu(api.opt)
         self._setup_hotkeys(api.opt, action_map)
 
-        subs_grid.setFocus()
+        top_bar.setStretchFactor(0, 1)
+        top_bar.setStretchFactor(1, 2)
+        main_splitter.setStretchFactor(0, 1)
+        main_splitter.setStretchFactor(1, 5)
+
+        self._subs_grid.setFocus()
 
     def _setup_menu(self, opt):
         action_map = {}
