@@ -1,3 +1,4 @@
+import bisect
 import bubblesub.ui.util
 from PyQt5 import QtWidgets
 
@@ -410,6 +411,20 @@ class VideoPlayAroundSelectionEndCommand(BaseCommand):
         api.video.play(
             api.audio.selection_end + delta_start,
             api.audio.selection_end + delta_end)
+
+
+class VideoStepFrameCommand(BaseCommand):
+    name = 'video/step-frame'
+
+    def enabled(self, api):
+        return len(api.video.timecodes) > 0
+
+    def run(self, api, delta):
+        current_pts = api.video.current_pts
+        idx = bisect.bisect_left(api.video.timecodes, current_pts)
+        if idx + delta not in range(len(api.video.timecodes)):
+            return
+        api.video.seek(api.video.timecodes[idx + delta])
 
 
 class VideoTogglePauseCommand(BaseCommand):

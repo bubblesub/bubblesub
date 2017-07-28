@@ -58,7 +58,12 @@ class Options:
                 ('Alt+2', 'video/play-around-sel-start', 0, 500),
                 ('Alt+3', 'video/play-around-sel-end', -500, 0),
                 ('Alt+4', 'video/play-around-sel-end', 0, 500),
-                ('Ctrl+R', 'video/play-current-line'),
+                ('Ctrl+R', 'video/play-around-sel', 0, 0),
+                ('Ctrl+,', 'video/step-frame', -1),
+                ('Ctrl+.', 'video/step-frame', 1),
+                ('Ctrl+Shift+,', 'video/step-frame', -10),
+                ('Ctrl+Shift+.', 'video/step-frame', 10),
+                ('Ctrl+T', 'video/play-current-line'),
                 ('Ctrl+P', 'video/toggle-pause'),
                 ('Ctrl+Z', 'edit/undo'),  # TODO
                 ('Ctrl+Y', 'edit/redo'),  # TODO
@@ -83,6 +88,10 @@ class Options:
                 ('Shift+J', 'grid/select-next-subtitle'),
                 ('A', 'audio/scroll', -1),
                 ('F', 'audio/scroll', 1),
+                (',', 'video/step-frame', -1),
+                ('.', 'video/step-frame', 1),
+                ('Shift+,', 'video/step-frame', -10),
+                ('Shift+.', 'video/step-frame', 10),
             ],
         }
 
@@ -111,6 +120,12 @@ class Options:
                 ('Play selection', 'video/play-around-sel', 0, 0),
                 ('Play current line', 'video/play-current-line'),
                 ('Play until end of the file', 'video/unpause'),
+                None,
+                ('Step 1 frame backward', 'video/step-frame', -1),
+                ('Step 1 frame forward', 'video/step-frame', 1),
+                ('Step 10 frames backward', 'video/step-frame', -10),
+                ('Step 10 frames forward', 'video/step-frame', 10),
+                None,
                 ('Pause playback', 'video/pause'),
                 ('Toggle pause', 'video/toggle-pause'),
                 None,
