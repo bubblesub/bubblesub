@@ -7,9 +7,6 @@ class Editor(QtWidgets.QWidget):
     # TODO: allow editing layer, margins and comment
     def __init__(self, api, parent=None):
         super().__init__(parent)
-        self.setEnabled(False)
-
-        api.subs.selection_changed.connect(self._grid_selection_changed)
 
         self._index = None
         self._api = api
@@ -18,43 +15,18 @@ class Editor(QtWidgets.QWidget):
         self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
         self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
         self.duration_edit = bubblesub.ui.util.TimeEdit(self)
-        self.actor_edit = QtWidgets.QLineEdit(self)
-        self.style_edit = QtWidgets.QLineEdit(self)
+        self.actor_edit = QtWidgets.QComboBox(
+            self,
+            editable=True,
+            minimumWidth=200,
+            insertPolicy=QtWidgets.QComboBox.NoInsert)
+        self.style_edit = QtWidgets.QComboBox(
+            self,
+            editable=True,
+            minimumWidth=200,
+            insertPolicy=QtWidgets.QComboBox.NoInsert)
         self.text_edit = QtWidgets.QPlainTextEdit(self)
         self.text_edit.setTabChangesFocus(True)
-
-        self.actor_edit.setCompleter(QtWidgets.QCompleter())
-        self.actor_edit.completer().setModel(QtCore.QStringListModel())
-        self.actor_edit.completer().setCaseSensitivity(
-            QtCore.Qt.CaseInsensitive)
-        self.style_edit.setCompleter(QtWidgets.QCompleter())
-        self.style_edit.completer().setModel(QtCore.QStringListModel())
-        self.style_edit.completer().setCaseSensitivity(
-            QtCore.Qt.CaseInsensitive)
-
-        def end_edited(*args):
-            start = bubblesub.util.str_to_ms(self.start_time_edit.text())
-            end = bubblesub.util.str_to_ms(self.end_time_edit.text())
-            duration = end - start
-            self.duration_edit.setText(bubblesub.util.ms_to_str(duration))
-            self._push_selection()
-
-        def duration_edited(*args):
-            start = bubblesub.util.str_to_ms(self.start_time_edit.text())
-            duration = bubblesub.util.str_to_ms(self.duration_edit.text())
-            end = start + duration
-            self.end_time_edit.setText(bubblesub.util.ms_to_str(end))
-            self._push_selection()
-
-        def text_edited(*args):
-            self._push_selection()
-
-        self.start_time_edit.textEdited.connect(text_edited)
-        self.end_time_edit.textEdited.connect(end_edited)
-        self.duration_edit.textEdited.connect(duration_edited)
-        self.actor_edit.textEdited.connect(text_edited)
-        self.style_edit.textEdited.connect(text_edited)
-        self.text_edit.textChanged.connect(text_edited)
 
         top_bar = QtWidgets.QWidget()
         top_bar.setLayout(QtWidgets.QHBoxLayout())
@@ -72,7 +44,10 @@ class Editor(QtWidgets.QWidget):
 
         self.layout().addWidget(top_bar)
         self.layout().addWidget(self.text_edit)
-        self.text_edit.setFocus()
+        self.setEnabled(False)
+
+        api.subs.selection_changed.connect(self._grid_selection_changed)
+        self._connect_slots()
 
     def _fetch_selection(self, index):
         self._index = index
@@ -80,14 +55,16 @@ class Editor(QtWidgets.QWidget):
         self.start_time_edit.setText(bubblesub.util.ms_to_str(subtitle.start))
         self.end_time_edit.setText(bubblesub.util.ms_to_str(subtitle.end))
         self.duration_edit.setText(bubblesub.util.ms_to_str(subtitle.duration))
-        self.style_edit.setText(subtitle.style)
-        self.actor_edit.setText(subtitle.actor)
 
-        self.actor_edit.completer().model().setStringList(
+        self.actor_edit.clear()
+        self.actor_edit.addItems(
             sorted(list(set(sub.actor for sub in self._api.subs.lines))))
+        self.actor_edit.lineEdit().setText(subtitle.actor)
 
-        self.style_edit.completer().model().setStringList(
+        self.style_edit.clear()
+        self.style_edit.addItems(
             sorted(list(set(sub.style for sub in self._api.subs.lines))))
+        self.style_edit.lineEdit().setText(subtitle.style)
 
         text = subtitle.text
         if self._api.opt.general['convert_newlines']:
@@ -100,8 +77,8 @@ class Editor(QtWidgets.QWidget):
 
         new_start = bubblesub.util.str_to_ms(self.start_time_edit.text())
         new_end = bubblesub.util.str_to_ms(self.end_time_edit.text())
-        new_style = self.style_edit.text()
-        new_actor = self.actor_edit.text()
+        new_style = self.style_edit.lineEdit().text()
+        new_actor = self.actor_edit.lineEdit().text()
         new_text = self.text_edit.toPlainText().replace('\n', '\\N')
 
         subtitle = self._api.subs.lines[self._index]
@@ -114,6 +91,7 @@ class Editor(QtWidgets.QWidget):
         subtitle.end_update()
 
     def _grid_selection_changed(self, rows):
+        self._disconnect_slots()
         if len(rows) == 1:
             self._fetch_selection(rows[0])
             self.setEnabled(True)
@@ -122,6 +100,40 @@ class Editor(QtWidgets.QWidget):
             self.start_time_edit.resetText()
             self.end_time_edit.resetText()
             self.duration_edit.resetText()
-            self.style_edit.setText('')
-            self.actor_edit.setText('')
+            self.style_edit.lineEdit().setText('')
+            self.actor_edit.lineEdit().setText('')
             self.text_edit.document().setPlainText('')
+        self._connect_slots()
+
+    def _time_end_edited(self, *args):
+        start = bubblesub.util.str_to_ms(self.start_time_edit.text())
+        end = bubblesub.util.str_to_ms(self.end_time_edit.text())
+        duration = end - start
+        self.duration_edit.setText(bubblesub.util.ms_to_str(duration))
+        self._push_selection()
+
+    def _duration_edited(self, *args):
+        start = bubblesub.util.str_to_ms(self.start_time_edit.text())
+        duration = bubblesub.util.str_to_ms(self.duration_edit.text())
+        end = start + duration
+        self.end_time_edit.setText(bubblesub.util.ms_to_str(end))
+        self._push_selection()
+
+    def _generic_edited(self, *args):
+        self._push_selection()
+
+    def _connect_slots(self):
+        self.start_time_edit.textEdited.connect(self._generic_edited)
+        self.end_time_edit.textEdited.connect(self._time_end_edited)
+        self.duration_edit.textEdited.connect(self._duration_edited)
+        self.actor_edit.editTextChanged.connect(self._generic_edited)
+        self.style_edit.editTextChanged.connect(self._generic_edited)
+        self.text_edit.textChanged.connect(self._generic_edited)
+
+    def _disconnect_slots(self):
+        self.start_time_edit.textEdited.disconnect(self._generic_edited)
+        self.end_time_edit.textEdited.disconnect(self._time_end_edited)
+        self.duration_edit.textEdited.disconnect(self._duration_edited)
+        self.actor_edit.editTextChanged.disconnect(self._generic_edited)
+        self.style_edit.editTextChanged.disconnect(self._generic_edited)
+        self.text_edit.textChanged.disconnect(self._generic_edited)
