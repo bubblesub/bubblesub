@@ -1,4 +1,5 @@
 import functools
+import base64
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -18,6 +19,14 @@ def _run_cmd(api, cmd_name, args):
     with bubblesub.util.Benchmark('Executing command {}'.format(cmd_name)):
         if cmd.enabled(api):
             cmd.run(api, *args)
+
+
+def _load_splitter_state(widget, data):
+    widget.restoreState(base64.b64decode(data))
+
+
+def _get_splitter_state(widget):
+    return base64.b64encode(widget.saveState()).decode('ascii')
 
 
 class CommandAction(QtWidgets.QAction):
@@ -46,34 +55,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self._editor = bubblesub.ui.editor.Editor(api, self)
         self._subs_grid = bubblesub.ui.subs_grid.SubsGrid(api)
 
-        editor_splitter = QtWidgets.QSplitter(self)
-        editor_splitter.setOrientation(QtCore.Qt.Vertical)
-        editor_splitter.addWidget(self._audio)
-        editor_splitter.addWidget(self._editor)
+        self._editor_splitter = QtWidgets.QSplitter(self)
+        self._editor_splitter.setOrientation(QtCore.Qt.Vertical)
+        self._editor_splitter.addWidget(self._audio)
+        self._editor_splitter.addWidget(self._editor)
 
-        top_bar = QtWidgets.QSplitter(self)
-        top_bar.setOrientation(QtCore.Qt.Horizontal)
-        top_bar.addWidget(self._video)
-        top_bar.addWidget(editor_splitter)
+        self._top_bar = QtWidgets.QSplitter(self)
+        self._top_bar.setOrientation(QtCore.Qt.Horizontal)
+        self._top_bar.addWidget(self._video)
+        self._top_bar.addWidget(self._editor_splitter)
 
         # TODO: console with logs
-        # TODO: remember position of splitters in a config file
 
-        main_splitter = QtWidgets.QSplitter(self)
-        main_splitter.setOrientation(QtCore.Qt.Vertical)
-        main_splitter.addWidget(top_bar)
-        main_splitter.addWidget(self._subs_grid)
-        self.setCentralWidget(main_splitter)
+        self._main_splitter = QtWidgets.QSplitter(self)
+        self._main_splitter.setOrientation(QtCore.Qt.Vertical)
+        self._main_splitter.addWidget(self._top_bar)
+        self._main_splitter.addWidget(self._subs_grid)
+        self.setCentralWidget(self._main_splitter)
 
         action_map = self._setup_menu(api.opt)
         self._setup_hotkeys(api.opt, action_map)
 
-        top_bar.setStretchFactor(0, 1)
-        top_bar.setStretchFactor(1, 2)
-        main_splitter.setStretchFactor(0, 1)
-        main_splitter.setStretchFactor(1, 5)
+        self._top_bar.setStretchFactor(0, 1)
+        self._top_bar.setStretchFactor(1, 2)
+        self._main_splitter.setStretchFactor(0, 1)
+        self._main_splitter.setStretchFactor(1, 5)
 
         self._subs_grid.setFocus()
+        self._restore_splitters()
 
     def _setup_menu(self, opt):
         action_map = {}
@@ -118,11 +127,27 @@ class MainWindow(QtWidgets.QMainWindow):
                     raise RuntimeError('Invalid shortcut context')
 
     def closeEvent(self, event):
+        self._store_splitters()
         # TODO: ask only when necessary
         if bubblesub.ui.util.ask('Are you sure you want to exit the program?'):
             event.accept()
         else:
             event.ignore()
+
+    def _restore_splitters(self):
+        splitter_cfg = self._api.opt.general.get('splitters', None)
+        if not splitter_cfg:
+            return
+        _load_splitter_state(self._top_bar, splitter_cfg['top'])
+        _load_splitter_state(self._editor_splitter, splitter_cfg['editor'])
+        _load_splitter_state(self._main_splitter, splitter_cfg['main'])
+
+    def _store_splitters(self):
+        self._api.opt.general['splitters'] = {
+            'top': _get_splitter_state(self._top_bar),
+            'editor': _get_splitter_state(self._editor_splitter),
+            'main': _get_splitter_state(self._main_splitter),
+        }
 
     def _menu_about_to_show(self, menu):
         for action in menu.actions():
