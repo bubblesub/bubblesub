@@ -154,6 +154,38 @@ class EditGlueSelectionStartCommand(BaseCommand):
             api.audio.selection_end)
 
 
+class EditSnapSelectionStartToVideoCommand(BaseCommand):
+    name = 'edit/snap-sel-start-to-video'
+
+    def enabled(self, api):
+        return api.audio.has_selection and api.subs.has_selection
+
+    def run(self, api):
+        api.audio.select(api.video.current_pts, api.audio.selection_end)
+
+
+class EditSnapSelectionEndToVideoCommand(BaseCommand):
+    name = 'edit/snap-sel-end-to-video'
+
+    def enabled(self, api):
+        return api.audio.has_selection and api.subs.has_selection
+
+    def run(self, api):
+        api.audio.select(api.audio.selection_start, api.video.current_pts)
+
+
+class EditRealignSelectionToVideoCommand(BaseCommand):
+    name = 'edit/realign-sel-to-video'
+
+    def enabled(self, api):
+        return api.audio.has_selection and api.subs.has_selection
+
+    def run(self, api):
+        api.audio.select(
+            api.video.current_pts,
+            api.video.current_pts + DEFAULT_SUB_DURATION)
+
+
 class EditGlueSelectionEndCommand(BaseCommand):
     name = 'edit/glue-sel-end'
 
