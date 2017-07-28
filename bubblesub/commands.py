@@ -2,18 +2,22 @@ import bubblesub.ui.util
 from PyQt5 import QtWidgets
 
 
+registry = {}
 DEFAULT_SUB_DURATION = 2000  # TODO: move this to config
-commands_dict = {}
 
 
-# i *really* hate this idiom
-def command(command_name):
-    def fish(function):
-        def blub(*args, **kwargs):
-            function(*args, **kwargs)
-        commands_dict[command_name] = blub
-        return blub
-    return fish
+class BaseCommand:
+    def __init_subclass__(cls):
+        global registry
+        instance = cls()
+        registry[instance.name] = instance
+
+    @property
+    def name(self):
+        raise NotImplementedError('Command has no name')
+
+    def run(self, api, *args, **kwargs):
+        raise NotImplementedError('Command has no implementation')
 
 
 def _ask_about_unsaved_changes(api):
@@ -22,121 +26,150 @@ def _ask_about_unsaved_changes(api):
         'Are you sure you want to close the current file?')
 
 
-@command('file/save')
-def cmd_file_save(api):
-    api.subs.save_ass(api.subs.path)
-    # TODO: log in console
+class FileSaveCommand(BaseCommand):
+    name = 'file/save'
+
+    def run(self, api):
+        api.subs.save_ass(api.subs.path)
+        # TODO: log in console
 
 
-@command('file/quit')
-def cmd_file_quit(api):
-    api.gui.quit()
+class FileQuitCommand(BaseCommand):
+    name = 'file/quit'
+
+    def run(self, api):
+        api.gui.quit()
 
 
-@command('audio/scroll')
-def cmd_audio_scroll(api, delta):
-    distance = delta * api.audio.view_size * 0.05
-    api.audio.move_view(distance)
+class AudioScrollCommand(BaseCommand):
+    name = 'audio/scroll'
+
+    def run(self, api, delta):
+        distance = delta * api.audio.view_size * 0.05
+        api.audio.move_view(distance)
 
 
-@command('edit/insert-above')
-def cmd_edit_insert_above(api):
-    if not api.subs.selected_lines:
-        idx = 0
-        prev_sub = None
-        cur_sub = None
-    else:
-        idx = api.subs.selected_lines[0]
-        prev_sub = api.subs.lines.get(idx - 1)
-        cur_sub = api.subs.lines[idx]
+class EditInsertAboveCommand(BaseCommand):
+    name = 'edit/insert-above'
 
-    end = cur_sub.start if cur_sub else DEFAULT_SUB_DURATION
-    start = end - DEFAULT_SUB_DURATION
-    if start < 0:
-        start = 0
-    if prev_sub and start < prev_sub.end:
-        start = prev_sub.end
-    if start > end:
-        start = end
-    api.subs.lines.insert_one(idx, start=start, end=end, style='Default')
-    api.subs.selected_lines = [idx]
+    def run(self, api):
+        if not api.subs.selected_lines:
+            idx = 0
+            prev_sub = None
+            cur_sub = None
+        else:
+            idx = api.subs.selected_lines[0]
+            prev_sub = api.subs.lines.get(idx - 1)
+            cur_sub = api.subs.lines[idx]
 
-
-@command('edit/insert-below')
-def cmd_edit_insert_below(api):
-    if not api.subs.selected_lines:
-        idx = 0
-        cur_sub = None
-        next_sub = api.subs.lines.get(0)
-    else:
-        idx = api.subs.selected_lines[-1]
-        cur_sub = api.subs.lines[idx]
-        idx += 1
-        next_sub = api.subs.lines.get(idx)
-
-    start = cur_sub.end if cur_sub else 0
-    end = start + DEFAULT_SUB_DURATION
-    if next_sub and end > next_sub.start:
-        end = next_sub.start
-    if end < start:
-        end = start
-    api.subs.lines.insert_one(idx, start=start, end=end, style='Default')
-    api.subs.selected_lines = [idx]
+        end = cur_sub.start if cur_sub else DEFAULT_SUB_DURATION
+        start = end - DEFAULT_SUB_DURATION
+        if start < 0:
+            start = 0
+        if prev_sub and start < prev_sub.end:
+            start = prev_sub.end
+        if start > end:
+            start = end
+        api.subs.lines.insert_one(idx, start=start, end=end, style='Default')
+        api.subs.selected_lines = [idx]
 
 
-@command('edit/duplicate')
-def cmd_edit_duplicate(api):
-    if not api.subs.selected_lines:
-        return
-    new_selection = []
-    api.gui.begin_update()
-    for idx in reversed(sorted(api.subs.selected_lines)):
-        sub = api.subs.lines[idx]
-        api.subs.lines.insert_one(
-            idx + 1,
-            start=sub.start,
-            end=sub.end,
-            actor=sub.actor,
-            style=sub.style,
-            text=sub.text)
-        new_selection.append(
-            idx + len(api.subs.selected_lines) - len(new_selection))
-    api.subs.selected_lines = new_selection
-    api.gui.end_update()
+class EditInsertBelowCommand(BaseCommand):
+    name = 'edit/insert-below'
+
+    def run(self, api):
+        if not api.subs.selected_lines:
+            idx = 0
+            cur_sub = None
+            next_sub = api.subs.lines.get(0)
+        else:
+            idx = api.subs.selected_lines[-1]
+            cur_sub = api.subs.lines[idx]
+            idx += 1
+            next_sub = api.subs.lines.get(idx)
+
+        start = cur_sub.end if cur_sub else 0
+        end = start + DEFAULT_SUB_DURATION
+        if next_sub and end > next_sub.start:
+            end = next_sub.start
+        if end < start:
+            end = start
+        api.subs.lines.insert_one(idx, start=start, end=end, style='Default')
+        api.subs.selected_lines = [idx]
 
 
-@command('edit/delete')
-def cmd_edit_delete(api):
-    if not api.subs.selected_lines:
-        return
-    for idx in reversed(sorted(api.subs.selected_lines)):
-        api.subs.lines.remove(idx, 1)
-    api.subs.selected_lines = []
+class EditDuplicateCommand(BaseCommand):
+    name = 'edit/duplicate'
+
+    def run(self, api):
+        if not api.subs.selected_lines:
+            return
+        new_selection = []
+        api.gui.begin_update()
+        for idx in reversed(sorted(api.subs.selected_lines)):
+            sub = api.subs.lines[idx]
+            api.subs.lines.insert_one(
+                idx + 1,
+                start=sub.start,
+                end=sub.end,
+                actor=sub.actor,
+                style=sub.style,
+                text=sub.text)
+            new_selection.append(
+                idx + len(api.subs.selected_lines) - len(new_selection))
+        api.subs.selected_lines = new_selection
+        api.gui.end_update()
 
 
-@command('edit/glue-sel-start')
-def cmd_edit_glue_sel_start(api):
-    if api.audio.has_selection \
-            and api.subs.selected_lines and api.subs.selected_lines[0] > 0:
-        api.audio.select(
-            api.subs.lines[api.subs.selected_lines[0] - 1].end,
-            api.audio.selection_end)
+class EditDeleteCommand(BaseCommand):
+    name = 'edit/delete'
+
+    def run(self, api):
+        if not api.subs.selected_lines:
+            return
+        for idx in reversed(sorted(api.subs.selected_lines)):
+            api.subs.lines.remove(idx, 1)
+        api.subs.selected_lines = []
 
 
-@command('edit/glue-sel-end')
-def cmd_edit_glue_sel_end(api):
-    if api.audio.has_selection and \
-            api.subs.selected_lines and \
-            api.subs.selected_lines[-1] + 1 < len(api.subs.lines):
-        api.audio.select(
-            api.audio.selection_start,
-            api.subs.lines[api.subs.selected_lines[-1] + 1].start)
+class EditGlueSelectionStartCommand(BaseCommand):
+    name = 'edit/glue-sel-start'
+
+    def run(self, api):
+        if api.audio.has_selection \
+                and api.subs.selected_lines and api.subs.selected_lines[0] > 0:
+            api.audio.select(
+                api.subs.lines[api.subs.selected_lines[0] - 1].end,
+                api.audio.selection_end)
 
 
-@command('edit/move-subs-with-gui')
-def cmd_edit_move_subs_with_gui(api):
-    if not api.subs.selected_lines:
-        return
+class EditGlueSelectionEndCommand(BaseCommand):
+    name = 'edit/glue-sel-end'
+
+    def run(self, api):
+        if api.audio.has_selection and \
+                api.subs.selected_lines and \
+                api.subs.selected_lines[-1] + 1 < len(api.subs.lines):
+            api.audio.select(
+                api.audio.selection_start,
+                api.subs.lines[api.subs.selected_lines[-1] + 1].start)
+
+
+class MoveSubsWithGuiCommand(BaseCommand):
+    name = 'edit/move-subs-with-gui'
+
+    def run(self, api):
+        if not api.subs.selected_lines:
+            return
+
+        dialog = self.ShiftTimesDialog()
+        if dialog.exec_():
+            delta = dialog.result()
+            for i in api.subs.selected_lines:
+                api.subs.lines[i].begin_update()
+                api.subs.lines[i].start += delta
+                api.subs.lines[i].end += delta
+                api.subs.lines[i].end_update()
 
     class ShiftTimesDialog(QtWidgets.QDialog):
         def __init__(self, parent=None):
@@ -167,59 +200,74 @@ def cmd_edit_move_subs_with_gui(api):
         def result(self):
             return bubblesub.util.str_to_ms(self.time_widget.text())
 
-    dialog = ShiftTimesDialog()
-    if dialog.exec_():
-        delta = dialog.result()
-        for i in api.subs.selected_lines:
-            api.subs.lines[i].begin_update()
-            api.subs.lines[i].start += delta
-            api.subs.lines[i].end += delta
-            api.subs.lines[i].end_update()
+
+class EditMoveSelectionStartCommand(BaseCommand):
+    name = 'edit/move-sel-start'
+
+    def run(self, api, ms):
+        if api.audio.has_selection:
+            api.audio.select(
+                min(api.audio.selection_end, api.audio.selection_start + ms),
+                api.audio.selection_end)
 
 
-@command('edit/move-sel-start')
-def cmd_edit_move_sel_start(api, ms):
-    if api.audio.has_selection:
-        api.audio.select(
-            min(api.audio.selection_end, api.audio.selection_start + ms),
-            api.audio.selection_end)
+class EditMoveSelectionEndCommand(BaseCommand):
+    name = 'edit/move-sel-end'
+
+    def run(self, api, ms):
+        if api.audio.has_selection:
+            api.audio.select(
+                api.audio.selection_start,
+                max(api.audio.selection_start, api.audio.selection_end + ms))
 
 
-@command('edit/move-sel-end')
-def cmd_edit_move_sel_end(api, ms):
-    if api.audio.has_selection:
-        api.audio.select(
-            api.audio.selection_start,
-            max(api.audio.selection_start, api.audio.selection_end + ms))
+class EditCommitSelectionCommand(BaseCommand):
+    name = 'edit/commit-sel'
+
+    def run(self, api):
+        for idx in api.subs.selected_lines:
+            subtitle = api.subs.lines[idx]
+            subtitle.begin_update()
+            subtitle.start = api.audio.selection_start
+            subtitle.end = api.audio.selection_end
+            subtitle.end_update()
 
 
-@command('edit/commit-sel')
-def cmd_edit_commit_selection(api):
-    for idx in api.subs.selected_lines:
-        subtitle = api.subs.lines[idx]
-        subtitle.begin_update()
-        subtitle.start = api.audio.selection_start
-        subtitle.end = api.audio.selection_end
-        subtitle.end_update()
+class GridJumpToLineCommand(BaseCommand):
+    name = 'grid/jump-to-line'
+
+    def run(self, api):
+        if not api.subs.lines:
+            return
+        dialog = QtWidgets.QInputDialog(api.gui.main_window)
+        dialog.setLabelText('Line number to jump to:')
+        dialog.setIntMinimum(1)
+        dialog.setIntMaximum(len(api.subs.lines))
+        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+        if dialog.exec_():
+            api.subs.selected_lines = [dialog.intValue() - 1]
 
 
-@command('grid/jump-to-line')
-def cmd_grid_jump_to_line(api):
-    if not api.subs.lines:
-        return
-    dialog = QtWidgets.QInputDialog(api.gui.main_window)
-    dialog.setLabelText('Line number to jump to:')
-    dialog.setIntMinimum(1)
-    dialog.setIntMaximum(len(api.subs.lines))
-    dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-    if dialog.exec_():
-        api.subs.selected_lines = [dialog.intValue() - 1]
+class GridJumpToTimeCommand(BaseCommand):
+    name = 'grid/jump-to-time'
 
+    def run(self, api):
+        if not api.subs.lines:
+            return
 
-@command('grid/jump-to-time')
-def cmd_grid_jump_to_time(api):
-    if not api.subs.lines:
-        return
+        dialog = self.JumpToTimeDialog()
+        if dialog.exec_():
+            target_pts = dialog.result()
+            best_distance = None
+            best_idx = None
+            for i, sub in enumerate(api.subs.lines):
+                center = (sub.start + sub.end) / 2
+                distance = abs(target_pts - center)
+                if best_distance is None or distance < best_distance:
+                    best_distance = distance
+                    best_idx = i
+            if best_idx is not None:
+                api.subs.selected_lines = [best_idx]
 
     class JumpToTimeDialog(QtWidgets.QDialog):
         def __init__(self, parent=None):
@@ -250,100 +298,108 @@ def cmd_grid_jump_to_time(api):
         def result(self):
             return bubblesub.util.str_to_ms(self.time_widget.text())
 
-    dialog = JumpToTimeDialog()
-    if dialog.exec_():
-        target_pts = dialog.result()
-        best_distance = None
-        best_idx = None
-        for i, sub in enumerate(api.subs.lines):
-            center = (sub.start + sub.end) / 2
-            distance = abs(target_pts - center)
-            if best_distance is None or distance < best_distance:
-                best_distance = distance
-                best_idx = i
-        if best_idx is not None:
-            api.subs.selected_lines = [best_idx]
+
+class GridSelectPrevSubtitleCommand(BaseCommand):
+    name = 'grid/select-prev-subtitle'
+
+    def run(self, api):
+        if not api.subs.selected_lines:
+            if not api.subs.lines:
+                return
+            api.subs.selected_lines = [len(api.subs.lines) - 1, 0]
+        else:
+            api.subs.selected_lines = [max(0, api.subs.selected_lines[0] - 1)]
 
 
-@command('grid/select-prev-subtitle')
-def cmd_grid_select_prev_sub(api):
-    if not api.subs.selected_lines:
-        if not api.subs.lines:
+class GridSelectNextSubtitleCommand(BaseCommand):
+    name = 'grid/select-next-subtitle'
+
+    def run(self, api):
+        if not api.subs.selected_lines:
+            if not api.subs.lines:
+                return
+            api.subs.selected_lines = [0]
+        else:
+            api.subs.selected_lines = [
+                min(api.subs.selected_lines[0] + 1, len(api.subs.lines) - 1)]
+
+
+class GridSelectAllCommand(BaseCommand):
+    name = 'grid/select-all'
+
+    def run(self, api):
+        api.subs.selected_lines = list(range(len(api.subs.lines)))
+
+
+class GridSelectNothingCommand(BaseCommand):
+    name = 'grid/select-nothing'
+
+    def run(self, api):
+        api.subs.selected_lines = []
+
+
+class VideoPlayCurrentLineCommand(BaseCommand):
+    name = 'video/play-current-line'
+
+    def run(self, api):
+        if api.subs.selected_lines:
+            sel = api.subs.lines[api.subs.selected_lines[0]]
+            api.video.play(sel.start, sel.end)
+
+
+class VideoPlayAroundSelectionCommand(BaseCommand):
+    name = 'video/play-around-sel'
+
+    def run(self, api, delta_start, delta_end):
+        if api.audio.has_selection:
+            api.video.play(
+                api.audio.selection_start + delta_start,
+                api.audio.selection_end + delta_end)
+
+
+class VideoPlayAroundSelectionStartCommand(BaseCommand):
+    name = 'video/play-around-sel-start'
+
+    def run(self, api, delta_start, delta_end):
+        if api.audio.has_selection:
+            api.video.play(
+                api.audio.selection_start + delta_start,
+                api.audio.selection_start + delta_end)
+
+
+class VideoPlayAroundSelectionEndCommand(BaseCommand):
+    name = 'video/play-around-sel-end'
+
+    def run(self, api, delta_start, delta_end):
+        if api.audio.has_selection:
+            api.video.play(
+                api.audio.selection_end + delta_start,
+                api.audio.selection_end + delta_end)
+
+
+class VideoTogglePauseCommand(BaseCommand):
+    name = 'video/toggle-pause'
+
+    def run(self, api):
+        if api.video.is_paused:
+            api.video.unpause()
+        else:
+            api.video.pause()
+
+
+class VideoUnpauseCommand(BaseCommand):
+    name = 'video/unpause'
+
+    def run(self, api):
+        if not api.video.is_paused:
             return
-        api.subs.selected_lines = [len(api.subs.lines) - 1, 0]
-    else:
-        api.subs.selected_lines = [max(0, api.subs.selected_lines[0] - 1)]
-
-
-@command('grid/select-next-subtitle')
-def cmd_grid_select_next_sub(api):
-    if not api.subs.selected_lines:
-        if not api.subs.lines:
-            return
-        api.subs.selected_lines = [0]
-    else:
-        api.subs.selected_lines = [
-            min(api.subs.selected_lines[0] + 1, len(api.subs.lines) - 1)]
-
-
-@command('grid/select-all')
-def cmd_grid_select_all(api):
-    api.subs.selected_lines = list(range(len(api.subs.lines)))
-
-
-@command('grid/select-nothing')
-def cmd_grid_select_nothing(api):
-    api.subs.selected_lines = []
-
-
-@command('video/play-current-line')
-def cmd_video_play_current_line(api):
-    if api.subs.selected_lines:
-        sel = api.subs.lines[api.subs.selected_lines[0]]
-        api.video.play(sel.start, sel.end)
-
-
-@command('video/play-around-sel')
-def cmd_video_play_around_sel(api, delta_start, delta_end):
-    if api.audio.has_selection:
-        api.video.play(
-            api.audio.selection_start + delta_start,
-            api.audio.selection_end + delta_end)
-
-
-@command('video/play-around-sel-start')
-def cmd_video_play_around_sel_start(api, delta_start, delta_end):
-    if api.audio.has_selection:
-        api.video.play(
-            api.audio.selection_start + delta_start,
-            api.audio.selection_start + delta_end)
-
-
-@command('video/play-around-sel-end')
-def cmd_video_play_around_sel_end(api, delta_start, delta_end):
-    if api.audio.has_selection:
-        api.video.play(
-            api.audio.selection_end + delta_start,
-            api.audio.selection_end + delta_end)
-
-
-@command('video/toggle-pause')
-def cmd_video_toggle_pause(api):
-    if api.video.is_paused:
         api.video.unpause()
-    else:
+
+
+class VideoPauseCommand(BaseCommand):
+    name = 'video/pause'
+
+    def run(self, api):
+        if api.video.is_paused:
+            return
         api.video.pause()
-
-
-@command('video/unpause')
-def cmd_video_unpause(api):
-    if not api.video.is_paused:
-        return
-    api.video.unpause()
-
-
-@command('video/pause')
-def cmd_video_pause(api):
-    if api.video.is_paused:
-        return
-    api.video.pause()

@@ -71,12 +71,12 @@ class MainWindow(QtWidgets.QMainWindow):
         subs_grid.setFocus()
 
     def _run_cmd(self, cmd_name, args):
-        callback = bubblesub.commands.commands_dict.get(cmd_name, None)
-        if not callback:
+        cmd = bubblesub.commands.registry.get(cmd_name, None)
+        if not cmd:
             bubblesub.ui.util.error('Invalid command name:\n' + cmd_name)
             return
         with bubblesub.util.Benchmark('Executing command {}'.format(cmd_name)):
-            callback(self._api, *args)
+            cmd.run(self._api, *args)
 
     def _setup_menu(self, opt):
         action_map = {}
