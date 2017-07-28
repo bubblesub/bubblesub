@@ -10,6 +10,26 @@ import bubblesub.ui.audio
 import bubblesub.ui.video
 
 
+def _run_cmd(api, cmd_name, args):
+    cmd = bubblesub.commands.registry.get(cmd_name, None)
+    if not cmd:
+        bubblesub.ui.util.error('Invalid command name:\n' + cmd_name)
+        return
+    with bubblesub.util.Benchmark('Executing command {}'.format(cmd_name)):
+        if cmd.enabled(api):
+            cmd.run(api, *args)
+
+
+class CommandAction(QtWidgets.QAction):
+    def __init__(self, api, cmd_name, cmd_args):
+        super().__init__()
+        self.api = api
+        self.cmd_name = cmd_name
+        self.cmd = bubblesub.commands.registry.get(cmd_name, None)
+        self.triggered.connect(
+            functools.partial(_run_cmd, api, cmd_name, cmd_args))
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, api):
         super().__init__()
@@ -70,14 +90,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         subs_grid.setFocus()
 
-    def _run_cmd(self, cmd_name, args):
-        cmd = bubblesub.commands.registry.get(cmd_name, None)
-        if not cmd:
-            bubblesub.ui.util.error('Invalid command name:\n' + cmd_name)
-            return
-        with bubblesub.util.Benchmark('Executing command {}'.format(cmd_name)):
-            cmd.run(self._api, *args)
-
     def _setup_menu(self, opt):
         action_map = {}
         for name, items in opt.menu.items():
@@ -86,11 +98,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 if item is None:
                     submenu.addSeparator()
                     continue
-                action_name, cmd_name, *args = item
-                action = submenu.addAction(action_name)
-                action.triggered.connect(
-                    functools.partial(self._run_cmd, cmd_name, args))
-                action_map[(cmd_name, *args)] = action
+
+                action_name, cmd_name, *cmd_args = item
+                action = CommandAction(self._api, cmd_name, cmd_args)
+                action.setParent(submenu)
+                action.setText(action_name)
+                submenu.addAction(action)
+                submenu.aboutToShow.connect(
+                    functools.partial(self._menu_about_to_show, submenu))
+                action_map[(cmd_name, *cmd_args)] = action
         return action_map
 
     def _setup_hotkeys(self, opt, action_map):
@@ -106,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 shortcut = QtWidgets.QShortcut(
                     QtGui.QKeySequence(keys), self)
                 shortcut.activated.connect(
-                    functools.partial(self._run_cmd, cmd_name, args))
+                    functools.partial(_run_cmd, self._api, cmd_name, args))
                 if context == 'global':
                     shortcut.setContext(QtCore.Qt.ApplicationShortcut)
                 elif context == 'audio':
@@ -122,3 +138,8 @@ class MainWindow(QtWidgets.QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def _menu_about_to_show(self, menu):
+        for action in menu.actions():
+            if hasattr(action, 'cmd') and action.cmd:
+                action.setEnabled(action.cmd.enabled(action.api))

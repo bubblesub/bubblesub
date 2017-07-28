@@ -60,6 +60,10 @@ class SubtitlesApi(QtCore.QObject):
         return self._path
 
     @property
+    def has_selection(self):
+        return len(self.selected_lines) > 0
+
+    @property
     def selected_lines(self):
         return self._selected_lines
 
