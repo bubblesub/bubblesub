@@ -72,8 +72,9 @@ class SubtitleList(bubblesub.util.ListModel):
 
 
 class SubtitlesApi(QtCore.QObject):
-    loaded = QtCore.pyqtSignal([])
-    selection_changed = QtCore.pyqtSignal([list])
+    loaded = QtCore.pyqtSignal()
+    saved = QtCore.pyqtSignal()
+    selection_changed = QtCore.pyqtSignal(list)
 
     def __init__(self, video_api):
         super().__init__()
@@ -180,3 +181,6 @@ class SubtitlesApi(QtCore.QObject):
         if remember_path:
             self._path = path
         self._ass_source.save(path)
+
+        if remember_path:
+            self.saved.emit()

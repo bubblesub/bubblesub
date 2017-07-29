@@ -23,7 +23,7 @@ class BaseCommand:
 
 
 def _ask_about_unsaved_changes(api):
-    if not api.undo.has_undo:
+    if not api.undo.needs_save:
         return True
     return bubblesub.ui.util.ask(
         'There are unsaved changes. '

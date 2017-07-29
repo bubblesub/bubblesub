@@ -20,7 +20,13 @@ class UndoApi(QtCore.QObject):
         self._connect_signals()
         self._undo_stack = []
         self._undo_stack_pos = -1
-        self._subs_api.loaded.connect(self._reset)
+        self._undo_stack_pos_when_saved = -1
+        self._subs_api.loaded.connect(self._subtitles_loaded)
+        self._subs_api.saved.connect(self._subtitles_saved)
+
+    @property
+    def needs_save(self):
+        return self._undo_stack_pos_when_saved != self._undo_stack_pos
 
     @property
     def has_undo(self):
@@ -86,12 +92,6 @@ class UndoApi(QtCore.QObject):
         self._undo_stack_pos = len(self._undo_stack) - 1
         print('Size of undo stack:', bubblesub.util.getsize(self._undo_stack))
 
-    def _reset(self):
-        self._undo_stack = [(
-            UndoOperation.Reset,
-            self._serialize_lines(0, len(self._subs_api.lines)))]
-        self._undo_stack_pos = 0
-
     def _connect_signals(self):
         self._subs_api.lines.item_changed.connect(self._subtitle_changed)
         self._subs_api.lines.items_removed.connect(self._subtitles_removed)
@@ -102,6 +102,16 @@ class UndoApi(QtCore.QObject):
         self._subs_api.lines.items_removed.disconnect(self._subtitles_removed)
         self._subs_api.lines.items_inserted.disconnect(
             self._subtitles_inserted)
+
+    def _subtitles_loaded(self):
+        self._undo_stack = [(
+            UndoOperation.Reset,
+            self._serialize_lines(0, len(self._subs_api.lines)))]
+        self._undo_stack_pos = 0
+        self._undo_stack_pos_when_saved = 0
+
+    def _subtitles_saved(self):
+        self._undo_stack_pos_when_saved = self._undo_stack_pos
 
     def _subtitle_changed(self, idx):
         # XXX: merge with previous operation if it concerns the same subtitle

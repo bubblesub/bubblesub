@@ -128,12 +128,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         self._store_splitters()
-        if not self._api.undo.has_undo or bubblesub.ui.util.ask(
+        if self._api.undo.needs_save and not bubblesub.ui.util.ask(
                 'There are unsaved changes. '
                 'Are you sure you want to exit the program?'):
-            event.accept()
-        else:
             event.ignore()
+        else:
+            event.accept()
 
     def _restore_splitters(self):
         splitter_cfg = self._api.opt.general.get('splitters', None)
