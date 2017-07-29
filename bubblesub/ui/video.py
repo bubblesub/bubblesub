@@ -21,11 +21,11 @@ class Video(QtWidgets.QFrame):
 
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = bubblesub.mpv.MPV(
-            # osd_bar=True,
-            # osc=True,
-            # input_cursor=True,
-            # input_vo_keyboard=True,
-            # input_default_bindings=True,
+            osd_bar=False,
+            osc=False,
+            input_cursor=False,
+            input_vo_keyboard=False,
+            input_default_bindings=False,
             keep_open=True,  # without this reaching mpv['end'] borks playback
             wid=str(int(self.winId())),
             log_handler=mpv_log_handler)
