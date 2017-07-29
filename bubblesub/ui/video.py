@@ -57,8 +57,9 @@ class Video(QtWidgets.QFrame):
         api.video.playback_requested.connect(self._play)
         api.video.seek_requested.connect(self._seek)
 
-        timer = QtCore.QTimer(self)
-        timer.setInterval(65)
+        timer = QtCore.QTimer(
+            self,
+            interval=api.opt.general['video']['subs_sync_interval'])
         timer.timeout.connect(self._refresh_subs_if_needed)
         timer.start()
 

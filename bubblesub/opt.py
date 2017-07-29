@@ -40,6 +40,16 @@ class Options:
     def __init__(self):
         self.general = {
             'convert_newlines': True,
+            'subs': {
+                'default_duration': 2000,
+            },
+            'video': {
+                'subs_sync_interval': 65,
+            },
+            'audio': {
+                'spectrogram_resolution': 10,
+                'spectrogram_sync_interval': 65,
+            },
         }
 
         self.hotkeys = {

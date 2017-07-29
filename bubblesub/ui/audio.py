@@ -7,7 +7,6 @@ from bubblesub.ui.util import blend_colors
 from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
 
 
-HORIZONTAL_RES = 10
 NOT_CACHED = object()
 CACHING = object()
 
@@ -130,8 +129,9 @@ class AudioPreviewWidget(BaseAudioWidget):
                     self.palette().text().color(),
                     i / 255))
 
-        timer = QtCore.QTimer(self)
-        timer.setInterval(50)
+        timer = QtCore.QTimer(
+            self,
+            interval=api.opt.general['audio']['spectrogram_sync_interval'])
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
@@ -208,12 +208,14 @@ class AudioPreviewWidget(BaseAudioWidget):
         height = (1 << DERIVATION_SIZE) + 1
 
         pixels = np.zeros([width, height], dtype='byte')
+        horizontal_res = (
+            self._api.opt.general['audio']['spectrogram_resolution'])
 
         # since the task queue is a LIFO queue, in order to render the columns
         # left-to-right, they need to be iterated backwards (hence reversed()).
         for x in reversed(range(self.width())):
             pts = self._pts_from_x(x)
-            pts = (pts // HORIZONTAL_RES) * HORIZONTAL_RES
+            pts = (pts // horizontal_res) * horizontal_res
             column = self._spectrum_cache.get(pts, NOT_CACHED)
             if column is NOT_CACHED:
                 self._spectrum_provider.schedule(pts)

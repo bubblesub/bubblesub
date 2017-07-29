@@ -4,7 +4,6 @@ from PyQt5 import QtWidgets
 
 
 registry = {}
-DEFAULT_SUB_DURATION = 2000  # TODO: move this to config
 
 
 class BaseCommand:
@@ -88,8 +87,11 @@ class EditInsertAboveCommand(BaseCommand):
             prev_sub = api.subs.lines.get(idx - 1)
             cur_sub = api.subs.lines[idx]
 
-        end = cur_sub.start if cur_sub else DEFAULT_SUB_DURATION
-        start = end - DEFAULT_SUB_DURATION
+        end = (
+            cur_sub.start
+            if cur_sub
+            else api.opt.general['subs']['default_duration'])
+        start = end - api.opt.general['subs']['default_duration']
         if start < 0:
             start = 0
         if prev_sub and start < prev_sub.end:
@@ -115,7 +117,7 @@ class EditInsertBelowCommand(BaseCommand):
             next_sub = api.subs.lines.get(idx)
 
         start = cur_sub.end if cur_sub else 0
-        end = start + DEFAULT_SUB_DURATION
+        end = start + api.opt.general['subs']['default_duration']
         if next_sub and end > next_sub.start:
             end = next_sub.start
         if end < start:
@@ -205,7 +207,8 @@ class EditRealignSelectionToVideoCommand(BaseCommand):
     def run(self, api):
         api.audio.select(
             api.video.current_pts,
-            api.video.current_pts + DEFAULT_SUB_DURATION)
+            api.video.current_pts
+            + api.opt.general['subs']['default_duration'])
 
 
 class EditGlueSelectionEndCommand(BaseCommand):
