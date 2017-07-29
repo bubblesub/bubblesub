@@ -139,7 +139,7 @@ class SubtitlesApi(QtCore.QObject):
                 marginr=subtitle.margins[2],
                 type='Comment' if subtitle.is_comment else 'Dialogue'))
         if self._video_api.path != self._loaded_video_path:
-            path = str(self._video_api.path)
-            self._ass_source.aegisub_project['Video File'] = path
-            self._ass_source.aegisub_project['Audio File'] = path
+            video_path = str(self._video_api.path)
+            self._ass_source.aegisub_project['Video File'] = video_path
+            self._ass_source.aegisub_project['Audio File'] = video_path
         self._ass_source.save(path)
