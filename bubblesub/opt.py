@@ -84,6 +84,17 @@ class Options:
                 ('Alt+C', 'edit/copy'),  # TODO
                 ('Ctrl+Return', 'edit/insert-below'),
                 ('Ctrl+Delete', 'edit/delete'),
+                ('Ctrl+Shift+1', 'edit/move-sel-start', -250),
+                ('Ctrl+Shift+2', 'edit/move-sel-start', 250),
+                ('Ctrl+Shift+3', 'edit/move-sel-end', -250),
+                ('Ctrl+Shift+4', 'edit/move-sel-end', 250),
+                ('Ctrl+1', 'edit/move-sel-start', -25),
+                ('Ctrl+2', 'edit/move-sel-start', 25),
+                ('Ctrl+3', 'edit/move-sel-end', -25),
+                ('Ctrl+4', 'edit/move-sel-end', 25),
+                ('Ctrl+B', 'edit/snap-sel-start-to-video'),
+                ('Ctrl+N', 'edit/realign-sel-to-video'),
+                ('Ctrl+M', 'edit/snap-sel-end-to-video'),
             ],
 
             'audio': [
