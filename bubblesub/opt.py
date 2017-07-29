@@ -40,6 +40,9 @@ class Options:
     def __init__(self):
         self.general = {
             'convert_newlines': True,
+            'fonts': {
+                'editor': None,
+            },
             'subs': {
                 'default_duration': 2000,
             },

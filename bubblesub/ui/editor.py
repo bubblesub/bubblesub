@@ -1,5 +1,33 @@
 import bubblesub.util
+from PyQt5 import QtCore
+from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+
+
+class TextEdit(QtWidgets.QPlainTextEdit):
+    def __init__(self, api, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self._api = api
+        try:
+            font_def = self._api.opt.general['fonts']['editor']
+            if font_def:
+                font = QtGui.QFont()
+                font.fromString(font_def)
+                self.setFont(font)
+        except KeyError:
+            pass
+
+    def wheelEvent(self, event):
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            distance = 1 if event.angleDelta().y() > 0 else -1
+            new_size = self.font().pointSize() + distance
+            if new_size < 5:
+                return
+            font = self.font()
+            font.setPointSize(new_size)
+            self.setFont(font)
+            self._api.opt.general['fonts']['editor'] = (
+                self.font().toString())
 
 
 class Editor(QtWidgets.QWidget):
@@ -28,7 +56,7 @@ class Editor(QtWidgets.QWidget):
         self.margin_r_edit = QtWidgets.QSpinBox(self, minimum=0)
         self.layer_edit = QtWidgets.QSpinBox(self, minimum=0)
         self.comment_checkbox = QtWidgets.QCheckBox('Comment', self)
-        self.text_edit = QtWidgets.QPlainTextEdit(self, tabChangesFocus=True)
+        self.text_edit = TextEdit(api, self, tabChangesFocus=True)
 
         top_bar = QtWidgets.QWidget(self)
         top_bar.setLayout(QtWidgets.QHBoxLayout(self))
