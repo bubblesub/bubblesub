@@ -25,10 +25,10 @@ class SubsGridModel(QtCore.QAbstractTableModel):
             return self._header_labels[section]
         return super().headerData(section, orientation, role)
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, _parent=QtCore.QModelIndex()):
         return len(self._subtitles)
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, _parent=QtCore.QModelIndex()):
         return len(self._header_labels)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
@@ -56,7 +56,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                     else '-')
         return QtCore.QVariant()
 
-    def flags(self, index):
+    def flags(self, _index):
         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
     def _proxy_data_changed(self, idx):
@@ -95,7 +95,7 @@ class SubsGrid(QtWidgets.QTableView):
             rows.add(index.row())
         return list(rows)
 
-    def _widget_selection_changed(self, selected, deselected):
+    def _widget_selection_changed(self, _selected, _deselected):
         if self._collect_rows() != self._api.subs.selected_lines:
             self._api.subs.selected_lines = self._collect_rows()
 

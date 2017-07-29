@@ -8,7 +8,6 @@ registry = {}
 
 class BaseCommand:
     def __init_subclass__(cls):
-        global registry
         instance = cls()
         registry[instance.name] = instance
 

@@ -21,7 +21,8 @@ class SpectrumProviderContext(bubblesub.util.ProviderContext):
         self._audio_source = None
         self._audio_path = None
 
-    def work(self, pts):
+    def work(self, task):
+        pts = task
         self._load_audio_if_needed()
 
         audio_frame = int(pts * self._sample_rate / 1000.0)

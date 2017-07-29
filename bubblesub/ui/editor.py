@@ -1,5 +1,4 @@
 import bubblesub.util
-from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
@@ -74,9 +73,9 @@ class Editor(QtWidgets.QWidget):
 
     def _clear_selection(self):
         self._index = None
-        self.start_time_edit.resetText()
-        self.end_time_edit.resetText()
-        self.duration_edit.resetText()
+        self.start_time_edit.reset_text()
+        self.end_time_edit.reset_text()
+        self.duration_edit.reset_text()
         self.style_edit.lineEdit().setText('')
         self.actor_edit.lineEdit().setText('')
         self.text_edit.document().setPlainText('')
@@ -115,21 +114,21 @@ class Editor(QtWidgets.QWidget):
             self._fetch_selection(self._index)
             self._connect_slots()
 
-    def _time_end_edited(self, *args):
+    def _time_end_edited(self):
         start = bubblesub.util.str_to_ms(self.start_time_edit.text())
         end = bubblesub.util.str_to_ms(self.end_time_edit.text())
         duration = end - start
         self.duration_edit.setText(bubblesub.util.ms_to_str(duration))
         self._push_selection()
 
-    def _duration_edited(self, *args):
+    def _duration_edited(self):
         start = bubblesub.util.str_to_ms(self.start_time_edit.text())
         duration = bubblesub.util.str_to_ms(self.duration_edit.text())
         end = start + duration
         self.end_time_edit.setText(bubblesub.util.ms_to_str(end))
         self._push_selection()
 
-    def _generic_edited(self, *args):
+    def _generic_edited(self):
         self._push_selection()
 
     def _connect_slots(self):

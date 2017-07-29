@@ -21,8 +21,8 @@ def character_count(text):
     return len(re.sub('[^\\W]+', '', ass_to_plaintext(text), re.I))
 
 
-def ms_to_str(ms):
-    return pysubs2.time.ms_to_str(ms, fractions=True)
+def ms_to_str(milliseconds):
+    return pysubs2.time.ms_to_str(milliseconds, fractions=True)
 
 
 def str_to_ms(text):
@@ -101,6 +101,11 @@ class ObservableObject:
             self._changed()
             self._dirty = False
 
+    def notify_property_changed(self):
+        self._dirty = True
+        if not self._throttled:
+            self._changed()
+
     def _changed(self):
         pass
 
@@ -109,15 +114,13 @@ class ObservableProperty:
     def __init__(self, attr):
         self.attr = attr
 
-    def __get__(self, instance, type):
+    def __get__(self, instance, owner):
         return instance.__dict__.get(self.attr, None)
 
     def __set__(self, instance, value):
         if getattr(instance, self.attr) != value:
             instance.__dict__[self.attr] = value
-            instance._dirty = True
-            if not instance._throttled:
-                instance._changed()
+            instance.notify_property_changed()
 
 
 # alternative to QtCore.QAbstractListModel that simplifies indexing
@@ -138,7 +141,7 @@ class ListModel(QtCore.QObject):
 
     def __setitem__(self, idx, value):
         self._data[idx] = value
-        if type(idx) is slice:
+        if isinstance(idx, slice):
             for i, _ in enumerate(self._data[idx]):
                 self.item_changed.emit(i)
         else:
@@ -219,13 +222,14 @@ class Provider(QtCore.QObject):
 
 # snippet by Aaron Hall, taken from https://stackoverflow.com/a/30316760
 # CC-BY-SA 3.0
-def getsize(obj_0):
-    """Recursively iterate to sum size of object & members."""
-    def inner(obj, _seen_ids = set()):
+def getsize(top_obj):
+    visited = set()
+
+    def inner(obj):
         obj_id = id(obj)
-        if obj_id in _seen_ids:
+        if obj_id in visited:
             return 0
-        _seen_ids.add(obj_id)
+        visited.add(obj_id)
         size = sys.getsizeof(obj)
         if isinstance(obj, (str, bytes, Number, range, bytearray)):
             pass
@@ -236,6 +240,9 @@ def getsize(obj_0):
         if hasattr(obj, '__dict__'):
             size += inner(vars(obj))
         if hasattr(obj, '__slots__'):
-            size += sum(inner(getattr(obj, s)) for s in obj.__slots__ if hasattr(obj, s))
+            size += sum(
+                inner(getattr(obj, s))
+                for s in obj.__slots__ if hasattr(obj, s))
         return size
-    return inner(obj_0)
+
+    return inner(top_obj)

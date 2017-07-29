@@ -12,7 +12,7 @@ class AudioApi(QtCore.QObject):
         self._view_start = 0
         self._view_end = 0
         self._selection_start = None
-        self._selection_size = None
+        self._selection_end = None
 
         self._video_api = video_api
         self._video_api.timecodes_updated.connect(self._timecodes_updated)

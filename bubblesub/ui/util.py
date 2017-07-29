@@ -21,10 +21,10 @@ def ask(msg):
 
 
 def blend_colors(color1, color2, ratio):
-    r = color1.red() * (1 - ratio) + color2.red() * ratio
-    g = color1.green() * (1 - ratio) + color2.green() * ratio
-    b = color1.blue() * (1 - ratio) + color2.blue() * ratio
-    return QtGui.qRgb(r, g, b)
+    return QtGui.qRgb(
+        color1.red() * (1 - ratio) + color2.red() * ratio,
+        color1.green() * (1 - ratio) + color2.green() * ratio,
+        color1.blue() * (1 - ratio) + color2.blue() * ratio)
 
 
 class TimeEdit(QtWidgets.QLineEdit):
@@ -38,9 +38,9 @@ class TimeEdit(QtWidgets.QLineEdit):
                     QtCore.QRegExp(r'[+-]\d:\d\d:\d\d\.\d\d\d'), parent))
         else:
             self.setInputMask('9:99:99.999')
-        self.resetText()
+        self.reset_text()
 
-    def resetText(self):
+    def reset_text(self):
         if self._allow_negative:
             self.setText('+0:00:00.000')
         else:

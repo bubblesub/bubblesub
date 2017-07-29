@@ -5,7 +5,7 @@ import bubblesub.util
 from PyQt5 import QtCore
 
 
-class UndoOperation:
+class UndoOperation(enum.Enum):
     Reset = 0
     SubtitleChange = 1
     SubtitlesInsertion = 2
@@ -36,18 +36,18 @@ class UndoApi(QtCore.QObject):
         self._disconnect_signals()
 
         self._undo_stack_pos -= 1
-        op, *op_args = self._undo_stack[self._undo_stack_pos]
+        op_type, *op_args = self._undo_stack[self._undo_stack_pos]
 
-        if op == UndoOperation.Reset:
+        if op_type == UndoOperation.Reset:
             lines, = op_args
             self._subs_api.lines[:] = self._deserialize_lines(lines)
-        elif op == UndoOperation.SubtitleChange:
+        elif op_type == UndoOperation.SubtitleChange:
             idx, lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(lines)[0]
-        elif op == UndoOperation.SubtitlesInsertion:
+        elif op_type == UndoOperation.SubtitlesInsertion:
             idx, count, lines = op_args
             self._subs_api.lines.remove(idx, count)
-        elif op == UndoOperation.SubtitlesRemoval:
+        elif op_type == UndoOperation.SubtitlesRemoval:
             idx, count, lines = op_args
             self._subs_api.lines.insert(idx, self._deserialize_lines(lines))
 
@@ -59,18 +59,18 @@ class UndoApi(QtCore.QObject):
         self._disconnect_signals()
 
         self._undo_stack_pos += 1
-        op, *op_args = self._undo_stack[self._undo_stack_pos]
+        op_type, *op_args = self._undo_stack[self._undo_stack_pos]
 
-        if op == UndoOperation.Reset:
+        if op_type == UndoOperation.Reset:
             lines, = op_args
             self._subs_api.lines = lines
-        elif op == UndoOperation.SubtitleChange:
+        elif op_type == UndoOperation.SubtitleChange:
             idx, lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(lines)[0]
-        elif op == UndoOperation.SubtitlesInsertion:
+        elif op_type == UndoOperation.SubtitlesInsertion:
             idx, count, lines = op_args
             self._subs_api.lines.insert(idx, self._deserialize_lines(lines))
-        elif op == UndoOperation.SubtitlesRemoval:
+        elif op_type == UndoOperation.SubtitlesRemoval:
             idx, count, lines = op_args
             self._subs_api.lines.remove(idx, count)
 
@@ -80,9 +80,9 @@ class UndoApi(QtCore.QObject):
         self._undo_stack = self._undo_stack[:self._undo_stack_pos + 1]
         self._undo_stack_pos = len(self._undo_stack) - 1
 
-    def _trim_undo_stack_and_append(self, op):
+    def _trim_undo_stack_and_append(self, op_type, *op_args):
         self._trim_undo_stack()
-        self._undo_stack.append(op)
+        self._undo_stack.append((op_type, *op_args))
         self._undo_stack_pos = len(self._undo_stack) - 1
         print('Size of undo stack:', bubblesub.util.getsize(self._undo_stack))
 
@@ -94,35 +94,36 @@ class UndoApi(QtCore.QObject):
 
     def _connect_signals(self):
         self._subs_api.lines.item_changed.connect(self._subtitle_changed)
-        self._subs_api.lines.items_inserted.connect(self._subtitles_inserted)
         self._subs_api.lines.items_removed.connect(self._subtitles_removed)
+        self._subs_api.lines.items_inserted.connect(self._subtitles_inserted)
 
     def _disconnect_signals(self):
         self._subs_api.lines.item_changed.disconnect(self._subtitle_changed)
-        self._subs_api.lines.items_inserted.disconnect(self._subtitles_inserted)
         self._subs_api.lines.items_removed.disconnect(self._subtitles_removed)
+        self._subs_api.lines.items_inserted.disconnect(
+            self._subtitles_inserted)
 
     def _subtitle_changed(self, idx):
         # XXX: merge with previous operation if it concerns the same subtitle
         # and only one field has changed (difficult)
-        self._trim_undo_stack_and_append((
+        self._trim_undo_stack_and_append(
             UndoOperation.SubtitleChange,
             idx,
-            self._serialize_lines(idx, 1)))
+            self._serialize_lines(idx, 1))
 
     def _subtitles_inserted(self, idx, count):
-        self._trim_undo_stack_and_append((
+        self._trim_undo_stack_and_append(
             UndoOperation.SubtitlesInsertion,
             idx,
             count,
-            self._serialize_lines(idx, count)))
+            self._serialize_lines(idx, count))
 
     def _subtitles_removed(self, idx, count):
-        self._trim_undo_stack_and_append((
+        self._trim_undo_stack_and_append(
             UndoOperation.SubtitlesRemoval,
             idx,
             count,
-            self._serialize_lines(idx, count)))
+            self._serialize_lines(idx, count))
 
     # TODO: handle margins etc. once they appear
     def _serialize_lines(self, idx, count):

@@ -33,14 +33,14 @@ class Video(QtWidgets.QFrame):
         self._api.video.is_paused = True
 
         @self._mpv.event_callback('file_loaded')
-        def init_handler(*args):
+        def _init_handler(*_):
             self._video_ready()
 
         @self._mpv.event_callback('pause')
-        def pause_handler(*args):
+        def _pause_handler(*_):
             self._api.video.is_paused = True
 
-        def time_pos_handler(prop_name, time_pos):
+        def time_pos_handler(_prop_name, time_pos):
             self._api.video.current_pts = time_pos * 1000
 
         self._mpv.observe_property('time-pos', time_pos_handler)
@@ -84,7 +84,7 @@ class Video(QtWidgets.QFrame):
         pts = self._align_pts_to_next_frame(pts)
         self._mpv.seek(bubblesub.util.ms_to_str(pts), 'absolute+exact')
 
-    def _reload_video(self, *args, **kwargs):
+    def _reload_video(self):
         self._api.subs.save_ass(self._subs_path)
         if not self._api.video.path or not self._api.video.path.exists():
             self._mpv.loadfile('')
@@ -101,7 +101,7 @@ class Video(QtWidgets.QFrame):
         if self._need_subs_refresh:
             self._refresh_subs()
 
-    def _refresh_subs(self, *args, **kwargs):
+    def _refresh_subs(self):
         if not self._mpv_ready:
             return
         self._api.subs.save_ass(self._subs_path)

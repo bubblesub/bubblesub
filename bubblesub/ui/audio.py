@@ -56,7 +56,7 @@ class AudioScaleWidget(BaseAudioWidget):
         super().__init__(api, parent)
         self.setFixedHeight(20)
 
-    def paintEvent(self, event):
+    def paintEvent(self, _event):
         painter = QtGui.QPainter()
         painter.begin(self)
         self._draw_scale(painter)
@@ -72,7 +72,7 @@ class AudioScaleWidget(BaseAudioWidget):
         painter.drawLine(w - 1, 0, w - 1, h - 1)
 
     def _draw_scale(self, painter):
-        w, h = self.width(), self.height()
+        h = self.height()
         one_second = 1000
         one_minute = 60 * one_second
 
@@ -80,16 +80,13 @@ class AudioScaleWidget(BaseAudioWidget):
         end_pts = (
             (int(self._api.audio.view_end + one_minute) // one_minute)
             * one_minute)
-        seconds_per_pixel = (
-            (self._api.audio.view_end - self._api.audio.view_start)
-            / self.width() / 1000.0)
 
         painter.setFont(QtGui.QFont(self.font().family(), 8))
-        fh = painter.fontMetrics().capHeight()
+        text_height = painter.fontMetrics().capHeight()
 
         for pts in range(start_pts, end_pts, one_second):
             if pts % one_minute == 0:
-                gap = self.height() - 1
+                gap = h - 1
             else:
                 gap = 4
 
@@ -103,7 +100,7 @@ class AudioScaleWidget(BaseAudioWidget):
                 text = ''
             painter.drawText(
                 x + 2,
-                fh + (self.height() - fh) / 2,
+                text_height + (h - text_height) / 2,
                 text)
 
     def _pts_to_x(self, pts):
@@ -138,10 +135,10 @@ class AudioPreviewWidget(BaseAudioWidget):
         api.video.pos_changed.connect(self._video_pos_changed)
         api.video.loaded.connect(self._video_loaded)
 
-    def paintEvent(self, event):
+    def paintEvent(self, _event):
         painter = QtGui.QPainter()
         painter.begin(self)
-        self._draw_spectrogram(painter, event)
+        self._draw_spectrogram(painter, _event)
         painter.end()
 
         painter = QtGui.QPainter()
@@ -168,7 +165,7 @@ class AudioPreviewWidget(BaseAudioWidget):
             self.setCursor(QtCore.Qt.SizeHorCursor)
             self.mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, _event):
         self._drag_mode = DragMode.Off
         self.setCursor(QtCore.Qt.ArrowCursor)
 
@@ -203,7 +200,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._spectrum_cache[pts] = column
         self._need_repaint = True
 
-    def _draw_spectrogram(self, painter, event):
+    def _draw_spectrogram(self, painter, _event):
         width = self.width()
         height = (1 << DERIVATION_SIZE) + 1
 
@@ -237,7 +234,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
 
     def _draw_subtitle_rects(self, painter):
-        w, h = self.width(), self.height()
+        h = self.height()
         painter.setPen(
             QtGui.QPen(self.palette().highlight(), 1, QtCore.Qt.SolidLine))
         for i, line in enumerate(self._api.subs.lines):
@@ -251,7 +248,7 @@ class AudioPreviewWidget(BaseAudioWidget):
     def _draw_selection(self, painter):
         if not self._api.audio.has_selection:
             return
-        w, h = self.width(), self.height()
+        h = self.height()
         if self.parent().hasFocus():
             color = QtGui.QColor(0xFF, 0xA0, 0x00)
         else:
@@ -296,7 +293,7 @@ class AudioSliderWidget(BaseAudioWidget):
         super().__init__(api, parent)
         self.setFixedHeight(20)
 
-    def paintEvent(self, event):
+    def paintEvent(self, _event):
         painter = QtGui.QPainter()
         painter.begin(self)
         self._draw_slider(painter)
@@ -307,7 +304,7 @@ class AudioSliderWidget(BaseAudioWidget):
         self.setCursor(QtCore.Qt.SizeHorCursor)
         self.mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, _event):
         self.setCursor(QtCore.Qt.ArrowCursor)
 
     def mouseMoveEvent(self, event):
@@ -317,7 +314,7 @@ class AudioSliderWidget(BaseAudioWidget):
         self._api.audio.move_view(distance)
 
     def _draw_slider(self, painter):
-        w, h = self.width(), self.height()
+        h = self.height()
         brush = QtGui.QBrush(self.palette().highlight())
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(brush)

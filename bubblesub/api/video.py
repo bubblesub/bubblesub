@@ -8,7 +8,8 @@ class TimecodesProviderContext(bubblesub.util.ProviderContext):
         super().__init__()
         self._log_api = log_api
 
-    def work(self, path):
+    def work(self, task):
+        path = task
         self._log_api.info('timecodes: loading... ({})'.format(path))
         cache_key = str(path)
         timecodes = bubblesub.util.load_cache('index', cache_key)
