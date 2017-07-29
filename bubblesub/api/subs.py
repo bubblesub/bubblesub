@@ -4,6 +4,23 @@ import pysubs2
 from PyQt5 import QtCore
 
 
+EMPTY_ASS = '''
+[Script Info]
+ScriptType: v4.00+
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+YCbCr Matrix: TV.601
+PlayResY: 288
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00202020,&H7F202020,-1,0,0,0,100,100,0,0,1,3,0,2,20,20,20,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+'''
+
+
 class Subtitle(bubblesub.util.ObservableObject):
     start = bubblesub.util.ObservableProperty('start')
     end = bubblesub.util.ObservableProperty('end')
@@ -63,7 +80,8 @@ class SubtitlesApi(QtCore.QObject):
         self._video_api = video_api
         self._loaded_video_path = None
         self._selected_lines = []
-        self._ass_source = None
+        self._ass_source = pysubs2.SSAFile.from_string(
+            EMPTY_ASS, format_='ass')
         self._path = None
         self.lines = bubblesub.api.subs.SubtitleList()
 
@@ -85,9 +103,24 @@ class SubtitlesApi(QtCore.QObject):
             self._selected_lines = new_selection
             self.selection_changed.emit(new_selection)
 
+    def unload(self):
+        self._path = None
+        self._ass_source = pysubs2.SSAFile.from_string(
+            EMPTY_ASS, format_='ass')
+        self.lines.remove(0, len(self.lines))
+        self.selected_lines = []
+        self._video_api.unload()
+        self.loaded.emit()
+
     def load_ass(self, path):
+        assert path
+        try:
+            ass_source = pysubs2.load(str(path))
+        except Exception:
+            raise
+
         self._path = Path(path)
-        self._ass_source = pysubs2.load(str(self._path))
+        self._ass_source = ass_source
 
         self.selected_lines = []
 
@@ -108,7 +141,6 @@ class SubtitlesApi(QtCore.QObject):
                         margins=(line.marginl, line.marginv, line.marginr),
                         is_comment=line.is_comment)
                     for line in self._ass_source
-                    if line.start and line.end
                 ])
 
         self._loaded_video_path = None
@@ -117,13 +149,16 @@ class SubtitlesApi(QtCore.QObject):
             self._loaded_video_path = (
                 self._path.parent /
                 self._ass_source.aegisub_project['Video File'])
-        self._video_api.load(self._loaded_video_path)
+        if self._loaded_video_path:
+            self._video_api.load(self._loaded_video_path)
+        else:
+            self._video_api.unload()
 
         self.loaded.emit()
 
-    def save_ass(self, path):
-        if not self._ass_source:
-            raise RuntimeError('Subtitles not loaded')
+    def save_ass(self, path, remember_path=False):
+        assert path
+        path = Path(path)
         del self._ass_source[:]
         for subtitle in self.lines:
             self._ass_source.append(pysubs2.SSAEvent(
@@ -142,4 +177,6 @@ class SubtitlesApi(QtCore.QObject):
             video_path = str(self._video_api.path)
             self._ass_source.aegisub_project['Video File'] = video_path
             self._ass_source.aegisub_project['Audio File'] = video_path
+        if remember_path:
+            self._path = path
         self._ass_source.save(path)

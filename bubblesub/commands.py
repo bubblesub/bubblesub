@@ -30,12 +30,68 @@ def _ask_about_unsaved_changes(api):
         'Are you sure you want to close the current file?')
 
 
+class FileNewCommand(BaseCommand):
+    name = 'file/new'
+
+    def run(self, api):
+        if _ask_about_unsaved_changes(api):
+            api.subs.unload()
+            api.log.info('Created new subtitles')
+
+
+class FileOpenCommand(BaseCommand):
+    name = 'file/open'
+
+    def run(self, api):
+        if _ask_about_unsaved_changes(api):
+            path, _ = QtWidgets.QFileDialog.getOpenFileName(
+                api.gui.main_window, initialFilter='*.ass')
+            if not path:
+                api.log.info('Opening cancelled.')
+            else:
+                api.subs.load_ass(path)
+                api.log.info('Opened {}'.format(path))
+
+
+class FileLoadVideo(BaseCommand):
+    name = 'file/load-video'
+
+    def run(self, api):
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            api.gui.main_window, initialFilter='*.mkv')
+        if not path:
+            api.log.info('Loading video cancelled.')
+        else:
+            api.video.load(path)
+            api.log.info('Loading {}'.format(path))
+
+
 class FileSaveCommand(BaseCommand):
     name = 'file/save'
 
     def run(self, api):
-        api.subs.save_ass(api.subs.path)
-        # TODO: log in console
+        path = api.subs.path
+        if not api.subs.path:
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                api.gui.main_window, initialFilter='*.ass')
+            if not path:
+                api.log.info('Saving cancelled.')
+                return
+        api.subs.save_ass(path, remember_path=True)
+        api.log.info('Saved subtitles to {}'.format(path))
+
+
+class FileSaveAsCommand(BaseCommand):
+    name = 'file/save-as'
+
+    def run(self, api):
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            api.gui.main_window, initialFilter='*.ass')
+        if not path:
+            api.log.info('Saving cancelled.')
+        else:
+            api.subs.save_ass(path, remember_path=True)
+            api.log.info('Saved subtitles to {}'.format(path))
 
 
 class FileQuitCommand(BaseCommand):

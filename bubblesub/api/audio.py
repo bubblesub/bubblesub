@@ -97,7 +97,7 @@ class AudioApi(QtCore.QObject):
     def _set_max_pts(self, max_pts):
         self._min = 0
         self._max = max_pts
-        self.zoom_view(1)  # emits selection changed
+        self.zoom_view(1)  # emits view_changed
 
     def _timecodes_updated(self):
         if self._video_api.timecodes:

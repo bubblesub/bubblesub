@@ -54,10 +54,10 @@ class Options:
 
         self.hotkeys = {
             'global': [
-                ('Ctrl+N', 'file/new'),  # TODO
-                ('Ctrl+O', 'file/open'),  # TODO
+                ('Ctrl+N', 'file/new'),
+                ('Ctrl+O', 'file/open'),
                 ('Ctrl+S', 'file/save'),
-                ('Ctrl+Shift+S', 'file/save-as'),  # TODO
+                ('Ctrl+Shift+S', 'file/save-as'),
                 ('Ctrl+Q', 'file/quit'),
                 ('Ctrl+G', 'grid/jump-to-line'),
                 ('Ctrl+Shift+G', 'grid/jump-to-time'),
@@ -114,10 +114,12 @@ class Options:
 
         self.menu = {
             '&File': [
-                # ('New', 'file/new'),  # TODO
-                # ('Open', 'file/open'),  # TODO
+                ('New', 'file/new'),
+                ('Open', 'file/open'),
                 ('Save', 'file/save'),
-                # ('Save as', 'file/save-as'),  # TODO
+                ('Save as', 'file/save-as'),
+                None,
+                ('Load video', 'file/load-video'),
                 None,
                 ('Quit', 'file/quit'),
             ],

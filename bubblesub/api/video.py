@@ -1,3 +1,4 @@
+from pathlib import Path
 import ffms
 import bubblesub.util
 from PyQt5 import QtCore
@@ -81,15 +82,22 @@ class VideoApi(QtCore.QObject):
     def timecodes(self):
         return self._timecodes
 
-    def load(self, video_path):
-        self._path = video_path
+    def unload(self):
+        self._path = None
         self._timecodes = []
         self.timecodes_updated.emit()
-        self._timecodes_provider.schedule(video_path)
+        self.loaded.emit()
+
+    def load(self, path):
+        assert path
+        self._path = Path(path)
+        self._timecodes = []
+        self.timecodes_updated.emit()
+        self._timecodes_provider.schedule(self._path)
         self.loaded.emit()
 
     def _got_timecodes(self, result):
-        video_path, timecodes = result
-        if video_path == self.path:
+        path, timecodes = result
+        if path == self.path:
             self._timecodes = timecodes
             self.timecodes_updated.emit()

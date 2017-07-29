@@ -8,7 +8,7 @@ import bubblesub.ui
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('file')
+    parser.add_argument('file', nargs='?')
     parser.add_argument('--no-config', action='store_true')
     return parser.parse_args()
 
