@@ -125,11 +125,19 @@ class UndoApi(QtCore.QObject):
             count,
             self._serialize_lines(idx, count))
 
-    # TODO: handle margins etc. once they appear
     def _serialize_lines(self, idx, count):
         ret = []
         for line in self._subs_api.lines[idx:idx+count]:
-            item = (line.start, line.end, line.style, line.actor, line.text)
+            item = (
+                line.start,
+                line.end,
+                line.style,
+                line.actor,
+                line.text,
+                line.effect,
+                line.layer,
+                line.margins,
+                line.is_comment)
             ret.append(item)
         return pickle.dumps(ret)
 
@@ -143,5 +151,9 @@ class UndoApi(QtCore.QObject):
                     end=item[1],
                     style=item[2],
                     actor=item[3],
-                    text=item[4])))
+                    text=item[4],
+                    effect=item[5],
+                    layer=item[6],
+                    margins=item[7],
+                    is_comment=item[8])))
         return ret

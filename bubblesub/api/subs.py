@@ -10,8 +10,15 @@ class Subtitle(bubblesub.util.ObservableObject):
     style = bubblesub.util.ObservableProperty('style')
     actor = bubblesub.util.ObservableProperty('actor')
     text = bubblesub.util.ObservableProperty('text')
+    effect = bubblesub.util.ObservableProperty('effect')
+    layer = bubblesub.util.ObservableProperty('layer')
+    margins = bubblesub.util.ObservableProperty('margins')
+    is_comment = bubblesub.util.ObservableProperty('is_comment')
 
-    def __init__(self, subtitles, start, end, style, actor='', text=''):
+    def __init__(
+            self, subtitles,
+            start, end, style='Default', actor='', text='',
+            layer=0, effect='', margins=(0, 0, 0), is_comment=False):
         super().__init__()
         self._subtitles = subtitles
         self.begin_update()
@@ -20,6 +27,10 @@ class Subtitle(bubblesub.util.ObservableObject):
         self.style = style
         self.actor = actor
         self.text = text
+        self.layer = layer
+        self.effect = effect
+        self.margins = margins
+        self.is_comment = is_comment
         self.end_update()
 
     @property
@@ -87,11 +98,15 @@ class SubtitlesApi(QtCore.QObject):
                 [
                     bubblesub.api.subs.Subtitle(
                         self.lines,
-                        line.start,
-                        line.end,
-                        line.style,
-                        line.name,
-                        line.text)
+                        start=line.start,
+                        end=line.end,
+                        style=line.style,
+                        actor=line.name,
+                        text=line.text,
+                        effect=line.effect,
+                        layer=line.layer,
+                        margins=(line.marginl, line.marginv, line.marginr),
+                        is_comment=line.is_comment)
                     for line in self._ass_source
                     if line.start and line.end
                 ])
@@ -116,7 +131,13 @@ class SubtitlesApi(QtCore.QObject):
                 end=subtitle.end,
                 style=subtitle.style,
                 name=subtitle.actor,
-                text=subtitle.text))
+                text=subtitle.text,
+                effect=subtitle.effect,
+                layer=subtitle.layer,
+                marginl=subtitle.margins[0],
+                marginv=subtitle.margins[1],
+                marginr=subtitle.margins[2],
+                type='Comment' if subtitle.is_comment else 'Dialogue'))
         if self._video_api.path != self._loaded_video_path:
             path = str(self._video_api.path)
             self._ass_source.aegisub_project['Video File'] = path

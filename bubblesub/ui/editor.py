@@ -3,7 +3,6 @@ from PyQt5 import QtWidgets
 
 
 class Editor(QtWidgets.QWidget):
-    # TODO: allow editing layer, margins and comment
     def __init__(self, api, parent=None):
         super().__init__(parent)
 
@@ -23,6 +22,12 @@ class Editor(QtWidgets.QWidget):
         self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
         self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
         self.duration_edit = bubblesub.ui.util.TimeEdit(self)
+        self.effect_edit = QtWidgets.QLineEdit(self)
+        self.margin_l_edit = QtWidgets.QSpinBox(self, minimum=0)
+        self.margin_v_edit = QtWidgets.QSpinBox(self, minimum=0)
+        self.margin_r_edit = QtWidgets.QSpinBox(self, minimum=0)
+        self.layer_edit = QtWidgets.QSpinBox(self, minimum=0)
+        self.comment_checkbox = QtWidgets.QCheckBox('Comment', self)
         self.text_edit = QtWidgets.QPlainTextEdit(self, tabChangesFocus=True)
 
         top_bar = QtWidgets.QWidget(self)
@@ -38,6 +43,15 @@ class Editor(QtWidgets.QWidget):
         top_bar.layout().addWidget(self.end_time_edit)
         top_bar.layout().addWidget(QtWidgets.QLabel('Duration:', self))
         top_bar.layout().addWidget(self.duration_edit)
+        top_bar.layout().addWidget(QtWidgets.QLabel('Effect:', self))
+        top_bar.layout().addWidget(self.effect_edit)
+        top_bar.layout().addWidget(QtWidgets.QLabel('Margins:', self))
+        top_bar.layout().addWidget(self.margin_l_edit)
+        top_bar.layout().addWidget(self.margin_v_edit)
+        top_bar.layout().addWidget(self.margin_r_edit)
+        top_bar.layout().addWidget(QtWidgets.QLabel('Layer:', self))
+        top_bar.layout().addWidget(self.layer_edit)
+        top_bar.layout().addWidget(self.comment_checkbox)
 
         self.setLayout(QtWidgets.QVBoxLayout(self))
         self.layout().addWidget(top_bar)
@@ -54,6 +68,12 @@ class Editor(QtWidgets.QWidget):
         self.start_time_edit.setText(bubblesub.util.ms_to_str(subtitle.start))
         self.end_time_edit.setText(bubblesub.util.ms_to_str(subtitle.end))
         self.duration_edit.setText(bubblesub.util.ms_to_str(subtitle.duration))
+        self.effect_edit.setText(subtitle.effect)
+        self.layer_edit.setValue(subtitle.layer)
+        self.comment_checkbox.setChecked(subtitle.is_comment)
+        self.margin_l_edit.setValue(subtitle.margins[0])
+        self.margin_v_edit.setValue(subtitle.margins[1])
+        self.margin_r_edit.setValue(subtitle.margins[2])
 
         self.actor_edit.clear()
         self.actor_edit.addItems(
@@ -78,6 +98,12 @@ class Editor(QtWidgets.QWidget):
         self.duration_edit.reset_text()
         self.style_edit.lineEdit().setText('')
         self.actor_edit.lineEdit().setText('')
+        self.effect_edit.setText('')
+        self.layer_edit.setValue(0)
+        self.comment_checkbox.setChecked(False)
+        self.margin_l_edit.setValue(0)
+        self.margin_v_edit.setValue(0)
+        self.margin_r_edit.setValue(0)
         self.text_edit.document().setPlainText('')
         self.setEnabled(False)
 
@@ -85,19 +111,20 @@ class Editor(QtWidgets.QWidget):
         if not self.isEnabled():
             return
 
-        new_start = bubblesub.util.str_to_ms(self.start_time_edit.text())
-        new_end = bubblesub.util.str_to_ms(self.end_time_edit.text())
-        new_style = self.style_edit.lineEdit().text()
-        new_actor = self.actor_edit.lineEdit().text()
-        new_text = self.text_edit.toPlainText().replace('\n', '\\N')
-
         subtitle = self._api.subs.lines[self._index]
         subtitle.begin_update()
-        subtitle.start = new_start
-        subtitle.end = new_end
-        subtitle.style = new_style
-        subtitle.actor = new_actor
-        subtitle.text = new_text
+        subtitle.start = bubblesub.util.str_to_ms(self.start_time_edit.text())
+        subtitle.end = bubblesub.util.str_to_ms(self.end_time_edit.text())
+        subtitle.style = self.style_edit.lineEdit().text()
+        subtitle.actor = self.actor_edit.lineEdit().text()
+        subtitle.text = self.text_edit.toPlainText().replace('\n', '\\N')
+        subtitle.effect = self.effect_edit.text()
+        subtitle.layer = self.layer_edit.value()
+        subtitle.margins = (
+            self.margin_l_edit.value(),
+            self.margin_v_edit.value(),
+            self.margin_r_edit.value())
+        subtitle.is_comment = self.comment_checkbox.isChecked()
         subtitle.end_update()
 
     def _grid_selection_changed(self, rows):
@@ -138,6 +165,12 @@ class Editor(QtWidgets.QWidget):
         self.actor_edit.editTextChanged.connect(self._generic_edited)
         self.style_edit.editTextChanged.connect(self._generic_edited)
         self.text_edit.textChanged.connect(self._generic_edited)
+        self.effect_edit.textChanged.connect(self._generic_edited)
+        self.layer_edit.valueChanged.connect(self._generic_edited)
+        self.margin_l_edit.valueChanged.connect(self._generic_edited)
+        self.margin_v_edit.valueChanged.connect(self._generic_edited)
+        self.margin_r_edit.valueChanged.connect(self._generic_edited)
+        self.comment_checkbox.stateChanged.connect(self._generic_edited)
 
     def _disconnect_slots(self):
         self.start_time_edit.textEdited.disconnect(self._generic_edited)
@@ -146,3 +179,9 @@ class Editor(QtWidgets.QWidget):
         self.actor_edit.editTextChanged.disconnect(self._generic_edited)
         self.style_edit.editTextChanged.disconnect(self._generic_edited)
         self.text_edit.textChanged.disconnect(self._generic_edited)
+        self.effect_edit.textChanged.disconnect(self._generic_edited)
+        self.layer_edit.valueChanged.disconnect(self._generic_edited)
+        self.margin_l_edit.valueChanged.disconnect(self._generic_edited)
+        self.margin_v_edit.valueChanged.disconnect(self._generic_edited)
+        self.margin_r_edit.valueChanged.disconnect(self._generic_edited)
+        self.comment_checkbox.stateChanged.disconnect(self._generic_edited)
