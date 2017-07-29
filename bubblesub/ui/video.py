@@ -2,10 +2,8 @@ import locale
 import tempfile
 import bubblesub.mpv
 import bubblesub.util
+from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-
-
-# TODO: add threshold to how often the subs can be reloaded
 
 
 def mpv_log_handler(log_level, component, message):
@@ -18,7 +16,8 @@ class Video(QtWidgets.QFrame):
         self._api = api
         _, self._subs_path = tempfile.mkstemp(suffix='.ass')
 
-        self._ready = False
+        self._need_subs_refresh = False
+        self._mpv_ready = False
 
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = bubblesub.mpv.MPV(
@@ -49,11 +48,22 @@ class Video(QtWidgets.QFrame):
         # TODO: buttons for play/pause like aegisub
 
         api.subs.selection_changed.connect(self._grid_selection_changed)
-        api.subs.lines.item_changed.connect(self._refresh_subs)
+        api.subs.loaded.connect(self._subs_changed)
+        api.subs.lines.item_changed.connect(self._subs_changed)
+        api.subs.lines.items_removed.connect(self._subs_changed)
+        api.subs.lines.items_inserted.connect(self._subs_changed)
         api.video.loaded.connect(self._reload_video)
         api.video.pause_requested.connect(self._pause)
         api.video.playback_requested.connect(self._play)
         api.video.seek_requested.connect(self._seek)
+
+        timer = QtCore.QTimer(self)
+        timer.setInterval(65)
+        timer.timeout.connect(self._refresh_subs_if_needed)
+        timer.start()
+
+    def _subs_changed(self):
+        self._need_subs_refresh = True
 
     def _play(self, start, end):
         if start:
@@ -67,7 +77,7 @@ class Video(QtWidgets.QFrame):
         self._api.video.is_paused = True
 
     def _seek(self, pts):
-        if not self._ready:
+        if not self._mpv_ready:
             return
         self._set_end(None)  # mpv refuses to seek beyond --end
         pts = self._align_pts_to_next_frame(pts)
@@ -77,21 +87,26 @@ class Video(QtWidgets.QFrame):
         self._api.subs.save_ass(self._subs_path)
         if not self._api.video.path or not self._api.video.path.exists():
             self._mpv.loadfile('')
-            self._ready = False
+            self._mpv_ready = False
         else:
             self._mpv.loadfile(str(self._api.video.path))
 
     def _video_ready(self):
-        self._ready = True
+        self._mpv_ready = True
         self._mpv.sub_add(self._subs_path)
         self._refresh_subs()
 
+    def _refresh_subs_if_needed(self):
+        if self._need_subs_refresh:
+            self._refresh_subs()
+
     def _refresh_subs(self, *args, **kwargs):
-        if not self._ready:
+        if not self._mpv_ready:
             return
         self._api.subs.save_ass(self._subs_path)
         if self._mpv.sub:
             self._mpv.sub_reload()
+            self._need_subs_refresh = False
 
     def _set_end(self, end):
         if not end:
