@@ -86,9 +86,8 @@ class Editor(QtWidgets.QWidget):
         self.layout().addWidget(self.text_edit)
         self.setEnabled(False)
 
-        api.subs.lines.item_changed.connect(self._item_changed)
-        api.subs.selection_changed.connect(self._grid_selection_changed)
-        self._connect_slots()
+        self._connect_api_signals()
+        self._connect_ui_signals()
 
     def _fetch_selection(self, index):
         self._index = index
@@ -139,6 +138,7 @@ class Editor(QtWidgets.QWidget):
         if not self.isEnabled():
             return
 
+        self._disconnect_api_signals()
         subtitle = self._api.subs.lines[self._index]
         subtitle.begin_update()
         subtitle.start = bubblesub.util.str_to_ms(self.start_time_edit.text())
@@ -154,20 +154,21 @@ class Editor(QtWidgets.QWidget):
             self.margin_r_edit.value())
         subtitle.is_comment = self.comment_checkbox.isChecked()
         subtitle.end_update()
+        self._connect_api_signals()
 
     def _grid_selection_changed(self, rows):
-        self._disconnect_slots()
+        self._disconnect_ui_signals()
         if len(rows) == 1:
             self._fetch_selection(rows[0])
         else:
             self._clear_selection()
-        self._connect_slots()
+        self._connect_ui_signals()
 
     def _item_changed(self, idx):
         if idx == self._index or idx is None:
-            self._disconnect_slots()
+            self._disconnect_ui_signals()
             self._fetch_selection(self._index)
-            self._connect_slots()
+            self._connect_ui_signals()
 
     def _time_end_edited(self):
         start = bubblesub.util.str_to_ms(self.start_time_edit.text())
@@ -186,7 +187,16 @@ class Editor(QtWidgets.QWidget):
     def _generic_edited(self):
         self._push_selection()
 
-    def _connect_slots(self):
+    def _connect_api_signals(self):
+        self._api.subs.lines.item_changed.connect(self._item_changed)
+        self._api.subs.selection_changed.connect(self._grid_selection_changed)
+
+    def _disconnect_api_signals(self):
+        self._api.subs.lines.item_changed.disconnect(self._item_changed)
+        self._api.subs.selection_changed.disconnect(
+            self._grid_selection_changed)
+
+    def _connect_ui_signals(self):
         self.start_time_edit.textEdited.connect(self._generic_edited)
         self.end_time_edit.textEdited.connect(self._time_end_edited)
         self.duration_edit.textEdited.connect(self._duration_edited)
@@ -200,7 +210,7 @@ class Editor(QtWidgets.QWidget):
         self.margin_r_edit.valueChanged.connect(self._generic_edited)
         self.comment_checkbox.stateChanged.connect(self._generic_edited)
 
-    def _disconnect_slots(self):
+    def _disconnect_ui_signals(self):
         self.start_time_edit.textEdited.disconnect(self._generic_edited)
         self.end_time_edit.textEdited.disconnect(self._time_end_edited)
         self.duration_edit.textEdited.disconnect(self._duration_edited)
