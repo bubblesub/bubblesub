@@ -539,6 +539,16 @@ class VideoStepFrameCommand(BaseCommand):
         api.video.seek(api.video.timecodes[idx + delta])
 
 
+class VideoSetPlaybackSpeed(BaseCommand):
+    name = 'video/set-playback-speed'
+
+    def enabled(self, api):
+        return len(api.video.timecodes) > 0
+
+    def run(self, api, speed):
+        api.video.playback_speed = speed
+
+
 class VideoTogglePauseCommand(BaseCommand):
     name = 'video/toggle-pause'
 

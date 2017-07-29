@@ -34,6 +34,7 @@ class VideoApi(QtCore.QObject):
     pause_requested = QtCore.pyqtSignal()
     timecodes_updated = QtCore.pyqtSignal()
     pos_changed = QtCore.pyqtSignal()
+    playback_speed_changed = QtCore.pyqtSignal(float)
 
     def __init__(self, log_api):
         super().__init__()
@@ -41,6 +42,7 @@ class VideoApi(QtCore.QObject):
         self._path = None
         self._is_paused = False
         self._current_pts = None
+        self._playback_speed = 1
 
         self._timecodes_provider = TimecodesProvider(self, log_api)
         self._timecodes_provider.finished.connect(self._got_timecodes)
@@ -56,6 +58,15 @@ class VideoApi(QtCore.QObject):
 
     def pause(self):
         self.pause_requested.emit()
+
+    @property
+    def playback_speed(self):
+        return self._playback_speed
+
+    @playback_speed.setter
+    def playback_speed(self, speed):
+        self._playback_speed = speed
+        self.playback_speed_changed.emit(speed)
 
     @property
     def current_pts(self):

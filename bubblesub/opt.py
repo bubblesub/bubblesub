@@ -95,6 +95,8 @@ class Options:
                 ('Ctrl+B', 'edit/snap-sel-start-to-video'),
                 ('Ctrl+N', 'edit/realign-sel-to-video'),
                 ('Ctrl+M', 'edit/snap-sel-end-to-video'),
+                ('Ctrl+[', 'video/set-playback-speed', 0.5),
+                ('Ctrl+]', 'video/set-playback-speed', 1),
             ],
 
             'audio': [
@@ -123,6 +125,8 @@ class Options:
                 ('B', 'edit/snap-sel-start-to-video'),
                 ('N', 'edit/realign-sel-to-video'),
                 ('M', 'edit/snap-sel-end-to-video'),
+                ('[', 'video/set-playback-speed', 0.5),
+                (']', 'video/set-playback-speed', 1),
             ],
         }
 
@@ -164,6 +168,9 @@ class Options:
                 None,
                 ('Scroll waveform backward', 'audio/scroll', -1),
                 ('Scroll waveform forward', 'audio/scroll', 1),
+                None,
+                ('Set playback speed to 0.5x', 'video/set-playback-speed', 0.5),
+                ('Set playback speed to 1x', 'video/set-playback-speed', 1),
             ],
 
             '&Edit': [

@@ -56,6 +56,7 @@ class Video(QtWidgets.QFrame):
         api.video.pause_requested.connect(self._pause)
         api.video.playback_requested.connect(self._play)
         api.video.seek_requested.connect(self._seek)
+        api.video.playback_speed_changed.connect(self._playback_speed_changed)
 
         timer = QtCore.QTimer(
             self,
@@ -114,6 +115,9 @@ class Video(QtWidgets.QFrame):
             # XXX: mpv doesn't accept None nor "" so we use max pts
             end = self._mpv.duration * 1000
         self._mpv['end'] = bubblesub.util.ms_to_str(end)
+
+    def _playback_speed_changed(self, speed):
+        self._mpv.speed = speed
 
     def _grid_selection_changed(self, rows):
         if len(rows) == 1:
