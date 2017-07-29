@@ -1,5 +1,5 @@
-import copy
 import enum
+import pickle
 import bubblesub.api.subs
 import bubblesub.util
 from PyQt5 import QtCore
@@ -128,19 +128,19 @@ class UndoApi(QtCore.QObject):
     def _serialize_lines(self, idx, count):
         ret = []
         for line in self._subs_api.lines[idx:idx+count]:
-            ret.append((
-                line.start, line.end, line.style, line.actor, line.text))
-        return ret
+            item = (line.start, line.end, line.style, line.actor, line.text)
+            ret.append(item)
+        return pickle.dumps(ret)
 
     def _deserialize_lines(self, lines):
         ret = []
-        for line in lines:
+        for item in pickle.loads(lines):
             ret.append((
                 bubblesub.api.subs.Subtitle(
                     self._subs_api.lines,
-                    start=line[0],
-                    end=line[1],
-                    style=line[2],
-                    actor=line[3],
-                    text=line[4])))
+                    start=item[0],
+                    end=item[1],
+                    style=item[2],
+                    actor=item[3],
+                    text=item[4])))
         return ret
