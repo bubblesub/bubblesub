@@ -296,6 +296,7 @@ class AudioSliderWidget(BaseAudioWidget):
     def paintEvent(self, _event):
         painter = QtGui.QPainter()
         painter.begin(self)
+        self._draw_subtitle_rects(painter)
         self._draw_slider(painter)
         self._draw_frame(painter)
         painter.end()
@@ -312,6 +313,17 @@ class AudioSliderWidget(BaseAudioWidget):
         new_center = self._pts_from_x(event.x())
         distance = new_center - old_center
         self._api.audio.move_view(distance)
+
+    def _draw_subtitle_rects(self, painter):
+        h = self.height()
+        painter.setPen(QtCore.Qt.NoPen)
+        color = self.palette().highlight().color()
+        color.setAlpha(40)
+        painter.setBrush(QtGui.QBrush(color))
+        for line in self._api.subs.lines:
+            x1 = self._pts_to_x(line.start)
+            x2 = self._pts_to_x(line.end)
+            painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_slider(self, painter):
         h = self.height()
