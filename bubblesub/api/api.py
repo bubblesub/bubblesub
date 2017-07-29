@@ -3,6 +3,7 @@ import bubblesub.api.gui
 import bubblesub.api.audio
 import bubblesub.api.video
 import bubblesub.api.subs
+import bubblesub.api.undo
 
 
 class Api:
@@ -14,3 +15,4 @@ class Api:
         self.video = bubblesub.api.video.VideoApi(self.log)
         self.audio = bubblesub.api.audio.AudioApi(self.video)
         self.subs = bubblesub.api.subs.SubtitlesApi(self.video)
+        self.undo = bubblesub.api.undo.UndoApi(self.subs)

@@ -3,6 +3,8 @@ import sys
 import time
 import json
 import queue
+from numbers import Number
+from collections import Set, Mapping, deque
 from pathlib import Path
 from PyQt5 import QtCore
 import pysubs2.time
@@ -136,7 +138,11 @@ class ListModel(QtCore.QObject):
 
     def __setitem__(self, idx, value):
         self._data[idx] = value
-        self.item_changed.emit(idx)
+        if type(idx) is slice:
+            for i, _ in enumerate(self._data[idx]):
+                self.item_changed.emit(i)
+        else:
+            self.item_changed.emit(idx)
 
     def get(self, idx, default=None):
         if idx < 0 or idx >= len(self):
@@ -209,3 +215,27 @@ class Provider(QtCore.QObject):
 
     def _work_finished(self, result):
         self.finished.emit(result)
+
+
+# snippet by Aaron Hall, taken from https://stackoverflow.com/a/30316760
+# CC-BY-SA 3.0
+def getsize(obj_0):
+    """Recursively iterate to sum size of object & members."""
+    def inner(obj, _seen_ids = set()):
+        obj_id = id(obj)
+        if obj_id in _seen_ids:
+            return 0
+        _seen_ids.add(obj_id)
+        size = sys.getsizeof(obj)
+        if isinstance(obj, (str, bytes, Number, range, bytearray)):
+            pass
+        elif isinstance(obj, (tuple, list, Set, deque)):
+            size += sum(inner(i) for i in obj)
+        elif isinstance(obj, Mapping) or hasattr(obj, 'items'):
+            size += sum(inner(k) + inner(v) for k, v in obj.items())
+        if hasattr(obj, '__dict__'):
+            size += inner(vars(obj))
+        if hasattr(obj, '__slots__'):
+            size += sum(inner(getattr(obj, s)) for s in obj.__slots__ if hasattr(obj, s))
+        return size
+    return inner(obj_0)

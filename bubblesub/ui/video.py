@@ -5,6 +5,9 @@ import bubblesub.util
 from PyQt5 import QtWidgets
 
 
+# TODO: add threshold to how often the subs can be reloaded
+
+
 def mpv_log_handler(log_level, component, message):
     print('[{}] {}: {}'.format(log_level, component, message))
 

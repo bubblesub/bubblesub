@@ -66,8 +66,8 @@ class Options:
                 ('Ctrl+Shift+.', 'video/step-frame', 10),
                 ('Ctrl+T', 'video/play-current-line'),
                 ('Ctrl+P', 'video/toggle-pause'),
-                ('Ctrl+Z', 'edit/undo'),  # TODO
-                ('Ctrl+Y', 'edit/redo'),  # TODO
+                ('Ctrl+Z', 'edit/undo'),
+                ('Ctrl+Y', 'edit/redo'),
                 ('Alt+C', 'edit/copy'),  # TODO
                 ('Ctrl+Return', 'edit/insert-below'),
                 ('Ctrl+Delete', 'edit/delete'),
@@ -141,8 +141,8 @@ class Options:
             ],
 
             '&Edit': [
-                # ('Undo', 'edit/undo'),  # TODO
-                # ('Redo', 'edit/redo'),  # TODO
+                ('Undo', 'edit/undo'),
+                ('Redo', 'edit/redo'),
                 None,
                 # ('Copy to clipboard', 'edit/copy'),  # TODO
                 None,

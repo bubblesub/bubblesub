@@ -53,6 +53,26 @@ class AudioScrollCommand(BaseCommand):
         api.audio.move_view(distance)
 
 
+class EditUndoCommand(BaseCommand):
+    name = 'edit/undo'
+
+    def enabled(self, api):
+        return api.undo.has_undo
+
+    def run(self, api):
+        api.undo.undo()
+
+
+class EditRedoCommand(BaseCommand):
+    name = 'edit/redo'
+
+    def enabled(self, api):
+        return api.undo.has_redo
+
+    def run(self, api):
+        api.undo.redo()
+
+
 class EditInsertAboveCommand(BaseCommand):
     name = 'edit/insert-above'
 

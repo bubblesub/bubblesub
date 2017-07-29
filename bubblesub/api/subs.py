@@ -34,7 +34,8 @@ class Subtitle(bubblesub.util.ObservableObject):
         return None
 
     def _changed(self):
-        self._subtitles.item_changed.emit(self.number)
+        if self.number is not None:
+            self._subtitles.item_changed.emit(self.number)
 
 
 class SubtitleList(bubblesub.util.ListModel):

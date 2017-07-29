@@ -45,6 +45,7 @@ class Editor(QtWidgets.QWidget):
         self.layout().addWidget(self.text_edit)
         self.setEnabled(False)
 
+        api.subs.lines.item_changed.connect(self._item_changed)
         api.subs.selection_changed.connect(self._grid_selection_changed)
         self._connect_slots()
 
@@ -69,6 +70,17 @@ class Editor(QtWidgets.QWidget):
         if self._api.opt.general['convert_newlines']:
             text = text.replace('\\N', '\n')
         self.text_edit.document().setPlainText(text)
+        self.setEnabled(True)
+
+    def _clear_selection(self):
+        self._index = None
+        self.start_time_edit.resetText()
+        self.end_time_edit.resetText()
+        self.duration_edit.resetText()
+        self.style_edit.lineEdit().setText('')
+        self.actor_edit.lineEdit().setText('')
+        self.text_edit.document().setPlainText('')
+        self.setEnabled(False)
 
     def _push_selection(self):
         if not self.isEnabled():
@@ -93,16 +105,15 @@ class Editor(QtWidgets.QWidget):
         self._disconnect_slots()
         if len(rows) == 1:
             self._fetch_selection(rows[0])
-            self.setEnabled(True)
         else:
-            self.setEnabled(False)
-            self.start_time_edit.resetText()
-            self.end_time_edit.resetText()
-            self.duration_edit.resetText()
-            self.style_edit.lineEdit().setText('')
-            self.actor_edit.lineEdit().setText('')
-            self.text_edit.document().setPlainText('')
+            self._clear_selection()
         self._connect_slots()
+
+    def _item_changed(self, idx):
+        if idx == self._index or idx is None:
+            self._disconnect_slots()
+            self._fetch_selection(self._index)
+            self._connect_slots()
 
     def _time_end_edited(self, *args):
         start = bubblesub.util.str_to_ms(self.start_time_edit.text())
