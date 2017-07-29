@@ -25,8 +25,10 @@ class BaseCommand:
 
 
 def _ask_about_unsaved_changes(api):
-    # TODO: ask only when necessary
+    if not api.undo.has_undo:
+        return True
     return bubblesub.ui.util.ask(
+        'There are unsaved changes. '
         'Are you sure you want to close the current file?')
 
 

@@ -128,8 +128,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         self._store_splitters()
-        # TODO: ask only when necessary
-        if bubblesub.ui.util.ask('Are you sure you want to exit the program?'):
+        if not self._api.undo.has_undo or bubblesub.ui.util.ask(
+                'There are unsaved changes. '
+                'Are you sure you want to exit the program?'):
             event.accept()
         else:
             event.ignore()
