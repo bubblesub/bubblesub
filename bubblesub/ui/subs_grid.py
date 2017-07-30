@@ -1,23 +1,50 @@
+import enum
 import bubblesub.util
 from PyQt5 import QtCore
+from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 
+class ColumnType(enum.Enum):
+    Start = 0
+    End = 1
+    Style = 2
+    Actor = 3
+    Text = 4
+    Duration = 5
+    CharactersPerSecond = 6
+
+
+_HEADERS = {
+    ColumnType.Start: 'Start',
+    ColumnType.End: 'End',
+    ColumnType.Style: 'Style',
+    ColumnType.Actor: 'Actor',
+    ColumnType.Text: 'Text',
+    ColumnType.Duration: 'Duration',
+    ColumnType.CharactersPerSecond: 'CPS',
+}
+
+
 class SubsGridModel(QtCore.QAbstractTableModel):
-    def __init__(self, subtitles):
-        super().__init__()
+    def __init__(self, subtitles, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._subtitles = subtitles
         self._subtitles.item_changed.connect(self._proxy_data_changed)
         self._subtitles.items_inserted.connect(self._proxy_items_inserted)
         self._subtitles.items_removed.connect(self._proxy_items_removed)
+        self._column_order = [
+            ColumnType.Start,
+            ColumnType.End,
+            ColumnType.Style,
+            ColumnType.Actor,
+            ColumnType.Text,
+            ColumnType.Duration,
+            ColumnType.CharactersPerSecond,
+        ]
+
         self._header_labels = [
-            'Start time',
-            'End time',
-            'Style',
-            'Actor',
-            'Text',
-            'Duration',
-            'CPS']
+            _HEADERS[column_type] for column_type in self._column_order]
 
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
         if role == QtCore.Qt.DisplayRole \
@@ -33,27 +60,29 @@ class SubsGridModel(QtCore.QAbstractTableModel):
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if role == QtCore.Qt.DisplayRole:
+            column_number = index.column()
+            column_type = self._column_order[column_number]
             subtitle = self._subtitles[index.row()]
-            column = index.column()
-            if column == 0:
+            if column_type == ColumnType.Start:
                 return bubblesub.util.ms_to_str(subtitle.start)
-            elif column == 1:
+            elif column_type == ColumnType.End:
                 return bubblesub.util.ms_to_str(subtitle.end)
-            elif column == 2:
+            elif column_type == ColumnType.Style:
                 return subtitle.style
-            elif column == 3:
+            elif column_type == ColumnType.Actor:
                 return subtitle.actor
-            elif column == 4:
+            elif column_type == ColumnType.Text:
                 return bubblesub.util.ass_to_plaintext(subtitle.text, True)
-            elif column == 5:
+            elif column_type == ColumnType.Duration:
                 return '{:.1f}'.format(subtitle.duration / 1000.0)
-            elif column == 6:
+            elif column_type == ColumnType.CharactersPerSecond:
                 return (
                     '{:.0f}'.format(
                         bubblesub.util.character_count(subtitle.text) /
                         (subtitle.duration / 1000.0))
                     if subtitle.duration > 0
                     else '-')
+
         return QtCore.QVariant()
 
     def flags(self, _index):
@@ -78,7 +107,7 @@ class SubsGrid(QtWidgets.QTableView):
     def __init__(self, api):
         super().__init__()
         self._api = api
-        self.setModel(SubsGridModel(api.subs.lines))
+        self.setModel(SubsGridModel(api.subs.lines, self))
         self.horizontalHeader().setSectionResizeMode(
             4, QtWidgets.QHeaderView.Stretch)
         self.verticalHeader().setDefaultSectionSize(24)
