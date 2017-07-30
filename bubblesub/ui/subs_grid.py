@@ -45,20 +45,34 @@ class SubsGridModel(QtCore.QAbstractTableModel):
 
         self._character_limit = (
             api.opt.general['subs']['max_characters_per_second'])
-        self._header_labels = [
-            _HEADERS[column_type] for column_type in self._column_order]
-
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole \
-                and orientation == QtCore.Qt.Horizontal:
-            return self._header_labels[section]
-        return super().headerData(section, orientation, role)
 
     def rowCount(self, _parent=QtCore.QModelIndex()):
         return len(self._subtitles)
 
     def columnCount(self, _parent=QtCore.QModelIndex()):
-        return len(self._header_labels)
+        return len(self._column_order)
+
+    def headerData(self, idx, orientation, role=QtCore.Qt.DisplayRole):
+        if orientation == QtCore.Qt.Vertical:
+            if role == QtCore.Qt.DisplayRole:
+                return idx + 1
+
+            elif role == QtCore.Qt.TextAlignmentRole:
+                return QtCore.Qt.AlignRight
+
+        elif orientation == QtCore.Qt.Horizontal:
+            column_number = idx
+            column_type = self._column_order[column_number]
+
+            if role == QtCore.Qt.DisplayRole:
+                return _HEADERS[column_type]
+
+            elif role == QtCore.Qt.TextAlignmentRole:
+                if column_type == ColumnType.Text:
+                    return QtCore.Qt.AlignLeft
+                return QtCore.Qt.AlignCenter
+
+        return QtCore.QVariant()
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         column_number = index.column()
@@ -101,6 +115,11 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                         self.parent().palette().highlight().color(),
                         ratio))
 
+        elif role == QtCore.Qt.TextAlignmentRole:
+            if column_type == ColumnType.Text:
+                return QtCore.Qt.AlignLeft
+            return QtCore.Qt.AlignCenter
+
         return QtCore.QVariant()
 
     def flags(self, _index):
@@ -109,7 +128,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
     def _proxy_data_changed(self, idx):
         self.dataChanged.emit(
             self.index(idx, 0),
-            self.index(idx, len(self._header_labels)),
+            self.index(idx, self.columnCount()),
             [QtCore.Qt.EditRole])
 
     def _proxy_items_inserted(self, idx, count):
