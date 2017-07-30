@@ -42,36 +42,23 @@ def _pack_note(text, note):
 
 
 class Subtitle(bubblesub.util.ObservableObject):
-    start = bubblesub.util.ObservableProperty('start')
-    end = bubblesub.util.ObservableProperty('end')
-    style = bubblesub.util.ObservableProperty('style')
-    actor = bubblesub.util.ObservableProperty('actor')
-    text = bubblesub.util.ObservableProperty('text')
-    note = bubblesub.util.ObservableProperty('note')
-    effect = bubblesub.util.ObservableProperty('effect')
-    layer = bubblesub.util.ObservableProperty('layer')
-    margins = bubblesub.util.ObservableProperty('margins')
-    is_comment = bubblesub.util.ObservableProperty('is_comment')
+    prop = {
+        'start': bubblesub.util.ObservableObject.REQUIRED,
+        'end': bubblesub.util.ObservableObject.REQUIRED,
+        'style': 'Default',
+        'actor': '',
+        'text': '',
+        'note': '',
+        'effect': '',
+        'layer': 0,
+        'margins': (0, 0, 0),
+        'is_comment': False,
+    }
 
-    def __init__(
-            self, subtitles,
-            start, end, style='Default', actor='', text='', note='',
-            layer=0, effect='', margins=(0, 0, 0), is_comment=False):
-        super().__init__()
+    def __init__(self, subtitles, **kwargs):
+        super().__init__(**kwargs)
         self.ssa_event = pysubs2.SSAEvent()
         self._subtitles = subtitles
-        self.begin_update()
-        self.start = start
-        self.end = end
-        self.style = style
-        self.actor = actor
-        self.text = text
-        self.note = note
-        self.layer = layer
-        self.effect = effect
-        self.margins = margins
-        self.is_comment = is_comment
-        self.end_update()
         self._sync_ssa_event()
 
     @property

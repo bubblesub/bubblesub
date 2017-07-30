@@ -103,9 +103,46 @@ class Benchmark:
         self._time = time.time()
 
 
+class ObservableProperty:
+    def __init__(self, attr):
+        self.attr = attr
+
+    def __get__(self, instance, owner):
+        return instance.__dict__.get(self.attr, None)
+
+    def __set__(self, instance, value):
+        if getattr(instance, self.attr) != value:
+            instance.__dict__[self.attr] = value
+            instance.notify_property_changed()
+
+
 class ObservableObject:
-    def __init__(self):
+    REQUIRED = object()
+
+    def __init_subclass__(cls):
+        if not hasattr(cls, 'prop'):
+            raise RuntimeError(
+                'Observable object needs to have a "prop" class property '
+                'that tells what to observe')
+        for key, value in cls.prop.items():
+            setattr(cls, key, ObservableProperty(key))
+
+    def __init__(self, **kwargs):
         self._dirty = False
+        self._throttled = True
+        empty = object()
+        for key, value in self.prop.items():
+            user_value = kwargs.get(key, empty)
+            if user_value is empty:
+                if value == self.REQUIRED:
+                    raise RuntimeError('Missing argument: {}'.format(key))
+                else:
+                    setattr(self, key, value)
+            else:
+                setattr(self, key, user_value)
+        for key in kwargs.keys():
+            if key not in self.prop:
+                raise RuntimeError('Invalid argument: {}'.format(key))
         self._throttled = False
 
     def begin_update(self):
@@ -124,19 +161,6 @@ class ObservableObject:
 
     def _changed(self):
         pass
-
-
-class ObservableProperty:
-    def __init__(self, attr):
-        self.attr = attr
-
-    def __get__(self, instance, owner):
-        return instance.__dict__.get(self.attr, None)
-
-    def __set__(self, instance, value):
-        if getattr(instance, self.attr) != value:
-            instance.__dict__[self.attr] = value
-            instance.notify_property_changed()
 
 
 # alternative to QtCore.QAbstractListModel that simplifies indexing

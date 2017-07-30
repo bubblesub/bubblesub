@@ -135,36 +135,13 @@ class UndoApi(QtCore.QObject):
             self._serialize_lines(idx, count))
 
     def _serialize_lines(self, idx, count):
-        ret = []
-        for line in self._subs_api.lines[idx:idx+count]:
-            item = (
-                line.start,
-                line.end,
-                line.style,
-                line.actor,
-                line.text,
-                line.note,
-                line.effect,
-                line.layer,
-                line.margins,
-                line.is_comment)
-            ret.append(item)
-        return pickle.dumps(ret)
+        return pickle.dumps([
+            {k: getattr(item, k) for k in item.prop.keys()}
+            for item in self._subs_api.lines[idx:idx+count]
+        ])
 
     def _deserialize_lines(self, lines):
-        ret = []
-        for item in pickle.loads(lines):
-            ret.append((
-                bubblesub.api.subs.Subtitle(
-                    self._subs_api.lines,
-                    start=item[0],
-                    end=item[1],
-                    style=item[2],
-                    actor=item[3],
-                    text=item[4],
-                    note=item[5],
-                    effect=item[6],
-                    layer=item[7],
-                    margins=item[8],
-                    is_comment=item[9])))
-        return ret
+        return [
+            bubblesub.api.subs.Subtitle(self._subs_api.lines, **item)
+            for item in pickle.loads(lines)
+        ]
