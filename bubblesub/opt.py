@@ -201,6 +201,7 @@ class Options:
                 ('Duplicate selected subtitles', 'edit/duplicate'),
                 ('Delete selected subtitles', 'edit/delete'),
                 None,
+                ('Swap notes with subtitle text', 'edit/swap-text-and-notes'),
                 # ('Split selection as karaoke', 'edit/split-karaoke'),  # TODO
                 # ('Split selection as karaoke', 'edit/join-karaoke'),  # TODO
                 None,

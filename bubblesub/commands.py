@@ -217,6 +217,20 @@ class EditDeleteCommand(BaseCommand):
         api.subs.selected_lines = []
 
 
+class EditSwapTextAndNotesCommand(BaseCommand):
+    name = 'edit/swap-text-and-notes'
+
+    def enabled(self, api):
+        return api.subs.has_selection
+
+    def run(self, api):
+        for idx in api.subs.selected_lines:
+            sub = api.subs.lines[idx]
+            sub.begin_update()
+            sub.text, sub.note = sub.note, sub.text
+            sub.end_update()
+
+
 class EditGlueSelectionStartCommand(BaseCommand):
     name = 'edit/glue-sel-start'
 
