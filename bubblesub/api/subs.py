@@ -58,6 +58,7 @@ class Subtitle(bubblesub.util.ObservableObject):
             start, end, style='Default', actor='', text='', note='',
             layer=0, effect='', margins=(0, 0, 0), is_comment=False):
         super().__init__()
+        self.ssa_event = pysubs2.SSAEvent()
         self._subtitles = subtitles
         self.begin_update()
         self.start = start
@@ -71,6 +72,7 @@ class Subtitle(bubblesub.util.ObservableObject):
         self.margins = margins
         self.is_comment = is_comment
         self.end_update()
+        self._sync_ssa_event()
 
     @property
     def duration(self):
@@ -84,8 +86,23 @@ class Subtitle(bubblesub.util.ObservableObject):
         return None
 
     def _changed(self):
-        if self.number is not None:
-            self._subtitles.item_changed.emit(self.number)
+        self._sync_ssa_event()
+        num = self.number
+        if num is not None:
+            self._subtitles.item_changed.emit(num)
+
+    def _sync_ssa_event(self):
+        self.ssa_event.start = self.start
+        self.ssa_event.end = self.end
+        self.ssa_event.style = self.style
+        self.ssa_event.name = self.actor
+        self.ssa_event.text = _pack_note(self.text, self.note)
+        self.ssa_event.effect = self.effect
+        self.ssa_event.layer = self.layer
+        self.ssa_event.marginl = self.margins[0]
+        self.ssa_event.marginv = self.margins[1]
+        self.ssa_event.marginr = self.margins[2]
+        self.ssa_event.type = 'Comment' if self.is_comment else 'Dialogue'
 
 
 class SubtitleList(bubblesub.util.ListModel):
@@ -182,29 +199,19 @@ class SubtitlesApi(QtCore.QObject):
         self.loaded.emit()
 
     def save_ass(self, path, remember_path=False):
-        assert path
-        path = Path(path)
-        del self._ass_source[:]
-        for subtitle in self.lines:
-            self._ass_source.append(pysubs2.SSAEvent(
-                start=subtitle.start,
-                end=subtitle.end,
-                style=subtitle.style,
-                name=subtitle.actor,
-                text=_pack_note(subtitle.text, subtitle.note),
-                effect=subtitle.effect,
-                layer=subtitle.layer,
-                marginl=subtitle.margins[0],
-                marginv=subtitle.margins[1],
-                marginr=subtitle.margins[2],
-                type='Comment' if subtitle.is_comment else 'Dialogue'))
-        if self._video_api.path != self._loaded_video_path:
-            video_path = str(self._video_api.path)
-            self._ass_source.aegisub_project['Video File'] = video_path
-            self._ass_source.aegisub_project['Audio File'] = video_path
-        if remember_path:
-            self._path = path
-        self._ass_source.save(path)
+        with bubblesub.util.Benchmark('saving subs'):
+            assert path
+            path = Path(path)
+            del self._ass_source[:]
+            for subtitle in self.lines:
+                self._ass_source.append(subtitle.ssa_event)
+            if self._video_api.path != self._loaded_video_path:
+                video_path = str(self._video_api.path)
+                self._ass_source.aegisub_project['Video File'] = video_path
+                self._ass_source.aegisub_project['Audio File'] = video_path
+            if remember_path:
+                self._path = path
+            self._ass_source.save(path)
 
-        if remember_path:
-            self.saved.emit()
+            if remember_path:
+                self.saved.emit()

@@ -90,7 +90,6 @@ class UndoApi(QtCore.QObject):
         self._trim_undo_stack()
         self._undo_stack.append((op_type, *op_args))
         self._undo_stack_pos = len(self._undo_stack) - 1
-        print('Size of undo stack:', bubblesub.util.getsize(self._undo_stack))
 
     def _connect_signals(self):
         self._subs_api.lines.item_changed.connect(self._subtitle_changed)

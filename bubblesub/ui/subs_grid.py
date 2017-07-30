@@ -15,6 +15,9 @@ class ColumnType(enum.Enum):
     CharactersPerSecond = 6
 
 
+_CACHE_TEXT = 0
+_CACHE_CPS_BK = 1
+
 _HEADERS = {
     ColumnType.Start: 'Start',
     ColumnType.End: 'End',
@@ -42,6 +45,8 @@ class SubsGridModel(QtCore.QAbstractTableModel):
             ColumnType.Duration,
             ColumnType.CharactersPerSecond,
         ]
+        self._cache = []
+        self._reset_cache()
 
         self._character_limit = (
             api.opt.general['subs']['max_characters_per_second'])
@@ -56,17 +61,13 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         if orientation == QtCore.Qt.Vertical:
             if role == QtCore.Qt.DisplayRole:
                 return idx + 1
-
             elif role == QtCore.Qt.TextAlignmentRole:
                 return QtCore.Qt.AlignRight
 
         elif orientation == QtCore.Qt.Horizontal:
-            column_number = idx
-            column_type = self._column_order[column_number]
-
+            column_type = self._column_order[idx]
             if role == QtCore.Qt.DisplayRole:
                 return _HEADERS[column_type]
-
             elif role == QtCore.Qt.TextAlignmentRole:
                 if column_type == ColumnType.Text:
                     return QtCore.Qt.AlignLeft
@@ -75,33 +76,44 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         return QtCore.QVariant()
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
-        column_number = index.column()
-        column_type = self._column_order[column_number]
-        subtitle = self._subtitles[index.row()]
-
         if role == QtCore.Qt.DisplayRole:
-            if column_type == ColumnType.Start:
-                return bubblesub.util.ms_to_str(subtitle.start)
-            elif column_type == ColumnType.End:
-                return bubblesub.util.ms_to_str(subtitle.end)
-            elif column_type == ColumnType.Style:
-                return subtitle.style
-            elif column_type == ColumnType.Actor:
-                return subtitle.actor
-            elif column_type == ColumnType.Text:
-                return bubblesub.util.ass_to_plaintext(subtitle.text, True)
-            elif column_type == ColumnType.Duration:
-                return '{:.1f}'.format(subtitle.duration / 1000.0)
-            elif column_type == ColumnType.CharactersPerSecond:
-                return (
-                    '{:.1f}'.format(
-                        bubblesub.util.character_count(subtitle.text) /
-                        max(1, subtitle.duration / 1000.0))
-                    if subtitle.duration > 0
-                    else '-')
+            row_number = index.row()
+            column_number = index.column()
+            column_type = self._column_order[column_number]
+
+            data = self._cache[row_number][_CACHE_TEXT]
+            if not data:
+                subtitle = self._subtitles[row_number]
+                data = {
+                    ColumnType.Start: bubblesub.util.ms_to_str(subtitle.start),
+                    ColumnType.End: bubblesub.util.ms_to_str(subtitle.end),
+                    ColumnType.Style: subtitle.style,
+                    ColumnType.Actor: subtitle.actor,
+                    ColumnType.Text:
+                        bubblesub.util.ass_to_plaintext(subtitle.text, True),
+                    ColumnType.Duration:
+                        '{:.1f}'.format(subtitle.duration / 1000.0),
+                    ColumnType.CharactersPerSecond: (
+                        '{:.1f}'.format(
+                            bubblesub.util.character_count(subtitle.text) /
+                            max(1, subtitle.duration / 1000.0))
+                        if subtitle.duration > 0
+                        else '-')
+                }
+                self._cache[row_number][_CACHE_TEXT] = data
+            return data[column_type]
 
         elif role == QtCore.Qt.BackgroundRole:
-            if column_type == ColumnType.CharactersPerSecond:
+            row_number = index.row()
+            column_number = index.column()
+            column_type = self._column_order[column_number]
+
+            if column_type != ColumnType.CharactersPerSecond:
+                return
+
+            data = self._cache[row_number][_CACHE_CPS_BK]
+            if not data:
+                subtitle = self._subtitles[row_number]
                 ratio = (
                     bubblesub.util.character_count(subtitle.text) /
                     max(1, subtitle.duration / 1000.0))
@@ -109,13 +121,17 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                 ratio = max(0, ratio)
                 ratio /= self._character_limit
                 ratio = min(1, ratio)
-                return QtGui.QColor(
+                data = QtGui.QColor(
                     bubblesub.ui.util.blend_colors(
                         self.parent().palette().base().color(),
                         self.parent().palette().highlight().color(),
                         ratio))
+                self._cache[row_number][_CACHE_CPS_BK] = data
+            return data
 
         elif role == QtCore.Qt.TextAlignmentRole:
+            column_number = index.column()
+            column_type = self._column_order[column_number]
             if column_type == ColumnType.Text:
                 return QtCore.Qt.AlignLeft
             return QtCore.Qt.AlignCenter
@@ -126,18 +142,34 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
     def _proxy_data_changed(self, idx):
-        self.dataChanged.emit(
-            self.index(idx, 0),
-            self.index(idx, self.columnCount()),
-            [QtCore.Qt.EditRole])
+        self._reset_cache(idx)
+
+        # XXX: this causes qt to call .data() for EVERY VISIBLE CELL. really.
+        # self.dataChanged.emit(
+        #     self.index(idx, 0),
+        #     self.index(idx, self.columnCount() - 1),
+        #     [QtCore.Qt.DisplayRole | QtCore.Qt.BackgroundRole])
+        for i in range(self.columnCount()):
+            self.dataChanged.emit(
+                self.index(idx, i),
+                self.index(idx, i),
+                [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole])
 
     def _proxy_items_inserted(self, idx, count):
+        self._reset_cache()
         if count:
             self.rowsInserted.emit(QtCore.QModelIndex(), idx, idx + count - 1)
 
     def _proxy_items_removed(self, idx, count):
+        self._reset_cache()
         if count:
             self.rowsRemoved.emit(QtCore.QModelIndex(), idx, idx + count - 1)
+
+    def _reset_cache(self, idx=None):
+        if idx:
+            self._cache[idx] = [None, None]
+        else:
+            self._cache = [[None, None] for i in range(len(self._subtitles))]
 
 
 class SubsGrid(QtWidgets.QTableView):
@@ -151,6 +183,7 @@ class SubsGrid(QtWidgets.QTableView):
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
 
+        api.subs.loaded.connect(self._subs_loaded)
         api.subs.selection_changed.connect(self._api_selection_changed)
         self.selectionModel().selectionChanged.connect(
             self._widget_selection_changed)
@@ -160,6 +193,11 @@ class SubsGrid(QtWidgets.QTableView):
         for index in self.selectionModel().selectedIndexes():
             rows.add(index.row())
         return list(rows)
+
+    def _subs_loaded(self):
+        self.scrollTo(
+            self.model().index(0, 0),
+            self.EnsureVisible | self.PositionAtTop)
 
     def _widget_selection_changed(self, _selected, _deselected):
         if self._collect_rows() != self._api.subs.selected_lines:
