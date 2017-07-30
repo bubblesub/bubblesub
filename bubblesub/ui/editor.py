@@ -5,11 +5,12 @@ from PyQt5 import QtWidgets
 
 
 class TextEdit(QtWidgets.QPlainTextEdit):
-    def __init__(self, api, parent, *args, **kwargs):
+    def __init__(self, api, name, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        self._name = name
         self._api = api
         try:
-            font_def = self._api.opt.general['fonts']['editor']
+            font_def = self._api.opt.general['fonts'][name]
             if font_def:
                 font = QtGui.QFont()
                 font.fromString(font_def)
@@ -26,7 +27,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
             font = self.font()
             font.setPointSize(new_size)
             self.setFont(font)
-            self._api.opt.general['fonts']['editor'] = (
+            self._api.opt.general['fonts'][self._name] = (
                 self.font().toString())
 
 
@@ -53,7 +54,9 @@ class Editor(QtWidgets.QWidget):
 
         self.layer_edit = QtWidgets.QSpinBox(self, minimum=0)
 
-        self.text_edit = TextEdit(api, self, tabChangesFocus=True)
+        self.text_edit = TextEdit(api, 'editor', self, tabChangesFocus=True)
+        self.note_edit = TextEdit(
+            api, 'notes', self, tabChangesFocus=True, placeholderText='Notes')
 
         self.style_edit = QtWidgets.QComboBox(
             self,
@@ -101,11 +104,18 @@ class Editor(QtWidgets.QWidget):
         bar2.layout().addWidget(self.effect_edit)
         bar2.layout().addWidget(self.comment_checkbox)
 
+        center = QtWidgets.QWidget(self)
+        center.setLayout(QtWidgets.QHBoxLayout(self))
+        center.layout().setSpacing(4)
+        center.layout().setContentsMargins(0, 0, 0, 0)
+        center.layout().addWidget(self.text_edit)
+        center.layout().addWidget(self.note_edit)
+
         self.setLayout(QtWidgets.QVBoxLayout(self))
         self.layout().setSpacing(4)
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().addWidget(bar1)
-        self.layout().addWidget(self.text_edit)
+        self.layout().addWidget(center)
         self.layout().addWidget(bar2)
         self.setEnabled(False)
 
@@ -135,11 +145,16 @@ class Editor(QtWidgets.QWidget):
             sorted(list(set(sub.style for sub in self._api.subs.lines))))
         self.style_edit.lineEdit().setText(subtitle.style)
 
-        text = subtitle.text
-        if self._api.opt.general['convert_newlines']:
-            text = text.replace('\\N', '\n')
-        self.text_edit.document().setPlainText(text)
+        self.text_edit.document().setPlainText(
+            self._convert_newlines(subtitle.text))
+        self.note_edit.document().setPlainText(
+            self._convert_newlines(subtitle.note))
         self.setEnabled(True)
+
+    def _convert_newlines(self, text):
+        if self._api.opt.general['convert_newlines']:
+            return text.replace('\\N', '\n')
+        return text
 
     def _clear_selection(self):
         self._index = None
@@ -155,6 +170,7 @@ class Editor(QtWidgets.QWidget):
         self.margin_v_edit.setValue(0)
         self.margin_r_edit.setValue(0)
         self.text_edit.document().setPlainText('')
+        self.note_edit.document().setPlainText('')
         self.setEnabled(False)
 
     def _push_selection(self):
@@ -168,7 +184,8 @@ class Editor(QtWidgets.QWidget):
         subtitle.end = bubblesub.util.str_to_ms(self.end_time_edit.text())
         subtitle.style = self.style_edit.lineEdit().text()
         subtitle.actor = self.actor_edit.lineEdit().text()
-        subtitle.text = self.text_edit.toPlainText().replace('\n', '\\N')
+        subtitle.text = self.text_edit.toPlainText()
+        subtitle.note = self.note_edit.toPlainText()
         subtitle.effect = self.effect_edit.text()
         subtitle.layer = self.layer_edit.value()
         subtitle.margins = (
@@ -226,6 +243,7 @@ class Editor(QtWidgets.QWidget):
         self.actor_edit.editTextChanged.connect(self._generic_edited)
         self.style_edit.editTextChanged.connect(self._generic_edited)
         self.text_edit.textChanged.connect(self._generic_edited)
+        self.note_edit.textChanged.connect(self._generic_edited)
         self.effect_edit.textChanged.connect(self._generic_edited)
         self.layer_edit.valueChanged.connect(self._generic_edited)
         self.margin_l_edit.valueChanged.connect(self._generic_edited)
@@ -240,6 +258,7 @@ class Editor(QtWidgets.QWidget):
         self.actor_edit.editTextChanged.disconnect(self._generic_edited)
         self.style_edit.editTextChanged.disconnect(self._generic_edited)
         self.text_edit.textChanged.disconnect(self._generic_edited)
+        self.note_edit.textChanged.disconnect(self._generic_edited)
         self.effect_edit.textChanged.disconnect(self._generic_edited)
         self.layer_edit.valueChanged.disconnect(self._generic_edited)
         self.margin_l_edit.valueChanged.disconnect(self._generic_edited)

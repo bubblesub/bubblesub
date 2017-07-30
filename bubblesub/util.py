@@ -10,6 +10,22 @@ from PyQt5 import QtCore
 import pysubs2.time
 
 
+def escape_ass_tag(text):
+    return (
+        text
+        .replace('\\', r'\\')
+        .replace('{', r'\[')
+        .replace('}', r'\]'))
+
+
+def unescape_ass_tag(text):
+    return (
+        text
+        .replace(r'\\', '\\')
+        .replace(r'\[', '{')
+        .replace(r'\]', '}'))
+
+
 def ass_to_plaintext(text, mask=False):
     return (
         re.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}' if mask else '', text)

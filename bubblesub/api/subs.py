@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 import bubblesub.util
 import pysubs2
@@ -21,12 +22,32 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 '''
 
 
+def _extract_note(text):
+    match = re.search('{NOTE:(?P<note>[^}]*)}', text)
+    if match:
+        text = text[:match.start()] + text[match.end():]
+        note = bubblesub.util.unescape_ass_tag(match.group('note'))
+    else:
+        text = text
+        note = ''
+    return text, note
+
+
+def _pack_note(text, note):
+    text = text.replace('\n', '\\N')
+    if note:
+        text += '{NOTE:%s}' % (
+            bubblesub.util.escape_ass_tag(note.replace('\n', '\\N')))
+    return text
+
+
 class Subtitle(bubblesub.util.ObservableObject):
     start = bubblesub.util.ObservableProperty('start')
     end = bubblesub.util.ObservableProperty('end')
     style = bubblesub.util.ObservableProperty('style')
     actor = bubblesub.util.ObservableProperty('actor')
     text = bubblesub.util.ObservableProperty('text')
+    note = bubblesub.util.ObservableProperty('note')
     effect = bubblesub.util.ObservableProperty('effect')
     layer = bubblesub.util.ObservableProperty('layer')
     margins = bubblesub.util.ObservableProperty('margins')
@@ -34,7 +55,7 @@ class Subtitle(bubblesub.util.ObservableObject):
 
     def __init__(
             self, subtitles,
-            start, end, style='Default', actor='', text='',
+            start, end, style='Default', actor='', text='', note='',
             layer=0, effect='', margins=(0, 0, 0), is_comment=False):
         super().__init__()
         self._subtitles = subtitles
@@ -44,6 +65,7 @@ class Subtitle(bubblesub.util.ObservableObject):
         self.style = style
         self.actor = actor
         self.text = text
+        self.note = note
         self.layer = layer
         self.effect = effect
         self.margins = margins
@@ -126,23 +148,25 @@ class SubtitlesApi(QtCore.QObject):
         self.selected_lines = []
 
         with bubblesub.util.Benchmark('loading subs'):
-            self.lines.remove(0, len(self.lines))
-            self.lines.insert(
-                0,
-                [
+            collection = []
+            for line in self._ass_source:
+                text, note = _extract_note(line.text)
+                collection.append(
                     bubblesub.api.subs.Subtitle(
                         self.lines,
                         start=line.start,
                         end=line.end,
                         style=line.style,
                         actor=line.name,
-                        text=line.text,
+                        text=text,
+                        note=note,
                         effect=line.effect,
                         layer=line.layer,
                         margins=(line.marginl, line.marginv, line.marginr),
-                        is_comment=line.is_comment)
-                    for line in self._ass_source
-                ])
+                        is_comment=line.is_comment))
+
+            self.lines.remove(0, len(self.lines))
+            self.lines.insert(0, collection)
 
         self._loaded_video_path = None
         if self._ass_source and 'Video File' \
@@ -167,7 +191,7 @@ class SubtitlesApi(QtCore.QObject):
                 end=subtitle.end,
                 style=subtitle.style,
                 name=subtitle.actor,
-                text=subtitle.text,
+                text=_pack_note(subtitle.text, subtitle.note),
                 effect=subtitle.effect,
                 layer=subtitle.layer,
                 marginl=subtitle.margins[0],

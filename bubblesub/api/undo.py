@@ -144,6 +144,7 @@ class UndoApi(QtCore.QObject):
                 line.style,
                 line.actor,
                 line.text,
+                line.note,
                 line.effect,
                 line.layer,
                 line.margins,
@@ -162,8 +163,9 @@ class UndoApi(QtCore.QObject):
                     style=item[2],
                     actor=item[3],
                     text=item[4],
-                    effect=item[5],
-                    layer=item[6],
-                    margins=item[7],
-                    is_comment=item[8])))
+                    note=item[5],
+                    effect=item[6],
+                    layer=item[7],
+                    margins=item[8],
+                    is_comment=item[9])))
         return ret
