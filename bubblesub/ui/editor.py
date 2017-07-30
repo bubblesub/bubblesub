@@ -37,53 +37,76 @@ class Editor(QtWidgets.QWidget):
         self._index = None
         self._api = api
 
+        self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
+        self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
+        self.duration_edit = bubblesub.ui.util.TimeEdit(self)
+
+        margins_widget = QtWidgets.QWidget(self)
+        margins_widget.setLayout(QtWidgets.QHBoxLayout(self, spacing=0))
+        margins_widget.layout().setContentsMargins(0, 0, 0, 0)
+        self.margin_l_edit = QtWidgets.QSpinBox(margins_widget, minimum=0)
+        self.margin_v_edit = QtWidgets.QSpinBox(margins_widget, minimum=0)
+        self.margin_r_edit = QtWidgets.QSpinBox(margins_widget, minimum=0)
+        margins_widget.layout().addWidget(self.margin_l_edit)
+        margins_widget.layout().addWidget(self.margin_v_edit)
+        margins_widget.layout().addWidget(self.margin_r_edit)
+
+        self.layer_edit = QtWidgets.QSpinBox(self, minimum=0)
+
+        self.text_edit = TextEdit(api, self, tabChangesFocus=True)
+
         self.style_edit = QtWidgets.QComboBox(
             self,
             editable=True,
-            minimumWidth=200,
+            sizePolicy=QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Expanding,
+                QtWidgets.QSizePolicy.Preferred),
             insertPolicy=QtWidgets.QComboBox.NoInsert)
         self.actor_edit = QtWidgets.QComboBox(
             self,
             editable=True,
-            minimumWidth=200,
+            sizePolicy=QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Expanding,
+                QtWidgets.QSizePolicy.Preferred),
             insertPolicy=QtWidgets.QComboBox.NoInsert)
-        self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
-        self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
-        self.duration_edit = bubblesub.ui.util.TimeEdit(self)
         self.effect_edit = QtWidgets.QLineEdit(self)
-        self.margin_l_edit = QtWidgets.QSpinBox(self, minimum=0)
-        self.margin_v_edit = QtWidgets.QSpinBox(self, minimum=0)
-        self.margin_r_edit = QtWidgets.QSpinBox(self, minimum=0)
-        self.layer_edit = QtWidgets.QSpinBox(self, minimum=0)
         self.comment_checkbox = QtWidgets.QCheckBox('Comment', self)
-        self.text_edit = TextEdit(api, self, tabChangesFocus=True)
 
-        top_bar = QtWidgets.QWidget(self)
-        top_bar.setLayout(QtWidgets.QHBoxLayout(self))
-        top_bar.layout().setContentsMargins(0, 0, 0, 0)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Style:', self))
-        top_bar.layout().addWidget(self.style_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Actor:', self))
-        top_bar.layout().addWidget(self.actor_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Start time:', self))
-        top_bar.layout().addWidget(self.start_time_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('End time:', self))
-        top_bar.layout().addWidget(self.end_time_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Duration:', self))
-        top_bar.layout().addWidget(self.duration_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Effect:', self))
-        top_bar.layout().addWidget(self.effect_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Margins:', self))
-        top_bar.layout().addWidget(self.margin_l_edit)
-        top_bar.layout().addWidget(self.margin_v_edit)
-        top_bar.layout().addWidget(self.margin_r_edit)
-        top_bar.layout().addWidget(QtWidgets.QLabel('Layer:', self))
-        top_bar.layout().addWidget(self.layer_edit)
-        top_bar.layout().addWidget(self.comment_checkbox)
+        bar1 = QtWidgets.QWidget(self)
+        bar1.setLayout(QtWidgets.QHBoxLayout(self))
+        bar1.layout().setSpacing(12)
+        bar1.layout().setContentsMargins(0, 0, 0, 0)
+        bar1.layout().addWidget(QtWidgets.QLabel('Start time:', self))
+        bar1.layout().addWidget(self.start_time_edit)
+        bar1.layout().addWidget(QtWidgets.QLabel('End time:', self))
+        bar1.layout().addWidget(self.end_time_edit)
+        bar1.layout().addWidget(QtWidgets.QLabel('Duration:', self))
+        bar1.layout().addWidget(self.duration_edit)
+        bar1.layout().addStretch()
+        bar1.layout().addWidget(QtWidgets.QLabel('Margins:', self))
+        bar1.layout().addWidget(margins_widget)
+        bar1.layout().addWidget(QtWidgets.QLabel('Layer:', self))
+        bar1.layout().addWidget(self.layer_edit)
+
+        bar2 = QtWidgets.QWidget(self)
+        bar2.setLayout(QtWidgets.QHBoxLayout(self))
+        bar2.layout().setSpacing(12)
+        bar2.layout().setContentsMargins(0, 0, 0, 0)
+        bar2.layout().addWidget(QtWidgets.QLabel('Style:', self))
+        bar2.layout().addWidget(self.style_edit)
+        bar2.layout().addWidget(QtWidgets.QLabel('Actor:', self))
+        bar2.layout().addWidget(self.actor_edit)
+        bar2.layout().addStretch()
+        bar2.layout().addWidget(QtWidgets.QLabel('Effect:', self))
+        bar2.layout().addWidget(self.effect_edit)
+        bar2.layout().addWidget(self.comment_checkbox)
 
         self.setLayout(QtWidgets.QVBoxLayout(self))
-        self.layout().addWidget(top_bar)
+        self.layout().setSpacing(4)
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().addWidget(bar1)
         self.layout().addWidget(self.text_edit)
+        self.layout().addWidget(bar2)
         self.setEnabled(False)
 
         self._connect_api_signals()

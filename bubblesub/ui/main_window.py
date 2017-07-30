@@ -71,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._main_splitter.setOrientation(QtCore.Qt.Vertical)
         self._main_splitter.addWidget(self._top_bar)
         self._main_splitter.addWidget(self._subs_grid)
+        self._main_splitter.setContentsMargins(8, 8, 8, 8)
         self.setCentralWidget(self._main_splitter)
 
         action_map = self._setup_menu(api.opt)

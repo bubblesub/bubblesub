@@ -363,6 +363,7 @@ class Audio(QtWidgets.QWidget):
 
         self.setLayout(QtWidgets.QVBoxLayout(self))
         self.layout().setSpacing(0)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().addWidget(self._scale)
         self.layout().addWidget(self._preview)
         self.layout().addWidget(self._slider)
