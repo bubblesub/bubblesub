@@ -14,11 +14,11 @@ def ass_to_plaintext(text, mask=False):
     return (
         re.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}' if mask else '', text)
         .replace('\\h', ' ')
-        .replace('\\N', ''))
+        .replace('\\N', ' '))
 
 
 def character_count(text):
-    return len(re.sub('[^\\W]+', '', ass_to_plaintext(text), re.I))
+    return len(re.sub(r'\W+', '', ass_to_plaintext(text), flags=re.I | re.U))
 
 
 def ms_to_str(milliseconds):

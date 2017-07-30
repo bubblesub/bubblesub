@@ -94,9 +94,9 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                 return '{:.1f}'.format(subtitle.duration / 1000.0)
             elif column_type == ColumnType.CharactersPerSecond:
                 return (
-                    '{:.0f}'.format(
+                    '{:.1f}'.format(
                         bubblesub.util.character_count(subtitle.text) /
-                        (subtitle.duration / 1000.0))
+                        max(1, subtitle.duration / 1000.0))
                     if subtitle.duration > 0
                     else '-')
 
@@ -104,7 +104,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
             if column_type == ColumnType.CharactersPerSecond:
                 ratio = (
                     bubblesub.util.character_count(subtitle.text) /
-                    (subtitle.duration / 1000.0))
+                    max(1, subtitle.duration / 1000.0))
                 ratio -= self._character_limit
                 ratio = max(0, ratio)
                 ratio /= self._character_limit
