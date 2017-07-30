@@ -23,6 +23,7 @@ class UndoApi(QtCore.QObject):
         self._undo_stack_pos_when_saved = -1
         self._subs_api.loaded.connect(self._subtitles_loaded)
         self._subs_api.saved.connect(self._subtitles_saved)
+        self._tmp_state = None
 
     @property
     def needs_save(self):
@@ -41,15 +42,15 @@ class UndoApi(QtCore.QObject):
             raise RuntimeError('No more undo.')
         self._disconnect_signals()
 
-        self._undo_stack_pos -= 1
         op_type, *op_args = self._undo_stack[self._undo_stack_pos]
+        self._undo_stack_pos -= 1
 
         if op_type == UndoOperation.Reset:
             lines, = op_args
             self._subs_api.lines[:] = self._deserialize_lines(lines)
         elif op_type == UndoOperation.SubtitleChange:
-            idx, lines = op_args
-            self._subs_api.lines[idx] = self._deserialize_lines(lines)[0]
+            idx, old_lines, new_lines = op_args
+            self._subs_api.lines[idx] = self._deserialize_lines(old_lines)[0]
         elif op_type == UndoOperation.SubtitlesInsertion:
             idx, count, lines = op_args
             self._subs_api.lines.remove(idx, count)
@@ -71,8 +72,8 @@ class UndoApi(QtCore.QObject):
             lines, = op_args
             self._subs_api.lines = lines
         elif op_type == UndoOperation.SubtitleChange:
-            idx, lines = op_args
-            self._subs_api.lines[idx] = self._deserialize_lines(lines)[0]
+            idx, old_lines, new_lines = op_args
+            self._subs_api.lines[idx] = self._deserialize_lines(new_lines)[0]
         elif op_type == UndoOperation.SubtitlesInsertion:
             idx, count, lines = op_args
             self._subs_api.lines.insert(idx, self._deserialize_lines(lines))
@@ -92,15 +93,20 @@ class UndoApi(QtCore.QObject):
         self._undo_stack_pos = len(self._undo_stack) - 1
 
     def _connect_signals(self):
-        self._subs_api.lines.item_changed.connect(self._subtitle_changed)
-        self._subs_api.lines.items_removed.connect(self._subtitles_removed)
         self._subs_api.lines.items_inserted.connect(self._subtitles_inserted)
+        self._subs_api.lines.item_changed.connect(self._subtitle_changed)
+        self._subs_api.lines.item_about_to_change.connect(
+            self._subtitle_about_to_change)
+        self._subs_api.lines.items_about_to_be_removed.connect(
+            self._subtitles_removed)
 
     def _disconnect_signals(self):
+        self._subs_api.lines.items_inserted.disconnect(self._subtitles_inserted)
         self._subs_api.lines.item_changed.disconnect(self._subtitle_changed)
-        self._subs_api.lines.items_removed.disconnect(self._subtitles_removed)
-        self._subs_api.lines.items_inserted.disconnect(
-            self._subtitles_inserted)
+        self._subs_api.lines.item_about_to_change.disconnect(
+            self._subtitle_about_to_change)
+        self._subs_api.lines.items_about_to_be_removed.disconnect(
+            self._subtitles_removed)
 
     def _subtitles_loaded(self):
         self._undo_stack = [(
@@ -112,12 +118,16 @@ class UndoApi(QtCore.QObject):
     def _subtitles_saved(self):
         self._undo_stack_pos_when_saved = self._undo_stack_pos
 
+    def _subtitle_about_to_change(self, idx):
+        self._tmp_state = self._serialize_lines(idx, 1)
+
     def _subtitle_changed(self, idx):
         # XXX: merge with previous operation if it concerns the same subtitle
         # and only one field has changed (difficult)
         self._trim_undo_stack_and_append(
             UndoOperation.SubtitleChange,
             idx,
+            self._tmp_state,
             self._serialize_lines(idx, 1))
 
     def _subtitles_inserted(self, idx, count):

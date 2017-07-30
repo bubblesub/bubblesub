@@ -112,8 +112,9 @@ class ObservableProperty:
 
     def __set__(self, instance, value):
         if getattr(instance, self.attr) != value:
+            instance.notify_before_property_change()
             instance.__dict__[self.attr] = value
-            instance.notify_property_changed()
+            instance.notify_after_property_change()
 
 
 class ObservableObject:
@@ -147,19 +148,27 @@ class ObservableObject:
 
     def begin_update(self):
         self._throttled = True
+        self._before_change()
 
     def end_update(self):
         self._throttled = False
         if self._dirty:
-            self._changed()
+            self._after_change()
             self._dirty = False
 
-    def notify_property_changed(self):
+    def notify_before_property_change(self):
+        if not self._throttled:
+            self._before_change()
+
+    def notify_after_property_change(self):
         self._dirty = True
         if not self._throttled:
-            self._changed()
+            self._after_change()
 
-    def _changed(self):
+    def _before_change(self):
+        pass
+
+    def _after_change(self):
         pass
 
 
@@ -168,6 +177,9 @@ class ListModel(QtCore.QObject):
     items_inserted = QtCore.pyqtSignal([int, int])
     items_removed = QtCore.pyqtSignal([int, int])
     item_changed = QtCore.pyqtSignal([int])
+    items_about_to_be_inserted = QtCore.pyqtSignal([int, int])
+    items_about_to_be_removed = QtCore.pyqtSignal([int, int])
+    item_about_to_change = QtCore.pyqtSignal([int])
 
     def __init__(self):
         super().__init__()
@@ -195,10 +207,12 @@ class ListModel(QtCore.QObject):
     def insert(self, idx, data):
         if not data:
             return
+        self.items_about_to_be_inserted.emit(idx, len(data))
         self._data = self._data[:idx] + data + self._data[idx:]
         self.items_inserted.emit(idx, len(data))
 
     def remove(self, idx, count):
+        self.items_about_to_be_removed.emit(idx, count)
         self._data = self._data[:idx] + self._data[idx + count:]
         self.items_removed.emit(idx, count)
 

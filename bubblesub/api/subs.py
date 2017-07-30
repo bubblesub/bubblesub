@@ -72,7 +72,12 @@ class Subtitle(bubblesub.util.ObservableObject):
                 return i
         return None
 
-    def _changed(self):
+    def _before_change(self):
+        num = self.number
+        if num is not None:
+            self._subtitles.item_about_to_change.emit(num)
+
+    def _after_change(self):
         self._sync_ssa_event()
         num = self.number
         if num is not None:
