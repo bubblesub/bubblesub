@@ -44,6 +44,7 @@ class Options:
                 'editor': None,
             },
             'subs': {
+                'max_characters_per_second': 15,
                 'default_duration': 2000,
             },
             'video': {

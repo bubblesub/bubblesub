@@ -27,9 +27,9 @@ _HEADERS = {
 
 
 class SubsGridModel(QtCore.QAbstractTableModel):
-    def __init__(self, subtitles, *args, **kwargs):
+    def __init__(self, api, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._subtitles = subtitles
+        self._subtitles = api.subs.lines
         self._subtitles.item_changed.connect(self._proxy_data_changed)
         self._subtitles.items_inserted.connect(self._proxy_items_inserted)
         self._subtitles.items_removed.connect(self._proxy_items_removed)
@@ -43,6 +43,8 @@ class SubsGridModel(QtCore.QAbstractTableModel):
             ColumnType.CharactersPerSecond,
         ]
 
+        self._character_limit = (
+            api.opt.general['subs']['max_characters_per_second'])
         self._header_labels = [
             _HEADERS[column_type] for column_type in self._column_order]
 
@@ -59,10 +61,11 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         return len(self._header_labels)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
+        column_number = index.column()
+        column_type = self._column_order[column_number]
+        subtitle = self._subtitles[index.row()]
+
         if role == QtCore.Qt.DisplayRole:
-            column_number = index.column()
-            column_type = self._column_order[column_number]
-            subtitle = self._subtitles[index.row()]
             if column_type == ColumnType.Start:
                 return bubblesub.util.ms_to_str(subtitle.start)
             elif column_type == ColumnType.End:
@@ -82,6 +85,21 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                         (subtitle.duration / 1000.0))
                     if subtitle.duration > 0
                     else '-')
+
+        elif role == QtCore.Qt.BackgroundRole:
+            if column_type == ColumnType.CharactersPerSecond:
+                ratio = (
+                    bubblesub.util.character_count(subtitle.text) /
+                    (subtitle.duration / 1000.0))
+                ratio -= self._character_limit
+                ratio = max(0, ratio)
+                ratio /= self._character_limit
+                ratio = min(1, ratio)
+                return QtGui.QColor(
+                    bubblesub.ui.util.blend_colors(
+                        self.parent().palette().base().color(),
+                        self.parent().palette().highlight().color(),
+                        ratio))
 
         return QtCore.QVariant()
 
@@ -107,7 +125,7 @@ class SubsGrid(QtWidgets.QTableView):
     def __init__(self, api):
         super().__init__()
         self._api = api
-        self.setModel(SubsGridModel(api.subs.lines, self))
+        self.setModel(SubsGridModel(api, self))
         self.horizontalHeader().setSectionResizeMode(
             4, QtWidgets.QHeaderView.Stretch)
         self.verticalHeader().setDefaultSectionSize(24)
