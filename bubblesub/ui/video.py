@@ -23,6 +23,7 @@ class Video(QtWidgets.QFrame):
         self._mpv = bubblesub.mpv.MPV(
             osd_bar=False,
             osc=False,
+            cursor_autohide='no',
             input_cursor=False,
             input_vo_keyboard=False,
             input_default_bindings=False,
