@@ -82,6 +82,7 @@ class Options:
                 ('Ctrl+P', 'video/toggle-pause'),
                 ('Ctrl+Z', 'edit/undo'),
                 ('Ctrl+Y', 'edit/redo'),
+                ('Ctrl+F', 'edit/search'),
                 ('Alt+C', 'edit/copy'),  # TODO
                 ('Ctrl+Return', 'edit/insert-below'),
                 ('Ctrl+Delete', 'edit/delete'),
@@ -207,6 +208,7 @@ class Options:
                 ('Undo', 'edit/undo'),
                 ('Redo', 'edit/redo'),
                 None,
+                ('Search', 'edit/search'),
                 # ('Copy to clipboard', 'edit/copy'),  # TODO
                 None,
                 ('Add new subtitle above current line', 'edit/insert-above'),

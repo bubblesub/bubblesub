@@ -11,6 +11,13 @@ def error(msg):
     box.exec_()
 
 
+def notice(msg):
+    box = QtWidgets.QMessageBox()
+    box.setIcon(QtWidgets.QMessageBox.Information)
+    box.setText(msg)
+    box.exec_()
+
+
 def ask(msg):
     box = QtWidgets.QMessageBox()
     box.setText(msg)
