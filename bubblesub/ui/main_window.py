@@ -9,6 +9,7 @@ import bubblesub.ui.subs_grid
 import bubblesub.ui.util
 import bubblesub.ui.audio
 import bubblesub.ui.video
+import bubblesub.ui.statusbar
 
 
 def _run_cmd(api, cmd_name, args):
@@ -53,7 +54,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._video = bubblesub.ui.video.Video(api, self)
         self._audio = bubblesub.ui.audio.Audio(api, self)
         self._editor = bubblesub.ui.editor.Editor(api, self)
-        self._subs_grid = bubblesub.ui.subs_grid.SubsGrid(api)
+        self._subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
+        self._status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
 
         self._editor_splitter = QtWidgets.QSplitter(self)
         self._editor_splitter.setOrientation(QtCore.Qt.Vertical)
@@ -64,6 +66,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._top_bar.setOrientation(QtCore.Qt.Horizontal)
         self._top_bar.addWidget(self._video)
         self._top_bar.addWidget(self._editor_splitter)
+        self._top_bar.setStretchFactor(0, 1)
+        self._top_bar.setStretchFactor(1, 2)
 
         # TODO: console with logs
 
@@ -72,15 +76,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self._main_splitter.addWidget(self._top_bar)
         self._main_splitter.addWidget(self._subs_grid)
         self._main_splitter.setContentsMargins(8, 8, 8, 8)
-        self.setCentralWidget(self._main_splitter)
+        self._main_splitter.setStretchFactor(0, 1)
+        self._main_splitter.setStretchFactor(1, 5)
 
         action_map = self._setup_menu(api.opt)
         self._setup_hotkeys(api.opt, action_map)
 
-        self._top_bar.setStretchFactor(0, 1)
-        self._top_bar.setStretchFactor(1, 2)
-        self._main_splitter.setStretchFactor(0, 1)
-        self._main_splitter.setStretchFactor(1, 5)
+        self.setCentralWidget(self._main_splitter)
+        self.setStatusBar(self._status_bar)
 
         self._subs_grid.setFocus()
         self._restore_splitters()

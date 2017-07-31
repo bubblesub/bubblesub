@@ -99,6 +99,7 @@ class Video(QtWidgets.QFrame):
             self._mpv.loadfile(str(self._api.video.path))
 
     def _video_ready(self):
+        self._api.video.max_pts = self._mpv.duration * 1000
         self._mpv_ready = True
         self._mpv.sub_add(self._subs_path)
         self._refresh_subs()

@@ -173,8 +173,8 @@ class SubsGridModel(QtCore.QAbstractTableModel):
 
 
 class SubsGrid(QtWidgets.QTableView):
-    def __init__(self, api):
-        super().__init__()
+    def __init__(self, api, parent=None):
+        super().__init__(parent)
         self._api = api
         self.setModel(SubsGridModel(api, self))
         self.horizontalHeader().setSectionResizeMode(

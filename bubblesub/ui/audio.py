@@ -132,7 +132,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
-        api.video.pos_changed.connect(self._video_pos_changed)
+        api.video.current_pts_changed.connect(self._video_current_pts_changed)
         api.video.loaded.connect(self._video_loaded)
 
     def paintEvent(self, _event):
@@ -192,7 +192,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._spectrum_cache.clear()
         self.update()
 
-    def _video_pos_changed(self):
+    def _video_current_pts_changed(self):
         self._need_repaint = True
 
     def _spectrum_updated(self, result):
