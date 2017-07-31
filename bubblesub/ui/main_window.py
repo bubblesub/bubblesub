@@ -87,20 +87,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _setup_menu(self, opt):
         action_map = {}
-        for name, items in opt.menu.items():
-            submenu = self.menuBar().addMenu(name)
-            for item in items:
-                if item is None:
-                    submenu.addSeparator()
-                    continue
+        self._setup_submenu(self.menuBar(), self._api.opt.menu, action_map)
+        return action_map
 
-                action_name, cmd_name, *cmd_args = item
-                action = CommandAction(self._api, cmd_name, cmd_args)
-                action.setParent(submenu)
-                action.setText(action_name)
-                submenu.addAction(action)
+    def _setup_submenu(self, parent, menu_def, action_map):
+        for item in menu_def:
+            if item is None:
+                parent.addSeparator()
+            elif isinstance(item[1], list):
+                submenu = parent.addMenu(item[0])
                 submenu.aboutToShow.connect(
                     functools.partial(self._menu_about_to_show, submenu))
+                self._setup_submenu(submenu, item[1], action_map)
+            else:
+                action_name, cmd_name, *cmd_args = item
+                action = CommandAction(self._api, cmd_name, cmd_args)
+                action.setParent(parent)
+                action.setText(action_name)
+                parent.addAction(action)
                 action_map[(cmd_name, *cmd_args)] = action
         return action_map
 

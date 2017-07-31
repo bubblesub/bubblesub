@@ -245,22 +245,6 @@ class EditSwapTextAndNotesCommand(BaseCommand):
             sub.end_update()
 
 
-class EditGlueSelectionStartCommand(BaseCommand):
-    name = 'edit/glue-sel-start'
-
-    def enabled(self, api):
-        if not api.audio.has_selection:
-            return False
-        if not api.subs.selected_lines:
-            return False
-        return api.subs.selected_lines[0] > 0
-
-    def run(self, api):
-        api.audio.select(
-            api.subs.lines[api.subs.selected_lines[0] - 1].end,
-            api.audio.selection_end)
-
-
 class EditSnapSelectionStartToVideoCommand(BaseCommand):
     name = 'edit/snap-sel-start-to-video'
 
@@ -282,7 +266,7 @@ class EditSnapSelectionEndToVideoCommand(BaseCommand):
 
 
 class EditRealignSelectionToVideoCommand(BaseCommand):
-    name = 'edit/realign-sel-to-video'
+    name = 'edit/snap-sel-to-video'
 
     def enabled(self, api):
         return api.audio.has_selection and api.subs.has_selection
@@ -294,8 +278,24 @@ class EditRealignSelectionToVideoCommand(BaseCommand):
             + api.opt.general['subs']['default_duration'])
 
 
-class EditGlueSelectionEndCommand(BaseCommand):
-    name = 'edit/glue-sel-end'
+class EditSnapSelectionStartToPreviousSubtitleCommand(BaseCommand):
+    name = 'edit/snap-sel-start-to-prev-subtitle'
+
+    def enabled(self, api):
+        if not api.audio.has_selection:
+            return False
+        if not api.subs.selected_lines:
+            return False
+        return api.subs.selected_lines[0] > 0
+
+    def run(self, api):
+        api.audio.select(
+            api.subs.lines[api.subs.selected_lines[0] - 1].end,
+            api.audio.selection_end)
+
+
+class EditSnapSelectionEndToNextSubtitleCommand(BaseCommand):
+    name = 'edit/snap-sel-end-to-next-subtitle'
 
     def enabled(self, api):
         if not api.audio.has_selection:
@@ -311,7 +311,7 @@ class EditGlueSelectionEndCommand(BaseCommand):
 
 
 class MoveSubsWithGuiCommand(BaseCommand):
-    name = 'edit/move-subs-with-gui'
+    name = 'edit/shift-subs-times-with-gui'
 
     def enabled(self, api):
         return api.subs.has_selection

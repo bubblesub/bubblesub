@@ -94,7 +94,7 @@ class Options:
                 ('Ctrl+3', 'edit/move-sel-end', -25),
                 ('Ctrl+4', 'edit/move-sel-end', 25),
                 ('Ctrl+B', 'edit/snap-sel-start-to-video'),
-                ('Ctrl+N', 'edit/realign-sel-to-video'),
+                ('Ctrl+N', 'edit/snap-sel-to-video'),
                 ('Ctrl+M', 'edit/snap-sel-end-to-video'),
                 ('Ctrl+[', 'video/set-playback-speed', 0.5),
                 ('Ctrl+]', 'video/set-playback-speed', 1),
@@ -124,15 +124,15 @@ class Options:
                 ('Shift+,', 'video/step-frame', -10),
                 ('Shift+.', 'video/step-frame', 10),
                 ('B', 'edit/snap-sel-start-to-video'),
-                ('N', 'edit/realign-sel-to-video'),
+                ('N', 'edit/snap-sel-to-video'),
                 ('M', 'edit/snap-sel-end-to-video'),
                 ('[', 'video/set-playback-speed', 0.5),
                 (']', 'video/set-playback-speed', 1),
             ],
         }
 
-        self.menu = {
-            '&File': [
+        self.menu = [
+            ('&File', [
                 ('New', 'file/new'),
                 ('Open', 'file/open'),
                 ('Save', 'file/save'),
@@ -141,20 +141,24 @@ class Options:
                 ('Load video', 'file/load-video'),
                 None,
                 ('Quit', 'file/quit'),
-            ],
+            ]),
 
-            '&Playback': [
-                ('Jump to line', 'grid/jump-to-line'),
-                ('Jump to time', 'grid/jump-to-time'),
+            ('&Grid', [
+                ('Jump to line...', 'grid/jump-to-line'),
+                ('Jump to time...', 'grid/jump-to-time'),
                 ('Select previous subtitle', 'grid/select-prev-subtitle'),
                 ('Select next subtitle', 'grid/select-next-subtitle'),
                 ('Select all subtitles', 'grid/select-all'),
                 ('Clear selection', 'grid/select-nothing'),
-                None,
-                ('Play 500 ms before selection start', 'video/play-around-sel-start', -500, 0),
-                ('Play 500 ms after selection start', 'video/play-around-sel-start', 0, 500),
-                ('Play 500 ms before selection end', 'video/play-around-sel-end', -500, 0),
-                ('Play 500 ms after selection end', 'video/play-around-sel-end', 0, 500),
+            ]),
+
+            ('&Playback', [
+                ('Play around selection', [
+                    ('Play 500 ms before selection start', 'video/play-around-sel-start', -500, 0),
+                    ('Play 500 ms after selection start', 'video/play-around-sel-start', 0, 500),
+                    ('Play 500 ms before selection end', 'video/play-around-sel-end', -500, 0),
+                    ('Play 500 ms after selection end', 'video/play-around-sel-end', 0, 500),
+                ]),
                 ('Play selection', 'video/play-around-sel', 0, 0),
                 ('Play current line', 'video/play-current-line'),
                 ('Play until end of the file', 'video/unpause'),
@@ -167,34 +171,43 @@ class Options:
                 ('Pause playback', 'video/pause'),
                 ('Toggle pause', 'video/toggle-pause'),
                 None,
-                ('Scroll waveform backward', 'audio/scroll', -1),
-                ('Scroll waveform forward', 'audio/scroll', 1),
-                None,
                 ('Set playback speed to 0.5x', 'video/set-playback-speed', 0.5),
                 ('Set playback speed to 1x', 'video/set-playback-speed', 1),
-            ],
+            ]),
 
-            '&Edit': [
+            ('&Timing', [
+                ('Snap selection to subtitles', [
+                    ('Snap start to previous subtitle', 'edit/snap-sel-start-to-prev-subtitle'),
+                    ('Snap end to next subtitle', 'edit/snap-sel-end-to-next-subtitle'),
+                ]),
+                ('Snap selection to video frame', [
+                    ('Snap start', 'edit/snap-sel-start-to-video'),
+                    ('Snap end', 'edit/snap-sel-end-to-video'),
+                    ('Snap both', 'edit/snap-sel-to-video'),
+                ]),
+                ('Shift selection', [
+                    ('Shift start (-250 ms)', 'edit/move-sel-start', -250),
+                    ('Shift start (+250 ms)', 'edit/move-sel-start', 250),
+                    ('Shift end (-250 ms)', 'edit/move-sel-end', -250),
+                    ('Shift end (+250 ms)', 'edit/move-sel-end', 250),
+                    ('Shift start (-25 ms)', 'edit/move-sel-start', -25),
+                    ('Shift start (+25 ms)', 'edit/move-sel-start', 25),
+                    ('Shift end (-25 ms)', 'edit/move-sel-end', -25),
+                    ('Shift end (+25 ms)', 'edit/move-sel-end', 25),
+                ]),
+                ('Commit selection to subtitle', 'edit/commit-sel'),
+                None,
+                ('Shift times...', 'edit/shift-subs-times-with-gui'),
+                None,
+                ('Scroll waveform backward', 'audio/scroll', -1),
+                ('Scroll waveform forward', 'audio/scroll', 1),
+            ]),
+
+            ('&Edit', [
                 ('Undo', 'edit/undo'),
                 ('Redo', 'edit/redo'),
                 None,
                 # ('Copy to clipboard', 'edit/copy'),  # TODO
-                None,
-                ('Glue selection start to previous subtitle', 'edit/glue-sel-start'),
-                ('Glue selection end to next subtitle', 'edit/glue-sel-end'),
-                ('Snap selection start to current video frame', 'edit/snap-sel-start-to-video'),
-                ('Snap selection end to current video frame', 'edit/snap-sel-end-to-video'),
-                ('Realign selection to current video frame', 'edit/realign-sel-to-video'),
-                ('Shift selected subtitles', 'edit/move-subs-with-gui'),
-                ('Shift selection start (-250 ms)', 'edit/move-sel-start', -250),
-                ('Shift selection start (+250 ms)', 'edit/move-sel-start', 250),
-                ('Shift selection end (-250 ms)', 'edit/move-sel-end', -250),
-                ('Shift selection end (+250 ms)', 'edit/move-sel-end', 250),
-                ('Shift selection start (-25 ms)', 'edit/move-sel-start', -25),
-                ('Shift selection start (+25 ms)', 'edit/move-sel-start', 25),
-                ('Shift selection end (-25 ms)', 'edit/move-sel-end', -25),
-                ('Shift selection end (+25 ms)', 'edit/move-sel-end', 25),
-                ('Commit selection to subtitle', 'edit/commit-sel'),
                 None,
                 ('Add new subtitle above current line', 'edit/insert-above'),
                 ('Add new subtitle below current line', 'edit/insert-below'),
@@ -206,8 +219,8 @@ class Options:
                 # ('Split selection as karaoke', 'edit/join-karaoke'),  # TODO
                 None,
                 # ('Style editor', 'edit/style-editor'),  # TODO
-            ],
-        }
+            ]),
+        ]
 
     def load(self, location):
         serializer = Serializer(location)
