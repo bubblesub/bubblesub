@@ -1,3 +1,5 @@
+import os
+import atexit
 import locale
 import tempfile
 import bubblesub.mpv
@@ -64,6 +66,8 @@ class Video(QtWidgets.QFrame):
             interval=api.opt.general['video']['subs_sync_interval'])
         timer.timeout.connect(self._refresh_subs_if_needed)
         timer.start()
+
+        atexit.register(lambda: os.unlink(self._subs_path))
 
     def _subs_changed(self):
         self._need_subs_refresh = True
