@@ -216,8 +216,8 @@ class Options:
                 None,
                 ('Swap notes with subtitle text', 'edit/swap-text-and-notes'),
                 ('Split at video frame', 'edit/split-sub-at-video'),
-                # ('Split as karaoke', 'edit/split-karaoke'),  # TODO
-                # ('Split as karaoke', 'edit/join-karaoke'),  # TODO
+                ('Split as karaoke', 'edit/karaoke-split'),
+                ('Join as karaoke', 'edit/karaoke-join'),
                 ('Join (keep first)', 'edit/join-subs/keep-first'),
                 ('Join (concatenate)', 'edit/join-subs/concatenate'),
                 None,
