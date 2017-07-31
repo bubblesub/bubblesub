@@ -58,7 +58,7 @@ class Options:
 
         self.hotkeys = {
             'global': [
-                ('Ctrl+N', 'file/new'),
+                ('Ctrl+Shift+N', 'file/new'),
                 ('Ctrl+O', 'file/open'),
                 ('Ctrl+S', 'file/save'),
                 ('Ctrl+Shift+S', 'file/save-as'),
