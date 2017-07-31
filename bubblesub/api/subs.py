@@ -131,6 +131,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @selected_lines.setter
     def selected_lines(self, new_selection):
+        new_selection = list(sorted(new_selection))
         if new_selection != self._selected_lines:
             self._selected_lines = new_selection
             self.selection_changed.emit(new_selection)

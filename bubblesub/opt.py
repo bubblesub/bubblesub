@@ -218,6 +218,8 @@ class Options:
                 ('Split at video frame', 'edit/split-sub-at-video'),
                 # ('Split as karaoke', 'edit/split-karaoke'),  # TODO
                 # ('Split as karaoke', 'edit/join-karaoke'),  # TODO
+                ('Join (keep first)', 'edit/join-subs/keep-first'),
+                ('Join (concatenate)', 'edit/join-subs/concatenate'),
                 None,
                 # ('Style editor', 'edit/style-editor'),  # TODO
             ]),

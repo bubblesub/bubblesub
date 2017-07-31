@@ -204,7 +204,7 @@ class EditDuplicateCommand(BaseCommand):
     def run(self, api):
         new_selection = []
         api.gui.begin_update()
-        for idx in reversed(sorted(api.subs.selected_lines)):
+        for idx in reversed(api.subs.selected_lines):
             sub = api.subs.lines[idx]
             api.subs.lines.insert_one(
                 idx + 1,
@@ -222,7 +222,7 @@ class EditDeleteCommand(BaseCommand):
         return api.subs.has_selection
 
     def run(self, api):
-        for idx in reversed(sorted(api.subs.selected_lines)):
+        for idx in reversed(api.subs.selected_lines):
             api.subs.lines.remove(idx, 1)
         api.subs.selected_lines = []
 
@@ -260,6 +260,48 @@ class EditSplitSubAtVideoCommand(BaseCommand):
         api.subs.lines[idx + 1].start = split_pos
         api.subs.selected_lines = [idx, idx + 1]
         api.gui.end_update()
+
+
+class EditJoinSubsKeepFirstCommand(BaseCommand):
+    name = 'edit/join-subs/keep-first'
+
+    def enabled(self, api):
+        return len(api.subs.selected_lines) > 1
+
+    def run(self, api):
+        idx = api.subs.selected_lines[0]
+        last_idx = api.subs.selected_lines[-1]
+        api.subs.lines[idx].end = api.subs.lines[last_idx].end
+        for i in reversed(api.subs.selected_lines[1:]):
+            api.subs.lines.remove(i, 1)
+        api.subs.selected_lines = [idx]
+
+
+class EditJoinSubsConcatenateCommand(BaseCommand):
+    name = 'edit/join-subs/concatenate'
+
+    def enabled(self, api):
+        return len(api.subs.selected_lines) > 1
+
+    def run(self, api):
+        idx = api.subs.selected_lines[0]
+        last_idx = api.subs.selected_lines[-1]
+
+        sub = api.subs.lines[idx]
+        sub.begin_update()
+        sub.end = api.subs.lines[last_idx].end
+
+        new_text = ''
+        new_note = ''
+        for i in reversed(api.subs.selected_lines[1:]):
+            new_text = api.subs.lines[i].text + new_text
+            new_note = api.subs.lines[i].note + new_note
+            api.subs.lines.remove(i, 1)
+
+        sub.text += new_text
+        sub.note += new_note
+        sub.end_update()
+        api.subs.selected_lines = [idx]
 
 
 class EditSnapSelectionStartToVideoCommand(BaseCommand):
