@@ -241,6 +241,27 @@ class EditSwapTextAndNotesCommand(BaseCommand):
             sub.end_update()
 
 
+class EditSplitSubAtVideoCommand(BaseCommand):
+    name = 'edit/split-sub-at-video'
+
+    def enabled(self, api):
+        return len(api.subs.selected_lines) == 1
+
+    def run(self, api):
+        idx = api.subs.selected_lines[0]
+        sub = api.subs.lines[idx]
+        split_pos = api.video.current_pts
+        if split_pos < sub.start or split_pos > sub.end:
+            return
+        api.gui.begin_update()
+        api.subs.lines.insert_one(
+            idx + 1, **{k: getattr(sub, k) for k in sub.prop.keys()})
+        api.subs.lines[idx].end = split_pos
+        api.subs.lines[idx + 1].start = split_pos
+        api.subs.selected_lines = [idx, idx + 1]
+        api.gui.end_update()
+
+
 class EditSnapSelectionStartToVideoCommand(BaseCommand):
     name = 'edit/snap-sel-start-to-video'
 

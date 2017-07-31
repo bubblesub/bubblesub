@@ -215,8 +215,9 @@ class Options:
                 ('Delete selected subtitles', 'edit/delete'),
                 None,
                 ('Swap notes with subtitle text', 'edit/swap-text-and-notes'),
-                # ('Split selection as karaoke', 'edit/split-karaoke'),  # TODO
-                # ('Split selection as karaoke', 'edit/join-karaoke'),  # TODO
+                ('Split at video frame', 'edit/split-sub-at-video'),
+                # ('Split as karaoke', 'edit/split-karaoke'),  # TODO
+                # ('Split as karaoke', 'edit/join-karaoke'),  # TODO
                 None,
                 # ('Style editor', 'edit/style-editor'),  # TODO
             ]),
