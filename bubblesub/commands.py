@@ -208,11 +208,7 @@ class EditDuplicateCommand(BaseCommand):
             sub = api.subs.lines[idx]
             api.subs.lines.insert_one(
                 idx + 1,
-                start=sub.start,
-                end=sub.end,
-                actor=sub.actor,
-                style=sub.style,
-                text=sub.text)
+                **{k: getattr(sub, k) for k in sub.prop.keys()})
             new_selection.append(
                 idx + len(api.subs.selected_lines) - len(new_selection))
         api.subs.selected_lines = new_selection
