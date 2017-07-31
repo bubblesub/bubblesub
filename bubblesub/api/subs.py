@@ -107,15 +107,34 @@ class SubtitlesApi(QtCore.QObject):
     saved = QtCore.pyqtSignal()
     selection_changed = QtCore.pyqtSignal(list)
 
-    def __init__(self, video_api):
+    def __init__(self):
         super().__init__()
-        self._video_api = video_api
         self._loaded_video_path = None
         self._selected_lines = []
         self._ass_source = pysubs2.SSAFile.from_string(
             EMPTY_ASS, format_='ass')
         self._path = None
         self.lines = bubblesub.api.subs.SubtitleList()
+
+    @property
+    def meta(self):
+        return self._ass_source.meta
+
+    @property
+    def aegisub_project(self):
+        return self._ass_source.aegisub_project
+
+    @property
+    def remembered_video_path(self):
+        path = self._ass_source.aegisub_project.get('Video File', None)
+        if not path:
+            return None
+        return self._path.parent / path
+
+    @remembered_video_path.setter
+    def remembered_video_path(self, path):
+        self._ass_source.aegisub_project['Video File'] = str(path)
+        self._ass_source.aegisub_project['Audio File'] = str(path)
 
     @property
     def path(self):
@@ -142,7 +161,6 @@ class SubtitlesApi(QtCore.QObject):
             EMPTY_ASS, format_='ass')
         self.lines.remove(0, len(self.lines))
         self.selected_lines = []
-        self._video_api.unload()
         self.loaded.emit()
 
     def load_ass(self, path):
@@ -177,18 +195,6 @@ class SubtitlesApi(QtCore.QObject):
 
             self.lines.remove(0, len(self.lines))
             self.lines.insert(0, collection)
-
-        self._loaded_video_path = None
-        if self._ass_source and 'Video File' \
-                in self._ass_source.aegisub_project:
-            self._loaded_video_path = (
-                self._path.parent /
-                self._ass_source.aegisub_project['Video File'])
-        if self._loaded_video_path:
-            self._video_api.load(self._loaded_video_path)
-        else:
-            self._video_api.unload()
-
         self.loaded.emit()
 
     def save_ass(self, path, remember_path=False):
@@ -198,10 +204,6 @@ class SubtitlesApi(QtCore.QObject):
             del self._ass_source[:]
             for subtitle in self.lines:
                 self._ass_source.append(subtitle.ssa_event)
-            if self._video_api.path != self._loaded_video_path:
-                video_path = str(self._video_api.path)
-                self._ass_source.aegisub_project['Video File'] = video_path
-                self._ass_source.aegisub_project['Audio File'] = video_path
             if remember_path:
                 self._path = path
             self._ass_source.save(path)

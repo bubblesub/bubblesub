@@ -12,7 +12,7 @@ class Api:
         self.opt = opt
         self.log = bubblesub.api.log.LogApi()
         self.gui = bubblesub.api.gui.GuiApi()
-        self.video = bubblesub.api.video.VideoApi(self.log)
+        self.subs = bubblesub.api.subs.SubtitlesApi()
+        self.video = bubblesub.api.video.VideoApi(self.subs, self.log, self.opt)
         self.audio = bubblesub.api.audio.AudioApi(self.video)
-        self.subs = bubblesub.api.subs.SubtitlesApi(self.video)
         self.undo = bubblesub.api.undo.UndoApi(self.subs)
