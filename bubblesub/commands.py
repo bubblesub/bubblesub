@@ -22,6 +22,12 @@ class BaseCommand:
         raise NotImplementedError('Command has no implementation')
 
 
+def _get_dialog_dir(api):
+    if api.subs.path:
+        return str(api.subs.path.parent)
+    return None
+
+
 def _ask_about_unsaved_changes(api):
     if not api.undo.needs_save:
         return True
@@ -45,7 +51,9 @@ class FileOpenCommand(BaseCommand):
     def run(self, api):
         if _ask_about_unsaved_changes(api):
             path, _ = QtWidgets.QFileDialog.getOpenFileName(
-                api.gui.main_window, initialFilter='*.ass')
+                api.gui.main_window,
+                directory=_get_dialog_dir(api),
+                initialFilter='*.ass')
             if not path:
                 api.log.info('Opening cancelled.')
             else:
@@ -58,7 +66,9 @@ class FileLoadVideo(BaseCommand):
 
     def run(self, api):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            api.gui.main_window, initialFilter='*.mkv')
+            api.gui.main_window,
+            directory=_get_dialog_dir(api),
+            initialFilter='*.mkv')
         if not path:
             api.log.info('Loading video cancelled.')
         else:
@@ -73,7 +83,9 @@ class FileSaveCommand(BaseCommand):
         path = api.subs.path
         if not api.subs.path:
             path, _ = QtWidgets.QFileDialog.getSaveFileName(
-                api.gui.main_window, initialFilter='*.ass')
+                api.gui.main_window,
+                directory=_get_dialog_dir(api),
+                initialFilter='*.ass')
             if not path:
                 api.log.info('Saving cancelled.')
                 return
@@ -86,7 +98,9 @@ class FileSaveAsCommand(BaseCommand):
 
     def run(self, api):
         path, _ = QtWidgets.QFileDialog.getSaveFileName(
-            api.gui.main_window, initialFilter='*.ass')
+            api.gui.main_window,
+            directory=_get_dialog_dir(api),
+            initialFilter='*.ass')
         if not path:
             api.log.info('Saving cancelled.')
         else:
