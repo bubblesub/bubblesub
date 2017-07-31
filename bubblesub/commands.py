@@ -319,7 +319,7 @@ class MoveSubsWithGuiCommand(BaseCommand):
     def run(self, api):
         dialog = self.ShiftTimesDialog()
         if dialog.exec_():
-            delta = dialog.result()
+            delta = dialog.value()
             for i in api.subs.selected_lines:
                 api.subs.lines[i].begin_update()
                 api.subs.lines[i].start += delta
@@ -352,7 +352,7 @@ class MoveSubsWithGuiCommand(BaseCommand):
         def cancel_clicked(self):
             self.close()
 
-        def result(self):
+        def value(self):
             return bubblesub.util.str_to_ms(self.time_widget.text())
 
 
@@ -406,6 +406,8 @@ class GridJumpToLineCommand(BaseCommand):
         dialog.setLabelText('Line number to jump to:')
         dialog.setIntMinimum(1)
         dialog.setIntMaximum(len(api.subs.lines))
+        if api.subs.has_selection:
+            dialog.setIntValue(api.subs.selected_lines[0] + 1)
         dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
         if dialog.exec_():
             api.subs.selected_lines = [dialog.intValue() - 1]
@@ -419,8 +421,10 @@ class GridJumpToTimeCommand(BaseCommand):
 
     def run(self, api):
         dialog = self.JumpToTimeDialog()
+        if api.subs.has_selection:
+            dialog.setValue(api.subs.lines[api.subs.selected_lines[0]].start)
         if dialog.exec_():
-            target_pts = dialog.result()
+            target_pts = dialog.value()
             best_distance = None
             best_idx = None
             for i, sub in enumerate(api.subs.lines):
@@ -458,7 +462,11 @@ class GridJumpToTimeCommand(BaseCommand):
         def cancel_clicked(self):
             self.close()
 
-        def result(self):
+        def setValue(self, value):
+            self.time_widget.setText(bubblesub.util.ms_to_str(value))
+            self.time_widget.setCursorPosition(0)
+
+        def value(self):
             return bubblesub.util.str_to_ms(self.time_widget.text())
 
 
