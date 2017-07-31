@@ -355,18 +355,18 @@ class Audio(QtWidgets.QWidget):
     def __init__(self, api, parent=None):
         super().__init__(parent)
         self._api = api
-        self._slider = AudioSliderWidget(self._api, self)
-        self._scale = AudioScaleWidget(self._api, self)
-        self._preview = AudioPreviewWidget(self._api, self)
+        self.slider = AudioSliderWidget(self._api, self)
+        self.preview = AudioPreviewWidget(self._api, self)
+        self.scale = AudioScaleWidget(self._api, self)
 
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         self.setLayout(QtWidgets.QVBoxLayout(self))
         self.layout().setSpacing(0)
         self.layout().setContentsMargins(0, 0, 0, 0)
-        self.layout().addWidget(self._scale)
-        self.layout().addWidget(self._preview)
-        self.layout().addWidget(self._slider)
+        self.layout().addWidget(self.scale)
+        self.layout().addWidget(self.preview)
+        self.layout().addWidget(self.slider)
 
         api.subs.selection_changed.connect(self._grid_selection_changed)
 

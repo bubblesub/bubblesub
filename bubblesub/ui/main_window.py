@@ -51,42 +51,51 @@ class MainWindow(QtWidgets.QMainWindow):
         api.gui.end_update_requested.connect(
             lambda: self.setUpdatesEnabled(True))
 
-        self._video = bubblesub.ui.video.Video(api, self)
-        self._audio = bubblesub.ui.audio.Audio(api, self)
-        self._editor = bubblesub.ui.editor.Editor(api, self)
-        self._subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
-        self._status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
+        self.video = bubblesub.ui.video.Video(api, self)
+        self.audio = bubblesub.ui.audio.Audio(api, self)
+        self.editor = bubblesub.ui.editor.Editor(api, self)
+        self.subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
+        self.status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
 
-        self._editor_splitter = QtWidgets.QSplitter(self)
-        self._editor_splitter.setOrientation(QtCore.Qt.Vertical)
-        self._editor_splitter.addWidget(self._audio)
-        self._editor_splitter.addWidget(self._editor)
+        self.editor_splitter = QtWidgets.QSplitter(self)
+        self.editor_splitter.setOrientation(QtCore.Qt.Vertical)
+        self.editor_splitter.addWidget(self.audio)
+        self.editor_splitter.addWidget(self.editor)
 
-        self._top_bar = QtWidgets.QSplitter(self)
-        self._top_bar.setOrientation(QtCore.Qt.Horizontal)
-        self._top_bar.addWidget(self._video)
-        self._top_bar.addWidget(self._editor_splitter)
-        self._top_bar.setStretchFactor(0, 1)
-        self._top_bar.setStretchFactor(1, 2)
+        self.top_bar = QtWidgets.QSplitter(self)
+        self.top_bar.setOrientation(QtCore.Qt.Horizontal)
+        self.top_bar.addWidget(self.video)
+        self.top_bar.addWidget(self.editor_splitter)
+        self.top_bar.setStretchFactor(0, 1)
+        self.top_bar.setStretchFactor(1, 2)
 
         # TODO: console with logs
 
-        self._main_splitter = QtWidgets.QSplitter(self)
-        self._main_splitter.setOrientation(QtCore.Qt.Vertical)
-        self._main_splitter.addWidget(self._top_bar)
-        self._main_splitter.addWidget(self._subs_grid)
-        self._main_splitter.setContentsMargins(8, 8, 8, 8)
-        self._main_splitter.setStretchFactor(0, 1)
-        self._main_splitter.setStretchFactor(1, 5)
+        self.main_splitter = QtWidgets.QSplitter(self)
+        self.main_splitter.setOrientation(QtCore.Qt.Vertical)
+        self.main_splitter.addWidget(self.top_bar)
+        self.main_splitter.addWidget(self.subs_grid)
+        self.main_splitter.setContentsMargins(8, 8, 8, 8)
+        self.main_splitter.setStretchFactor(0, 1)
+        self.main_splitter.setStretchFactor(1, 5)
 
         action_map = self._setup_menu(api.opt)
         self._setup_hotkeys(api.opt, action_map)
 
-        self.setCentralWidget(self._main_splitter)
-        self.setStatusBar(self._status_bar)
+        self.setCentralWidget(self.main_splitter)
+        self.setStatusBar(self.status_bar)
 
-        self._subs_grid.setFocus()
+        self.subs_grid.setFocus()
         self._restore_splitters()
+
+    def closeEvent(self, event):
+        self._store_splitters()
+        if self._api.undo.needs_save and not bubblesub.ui.util.ask(
+                'There are unsaved changes. '
+                'Are you sure you want to exit the program?'):
+            event.ignore()
+        else:
+            event.accept()
 
     def _setup_menu(self, opt):
         action_map = {}
@@ -128,34 +137,25 @@ class MainWindow(QtWidgets.QMainWindow):
                 if context == 'global':
                     shortcut.setContext(QtCore.Qt.ApplicationShortcut)
                 elif context == 'audio':
-                    shortcut.setParent(self._audio)
+                    shortcut.setParent(self.audio)
                     shortcut.setContext(
                         QtCore.Qt.WidgetWithChildrenShortcut)
                 else:
                     raise RuntimeError('Invalid shortcut context')
 
-    def closeEvent(self, event):
-        self._store_splitters()
-        if self._api.undo.needs_save and not bubblesub.ui.util.ask(
-                'There are unsaved changes. '
-                'Are you sure you want to exit the program?'):
-            event.ignore()
-        else:
-            event.accept()
-
     def _restore_splitters(self):
         splitter_cfg = self._api.opt.general.get('splitters', None)
         if not splitter_cfg:
             return
-        _load_splitter_state(self._top_bar, splitter_cfg['top'])
-        _load_splitter_state(self._editor_splitter, splitter_cfg['editor'])
-        _load_splitter_state(self._main_splitter, splitter_cfg['main'])
+        _load_splitter_state(self.top_bar, splitter_cfg['top'])
+        _load_splitter_state(self.editor_splitter, splitter_cfg['editor'])
+        _load_splitter_state(self.main_splitter, splitter_cfg['main'])
 
     def _store_splitters(self):
         self._api.opt.general['splitters'] = {
-            'top': _get_splitter_state(self._top_bar),
-            'editor': _get_splitter_state(self._editor_splitter),
-            'main': _get_splitter_state(self._main_splitter),
+            'top': _get_splitter_state(self.top_bar),
+            'editor': _get_splitter_state(self.editor_splitter),
+            'main': _get_splitter_state(self.main_splitter),
         }
 
     def _menu_about_to_show(self, menu):
