@@ -65,8 +65,8 @@ class Options:
                 ('Ctrl+Q', 'file/quit'),
                 ('Ctrl+G', 'grid/jump-to-line'),
                 ('Ctrl+Shift+G', 'grid/jump-to-time'),
-                ('Ctrl+K', 'grid/select-prev-subtitle'),
-                ('Ctrl+J', 'grid/select-next-subtitle'),
+                ('Ctrl+K', 'grid/select-prev-sub'),
+                ('Ctrl+J', 'grid/select-next-sub'),
                 ('Ctrl+A', 'grid/select-all'),
                 ('Ctrl+Shift+A', 'grid/select-nothing'),
                 ('Alt+1', 'video/play-around-sel-start', -500, 0),
@@ -115,8 +115,8 @@ class Options:
                 ('R', 'video/play-around-sel', 0, 0),
                 ('T', 'video/play-current-line'),
                 ('P', 'video/toggle-pause'),
-                ('Shift+K', 'grid/select-prev-subtitle'),
-                ('Shift+J', 'grid/select-next-subtitle'),
+                ('Shift+K', 'grid/select-prev-sub'),
+                ('Shift+J', 'grid/select-next-sub'),
                 ('A', 'audio/scroll', -1),
                 ('F', 'audio/scroll', 1),
                 (',', 'video/step-frame', -1),
@@ -146,8 +146,8 @@ class Options:
             ('&Grid', [
                 ('Jump to line...', 'grid/jump-to-line'),
                 ('Jump to time...', 'grid/jump-to-time'),
-                ('Select previous subtitle', 'grid/select-prev-subtitle'),
-                ('Select next subtitle', 'grid/select-next-subtitle'),
+                ('Select previous subtitle', 'grid/select-prev-sub'),
+                ('Select next subtitle', 'grid/select-next-sub'),
                 ('Select all subtitles', 'grid/select-all'),
                 ('Clear selection', 'grid/select-nothing'),
             ]),
@@ -177,8 +177,8 @@ class Options:
 
             ('&Timing', [
                 ('Snap selection to subtitles', [
-                    ('Snap start to previous subtitle', 'edit/snap-sel-start-to-prev-subtitle'),
-                    ('Snap end to next subtitle', 'edit/snap-sel-end-to-next-subtitle'),
+                    ('Snap start to previous subtitle', 'edit/snap-sel-start-to-prev-sub'),
+                    ('Snap end to next subtitle', 'edit/snap-sel-end-to-next-sub'),
                 ]),
                 ('Snap selection to video frame', [
                     ('Snap start', 'edit/snap-sel-start-to-video'),

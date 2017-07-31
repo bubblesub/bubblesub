@@ -279,7 +279,7 @@ class EditRealignSelectionToVideoCommand(BaseCommand):
 
 
 class EditSnapSelectionStartToPreviousSubtitleCommand(BaseCommand):
-    name = 'edit/snap-sel-start-to-prev-subtitle'
+    name = 'edit/snap-sel-start-to-prev-sub'
 
     def enabled(self, api):
         if not api.audio.has_selection:
@@ -295,7 +295,7 @@ class EditSnapSelectionStartToPreviousSubtitleCommand(BaseCommand):
 
 
 class EditSnapSelectionEndToNextSubtitleCommand(BaseCommand):
-    name = 'edit/snap-sel-end-to-next-subtitle'
+    name = 'edit/snap-sel-end-to-next-sub'
 
     def enabled(self, api):
         if not api.audio.has_selection:
@@ -471,7 +471,7 @@ class GridJumpToTimeCommand(BaseCommand):
 
 
 class GridSelectPrevSubtitleCommand(BaseCommand):
-    name = 'grid/select-prev-subtitle'
+    name = 'grid/select-prev-sub'
 
     def enabled(self, api):
         return len(api.subs.lines) > 0
@@ -484,7 +484,7 @@ class GridSelectPrevSubtitleCommand(BaseCommand):
 
 
 class GridSelectNextSubtitleCommand(BaseCommand):
-    name = 'grid/select-next-subtitle'
+    name = 'grid/select-next-sub'
 
     def enabled(self, api):
         return len(api.subs.lines) > 0
