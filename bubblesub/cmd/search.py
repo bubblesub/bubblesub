@@ -63,6 +63,7 @@ def _search(api, text, case_sensitive, use_regexes, direction):
         api.gui.main_window.editor.text_edit.setTextCursor(cursor)
         return True
 
+    bubblesub.ui.util.notice('No occurrences found.')
     return False
 
 
@@ -121,14 +122,12 @@ class SearchDialog(QtWidgets.QDialog):
         else:
             direction = 0
         if direction:
-            result = _search(
+            _search(
                 self._api,
                 self.text_edit.currentText(),
                 self.case_chkbox.isChecked(),
                 self.regex_chkbox.isChecked(),
                 direction)
-            if not result:
-                bubblesub.ui.util.notice('No occurrences found.')
 
     def _load_opt(self):
         self.text_edit.clear()
@@ -159,3 +158,19 @@ class SearchCommand(BaseCommand):
         if not self.dialog:
             self.dialog = SearchDialog(api)
         self.dialog.exec_()
+
+
+class SearchRepeatCommand(BaseCommand):
+    name = 'edit/search-repeat'
+
+    def enabled(self, api):
+        return len(api.opt.general['search']['history']) > 0
+
+    def run(self, api, direction):
+        opt = api.opt.general['search']
+        _search(
+            api,
+            opt['history'][0],
+            opt['case_sensitive'],
+            opt['use_regexes'],
+            direction)

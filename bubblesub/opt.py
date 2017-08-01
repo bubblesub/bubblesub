@@ -62,6 +62,8 @@ _DEFAULT_HOTKEYS = {
         ('Ctrl+M', 'audio/snap-sel-end-to-video'),
         ('Ctrl+[', 'video/set-playback-speed', 0.5),
         ('Ctrl+]', 'video/set-playback-speed', 1),
+        ('F3', 'edit/search-repeat', 1),
+        ('Shift+F3', 'edit/search-repeat', -1),
     ],
 
     'audio': [
@@ -171,7 +173,9 @@ _DEFAULT_MENU = [
         ('Undo', 'edit/undo'),
         ('Redo', 'edit/redo'),
         None,
-        ('Search', 'edit/search'),
+        ('Search...', 'edit/search'),
+        ('Search next', 'edit/search-repeat', 1),
+        ('Search previous', 'edit/search-repeat', -1),
         # ('Copy to clipboard', 'edit/copy'),  # TODO
         None,
         ('Add new subtitle above current line', 'edit/insert-above'),
