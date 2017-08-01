@@ -3,7 +3,7 @@ import base64
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-import bubblesub.commands
+import bubblesub.cmd.registry
 import bubblesub.ui.editor
 import bubblesub.ui.subs_grid
 import bubblesub.ui.util
@@ -31,10 +31,10 @@ class CommandAction(QtWidgets.QAction):
         super().__init__()
         self.api = api
         self.cmd_name = cmd_name
-        self.cmd = bubblesub.commands.registry.get(cmd_name, None)
+        self.cmd = bubblesub.cmd.registry.get(cmd_name)
         self.triggered.connect(
             functools.partial(
-                _run_cmd, api, bubblesub.commands.registry[cmd_name], cmd_args))
+                _run_cmd, api, bubblesub.cmd.registry.get(cmd_name), cmd_args))
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -133,7 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     functools.partial(
                         _run_cmd,
                         self._api,
-                        bubblesub.commands.registry[cmd_name],
+                        bubblesub.cmd.registry.get(cmd_name),
                         cmd_args))
                 if context == 'global':
                     shortcut.setContext(QtCore.Qt.ApplicationShortcut)
