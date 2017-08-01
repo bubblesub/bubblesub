@@ -183,7 +183,7 @@ class EditJoinSubsConcatenateCommand(BaseCommand):
         api.subs.selected_indexes = [idx]
 
 
-class MoveSubsWithGuiCommand(BaseCommand):
+class EditShiftSubsTimesWithGuiCommand(BaseCommand):
     name = 'edit/shift-subs-times-with-gui'
 
     def enabled(self, api):

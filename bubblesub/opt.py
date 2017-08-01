@@ -47,7 +47,7 @@ _DEFAULT_HOTKEYS = {
         ('Ctrl+Y', 'edit/redo'),
         ('Ctrl+F', 'edit/search'),
         ('Ctrl+H', 'edit/search-and-replace'),
-        # ('Alt+C', 'edit/copy'),  # TODO
+        ('Alt+C', 'grid/copy-to-clipboard'),
         ('Ctrl+Return', 'edit/insert-below'),
         ('Ctrl+Delete', 'edit/delete'),
         ('Ctrl+Shift+1', 'audio/move-sel-start', -250),
@@ -178,7 +178,7 @@ _DEFAULT_MENU = [
         ('Search and replace...', 'edit/search'),
         ('Search next', 'edit/search-repeat', 1),
         ('Search previous', 'edit/search-repeat', -1),
-        # ('Copy to clipboard', 'edit/copy'),  # TODO
+        ('Copy selected subtitles text', 'grid/copy-to-clipboard'),
         None,
         ('Add new subtitle above current line', 'edit/insert-above'),
         ('Add new subtitle below current line', 'edit/insert-below'),

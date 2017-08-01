@@ -113,3 +113,14 @@ class GridSelectNothingCommand(BaseCommand):
 
     def run(self, api):
         api.subs.selected_indexes = []
+
+
+class GridCopyToClipboardCommand(BaseCommand):
+    name = 'grid/copy-to-clipboard'
+
+    def enabled(self, api):
+        return api.subs.has_selection
+
+    def run(self, api):
+        QtWidgets.QApplication.clipboard().setText('\n'.join(
+            line.text for line in api.subs.selected_lines))
