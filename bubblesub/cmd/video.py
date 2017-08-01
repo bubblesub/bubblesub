@@ -9,8 +9,8 @@ class VideoPlayCurrentLineCommand(BaseCommand):
         return api.subs.has_selection
 
     def run(self, api):
-        sel = api.subs.lines[api.subs.selected_lines[0]]
-        api.video.play(sel.start, sel.end)
+        sub = api.subs.selected_lines[0]
+        api.video.play(sub.start, sub.end)
 
 
 class VideoPlayAroundSelectionCommand(BaseCommand):

@@ -15,10 +15,10 @@ class GridJumpToLineCommand(BaseCommand):
         dialog.setIntMinimum(1)
         dialog.setIntMaximum(len(api.subs.lines))
         if api.subs.has_selection:
-            dialog.setIntValue(api.subs.selected_lines[0] + 1)
+            dialog.setIntValue(api.subs.selected_indexes[0] + 1)
         dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
         if dialog.exec_():
-            api.subs.selected_lines = [dialog.intValue() - 1]
+            api.subs.selected_indexes = [dialog.intValue() - 1]
 
 
 class GridJumpToTimeCommand(BaseCommand):
@@ -30,7 +30,7 @@ class GridJumpToTimeCommand(BaseCommand):
     def run(self, api):
         dialog = self.JumpToTimeDialog()
         if api.subs.has_selection:
-            dialog.setValue(api.subs.lines[api.subs.selected_lines[0]].start)
+            dialog.setValue(api.subs.lines[api.subs.selected_indexes[0]].start)
         if dialog.exec_():
             target_pts = dialog.value()
             best_distance = None
@@ -42,7 +42,7 @@ class GridJumpToTimeCommand(BaseCommand):
                     best_distance = distance
                     best_idx = i
             if best_idx is not None:
-                api.subs.selected_lines = [best_idx]
+                api.subs.selected_indexes = [best_idx]
 
     class JumpToTimeDialog(QtWidgets.QDialog):
         def __init__(self, parent=None):
@@ -79,10 +79,10 @@ class GridSelectPrevSubtitleCommand(BaseCommand):
         return len(api.subs.lines) > 0
 
     def run(self, api):
-        if not api.subs.selected_lines:
-            api.subs.selected_lines = [len(api.subs.lines) - 1, 0]
-        else:
-            api.subs.selected_lines = [max(0, api.subs.selected_lines[0] - 1)]
+        api.subs.selected_indexes = (
+            [max(0, api.subs.selected_indexes[0] - 1)]
+            if api.subs.selected_indexes else
+            [len(api.subs.lines) - 1, 0])
 
 
 class GridSelectNextSubtitleCommand(BaseCommand):
@@ -92,11 +92,10 @@ class GridSelectNextSubtitleCommand(BaseCommand):
         return len(api.subs.lines) > 0
 
     def run(self, api):
-        if not api.subs.selected_lines:
-            api.subs.selected_lines = [0]
-        else:
-            api.subs.selected_lines = [
-                min(api.subs.selected_lines[0] + 1, len(api.subs.lines) - 1)]
+        api.subs.selected_indexes = (
+            [min(api.subs.selected_indexes[0] + 1, len(api.subs.lines) - 1)]
+            if api.subs.selected_indexes else
+            [0])
 
 
 class GridSelectAllCommand(BaseCommand):
@@ -106,11 +105,11 @@ class GridSelectAllCommand(BaseCommand):
         return len(api.subs.lines) > 0
 
     def run(self, api):
-        api.subs.selected_lines = list(range(len(api.subs.lines)))
+        api.subs.selected_indexes = list(range(len(api.subs.lines)))
 
 
 class GridSelectNothingCommand(BaseCommand):
     name = 'grid/select-nothing'
 
     def run(self, api):
-        api.subs.selected_lines = []
+        api.subs.selected_indexes = []

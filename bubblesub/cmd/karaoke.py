@@ -6,11 +6,11 @@ class EditKaraokeSplitCommand(BaseCommand):
     name = 'edit/karaoke-split'
 
     def enabled(self, api):
-        return (len(api.subs.selected_lines) == 1
-            and '\\k' in api.subs.lines[api.subs.selected_lines[0]].text)
+        return (len(api.subs.selected_indexes) == 1
+            and '\\k' in api.subs.selected_lines[0].text)
 
     def run(self, api):
-        idx = api.subs.selected_lines[0]
+        idx = api.subs.selected_indexes[0]
         sub = api.subs.lines[idx]
         start = sub.start
         end = sub.end
@@ -30,7 +30,7 @@ class EditKaraokeSplitCommand(BaseCommand):
 
             api.subs.lines.insert_one(idx + i, **sub_def)
             new_selection.append(idx + i)
-        api.subs.selected_lines = new_selection
+        api.subs.selected_indexes = new_selection
         api.gui.end_update()
 
     def _get_syllables(self, text):
@@ -60,15 +60,15 @@ class EditKaraokeJoinCommand(BaseCommand):
     name = 'edit/karaoke-join'
 
     def enabled(self, api):
-        return len(api.subs.selected_lines) > 1
+        return len(api.subs.selected_indexes) > 1
 
     def run(self, api):
-        subs = [api.subs.lines[idx] for idx in api.subs.selected_lines]
-        for idx in reversed(api.subs.selected_lines[1:]):
+        subs = api.subs.selected_lines
+        for idx in reversed(api.subs.selected_indexes[1:]):
             api.subs.lines.remove(idx, 1)
         text = ''
         for sub in subs:
             text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
         subs[0].text = text
         subs[0].end = subs[-1].end
-        api.subs.selected_lines = [subs[0].number]
+        api.subs.selected_indexes = [subs[0].number]

@@ -27,12 +27,12 @@ class EditInsertAboveCommand(BaseCommand):
     name = 'edit/insert-above'
 
     def run(self, api):
-        if not api.subs.selected_lines:
+        if not api.subs.selected_indexes:
             idx = 0
             prev_sub = None
             cur_sub = None
         else:
-            idx = api.subs.selected_lines[0]
+            idx = api.subs.selected_indexes[0]
             prev_sub = api.subs.lines.get(idx - 1)
             cur_sub = api.subs.lines[idx]
 
@@ -48,19 +48,19 @@ class EditInsertAboveCommand(BaseCommand):
         if start > end:
             start = end
         api.subs.lines.insert_one(idx, start=start, end=end, style='Default')
-        api.subs.selected_lines = [idx]
+        api.subs.selected_indexes = [idx]
 
 
 class EditInsertBelowCommand(BaseCommand):
     name = 'edit/insert-below'
 
     def run(self, api):
-        if not api.subs.selected_lines:
+        if not api.subs.selected_indexes:
             idx = 0
             cur_sub = None
             next_sub = api.subs.lines.get(0)
         else:
-            idx = api.subs.selected_lines[-1]
+            idx = api.subs.selected_indexes[-1]
             cur_sub = api.subs.lines[idx]
             idx += 1
             next_sub = api.subs.lines.get(idx)
@@ -72,7 +72,7 @@ class EditInsertBelowCommand(BaseCommand):
         if end < start:
             end = start
         api.subs.lines.insert_one(idx, start=start, end=end, style='Default')
-        api.subs.selected_lines = [idx]
+        api.subs.selected_indexes = [idx]
 
 
 class EditDuplicateCommand(BaseCommand):
@@ -84,14 +84,14 @@ class EditDuplicateCommand(BaseCommand):
     def run(self, api):
         new_selection = []
         api.gui.begin_update()
-        for idx in reversed(api.subs.selected_lines):
+        for idx in reversed(api.subs.selected_indexes):
             sub = api.subs.lines[idx]
             api.subs.lines.insert_one(
                 idx + 1,
                 **{k: getattr(sub, k) for k in sub.prop.keys()})
             new_selection.append(
-                idx + len(api.subs.selected_lines) - len(new_selection))
-        api.subs.selected_lines = new_selection
+                idx + len(api.subs.selected_indexes) - len(new_selection))
+        api.subs.selected_indexes = new_selection
         api.gui.end_update()
 
 
@@ -102,9 +102,9 @@ class EditDeleteCommand(BaseCommand):
         return api.subs.has_selection
 
     def run(self, api):
-        for idx in reversed(api.subs.selected_lines):
+        for idx in reversed(api.subs.selected_indexes):
             api.subs.lines.remove(idx, 1)
-        api.subs.selected_lines = []
+        api.subs.selected_indexes = []
 
 
 class EditSwapTextAndNotesCommand(BaseCommand):
@@ -114,8 +114,7 @@ class EditSwapTextAndNotesCommand(BaseCommand):
         return api.subs.has_selection
 
     def run(self, api):
-        for idx in api.subs.selected_lines:
-            sub = api.subs.lines[idx]
+        for sub in api.subs.selected_lines:
             sub.begin_update()
             sub.text, sub.note = sub.note, sub.text
             sub.end_update()
@@ -125,10 +124,10 @@ class EditSplitSubAtVideoCommand(BaseCommand):
     name = 'edit/split-sub-at-video'
 
     def enabled(self, api):
-        return len(api.subs.selected_lines) == 1
+        return len(api.subs.selected_indexes) == 1
 
     def run(self, api):
-        idx = api.subs.selected_lines[0]
+        idx = api.subs.selected_indexes[0]
         sub = api.subs.lines[idx]
         split_pos = api.video.current_pts
         if split_pos < sub.start or split_pos > sub.end:
@@ -138,7 +137,7 @@ class EditSplitSubAtVideoCommand(BaseCommand):
             idx + 1, **{k: getattr(sub, k) for k in sub.prop.keys()})
         api.subs.lines[idx].end = split_pos
         api.subs.lines[idx + 1].start = split_pos
-        api.subs.selected_lines = [idx, idx + 1]
+        api.subs.selected_indexes = [idx, idx + 1]
         api.gui.end_update()
 
 
@@ -146,26 +145,26 @@ class EditJoinSubsKeepFirstCommand(BaseCommand):
     name = 'edit/join-subs/keep-first'
 
     def enabled(self, api):
-        return len(api.subs.selected_lines) > 1
+        return len(api.subs.selected_indexes) > 1
 
     def run(self, api):
-        idx = api.subs.selected_lines[0]
-        last_idx = api.subs.selected_lines[-1]
+        idx = api.subs.selected_indexes[0]
+        last_idx = api.subs.selected_indexes[-1]
         api.subs.lines[idx].end = api.subs.lines[last_idx].end
-        for i in reversed(api.subs.selected_lines[1:]):
+        for i in reversed(api.subs.selected_indexes[1:]):
             api.subs.lines.remove(i, 1)
-        api.subs.selected_lines = [idx]
+        api.subs.selected_indexes = [idx]
 
 
 class EditJoinSubsConcatenateCommand(BaseCommand):
     name = 'edit/join-subs/concatenate'
 
     def enabled(self, api):
-        return len(api.subs.selected_lines) > 1
+        return len(api.subs.selected_indexes) > 1
 
     def run(self, api):
-        idx = api.subs.selected_lines[0]
-        last_idx = api.subs.selected_lines[-1]
+        idx = api.subs.selected_indexes[0]
+        last_idx = api.subs.selected_indexes[-1]
 
         sub = api.subs.lines[idx]
         sub.begin_update()
@@ -173,7 +172,7 @@ class EditJoinSubsConcatenateCommand(BaseCommand):
 
         new_text = ''
         new_note = ''
-        for i in reversed(api.subs.selected_lines[1:]):
+        for i in reversed(api.subs.selected_indexes[1:]):
             new_text = api.subs.lines[i].text + new_text
             new_note = api.subs.lines[i].note + new_note
             api.subs.lines.remove(i, 1)
@@ -181,7 +180,7 @@ class EditJoinSubsConcatenateCommand(BaseCommand):
         sub.text += new_text
         sub.note += new_note
         sub.end_update()
-        api.subs.selected_lines = [idx]
+        api.subs.selected_indexes = [idx]
 
 
 class MoveSubsWithGuiCommand(BaseCommand):
@@ -194,11 +193,11 @@ class MoveSubsWithGuiCommand(BaseCommand):
         dialog = self.ShiftTimesDialog()
         if dialog.exec_():
             delta = dialog.value()
-            for i in api.subs.selected_lines:
-                api.subs.lines[i].begin_update()
-                api.subs.lines[i].start += delta
-                api.subs.lines[i].end += delta
-                api.subs.lines[i].end_update()
+            for sub in api.subs.selected_lines:
+                sub.begin_update()
+                sub.start += delta
+                sub.end += delta
+                sub.end_update()
 
     class ShiftTimesDialog(QtWidgets.QDialog):
         def __init__(self, parent=None):

@@ -24,7 +24,7 @@ class StatusBar(QtWidgets.QStatusBar):
     def _audio_selection_changed(self):
         if len(self._api.subs.selected_lines) != 1:
             return
-        sub = self._api.subs.lines[self._api.subs.selected_lines[0]]
+        sub = self._api.subs.selected_lines[0]
         start_delta = self._api.audio.selection_start - sub.start
         end_delta = self._api.audio.selection_end - sub.end
 

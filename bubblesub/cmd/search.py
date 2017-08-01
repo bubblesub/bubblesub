@@ -14,7 +14,7 @@ def _search(api, text, case_sensitive, use_regexes, direction):
         if direction < 0:
             iterator = reversed(iterator)
     else:
-        sub_idx = api.subs.selected_lines[0]
+        sub_idx = api.subs.selected_indexes[0]
         iterator = list(
             (sub_idx + direction * i) % num_lines
             for i in range(num_lines)
@@ -53,7 +53,7 @@ def _search(api, text, case_sensitive, use_regexes, direction):
         if not sel_match:
             continue
 
-        api.subs.selected_lines = [idx]
+        api.subs.selected_indexes = [idx]
         cursor = api.gui.main_window.editor.text_edit.textCursor()
         cursor.setPosition(sel_match.start())
         cursor.setPosition(sel_match.end(), QtGui.QTextCursor.KeepAnchor)

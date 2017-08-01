@@ -200,15 +200,15 @@ class SubsGrid(QtWidgets.QTableView):
             self.EnsureVisible | self.PositionAtTop)
 
     def _widget_selection_changed(self, _selected, _deselected):
-        if self._collect_rows() != self._api.subs.selected_lines:
-            self._api.subs.selected_lines = self._collect_rows()
+        if self._collect_rows() != self._api.subs.selected_indexes:
+            self._api.subs.selected_indexes = self._collect_rows()
 
     def _api_selection_changed(self):
-        if self._collect_rows() == self._api.subs.selected_lines:
+        if self._collect_rows() == self._api.subs.selected_indexes:
             return
 
         selection = QtCore.QItemSelection()
-        for row in self._api.subs.selected_lines:
+        for row in self._api.subs.selected_indexes:
             idx = self.model().index(row, 0)
             selection.select(idx, idx)
 
@@ -218,6 +218,6 @@ class SubsGrid(QtWidgets.QTableView):
             QtCore.QItemSelectionModel.Rows |
             QtCore.QItemSelectionModel.Select)
 
-        if self._api.subs.selected_lines:
+        if self._api.subs.selected_indexes:
             self.scrollTo(
-                self.model().index(self._api.subs.selected_lines[0], 0))
+                self.model().index(self._api.subs.selected_indexes[0], 0))

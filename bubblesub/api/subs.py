@@ -110,7 +110,7 @@ class SubtitlesApi(QtCore.QObject):
     def __init__(self):
         super().__init__()
         self._loaded_video_path = None
-        self._selected_lines = []
+        self._selected_indexes = []
         self._ass_source = pysubs2.SSAFile.from_string(
             EMPTY_ASS, format_='ass')
         self._path = None
@@ -142,17 +142,21 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def has_selection(self):
-        return len(self.selected_lines) > 0
+        return len(self.selected_indexes) > 0
+
+    @property
+    def selected_indexes(self):
+        return self._selected_indexes
 
     @property
     def selected_lines(self):
-        return self._selected_lines
+        return [self.lines[idx] for idx in self.selected_indexes]
 
-    @selected_lines.setter
-    def selected_lines(self, new_selection):
+    @selected_indexes.setter
+    def selected_indexes(self, new_selection):
         new_selection = list(sorted(new_selection))
-        if new_selection != self._selected_lines:
-            self._selected_lines = new_selection
+        if new_selection != self._selected_indexes:
+            self._selected_indexes = new_selection
             self.selection_changed.emit(new_selection)
 
     def unload(self):
@@ -160,7 +164,7 @@ class SubtitlesApi(QtCore.QObject):
         self._ass_source = pysubs2.SSAFile.from_string(
             EMPTY_ASS, format_='ass')
         self.lines.remove(0, len(self.lines))
-        self.selected_lines = []
+        self.selected_indexes = []
         self.loaded.emit()
 
     def load_ass(self, path):
@@ -173,7 +177,7 @@ class SubtitlesApi(QtCore.QObject):
         self._path = Path(path)
         self._ass_source = ass_source
 
-        self.selected_lines = []
+        self.selected_indexes = []
 
         with bubblesub.util.Benchmark('loading subs'):
             collection = []
