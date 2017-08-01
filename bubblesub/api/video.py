@@ -34,6 +34,7 @@ class TimecodesProvider(bubblesub.util.Provider):
 
 class VideoApi(QtCore.QObject):
     loaded = QtCore.pyqtSignal()
+    parsed = QtCore.pyqtSignal()
     timecodes_updated = QtCore.pyqtSignal()
     current_pts_changed = QtCore.pyqtSignal()
 
@@ -191,6 +192,7 @@ class VideoApi(QtCore.QObject):
         self._mpv_ready = True
         self._mpv.sub_add(self._tmp_subs_path)
         self._refresh_subs()
+        self.parsed.emit()
 
     def _subs_loaded(self):
         if self._subs_api.remembered_video_path:

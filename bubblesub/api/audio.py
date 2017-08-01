@@ -15,7 +15,7 @@ class AudioApi(QtCore.QObject):
         self._selection_end = None
 
         self._video_api = video_api
-        self._video_api.timecodes_updated.connect(self._timecodes_updated)
+        self._video_api.parsed.connect(self._video_parsed)
 
     @property
     def min(self):
@@ -99,11 +99,8 @@ class AudioApi(QtCore.QObject):
         self._max = max_pts
         self.zoom_view(1)  # emits view_changed
 
-    def _timecodes_updated(self):
-        if self._video_api.timecodes:
-            self._set_max_pts(self._video_api.timecodes[-1])
-        else:
-            self._set_max_pts(0)
+    def _video_parsed(self):
+        self._set_max_pts(self._video_api.max_pts)
 
     def _clip(self, value):
         return max(min(self._max, value), self._min)
