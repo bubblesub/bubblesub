@@ -1,11 +1,37 @@
+import time
+import bubblesub.util
+import ffms
+import numpy as np
 from PyQt5 import QtCore
 
 
-class AudioApi(QtCore.QObject):
-    view_changed = QtCore.pyqtSignal([])
-    selection_changed = QtCore.pyqtSignal([])
+_LOADING = object()
 
-    def __init__(self, video_api):
+
+class AudioSourceProviderContext(bubblesub.util.ProviderContext):
+    def __init__(self, log_api):
+        super().__init__()
+        self._log_api = log_api
+
+    def work(self, task):
+        path = task
+        self._log_api.info('audio/sampler: loading... ({})'.format(path))
+        audio_source = ffms.AudioSource(str(path))
+        self._log_api.info('audio/sampler: loaded')
+        return audio_source
+
+
+class AudioSourceProvider(bubblesub.util.Provider):
+    def __init__(self, parent, log_api):
+        super().__init__(parent, AudioSourceProviderContext(log_api))
+
+
+class AudioApi(QtCore.QObject):
+    view_changed = QtCore.pyqtSignal()
+    selection_changed = QtCore.pyqtSignal()
+    parsed = QtCore.pyqtSignal()
+
+    def __init__(self, video_api, log_api):
         super().__init__()
         self._min = 0
         self._max = 0
@@ -14,8 +40,12 @@ class AudioApi(QtCore.QObject):
         self._selection_start = None
         self._selection_end = None
 
+        self._log_api = log_api
         self._video_api = video_api
         self._video_api.parsed.connect(self._video_parsed)
+        self._audio_source = None
+        self._audio_source_provider = AudioSourceProvider(self, self._log_api)
+        self._audio_source_provider.finished.connect(self._got_audio_source)
 
     @property
     def min(self):
@@ -60,6 +90,40 @@ class AudioApi(QtCore.QObject):
             return 0
         return self._selection_end - self._selection_start
 
+    @property
+    def channel_count(self):
+        self._wait_for_audio_source()
+        if not self._audio_source:
+            return 0
+        return self._audio_source.properties.Channels
+
+    @property
+    def bits_per_sample(self):
+        self._wait_for_audio_source()
+        if not self._audio_source:
+            return 0
+        return self._audio_source.properties.BitsPerSample
+
+    @property
+    def sample_rate(self):
+        self._wait_for_audio_source()
+        if not self._audio_source:
+            return 0
+        # other properties:
+        # - BitsPerSample
+        # - ChannelLayout
+        # - FirstTime
+        # - LastTime
+        # - SampleFormat
+        return self._audio_source.properties.SampleRate
+
+    @property
+    def sample_count(self):
+        self._wait_for_audio_source()
+        if not self._audio_source:
+            return 0
+        return self._audio_source.properties.NumSamples
+
     def unselect(self):
         self._selection_start = None
         self._selection_end = None
@@ -94,6 +158,15 @@ class AudioApi(QtCore.QObject):
         else:
             self.view(self._view_start + distance, self._view_end + distance)
 
+    def get_samples(self, start, count):
+        self._wait_for_audio_source()
+        if not self._audio_source:
+            return np.zeros(count).reshape((count, max(1, self.channel_count)))
+        if start + count > self.sample_count:
+            count = self.sample_count - start
+        self._audio_source.init_buffer(count)
+        return self._audio_source.get_audio(start)
+
     def _set_max_pts(self, max_pts):
         self._min = 0
         self._max = max_pts
@@ -101,6 +174,17 @@ class AudioApi(QtCore.QObject):
 
     def _video_parsed(self):
         self._set_max_pts(self._video_api.max_pts)
+        self._audio_source = _LOADING
+        if self._video_api.path:
+            self._audio_source_provider.schedule(self._video_api.path)
+
+    def _got_audio_source(self, result):
+        self._audio_source = result
+        self.parsed.emit()
+
+    def _wait_for_audio_source(self):
+        while self._audio_source is _LOADING:
+            time.sleep(0.01)
 
     def _clip(self, value):
         return max(min(self._max, value), self._min)

@@ -237,12 +237,20 @@ class ProviderThread(QtCore.QThread):
         super().__init__()
         self._queue = queue_
         self._context = context
+        self._running = False
+
+    def start(self):
+        self._running = True
+        super().start()
+
+    def stop(self):
+        self._running = False
 
     # executed in child thread
     def run(self):
         self._context.start_work()
         work = self._context.work
-        while True:
+        while self._running:
             arg = self._queue.get()
             if arg is None:
                 break
@@ -263,10 +271,13 @@ class Provider(QtCore.QObject):
     def __init__(self, parent, context):
         super().__init__()
         self._queue = queue.LifoQueue()
-        worker = ProviderThread(self._queue, context)
-        worker.setParent(parent)
-        worker.finished.connect(self._work_finished)
-        worker.start()
+        self.worker = ProviderThread(self._queue, context)
+        self.worker.setParent(parent)
+        self.worker.finished.connect(self._work_finished)
+        self.worker.start()
+
+    def __del__(self):
+        self.worker.stop()
 
     def schedule(self, task_data):
         self._queue.put(task_data)
