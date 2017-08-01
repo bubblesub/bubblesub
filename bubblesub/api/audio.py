@@ -1,4 +1,5 @@
 import time
+import threading
 import bubblesub.util
 import ffms
 import numpy as np
@@ -6,6 +7,7 @@ from PyQt5 import QtCore
 
 
 _LOADING = object()
+_SAMPLER_LOCK = threading.Lock()
 
 
 class AudioSourceProviderContext(bubblesub.util.ProviderContext):
@@ -159,13 +161,15 @@ class AudioApi(QtCore.QObject):
             self.view(self._view_start + distance, self._view_end + distance)
 
     def get_samples(self, start, count):
-        self._wait_for_audio_source()
-        if not self._audio_source:
-            return np.zeros(count).reshape((count, max(1, self.channel_count)))
-        if start + count > self.sample_count:
-            count = self.sample_count - start
-        self._audio_source.init_buffer(count)
-        return self._audio_source.get_audio(start)
+        with _SAMPLER_LOCK:
+            self._wait_for_audio_source()
+            if not self._audio_source:
+                return np.zeros(count).reshape(
+                    (count, max(1, self.channel_count)))
+            if start + count > self.sample_count:
+                count = self.sample_count - start
+            self._audio_source.init_buffer(count)
+            return self._audio_source.get_audio(start)
 
     def _set_max_pts(self, max_pts):
         self._min = 0
