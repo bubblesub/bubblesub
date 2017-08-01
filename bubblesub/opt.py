@@ -83,7 +83,7 @@ class Options:
                 ('Ctrl+Z', 'edit/undo'),
                 ('Ctrl+Y', 'edit/redo'),
                 ('Ctrl+F', 'edit/search'),
-                ('Alt+C', 'edit/copy'),  # TODO
+                # ('Alt+C', 'edit/copy'),  # TODO
                 ('Ctrl+Return', 'edit/insert-below'),
                 ('Ctrl+Delete', 'edit/delete'),
                 ('Ctrl+Shift+1', 'edit/move-sel-start', -250),

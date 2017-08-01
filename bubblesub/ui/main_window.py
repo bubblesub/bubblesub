@@ -12,14 +12,10 @@ import bubblesub.ui.video
 import bubblesub.ui.statusbar
 
 
-def _run_cmd(api, cmd_name, args):
-    cmd = bubblesub.commands.registry.get(cmd_name, None)
-    if not cmd:
-        bubblesub.ui.util.error('Invalid command name:\n' + cmd_name)
-        return
-    with bubblesub.util.Benchmark('Executing command {}'.format(cmd_name)):
+def _run_cmd(api, cmd, cmd_args):
+    with bubblesub.util.Benchmark('Executing command {}'.format(cmd.name)):
         if cmd.enabled(api):
-            cmd.run(api, *args)
+            cmd.run(api, *cmd_args)
 
 
 def _load_splitter_state(widget, data):
@@ -37,7 +33,8 @@ class CommandAction(QtWidgets.QAction):
         self.cmd_name = cmd_name
         self.cmd = bubblesub.commands.registry.get(cmd_name, None)
         self.triggered.connect(
-            functools.partial(_run_cmd, api, cmd_name, cmd_args))
+            functools.partial(
+                _run_cmd, api, bubblesub.commands.registry[cmd_name], cmd_args))
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -123,9 +120,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def _setup_hotkeys(self, opt, action_map):
         for context, items in opt.hotkeys.items():
             for item in items:
-                keys, cmd_name, *args = item
+                keys, cmd_name, *cmd_args = item
 
-                action = action_map.get((cmd_name, *args))
+                action = action_map.get((cmd_name, *cmd_args))
                 if action and context == 'global':
                     action.setShortcut(QtGui.QKeySequence(keys))
                     continue
@@ -133,7 +130,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 shortcut = QtWidgets.QShortcut(
                     QtGui.QKeySequence(keys), self)
                 shortcut.activated.connect(
-                    functools.partial(_run_cmd, self._api, cmd_name, args))
+                    functools.partial(
+                        _run_cmd,
+                        self._api,
+                        bubblesub.commands.registry[cmd_name],
+                        cmd_args))
                 if context == 'global':
                     shortcut.setContext(QtCore.Qt.ApplicationShortcut)
                 elif context == 'audio':
