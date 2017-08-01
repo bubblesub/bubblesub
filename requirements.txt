@@ -1,0 +1,5 @@
+ffms
+numpy
+pysubs2
+pyfftw
+PyQT5
