@@ -49,7 +49,7 @@ class UndoApi(QtCore.QObject):
             lines, = op_args
             self._subs_api.lines[:] = self._deserialize_lines(lines)
         elif op_type == UndoOperation.SubtitleChange:
-            idx, old_lines, new_lines = op_args
+            idx, old_lines, _new_lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(old_lines)[0]
         elif op_type == UndoOperation.SubtitlesInsertion:
             idx, count, lines = op_args
@@ -72,7 +72,7 @@ class UndoApi(QtCore.QObject):
             lines, = op_args
             self._subs_api.lines = lines
         elif op_type == UndoOperation.SubtitleChange:
-            idx, old_lines, new_lines = op_args
+            idx, _old_lines, new_lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(new_lines)[0]
         elif op_type == UndoOperation.SubtitlesInsertion:
             idx, count, lines = op_args
@@ -101,7 +101,8 @@ class UndoApi(QtCore.QObject):
             self._subtitles_removed)
 
     def _disconnect_signals(self):
-        self._subs_api.lines.items_inserted.disconnect(self._subtitles_inserted)
+        self._subs_api.lines.items_inserted.disconnect(
+            self._subtitles_inserted)
         self._subs_api.lines.item_changed.disconnect(self._subtitle_changed)
         self._subs_api.lines.item_about_to_change.disconnect(
             self._subtitle_about_to_change)

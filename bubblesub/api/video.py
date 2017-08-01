@@ -105,7 +105,7 @@ class VideoApi(QtCore.QObject):
             self._mpv_loaded()
 
         @self._mpv.property_observer('time-pos')
-        def time_pos_handler(_prop_name, time_pos):
+        def _time_pos_handler(_prop_name, time_pos):
             self.current_pts = time_pos * 1000
 
         timer = QtCore.QTimer(

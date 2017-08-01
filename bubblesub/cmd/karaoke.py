@@ -20,8 +20,6 @@ class EditKaraokeSplitCommand(BaseCommand):
         api.gui.begin_update()
         api.subs.lines.remove(idx, 1)
         for i, syllable in enumerate(syllables):
-            prev_syllable = syllables[i - 1] if i > 0 else None
-
             sub_def = {k: getattr(sub, k) for k in sub.prop.keys()}
             sub_def['text'] = syllable['text']
             sub_def['start'] = start

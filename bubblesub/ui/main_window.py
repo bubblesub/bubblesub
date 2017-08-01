@@ -76,8 +76,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_splitter.setStretchFactor(0, 1)
         self.main_splitter.setStretchFactor(1, 5)
 
-        action_map = self._setup_menu(api.opt)
-        self._setup_hotkeys(api.opt, action_map)
+        action_map = self._setup_menu()
+        self._setup_hotkeys(action_map)
 
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
@@ -94,7 +94,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             event.accept()
 
-    def _setup_menu(self, opt):
+    def _setup_menu(self):
         action_map = {}
         self._setup_submenu(self.menuBar(), self._api.opt.menu, action_map)
         return action_map
@@ -117,8 +117,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 action_map[(cmd_name, *cmd_args)] = action
         return action_map
 
-    def _setup_hotkeys(self, opt, action_map):
-        for context, items in opt.hotkeys.items():
+    def _setup_hotkeys(self, action_map):
+        for context, items in self._api.opt.hotkeys.items():
             for item in items:
                 keys, cmd_name, *cmd_args = item
 

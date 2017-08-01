@@ -1,5 +1,4 @@
 from bubblesub.cmd.registry import BaseCommand
-from PyQt5 import QtWidgets
 
 
 class AudioScrollCommand(BaseCommand):

@@ -28,8 +28,8 @@ def _search(api, text, case_sensitive, use_regexes, direction):
         flags=(0 if case_sensitive else re.I))
 
     for idx in iterator:
-        match = list(re.finditer(regex, api.subs.lines[idx].text))
-        if not match:
+        matches = list(re.finditer(regex, api.subs.lines[idx].text))
+        if not matches:
             continue
 
         sel_match = None
@@ -37,21 +37,21 @@ def _search(api, text, case_sensitive, use_regexes, direction):
             cursor = api.gui.main_window.editor.text_edit.textCursor()
             if cursor.selectionEnd() == cursor.selectionStart():
                 if direction > 0:
-                    sel_match = match[0]
+                    sel_match = matches[0]
             elif direction > 0:
-                for m in match:
-                    if m.end() > cursor.selectionEnd():
-                        sel_match = m
+                for match in matches:
+                    if match.end() > cursor.selectionEnd():
+                        sel_match = match
                         break
             elif direction < 0:
-                for m in reversed(match):
-                    if m.start() < cursor.selectionStart():
-                        sel_match = m
+                for match in reversed(matches):
+                    if match.start() < cursor.selectionStart():
+                        sel_match = match
                         break
         elif direction > 0:
-            sel_match = match[0]
+            sel_match = matches[0]
         elif direction < 0:
-            sel_match = match[-1]
+            sel_match = matches[-1]
 
         if not sel_match:
             continue

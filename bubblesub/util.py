@@ -118,6 +118,7 @@ class ObservableProperty:
 
 
 class ObservableObject:
+    prop = {}
     REQUIRED = object()
 
     def __init_subclass__(cls):
@@ -125,7 +126,7 @@ class ObservableObject:
             raise RuntimeError(
                 'Observable object needs to have a "prop" class property '
                 'that tells what to observe')
-        for key, value in cls.prop.items():
+        for key in cls.prop:
             setattr(cls, key, ObservableProperty(key))
 
     def __init__(self, **kwargs):
@@ -141,7 +142,7 @@ class ObservableObject:
                     setattr(self, key, value)
             else:
                 setattr(self, key, user_value)
-        for key in kwargs.keys():
+        for key in kwargs:
             if key not in self.prop:
                 raise RuntimeError('Invalid argument: {}'.format(key))
         self._throttled = False
