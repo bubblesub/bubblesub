@@ -3,6 +3,7 @@ import sys
 import time
 import json
 import queue
+import traceback
 from numbers import Number
 from collections import Set, Mapping, deque
 from pathlib import Path
@@ -258,6 +259,7 @@ class ProviderThread(QtCore.QThread):
                 result = work(arg)
             except Exception as ex:
                 print(type(ex), ex, file=sys.stderr)
+                print(traceback.format_exc(), file=sys.stderr)
                 time.sleep(1)
             else:
                 self.finished.emit(result)
