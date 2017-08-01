@@ -93,6 +93,10 @@ class AudioApi(QtCore.QObject):
         return self._selection_end - self._selection_start
 
     @property
+    def has_audio_source(self):
+        return self._audio_source and self._audio_source is not _LOADING
+
+    @property
     def channel_count(self):
         self._wait_for_audio_source()
         if not self._audio_source:

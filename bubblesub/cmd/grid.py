@@ -1,5 +1,7 @@
+import wave
 import bubblesub.ui.util
 from bubblesub.cmd.registry import BaseCommand
+from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
@@ -124,3 +126,33 @@ class GridCopyToClipboardCommand(BaseCommand):
     def run(self, api):
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             line.text for line in api.subs.selected_lines))
+
+
+class SaveAudioSampleCommand(BaseCommand):
+    name = 'grid/create-audio-sample'
+
+    def enabled(self, api):
+        return api.subs.has_selection and api.audio.has_audio_source
+
+    def run(self, api):
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            api.gui.main_window,
+            directory=QtCore.QDir.homePath(),
+            initialFilter='*.wav')
+
+        start_pts = api.subs.selected_lines[0].start
+        end_pts = api.subs.selected_lines[-1].end
+
+        start_frame = int(start_pts * api.audio.sample_rate / 1000)
+        end_frame = int(end_pts * api.audio.sample_rate / 1000)
+        frame_count = end_frame - start_frame
+
+        samples = api.audio.get_samples(start_frame, frame_count)
+
+        with wave.open(path, mode='wb') as handle:
+            handle.setnchannels(api.audio.channel_count)
+            handle.setsampwidth(api.audio.bits_per_sample // 8)
+            handle.setframerate(api.audio.sample_rate)
+            handle.setnframes(frame_count)
+            handle.setcomptype('NONE', 'No compression')
+            handle.writeframesraw(samples.tobytes())

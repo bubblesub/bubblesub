@@ -117,6 +117,7 @@ _DEFAULT_MENU = [
         ('Select next subtitle', 'grid/select-next-sub'),
         ('Select all subtitles', 'grid/select-all'),
         ('Clear selection', 'grid/select-nothing'),
+        ('Create audio sample', 'grid/create-audio-sample'),
     ]),
 
     ('&Playback', [
