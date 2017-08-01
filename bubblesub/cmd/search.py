@@ -9,7 +9,13 @@ from PyQt5 import QtWidgets
 MAX_HISTORY_ENTRIES = 25
 
 
-def _search(api, text, case_sensitive, use_regexes, direction):
+def _create_search_regex(text, case_sensitive, use_regexes):
+    return re.compile(
+        text if use_regexes else re.escape(text),
+        flags=(0 if case_sensitive else re.I))
+
+
+def _search(api, regex, direction):
     num_lines = len(api.subs.lines)
     if not api.subs.has_selection:
         sub_idx = None
@@ -22,10 +28,6 @@ def _search(api, text, case_sensitive, use_regexes, direction):
             (sub_idx + direction * i) % num_lines
             for i in range(num_lines)
         )
-
-    regex = re.compile(
-        text if use_regexes else re.escape(text),
-        flags=(0 if case_sensitive else re.I))
 
     for idx in iterator:
         matches = list(re.finditer(regex, api.subs.lines[idx].text))
@@ -77,6 +79,21 @@ def _replace_selection(api, new_text):
     edit.document().setPlainText(text)
 
 
+def _replace_all(api, regex, new_text):
+    replacement_count = 0
+    for sub in api.subs.lines:
+        old_sub_text = sub.text
+        new_sub_text = re.sub(regex, new_text, old_sub_text)
+        if old_sub_text != new_sub_text:
+            sub.text = new_sub_text
+            replacement_count += 1
+    api.subs.selected_indexes = []
+    if not replacement_count:
+        bubblesub.ui.util.notice('No occurrences found.')
+    api.log.info('Replaced content in {} lines.'.format(replacement_count))
+    return replacement_count > 0
+
+
 class SearchDialog(QtWidgets.QDialog):
     def __init__(self, api, show_replace_controls, parent=None):
         super().__init__(parent)
@@ -102,8 +119,9 @@ class SearchDialog(QtWidgets.QDialog):
             self, orientation=QtCore.Qt.Vertical)
         self.find_next_btn = strip.addButton('Find next', strip.ActionRole)
         self.find_prev_btn = strip.addButton('Find previous', strip.ActionRole)
-        self.replace_btn = strip.addButton(
+        self.replace_sel_btn = strip.addButton(
             'Replace selection', strip.ActionRole)
+        self.replace_all_btn = strip.addButton('Replace all', strip.ActionRole)
         strip.addButton('Cancel', strip.RejectRole)
         strip.clicked.connect(self.action)
         strip.rejected.connect(self.reject)
@@ -126,7 +144,8 @@ class SearchDialog(QtWidgets.QDialog):
         if not show_replace_controls:
             replace_label.hide()
             self.replacement_text_edit.hide()
-            self.replace_btn.hide()
+            self.replace_sel_btn.hide()
+            self.replace_all_btn.hide()
 
         layout = QtWidgets.QHBoxLayout(self, spacing=24)
         layout.addWidget(settings_box)
@@ -139,8 +158,10 @@ class SearchDialog(QtWidgets.QDialog):
 
     def action(self, sender):
         self._save_opt()
-        if sender == self.replace_btn:
-            self._replace()
+        if sender == self.replace_sel_btn:
+            self._replace_selection()
+        elif sender == self.replace_all_btn:
+            self._replace_all()
         elif sender == self.find_prev_btn:
             self._search(-1)
         elif sender == self.find_next_btn:
@@ -148,18 +169,28 @@ class SearchDialog(QtWidgets.QDialog):
 
     def _update_replacement_enabled(self):
         cursor = self._api.gui.main_window.editor.text_edit.textCursor()
-        self.replace_btn.setEnabled(cursor.selectedText() != '')
+        self.replace_sel_btn.setEnabled(cursor.selectedText() != '')
 
-    def _replace(self):
+    def _replace_selection(self):
         _replace_selection(self._api, self.replacement_text_edit.text())
         self._update_replacement_enabled()
+
+    def _replace_all(self):
+        _replace_all(
+            self._api,
+            _create_search_regex(
+                self.search_text_edit.currentText(),
+                self.case_chkbox.isChecked(),
+                self.regex_chkbox.isChecked()),
+            self.replacement_text_edit.text())
 
     def _search(self, direction):
         _search(
             self._api,
-            self.search_text_edit.currentText(),
-            self.case_chkbox.isChecked(),
-            self.regex_chkbox.isChecked(),
+            _create_search_regex(
+                self.search_text_edit.currentText(),
+                self.case_chkbox.isChecked(),
+                self.regex_chkbox.isChecked()),
             direction)
         self._update_replacement_enabled()
 
@@ -208,7 +239,8 @@ class SearchRepeatCommand(BaseCommand):
         opt = api.opt.general['search']
         _search(
             api,
-            opt['history'][0],
-            opt['case_sensitive'],
-            opt['use_regexes'],
+            _create_search_regex(
+                opt['history'][0],
+                opt['case_sensitive'],
+                opt['use_regexes']),
             direction)
