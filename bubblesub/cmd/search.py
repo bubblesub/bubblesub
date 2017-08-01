@@ -6,6 +6,9 @@ from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 
+MAX_HISTORY_ENTRIES = 25
+
+
 def _search(api, text, case_sensitive, use_regexes, direction):
     num_lines = len(api.subs.lines)
     if not api.subs.has_selection:
@@ -68,11 +71,18 @@ class SearchDialog(QtWidgets.QDialog):
         super().__init__(parent)
         self._api = api
 
-        self.text_edit = QtWidgets.QLineEdit()
-        self.case_chkbox = QtWidgets.QCheckBox('Case sensitivity')
-        self.regex_chkbox = QtWidgets.QCheckBox('Use regular expressions')
-
-        label = QtWidgets.QLabel('Text to search for:')
+        self.text_edit = QtWidgets.QComboBox(
+            self,
+            editable=True,
+            maxCount=MAX_HISTORY_ENTRIES,
+            sizePolicy=QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Expanding,
+                QtWidgets.QSizePolicy.Preferred),
+            insertPolicy=QtWidgets.QComboBox.InsertAtTop)
+        self.case_chkbox = QtWidgets.QCheckBox('Case sensitivity', self)
+        self.regex_chkbox = QtWidgets.QCheckBox(
+            'Use regular expressions', self)
+        label = QtWidgets.QLabel('Text to search for:', self)
         strip = QtWidgets.QDialogButtonBox(
             self, orientation=QtCore.Qt.Vertical)
         self.find_next_btn = strip.addButton('Find next', strip.ActionRole)
@@ -81,22 +91,29 @@ class SearchDialog(QtWidgets.QDialog):
         strip.clicked.connect(self.action)
         strip.rejected.connect(self.reject)
 
-        layout = QtWidgets.QVBoxLayout()
+        self._load_opt()
+
+        layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(label)
         layout.addWidget(self.text_edit)
         layout.addWidget(self.case_chkbox)
         layout.addWidget(self.regex_chkbox)
         layout.addWidget(strip)
-        settings_box = QtWidgets.QWidget()
+        settings_box = QtWidgets.QWidget(self)
         settings_box.setLayout(layout)
 
-        layout = QtWidgets.QHBoxLayout(spacing=24)
+        layout = QtWidgets.QHBoxLayout(self, spacing=24)
         layout.addWidget(settings_box)
         layout.addWidget(strip)
         self.setLayout(layout)
 
+    def reject(self, *args):
+        self._save_opt()
+        return super().reject(*args)
+
     def action(self, sender):
+        self._save_opt()
         if sender == self.find_prev_btn:
             direction = -1
         elif sender == self.find_next_btn:
@@ -106,12 +123,30 @@ class SearchDialog(QtWidgets.QDialog):
         if direction:
             result = _search(
                 self._api,
-                self.text_edit.text(),
+                self.text_edit.currentText(),
                 self.case_chkbox.isChecked(),
                 self.regex_chkbox.isChecked(),
                 direction)
             if not result:
                 bubblesub.ui.util.notice('No occurrences found.')
+
+    def _load_opt(self):
+        self.text_edit.clear()
+        self.text_edit.addItems(
+            [item for item in self._opt['history'] if item])
+        self.case_chkbox.setChecked(self._opt['case_sensitive'])
+        self.regex_chkbox.setChecked(self._opt['use_regexes'])
+
+    def _save_opt(self):
+        self._opt['history'] = [
+            self.text_edit.itemText(i)
+            for i in range(self.text_edit.count())]
+        self._opt['use_regexes'] = self.regex_chkbox.isChecked()
+        self._opt['case_sensitive'] = self.case_chkbox.isChecked()
+
+    @property
+    def _opt(self):
+        return self._api.opt.general['search']
 
 
 class SearchCommand(BaseCommand):
