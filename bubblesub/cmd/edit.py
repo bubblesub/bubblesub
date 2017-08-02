@@ -183,8 +183,8 @@ class EditJoinSubsConcatenateCommand(BaseCommand):
         api.subs.selected_indexes = [idx]
 
 
-class EditShiftSubsTimesWithGuiCommand(BaseCommand):
-    name = 'edit/shift-subs-times-with-gui'
+class EditShiftSubsWithGuiCommand(BaseCommand):
+    name = 'edit/shift-subs-with-gui'
 
     def enabled(self, api):
         return api.subs.has_selection
@@ -221,3 +221,101 @@ class EditShiftSubsTimesWithGuiCommand(BaseCommand):
 
         def value(self):
             return bubblesub.util.str_to_ms(self.time_widget.text())
+
+
+class EditSnapSubsStartToVideoCommand(BaseCommand):
+    name = 'edit/snap-subs-start-to-video'
+
+    def enabled(self, api):
+        return api.subs.has_selection
+
+    def run(self, api):
+        for sub in api.subs.selected_lines:
+            sub.start = api.video.current_pts
+
+
+class EditSnapSubsEndToVideoCommand(BaseCommand):
+    name = 'edit/snap-subs-end-to-video'
+
+    def enabled(self, api):
+        return api.subs.has_selection
+
+    def run(self, api):
+        for sub in api.subs.selected_lines:
+            sub.end = api.video.current_pts
+
+
+class EditSnapSubsToVideoCommand(BaseCommand):
+    name = 'edit/snap-subs-to-video'
+
+    def enabled(self, api):
+        return api.subs.has_selection
+
+    def run(self, api):
+        for sub in api.subs.selected_lines:
+            sub.start = api.video.current_pts
+            sub.end = (
+                api.video.current_pts
+                + api.opt.general['subs']['default_duration'])
+
+
+class EditSnapSubsStartToPreviousSubtitleCommand(BaseCommand):
+    name = 'edit/snap-subs-start-to-prev-sub'
+
+    def enabled(self, api):
+        if not api.subs.has_selection:
+            return False
+        return api.subs.selected_lines[0].prev_sub is not None
+
+    def run(self, api):
+        prev_sub = api.subs.selected_lines[0].prev_sub
+        for sub in api.subs.selected_lines:
+            sub.start = prev_sub.end
+
+
+class EditSnapSubsEndToNextSubtitleCommand(BaseCommand):
+    name = 'edit/snap-subs-end-to-next-sub'
+
+    def enabled(self, api):
+        if not api.subs.has_selection:
+            return False
+        return api.subs.selected_lines[-1].next_sub is not None
+
+    def run(self, api):
+        next_sub = api.subs.selected_lines[-1].next_sub
+        for sub in api.subs.selected_lines:
+            sub.end = next_sub.start
+
+
+class EditShiftSubsStartCommand(BaseCommand):
+    name = 'edit/shift-subs-start'
+
+    def enabled(self, api):
+        return api.subs.has_selection
+
+    def run(self, api, ms):
+        for sub in api.subs.selected_lines:
+            sub.start = max(0, sub.start + ms)
+
+
+class EditShiftSubsEndCommand(BaseCommand):
+    name = 'edit/shift-subs-end'
+
+    def enabled(self, api):
+        return api.subs.has_selection
+
+    def run(self, api, ms):
+        for sub in api.subs.selected_lines:
+            sub.end = max(0, sub.end + ms)
+
+
+class EditShiftSubsCommand(BaseCommand):
+    name = 'edit/shift-subs'
+
+    def enabled(self, api):
+        return api.subs.has_selection
+
+    def run(self, api, ms):
+        for sub in api.subs.selected_lines:
+            sub.start = max(0, sub.start + ms)
+            sub.end = max(0, sub.end + ms)

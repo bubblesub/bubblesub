@@ -98,6 +98,17 @@ class AudioMoveSelectionEndCommand(BaseCommand):
             max(api.audio.selection_start, api.audio.selection_end + ms))
 
 
+class AudioMoveSelectionCommand(BaseCommand):
+    name = 'audio/move-sel'
+
+    def enabled(self, api):
+        return api.audio.has_selection
+
+    def run(self, api, ms):
+        api.audio.select(
+            api.audio.selection_start + ms, api.audio.selection_end + ms)
+
+
 class AudioCommitSelectionCommand(BaseCommand):
     name = 'audio/commit-sel'
 
