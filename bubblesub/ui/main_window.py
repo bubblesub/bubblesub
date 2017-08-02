@@ -12,29 +12,12 @@ import bubblesub.ui.video
 import bubblesub.ui.statusbar
 
 
-def _run_cmd(api, cmd, cmd_args):
-    with bubblesub.util.Benchmark('Executing command {}'.format(cmd.name)):
-        if cmd.enabled(api):
-            cmd.run(api, *cmd_args)
-
-
 def _load_splitter_state(widget, data):
     widget.restoreState(base64.b64decode(data))
 
 
 def _get_splitter_state(widget):
     return base64.b64encode(widget.saveState()).decode('ascii')
-
-
-class CommandAction(QtWidgets.QAction):
-    def __init__(self, api, cmd_name, cmd_args):
-        super().__init__()
-        self.api = api
-        self.cmd_name = cmd_name
-        self.cmd = bubblesub.cmd.registry.get(cmd_name)
-        self.triggered.connect(
-            functools.partial(
-                _run_cmd, api, bubblesub.cmd.registry.get(cmd_name), cmd_args))
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -95,27 +78,8 @@ class MainWindow(QtWidgets.QMainWindow):
             event.accept()
 
     def _setup_menu(self):
-        action_map = {}
-        self._setup_submenu(self.menuBar(), self._api.opt.menu, action_map)
-        return action_map
-
-    def _setup_submenu(self, parent, menu_def, action_map):
-        for item in menu_def:
-            if item is None:
-                parent.addSeparator()
-            elif isinstance(item[1], list):
-                submenu = parent.addMenu(item[0])
-                submenu.aboutToShow.connect(
-                    functools.partial(self._menu_about_to_show, submenu))
-                self._setup_submenu(submenu, item[1], action_map)
-            else:
-                action_name, cmd_name, *cmd_args = item
-                action = CommandAction(self._api, cmd_name, cmd_args)
-                action.setParent(parent)
-                action.setText(action_name)
-                parent.addAction(action)
-                action_map[(cmd_name, *cmd_args)] = action
-        return action_map
+        return bubblesub.ui.util.setup_cmd_menu(
+            self._api, self.menuBar(), self._api.opt.main_menu)
 
     def _setup_hotkeys(self, action_map):
         for context, items in self._api.opt.hotkeys.items():
@@ -131,8 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     QtGui.QKeySequence(keys), self)
                 shortcut.activated.connect(
                     functools.partial(
-                        _run_cmd,
-                        self._api,
+                        self._api.run_cmd,
                         bubblesub.cmd.registry.get(cmd_name),
                         cmd_args))
                 if context == 'global':
@@ -158,8 +121,3 @@ class MainWindow(QtWidgets.QMainWindow):
             'editor': _get_splitter_state(self.editor_splitter),
             'main': _get_splitter_state(self.main_splitter),
         }
-
-    def _menu_about_to_show(self, menu):
-        for action in menu.actions():
-            if hasattr(action, 'cmd') and action.cmd:
-                action.setEnabled(action.cmd.enabled(action.api))

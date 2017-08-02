@@ -16,3 +16,8 @@ class Api:
         self.video = bubblesub.api.video.VideoApi(self.subs, self.log, self.opt)
         self.audio = bubblesub.api.audio.AudioApi(self.video, self.log)
         self.undo = bubblesub.api.undo.UndoApi(self.subs)
+
+    def run_cmd(self, cmd, cmd_args):
+        with bubblesub.util.Benchmark('Executing command {}'.format(cmd.name)):
+            if cmd.enabled(self):
+                cmd.run(self, *cmd_args)

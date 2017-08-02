@@ -188,6 +188,15 @@ class SubsGrid(QtWidgets.QTableView):
         self.selectionModel().selectionChanged.connect(
             self._widget_selection_changed)
 
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._open_menu)
+        self.menu = QtWidgets.QMenu(self)
+        bubblesub.ui.util.setup_cmd_menu(
+            self._api, self.menu, self._api.opt.context_menu)
+
+    def _open_menu(self, position):
+        self.menu.exec_(self.viewport().mapToGlobal(position))
+
     def _collect_rows(self):
         rows = set()
         for index in self.selectionModel().selectedIndexes():

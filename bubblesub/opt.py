@@ -98,7 +98,7 @@ _DEFAULT_HOTKEYS = {
     ],
 }
 
-_DEFAULT_MENU = [
+_DEFAULT_TOP_MENU = [
     ('&File', [
         ('New', 'file/new'),
         ('Open', 'file/open'),
@@ -197,6 +197,26 @@ _DEFAULT_MENU = [
     ]),
 ]
 
+_DEFAULT_CONTEXT_MENU = [
+    ('Create audio sample', 'grid/create-audio-sample'),
+    None,
+    ('Insert subtitle (above)', 'edit/insert-above'),
+    ('Insert subtitle (below)', 'edit/insert-below'),
+    None,
+    ('Duplicate selected subtitles', 'edit/duplicate'),
+    ('Split at video frame', 'edit/split-sub-at-video'),
+    None,
+    ('Join (keep first)', 'edit/join-subs/keep-first'),
+    ('Join (concatenate)', 'edit/join-subs/concatenate'),
+    ('Join (as karaoke)', 'edit/karaoke-join'),
+    None,
+    ('Split as karaoke', 'edit/karaoke-split'),
+    ('Make times continuous (change start)', 'edit/snap-subs-start-to-prev-sub'),
+    ('Make times continuous (change end)', 'edit/snap-subs-end-to-next-sub'),
+    None,
+    ('Delete selected lines', 'edit/delete'),
+]
+
 
 class Serializer:
     def __init__(self, location):
@@ -237,7 +257,8 @@ class Options:
     def __init__(self):
         self.general = _DEFAULT_GENERAL
         self.hotkeys = _DEFAULT_HOTKEYS
-        self.menu = _DEFAULT_MENU
+        self.main_menu = _DEFAULT_TOP_MENU
+        self.context_menu = _DEFAULT_CONTEXT_MENU
 
     def load(self, location):
         serializer = Serializer(location)
@@ -245,14 +266,18 @@ class Options:
         if hotkeys:
             self.hotkeys = hotkeys
         if menu:
-            self.menu = menu
+            self.main_menu = menu['main']
+            self.context_menu = menu['context']
         if general:
             self.general = general
         self._ensure_defaults(self.general, _DEFAULT_GENERAL)
 
     def save(self, location):
         serializer = Serializer(location)
-        serializer.write(self.hotkeys, self.menu, self.general)
+        serializer.write(
+            self.hotkeys,
+            {'main': self.main_menu, 'context': self.context_menu},
+            self.general)
 
     def _ensure_defaults(self, target, source):
         for key, value in source.items():

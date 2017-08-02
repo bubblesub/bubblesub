@@ -1,3 +1,4 @@
+import functools
 import bubblesub.util
 from PyQt5 import QtGui
 from PyQt5 import QtCore
@@ -73,3 +74,43 @@ class TimeEdit(QtWidgets.QLineEdit):
 
         self.setText(text)
         self.textEdited.emit(self.text())
+
+
+def _menu_about_to_show(menu):
+    for action in menu.actions():
+        if hasattr(action, 'cmd') and action.cmd:
+            action.setEnabled(action.cmd.enabled(action.api))
+
+
+class _CommandAction(QtWidgets.QAction):
+    def __init__(self, api, cmd_name, cmd_args):
+        super().__init__()
+        self.api = api
+        self.cmd_name = cmd_name
+        self.cmd = bubblesub.cmd.registry.get(cmd_name)
+        self.triggered.connect(
+            functools.partial(
+                api.run_cmd, bubblesub.cmd.registry.get(cmd_name), cmd_args))
+
+
+def setup_cmd_menu(api, parent, menu_def):
+    action_map = {}
+    if hasattr(parent, 'aboutToShow'):
+        parent.aboutToShow.connect(
+            functools.partial(_menu_about_to_show, parent))
+    for item in menu_def:
+        if item is None:
+            parent.addSeparator()
+        elif isinstance(item[1], list):
+            submenu = parent.addMenu(item[0])
+            submenu.aboutToShow.connect(
+                functools.partial(_menu_about_to_show, submenu))
+            action_map.update(setup_cmd_menu(api, submenu, item[1]))
+        else:
+            action_name, cmd_name, *cmd_args = item
+            action = _CommandAction(api, cmd_name, cmd_args)
+            action.setParent(parent)
+            action.setText(action_name)
+            parent.addAction(action)
+            action_map[(cmd_name, *cmd_args)] = action
+    return action_map
