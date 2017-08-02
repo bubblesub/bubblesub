@@ -48,13 +48,13 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(BaseCommand):
     def enabled(self, api):
         if not api.audio.has_selection:
             return False
-        if not api.subs.selected_indexes:
+        if not api.subs.has_selection:
             return False
-        return api.subs.selected_indexes[0] > 0
+        return api.subs.selected_lines[0].prev_sub is not None
 
     def run(self, api):
         api.audio.select(
-            api.subs.lines[api.subs.selected_indexes[0] - 1].end,
+            api.subs.selected_lines[0].prev_sub.end,
             api.audio.selection_end)
 
 
@@ -64,14 +64,14 @@ class AudioSnapSelectionEndToNextSubtitleCommand(BaseCommand):
     def enabled(self, api):
         if not api.audio.has_selection:
             return False
-        if not api.subs.selected_indexes:
+        if not api.subs.has_selection:
             return False
-        return api.subs.selected_indexes[-1] + 1 < len(api.subs.lines)
+        return api.subs.selected_lines[-1].next_sub is not None
 
     def run(self, api):
         api.audio.select(
             api.audio.selection_start,
-            api.subs.lines[api.subs.selected_indexes[-1] + 1].start)
+            api.subs.selected_lines[-1].next_sub.start)
 
 
 class AudioMoveSelectionStartCommand(BaseCommand):

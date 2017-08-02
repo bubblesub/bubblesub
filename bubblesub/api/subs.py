@@ -72,6 +72,20 @@ class Subtitle(bubblesub.util.ObservableObject):
                 return i
         return None
 
+    @property
+    def prev_sub(self):
+        num = self.number
+        if num is None:
+            return None
+        return self._subtitles.get(num - 1, None)
+
+    @property
+    def next_sub(self):
+        num = self.number
+        if num is None:
+            return None
+        return self._subtitles.get(num + 1, None)
+
     def _before_change(self):
         num = self.number
         if num is not None:
