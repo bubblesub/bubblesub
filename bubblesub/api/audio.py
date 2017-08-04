@@ -3,6 +3,7 @@ import threading
 import wave
 import bubblesub.util
 import ffms
+import scipy.io.wavfile
 import numpy as np
 from PyQt5 import QtCore
 
@@ -125,6 +126,13 @@ class AudioApi(QtCore.QObject):
         return self._audio_source.properties.SampleRate
 
     @property
+    def sample_format(self):
+        self._wait_for_audio_source()
+        if not self._audio_source:
+            return None
+        return self._audio_source.properties.SampleFormat
+
+    @property
     def sample_count(self):
         self._wait_for_audio_source()
         if not self._audio_source:
@@ -182,14 +190,7 @@ class AudioApi(QtCore.QObject):
         frame_count = end_frame - start_frame
 
         samples = self.get_samples(start_frame, frame_count)
-
-        with wave.open(path_or_handle, mode='wb') as handle:
-            handle.setnchannels(self.channel_count)
-            handle.setsampwidth(self.bits_per_sample // 8)
-            handle.setframerate(self.sample_rate)
-            handle.setnframes(frame_count)
-            handle.setcomptype('NONE', 'No compression')
-            handle.writeframesraw(samples.tobytes())
+        scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
 
     def _set_max_pts(self, max_pts):
         self._min = 0

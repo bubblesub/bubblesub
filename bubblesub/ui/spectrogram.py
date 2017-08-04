@@ -1,3 +1,4 @@
+import ffms
 import bubblesub.util
 import numpy as np
 import pyfftw
@@ -26,9 +27,17 @@ class SpectrumProviderContext(bubblesub.util.ProviderContext):
             audio_frame >> DERIVATION_DISTANCE) << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
-        max_sample_value = (1 << self._api.audio.bits_per_sample) / 2
         samples = self._api.audio.get_samples(first_sample, sample_count)
-        samples = np.mean(samples, axis=1) / max_sample_value
+        samples = np.mean(samples, axis=1)
+        sample_fmt = self._api.audio.sample_format
+        if sample_fmt is None:
+            return pts, np.zeros((1 << DERIVATION_SIZE) + 1)
+        elif sample_fmt == ffms.FFMS_FMT_S16:
+            samples /= 32768.
+        elif sample_fmt == ffms.FFMS_FMT_S32:
+            samples /= 4294967296.
+        elif sample_fmt not in (ffms.FFMS_FMT_FLT, ffms.FFMS_FMT_DBL):
+            raise RuntimeError('Unknown sample format: {}'.format(sample_fmt))
 
         self._input[:] = samples
         out = self._fftw()
