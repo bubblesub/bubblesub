@@ -3,7 +3,6 @@ import base64
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-import bubblesub.cmd.registry
 import bubblesub.ui.editor
 import bubblesub.ui.subs_grid
 import bubblesub.ui.util
@@ -95,8 +94,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     QtGui.QKeySequence(keys), self)
                 shortcut.activated.connect(
                     functools.partial(
-                        self._api.run_cmd,
-                        bubblesub.cmd.registry.get(cmd_name),
+                        self._api.cmd.run,
+                        self._api.cmd.get(cmd_name),
                         cmd_args))
                 if context == 'global':
                     shortcut.setContext(QtCore.Qt.ApplicationShortcut)

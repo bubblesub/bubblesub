@@ -79,7 +79,7 @@ class TimeEdit(QtWidgets.QLineEdit):
 def _menu_about_to_show(menu):
     for action in menu.actions():
         if hasattr(action, 'cmd') and action.cmd:
-            action.setEnabled(action.cmd.enabled(action.api))
+            action.setEnabled(action.cmd.enabled())
 
 
 class _CommandAction(QtWidgets.QAction):
@@ -87,10 +87,10 @@ class _CommandAction(QtWidgets.QAction):
         super().__init__()
         self.api = api
         self.cmd_name = cmd_name
-        self.cmd = bubblesub.cmd.registry.get(cmd_name)
+        self.cmd = api.cmd.get(cmd_name)
         self.triggered.connect(
             functools.partial(
-                api.run_cmd, bubblesub.cmd.registry.get(cmd_name), cmd_args))
+                api.cmd.run, api.cmd.get(cmd_name), cmd_args))
 
 
 def setup_cmd_menu(api, parent, menu_def):

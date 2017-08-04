@@ -1,5 +1,5 @@
 import bubblesub.ui.util
-from bubblesub.cmd.registry import BaseCommand
+from bubblesub.api.cmd import CoreCommand
 from PyQt5 import QtWidgets
 
 
@@ -17,80 +17,80 @@ def _ask_about_unsaved_changes(api):
         'Are you sure you want to close the current file?')
 
 
-class FileNewCommand(BaseCommand):
+class FileNewCommand(CoreCommand):
     name = 'file/new'
 
-    def run(self, api):
-        if _ask_about_unsaved_changes(api):
-            api.subs.unload()
-            api.log.info('Created new subtitles')
+    def run(self):
+        if _ask_about_unsaved_changes(self.api):
+            self.api.subs.unload()
+            self.api.log.info('Created new subtitles')
 
 
-class FileOpenCommand(BaseCommand):
+class FileOpenCommand(CoreCommand):
     name = 'file/open'
 
-    def run(self, api):
-        if _ask_about_unsaved_changes(api):
+    def run(self):
+        if _ask_about_unsaved_changes(self.api):
             path, _ = QtWidgets.QFileDialog.getOpenFileName(
-                api.gui.main_window,
-                directory=_get_dialog_dir(api),
+                self.api.gui.main_window,
+                directory=_get_dialog_dir(self.api),
                 initialFilter='*.ass')
             if not path:
-                api.log.info('Opening cancelled.')
+                self.api.log.info('Opening cancelled.')
             else:
-                api.subs.load_ass(path)
-                api.log.info('Opened {}'.format(path))
+                self.api.subs.load_ass(path)
+                self.api.log.info('Opened {}'.format(path))
 
 
-class FileLoadVideo(BaseCommand):
+class FileLoadVideo(CoreCommand):
     name = 'file/load-video'
 
-    def run(self, api):
+    def run(self):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            api.gui.main_window,
-            directory=_get_dialog_dir(api),
+            self.api.gui.main_window,
+            directory=_get_dialog_dir(self.api),
             initialFilter='*.mkv')
         if not path:
-            api.log.info('Loading video cancelled.')
+            self.api.log.info('Loading video cancelled.')
         else:
-            api.video.load(path)
-            api.log.info('Loading {}'.format(path))
+            self.api.video.load(path)
+            self.api.log.info('Loading {}'.format(path))
 
 
-class FileSaveCommand(BaseCommand):
+class FileSaveCommand(CoreCommand):
     name = 'file/save'
 
-    def run(self, api):
-        path = api.subs.path
-        if not api.subs.path:
+    def run(self):
+        path = self.api.subs.path
+        if not self.api.subs.path:
             path, _ = QtWidgets.QFileDialog.getSaveFileName(
-                api.gui.main_window,
-                directory=_get_dialog_dir(api),
+                self.api.gui.main_window,
+                directory=_get_dialog_dir(self.api),
                 initialFilter='*.ass')
             if not path:
-                api.log.info('Saving cancelled.')
+                self.api.log.info('Saving cancelled.')
                 return
-        api.subs.save_ass(path, remember_path=True)
-        api.log.info('Saved subtitles to {}'.format(path))
+        self.api.subs.save_ass(path, remember_path=True)
+        self.api.log.info('Saved subtitles to {}'.format(path))
 
 
-class FileSaveAsCommand(BaseCommand):
+class FileSaveAsCommand(CoreCommand):
     name = 'file/save-as'
 
-    def run(self, api):
+    def run(self):
         path, _ = QtWidgets.QFileDialog.getSaveFileName(
-            api.gui.main_window,
-            directory=_get_dialog_dir(api),
+            self.api.gui.main_window,
+            directory=_get_dialog_dir(self.api),
             initialFilter='*.ass')
         if not path:
-            api.log.info('Saving cancelled.')
+            self.api.log.info('Saving cancelled.')
         else:
-            api.subs.save_ass(path, remember_path=True)
-            api.log.info('Saved subtitles to {}'.format(path))
+            self.api.subs.save_ass(path, remember_path=True)
+            self.api.log.info('Saved subtitles to {}'.format(path))
 
 
-class FileQuitCommand(BaseCommand):
+class FileQuitCommand(CoreCommand):
     name = 'file/quit'
 
-    def run(self, api):
-        api.gui.quit()
+    def run(self):
+        self.api.gui.quit()

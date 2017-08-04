@@ -1,123 +1,132 @@
-from bubblesub.cmd.registry import BaseCommand
+from bubblesub.api.cmd import CoreCommand
 
 
-class AudioScrollCommand(BaseCommand):
+class AudioScrollCommand(CoreCommand):
     name = 'audio/scroll'
 
-    def run(self, api, delta):
-        distance = delta * api.audio.view_size * 0.05
-        api.audio.move_view(distance)
+    def run(self, delta):
+        distance = delta * self.api.audio.view_size * 0.05
+        self.api.audio.move_view(distance)
 
 
-class AudioSnapSelectionStartToVideoCommand(BaseCommand):
+class AudioSnapSelectionStartToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-start-to-video'
 
-    def enabled(self, api):
-        return api.audio.has_selection and api.subs.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection and self.api.subs.has_selection
 
-    def run(self, api):
-        api.audio.select(api.video.current_pts, api.audio.selection_end)
+    def run(self):
+        self.api.audio.select(
+            self.api.video.current_pts,
+            self.api.audio.selection_end)
 
 
-class AudioSnapSelectionEndToVideoCommand(BaseCommand):
+class AudioSnapSelectionEndToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-end-to-video'
 
-    def enabled(self, api):
-        return api.audio.has_selection and api.subs.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection and self.api.subs.has_selection
 
-    def run(self, api):
-        api.audio.select(api.audio.selection_start, api.video.current_pts)
+    def run(self):
+        self.api.audio.select(
+            self.api.audio.selection_start,
+            self.api.video.current_pts)
 
 
-class AudioRealignSelectionToVideoCommand(BaseCommand):
+class AudioRealignSelectionToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-to-video'
 
-    def enabled(self, api):
-        return api.audio.has_selection and api.subs.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection and self.api.subs.has_selection
 
-    def run(self, api):
-        api.audio.select(
-            api.video.current_pts,
-            api.video.current_pts
-            + api.opt.general['subs']['default_duration'])
+    def run(self):
+        self.api.audio.select(
+            self.api.video.current_pts,
+            self.api.video.current_pts
+            + self.api.opt.general['subs']['default_duration'])
 
 
-class AudioSnapSelectionStartToPreviousSubtitleCommand(BaseCommand):
+class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
     name = 'audio/snap-sel-start-to-prev-sub'
 
-    def enabled(self, api):
-        if not api.audio.has_selection:
+    def enabled(self):
+        if not self.api.audio.has_selection:
             return False
-        if not api.subs.has_selection:
+        if not self.api.subs.has_selection:
             return False
-        return api.subs.selected_lines[0].prev_sub is not None
+        return self.api.subs.selected_lines[0].prev_sub is not None
 
-    def run(self, api):
-        api.audio.select(
-            api.subs.selected_lines[0].prev_sub.end,
-            api.audio.selection_end)
+    def run(self):
+        self.api.audio.select(
+            self.api.subs.selected_lines[0].prev_sub.end,
+            self.api.audio.selection_end)
 
 
-class AudioSnapSelectionEndToNextSubtitleCommand(BaseCommand):
+class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
     name = 'audio/snap-sel-end-to-next-sub'
 
-    def enabled(self, api):
-        if not api.audio.has_selection:
+    def enabled(self):
+        if not self.api.audio.has_selection:
             return False
-        if not api.subs.has_selection:
+        if not self.api.subs.has_selection:
             return False
-        return api.subs.selected_lines[-1].next_sub is not None
+        return self.api.subs.selected_lines[-1].next_sub is not None
 
-    def run(self, api):
-        api.audio.select(
-            api.audio.selection_start,
-            api.subs.selected_lines[-1].next_sub.start)
+    def run(self):
+        self.api.audio.select(
+            self.api.audio.selection_start,
+            self.api.subs.selected_lines[-1].next_sub.start)
 
 
-class AudioMoveSelectionStartCommand(BaseCommand):
+class AudioMoveSelectionStartCommand(CoreCommand):
     name = 'audio/move-sel-start'
 
-    def enabled(self, api):
-        return api.audio.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection
 
-    def run(self, api, ms):
-        api.audio.select(
-            min(api.audio.selection_end, api.audio.selection_start + ms),
-            api.audio.selection_end)
+    def run(self, ms):
+        self.api.audio.select(
+            min(
+                self.api.audio.selection_end,
+                self.api.audio.selection_start + ms),
+            self.api.audio.selection_end)
 
 
-class AudioMoveSelectionEndCommand(BaseCommand):
+class AudioMoveSelectionEndCommand(CoreCommand):
     name = 'audio/move-sel-end'
 
-    def enabled(self, api):
-        return api.audio.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection
 
-    def run(self, api, ms):
-        api.audio.select(
-            api.audio.selection_start,
-            max(api.audio.selection_start, api.audio.selection_end + ms))
+    def run(self, ms):
+        self.api.audio.select(
+            self.api.audio.selection_start,
+            max(
+                self.api.audio.selection_start,
+                self.api.audio.selection_end + ms))
 
 
-class AudioMoveSelectionCommand(BaseCommand):
+class AudioMoveSelectionCommand(CoreCommand):
     name = 'audio/move-sel'
 
-    def enabled(self, api):
-        return api.audio.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection
 
-    def run(self, api, ms):
-        api.audio.select(
-            api.audio.selection_start + ms, api.audio.selection_end + ms)
+    def run(self, ms):
+        self.api.audio.select(
+            self.api.audio.selection_start + ms,
+            self.api.audio.selection_end + ms)
 
 
-class AudioCommitSelectionCommand(BaseCommand):
+class AudioCommitSelectionCommand(CoreCommand):
     name = 'audio/commit-sel'
 
-    def enabled(self, api):
-        return api.subs.has_selection and api.audio.has_selection
+    def enabled(self):
+        return self.api.subs.has_selection and self.api.audio.has_selection
 
-    def run(self, api):
-        for sub in api.subs.selected_lines:
+    def run(self):
+        for sub in self.api.subs.selected_lines:
             sub.begin_update()
-            sub.start = api.audio.selection_start
-            sub.end = api.audio.selection_end
+            sub.start = self.api.audio.selection_start
+            sub.end = self.api.audio.selection_end
             sub.end_update()

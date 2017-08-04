@@ -1,101 +1,101 @@
 import bisect
-from bubblesub.cmd.registry import BaseCommand
+from bubblesub.api.cmd import CoreCommand
 
 
-class VideoPlayCurrentLineCommand(BaseCommand):
+class VideoPlayCurrentLineCommand(CoreCommand):
     name = 'video/play-current-line'
 
-    def enabled(self, api):
-        return api.subs.has_selection
+    def enabled(self):
+        return self.api.subs.has_selection
 
-    def run(self, api):
-        sub = api.subs.selected_lines[0]
-        api.video.play(sub.start, sub.end)
+    def run(self):
+        sub = self.api.subs.selected_lines[0]
+        self.api.video.play(sub.start, sub.end)
 
 
-class VideoPlayAroundSelectionCommand(BaseCommand):
+class VideoPlayAroundSelectionCommand(CoreCommand):
     name = 'video/play-around-sel'
 
-    def enabled(self, api):
-        return api.audio.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection
 
-    def run(self, api, delta_start, delta_end):
-        api.video.play(
-            api.audio.selection_start + delta_start,
-            api.audio.selection_end + delta_end)
+    def run(self, delta_start, delta_end):
+        self.api.video.play(
+            self.api.audio.selection_start + delta_start,
+            self.api.audio.selection_end + delta_end)
 
 
-class VideoPlayAroundSelectionStartCommand(BaseCommand):
+class VideoPlayAroundSelectionStartCommand(CoreCommand):
     name = 'video/play-around-sel-start'
 
-    def enabled(self, api):
-        return api.audio.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection
 
-    def run(self, api, delta_start, delta_end):
-        api.video.play(
-            api.audio.selection_start + delta_start,
-            api.audio.selection_start + delta_end)
+    def run(self, delta_start, delta_end):
+        self.api.video.play(
+            self.api.audio.selection_start + delta_start,
+            self.api.audio.selection_start + delta_end)
 
 
-class VideoPlayAroundSelectionEndCommand(BaseCommand):
+class VideoPlayAroundSelectionEndCommand(CoreCommand):
     name = 'video/play-around-sel-end'
 
-    def enabled(self, api):
-        return api.audio.has_selection
+    def enabled(self):
+        return self.api.audio.has_selection
 
-    def run(self, api, delta_start, delta_end):
-        api.video.play(
-            api.audio.selection_end + delta_start,
-            api.audio.selection_end + delta_end)
+    def run(self, delta_start, delta_end):
+        self.api.video.play(
+            self.api.audio.selection_end + delta_start,
+            self.api.audio.selection_end + delta_end)
 
 
-class VideoStepFrameCommand(BaseCommand):
+class VideoStepFrameCommand(CoreCommand):
     name = 'video/step-frame'
 
-    def enabled(self, api):
-        return len(api.video.timecodes) > 0
+    def enabled(self):
+        return len(self.api.video.timecodes) > 0
 
-    def run(self, api, delta):
-        current_pts = api.video.current_pts
-        idx = bisect.bisect_left(api.video.timecodes, current_pts)
-        if idx + delta not in range(len(api.video.timecodes)):
+    def run(self, delta):
+        current_pts = self.api.video.current_pts
+        idx = bisect.bisect_left(self.api.video.timecodes, current_pts)
+        if idx + delta not in range(len(self.api.video.timecodes)):
             return
-        api.video.seek(api.video.timecodes[idx + delta])
+        self.api.video.seek(self.api.video.timecodes[idx + delta])
 
 
-class VideoSetPlaybackSpeed(BaseCommand):
+class VideoSetPlaybackSpeed(CoreCommand):
     name = 'video/set-playback-speed'
 
-    def enabled(self, api):
-        return len(api.video.timecodes) > 0
+    def enabled(self):
+        return len(self.api.video.timecodes) > 0
 
-    def run(self, api, speed):
-        api.video.playback_speed = speed
+    def run(self, speed):
+        self.api.video.playback_speed = speed
 
 
-class VideoTogglePauseCommand(BaseCommand):
+class VideoTogglePauseCommand(CoreCommand):
     name = 'video/toggle-pause'
 
-    def run(self, api):
-        if api.video.is_paused:
-            api.video.unpause()
+    def run(self):
+        if self.api.video.is_paused:
+            self.api.video.unpause()
         else:
-            api.video.pause()
+            self.api.video.pause()
 
 
-class VideoUnpauseCommand(BaseCommand):
+class VideoUnpauseCommand(CoreCommand):
     name = 'video/unpause'
 
-    def run(self, api):
-        if not api.video.is_paused:
+    def run(self):
+        if not self.api.video.is_paused:
             return
-        api.video.unpause()
+        self.api.video.unpause()
 
 
-class VideoPauseCommand(BaseCommand):
+class VideoPauseCommand(CoreCommand):
     name = 'video/pause'
 
-    def run(self, api):
-        if api.video.is_paused:
+    def run(self):
+        if self.api.video.is_paused:
             return
-        api.video.pause()
+        self.api.video.pause()

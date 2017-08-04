@@ -1,6 +1,6 @@
 import re
 import bubblesub.ui.util
-from bubblesub.cmd.registry import BaseCommand
+from bubblesub.api.cmd import CoreCommand
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -213,32 +213,32 @@ class SearchDialog(QtWidgets.QDialog):
         return self._api.opt.general['search']
 
 
-class SearchCommand(BaseCommand):
+class SearchCommand(CoreCommand):
     name = 'edit/search'
 
-    def run(self, api):
-        dialog = SearchDialog(api, show_replace_controls=False)
+    def run(self):
+        dialog = SearchDialog(self.api, show_replace_controls=False)
         dialog.exec_()
 
 
-class SearchAndReplaceCommand(BaseCommand):
+class SearchAndReplaceCommand(CoreCommand):
     name = 'edit/search-and-replace'
 
-    def run(self, api):
-        dialog = SearchDialog(api, show_replace_controls=True)
+    def run(self):
+        dialog = SearchDialog(self.api, show_replace_controls=True)
         dialog.exec_()
 
 
-class SearchRepeatCommand(BaseCommand):
+class SearchRepeatCommand(CoreCommand):
     name = 'edit/search-repeat'
 
-    def enabled(self, api):
-        return len(api.opt.general['search']['history']) > 0
+    def enabled(self):
+        return len(self.api.opt.general['search']['history']) > 0
 
-    def run(self, api, direction):
-        opt = api.opt.general['search']
+    def run(self, direction):
+        opt = self.api.opt.general['search']
         _search(
-            api,
+            self.api,
             _create_search_regex(
                 opt['history'][0],
                 opt['case_sensitive'],

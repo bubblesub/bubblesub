@@ -1,50 +1,50 @@
 import wave
 import bubblesub.ui.util
-from bubblesub.cmd.registry import BaseCommand
+from bubblesub.api.cmd import CoreCommand
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
-class GridJumpToLineCommand(BaseCommand):
+class GridJumpToLineCommand(CoreCommand):
     name = 'grid/jump-to-line'
 
-    def enabled(self, api):
-        return len(api.subs.lines) > 0
+    def enabled(self):
+        return len(self.api.subs.lines) > 0
 
-    def run(self, api):
-        dialog = QtWidgets.QInputDialog(api.gui.main_window)
+    def run(self):
+        dialog = QtWidgets.QInputDialog(self.api.gui.main_window)
         dialog.setLabelText('Line number to jump to:')
         dialog.setIntMinimum(1)
-        dialog.setIntMaximum(len(api.subs.lines))
-        if api.subs.has_selection:
-            dialog.setIntValue(api.subs.selected_indexes[0] + 1)
+        dialog.setIntMaximum(len(self.api.subs.lines))
+        if self.api.subs.has_selection:
+            dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
         dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
         if dialog.exec_():
-            api.subs.selected_indexes = [dialog.intValue() - 1]
+            self.api.subs.selected_indexes = [dialog.intValue() - 1]
 
 
-class GridJumpToTimeCommand(BaseCommand):
+class GridJumpToTimeCommand(CoreCommand):
     name = 'grid/jump-to-time'
 
-    def enabled(self, api):
-        return len(api.subs.lines) > 0
+    def enabled(self):
+        return len(self.api.subs.lines) > 0
 
-    def run(self, api):
+    def run(self):
         dialog = self.JumpToTimeDialog()
-        if api.subs.has_selection:
-            dialog.setValue(api.subs.lines[api.subs.selected_indexes[0]].start)
+        if self.api.subs.has_selection:
+            dialog.setValue(self.api.subs.selected_lines[0].start)
         if dialog.exec_():
             target_pts = dialog.value()
             best_distance = None
             best_idx = None
-            for i, sub in enumerate(api.subs.lines):
+            for i, sub in enumerate(self.api.subs.lines):
                 center = (sub.start + sub.end) / 2
                 distance = abs(target_pts - center)
                 if best_distance is None or distance < best_distance:
                     best_distance = distance
                     best_idx = i
             if best_idx is not None:
-                api.subs.selected_indexes = [best_idx]
+                self.api.subs.selected_indexes = [best_idx]
 
     class JumpToTimeDialog(QtWidgets.QDialog):
         def __init__(self, parent=None):
@@ -74,85 +74,89 @@ class GridJumpToTimeCommand(BaseCommand):
             return bubblesub.util.str_to_ms(self.time_widget.text())
 
 
-class GridSelectPrevSubtitleCommand(BaseCommand):
+class GridSelectPrevSubtitleCommand(CoreCommand):
     name = 'grid/select-prev-sub'
 
-    def enabled(self, api):
-        return len(api.subs.lines) > 0
+    def enabled(self):
+        return len(self.api.subs.lines) > 0
 
-    def run(self, api):
-        api.subs.selected_indexes = (
-            [max(0, api.subs.selected_indexes[0] - 1)]
-            if api.subs.selected_indexes else
-            [len(api.subs.lines) - 1, 0])
+    def run(self):
+        if not self.api.subs.selected_indexes:
+            self.api.subs.selected_indexes = [len(self.api.subs.lines) - 1, 0]
+        else:
+            self.api.subs.selected_indexes = [
+                max(0, self.api.subs.selected_indexes[0] - 1)]
 
 
-class GridSelectNextSubtitleCommand(BaseCommand):
+class GridSelectNextSubtitleCommand(CoreCommand):
     name = 'grid/select-next-sub'
 
-    def enabled(self, api):
-        return len(api.subs.lines) > 0
+    def enabled(self):
+        return len(self.api.subs.lines) > 0
 
-    def run(self, api):
-        api.subs.selected_indexes = (
-            [min(api.subs.selected_indexes[0] + 1, len(api.subs.lines) - 1)]
-            if api.subs.selected_indexes else
-            [0])
+    def run(self):
+        if not self.api.subs.selected_indexes:
+            self.api.subs.selected_indexes = [0]
+        else:
+            self.api.subs.selected_indexes = [
+                min(
+                    self.api.subs.selected_indexes[0] + 1,
+                    len(self.api.subs.lines) - 1)]
 
 
-class GridSelectAllCommand(BaseCommand):
+class GridSelectAllCommand(CoreCommand):
     name = 'grid/select-all'
 
-    def enabled(self, api):
-        return len(api.subs.lines) > 0
+    def enabled(self):
+        return len(self.api.subs.lines) > 0
 
-    def run(self, api):
-        api.subs.selected_indexes = list(range(len(api.subs.lines)))
+    def run(self):
+        self.api.subs.selected_indexes = list(range(len(self.api.subs.lines)))
 
 
-class GridSelectNothingCommand(BaseCommand):
+class GridSelectNothingCommand(CoreCommand):
     name = 'grid/select-nothing'
 
-    def run(self, api):
-        api.subs.selected_indexes = []
+    def run(self):
+        self.api.subs.selected_indexes = []
 
 
-class GridCopyToClipboardCommand(BaseCommand):
+class GridCopyToClipboardCommand(CoreCommand):
     name = 'grid/copy-to-clipboard'
 
-    def enabled(self, api):
-        return api.subs.has_selection
+    def enabled(self):
+        return self.api.subs.has_selection
 
-    def run(self, api):
+    def run(self):
         QtWidgets.QApplication.clipboard().setText('\n'.join(
-            line.text for line in api.subs.selected_lines))
+            line.text for line in self.api.subs.selected_lines))
 
 
-class SaveAudioSampleCommand(BaseCommand):
+class SaveAudioSampleCommand(CoreCommand):
     name = 'grid/create-audio-sample'
 
-    def enabled(self, api):
-        return api.subs.has_selection and api.audio.has_audio_source
+    def enabled(self):
+        return self.api.subs.has_selection and self.api.audio.has_audio_source
 
-    def run(self, api):
+    def run(self):
         path, _ = QtWidgets.QFileDialog.getSaveFileName(
-            api.gui.main_window,
+            self.api.gui.main_window,
             directory=QtCore.QDir.homePath(),
             initialFilter='*.wav')
 
-        start_pts = api.subs.selected_lines[0].start
-        end_pts = api.subs.selected_lines[-1].end
+        start_pts = self.api.subs.selected_lines[0].start
+        end_pts = self.api.subs.selected_lines[-1].end
 
-        start_frame = int(start_pts * api.audio.sample_rate / 1000)
-        end_frame = int(end_pts * api.audio.sample_rate / 1000)
+        start_frame = int(start_pts * self.api.audio.sample_rate / 1000)
+        end_frame = int(end_pts * self.api.audio.sample_rate / 1000)
         frame_count = end_frame - start_frame
 
-        samples = api.audio.get_samples(start_frame, frame_count)
+        samples = self.api.audio.get_samples(start_frame, frame_count)
 
         with wave.open(path, mode='wb') as handle:
-            handle.setnchannels(api.audio.channel_count)
-            handle.setsampwidth(api.audio.bits_per_sample // 8)
-            handle.setframerate(api.audio.sample_rate)
+            handle.setnchannels(self.api.audio.channel_count)
+            handle.setsampwidth(self.api.audio.bits_per_sample // 8)
+            handle.setframerate(self.api.audio.sample_rate)
             handle.setnframes(frame_count)
             handle.setcomptype('NONE', 'No compression')
             handle.writeframesraw(samples.tobytes())

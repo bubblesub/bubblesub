@@ -2,6 +2,7 @@
 import argparse
 from pathlib import Path
 import bubblesub.api
+import bubblesub.cmd
 import bubblesub.opt
 import bubblesub.ui
 
@@ -22,6 +23,7 @@ def main():
     if not args.no_config:
         opt.load(cfg_path)
     api = bubblesub.api.Api(opt)
+    api.cmd.load_plugins(cfg_path / 'scripts')
     bubblesub.ui.Ui(api, args).run()
     if not args.no_config:
         opt.save(cfg_path)
