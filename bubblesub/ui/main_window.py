@@ -60,6 +60,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         action_map = self._setup_menu()
         self._setup_hotkeys(action_map)
+        self._setup_plugins_menu()
 
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
@@ -79,6 +80,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def _setup_menu(self):
         return bubblesub.ui.util.setup_cmd_menu(
             self._api, self.menuBar(), self._api.opt.main_menu)
+
+    def _setup_plugins_menu(self):
+        plugins_menu_def = []
+        for plugin_name in self._api.cmd.plugin_registry:
+            plugins_menu_def.append((plugin_name, plugin_name))
+        if len(plugins_menu_def) == 0:
+            return
+        plugins_submenu = self.menuBar().addMenu('Plugins')
+        bubblesub.ui.util.setup_cmd_menu(
+            self._api, plugins_submenu, plugins_menu_def)
 
     def _setup_hotkeys(self, action_map):
         for context, items in self._api.opt.hotkeys.items():
