@@ -1,4 +1,3 @@
-import wave
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
 from PyQt5 import QtCore
@@ -144,19 +143,7 @@ class SaveAudioSampleCommand(CoreCommand):
             directory=QtCore.QDir.homePath(),
             initialFilter='*.wav')
 
-        start_pts = self.api.subs.selected_lines[0].start
-        end_pts = self.api.subs.selected_lines[-1].end
-
-        start_frame = int(start_pts * self.api.audio.sample_rate / 1000)
-        end_frame = int(end_pts * self.api.audio.sample_rate / 1000)
-        frame_count = end_frame - start_frame
-
-        samples = self.api.audio.get_samples(start_frame, frame_count)
-
-        with wave.open(path, mode='wb') as handle:
-            handle.setnchannels(self.api.audio.channel_count)
-            handle.setsampwidth(self.api.audio.bits_per_sample // 8)
-            handle.setframerate(self.api.audio.sample_rate)
-            handle.setnframes(frame_count)
-            handle.setcomptype('NONE', 'No compression')
-            handle.writeframesraw(samples.tobytes())
+        if path:
+            start_pts = self.api.subs.selected_lines[0].start
+            end_pts = self.api.subs.selected_lines[-1].end
+            self.api.audio.save_wav(path, start_pts, end_pts)
