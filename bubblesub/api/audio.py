@@ -190,6 +190,9 @@ class AudioApi(QtCore.QObject):
         frame_count = end_frame - start_frame
 
         samples = self.get_samples(start_frame, frame_count)
+        # increase compatibility with external programs
+        if samples.dtype.name in ('float32', 'float64'):
+            samples = (samples * (1 << 31)).astype(np.int32)
         scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
 
     def _set_max_pts(self, max_pts):
