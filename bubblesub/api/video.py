@@ -119,6 +119,7 @@ class VideoApi(QtCore.QObject):
         if not self._mpv_ready:
             return
         self._set_end(None)  # mpv refuses to seek beyond --end
+        pts = max(0, pts)
         pts = self._align_pts_to_next_frame(pts)
         self._mpv.seek(bubblesub.util.ms_to_str(pts), 'absolute+exact')
 
@@ -177,15 +178,16 @@ class VideoApi(QtCore.QObject):
     def _play(self, start, end):
         if not self._mpv_ready:
             return
-        if start:
+        if start is not None:
             self.seek(start)
         self._set_end(end)
         self._mpv.pause = False
 
     def _set_end(self, end):
-        if not end:
+        if end is None:
             # XXX: mpv doesn't accept None nor "" so we use max pts
             end = self._mpv.duration * 1000
+        end = max(0, end)
         self._mpv['end'] = bubblesub.util.ms_to_str(end)
 
     def _mpv_loaded(self):
