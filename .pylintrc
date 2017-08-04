@@ -1,0 +1,50 @@
+[master]
+ignore=mpv.py
+
+[basic]
+good-names=
+    ex,_,w,h,i,j,x,y,x1,x2,y1,y2,
+    headerData,
+    columnCount,
+    rowCount,
+    keyPressEvent,
+    mousePressEvent,
+    mouseMoveEvent,
+    mouseReleaseEvent,
+    paintEvent,
+    wheelEvent,
+    closeEvent
+
+[variables]
+dummy-variables-rgx=_|dummy
+
+[format]
+max-line-length=79
+
+[messages control]
+reports=no
+disable=
+    # this is not java
+    missing-docstring,
+
+    # broken
+    bad-continuation,
+
+    # I'm not a baby
+    duplicate-code,
+    too-many-return-statements,
+    too-many-arguments,
+    too-many-locals,
+    too-many-instance-attributes,
+
+    # plain stupid
+    no-self-use,
+    too-few-public-methods
+
+[typecheck]
+ignored-modules=
+    PyQt5.QtGui,
+    PyQt5.QtCore,
+    PyQt5.QtWidgets,
+    bubblesub.mpv,
+    numpy
