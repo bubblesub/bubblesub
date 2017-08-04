@@ -143,6 +143,8 @@ class SubtitlesApi(QtCore.QObject):
         path = self._ass_source.aegisub_project.get('Video File', None)
         if not path:
             return None
+        if not self._path:
+            return None
         return self._path.parent / path
 
     @remembered_video_path.setter
