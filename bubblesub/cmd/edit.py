@@ -267,10 +267,10 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
     def enabled(self):
         if not self.api.subs.has_selection:
             return False
-        return self.api.subs.selected_lines[0].prev_sub is not None
+        return self.api.subs.selected_lines[0].prev is not None
 
     def run(self):
-        prev_sub = self.api.subs.selected_lines[0].prev_sub
+        prev_sub = self.api.subs.selected_lines[0].prev
         for sub in self.api.subs.selected_lines:
             sub.start = prev_sub.end
 
@@ -281,10 +281,10 @@ class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
     def enabled(self):
         if not self.api.subs.has_selection:
             return False
-        return self.api.subs.selected_lines[-1].next_sub is not None
+        return self.api.subs.selected_lines[-1].next is not None
 
     def run(self):
-        next_sub = self.api.subs.selected_lines[-1].next_sub
+        next_sub = self.api.subs.selected_lines[-1].next
         for sub in self.api.subs.selected_lines:
             sub.end = next_sub.start
 
