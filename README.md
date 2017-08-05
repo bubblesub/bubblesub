@@ -10,6 +10,7 @@ Simple extensible ASS subtitle editor for Linux
 - Audio and video are synced at all times
 - Spectrogram range selection for eases timing
 - Spectrogram shows where subs start and end
+- Slow playback support
 - I can sub an entire episode without ever having to touch the mouse
 - Mouse users are not excluded and can click their way to all the commands
 - Robust plugin API (everything GUI is capable of can be done through the API)
