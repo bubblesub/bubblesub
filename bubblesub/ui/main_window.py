@@ -56,8 +56,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.console_splitter.setStretchFactor(0, 2)
         self.console_splitter.setStretchFactor(1, 1)
 
-        # TODO: console with logs
-
         self.main_splitter = QtWidgets.QSplitter(self)
         self.main_splitter.setOrientation(QtCore.Qt.Vertical)
         self.main_splitter.addWidget(self.top_bar)
