@@ -87,7 +87,7 @@ class VideoApi(QtCore.QObject):
         locale.setlocale(locale.LC_NUMERIC, 'C')
 
         def _mpv_log_handler(log_level, component, message):
-            self._log_api.info(
+            self._log_api.debug(
                 'video/{}[{}]: {}'.format(component, log_level, message))
 
         self._mpv = bubblesub.mpv.MPV(

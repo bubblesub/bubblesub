@@ -33,6 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
         self.editor = bubblesub.ui.editor.Editor(api, self)
+        self.console = QtWidgets.QPlainTextEdit(readOnly=True)
         self.subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
         self.status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
 
@@ -48,12 +49,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.top_bar.setStretchFactor(0, 1)
         self.top_bar.setStretchFactor(1, 2)
 
+        self.console_splitter = QtWidgets.QSplitter(self)
+        self.console_splitter.setOrientation(QtCore.Qt.Horizontal)
+        self.console_splitter.addWidget(self.subs_grid)
+        self.console_splitter.addWidget(self.console)
+        self.console_splitter.setStretchFactor(0, 2)
+        self.console_splitter.setStretchFactor(1, 1)
+
         # TODO: console with logs
 
         self.main_splitter = QtWidgets.QSplitter(self)
         self.main_splitter.setOrientation(QtCore.Qt.Vertical)
         self.main_splitter.addWidget(self.top_bar)
-        self.main_splitter.addWidget(self.subs_grid)
+        self.main_splitter.addWidget(self.console_splitter)
         self.main_splitter.setContentsMargins(8, 8, 8, 8)
         self.main_splitter.setStretchFactor(0, 1)
         self.main_splitter.setStretchFactor(1, 5)
@@ -64,6 +72,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
+
+        api.log.logged.connect(self._logged)
 
         self.subs_grid.setFocus()
         self._restore_splitters()
@@ -76,6 +86,13 @@ class MainWindow(QtWidgets.QMainWindow):
             event.ignore()
         else:
             event.accept()
+
+    def _logged(self, level, text):
+        line = '[{}] {}\n'.format(level.name.lower(), text)
+        print(line, end='')
+        if level.name.lower() != 'debug':
+            self.console.moveCursor(QtGui.QTextCursor.End)
+            self.console.insertPlainText(line)
 
     def _setup_menu(self):
         return bubblesub.ui.util.setup_cmd_menu(
@@ -124,10 +141,12 @@ class MainWindow(QtWidgets.QMainWindow):
         _load_splitter_state(self.top_bar, splitter_cfg['top'])
         _load_splitter_state(self.editor_splitter, splitter_cfg['editor'])
         _load_splitter_state(self.main_splitter, splitter_cfg['main'])
+        _load_splitter_state(self.console_splitter, splitter_cfg['console'])
 
     def _store_splitters(self):
         self._api.opt.general['splitters'] = {
             'top': _get_splitter_state(self.top_bar),
             'editor': _get_splitter_state(self.editor_splitter),
             'main': _get_splitter_state(self.main_splitter),
+            'console': _get_splitter_state(self.console_splitter),
         }

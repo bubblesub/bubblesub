@@ -23,7 +23,6 @@ class FileNewCommand(CoreCommand):
     def run(self):
         if _ask_about_unsaved_changes(self.api):
             self.api.subs.unload()
-            self.api.log.info('Created new subtitles')
 
 
 class FileOpenCommand(CoreCommand):
@@ -36,10 +35,10 @@ class FileOpenCommand(CoreCommand):
                 directory=_get_dialog_dir(self.api),
                 initialFilter='*.ass')
             if not path:
-                self.api.log.info('Opening cancelled.')
+                self.info('opening cancelled.')
             else:
                 self.api.subs.load_ass(path)
-                self.api.log.info('Opened {}'.format(path))
+                self.info('opened {}'.format(path))
 
 
 class FileLoadVideo(CoreCommand):
@@ -51,10 +50,10 @@ class FileLoadVideo(CoreCommand):
             directory=_get_dialog_dir(self.api),
             initialFilter='*.mkv')
         if not path:
-            self.api.log.info('Loading video cancelled.')
+            self.info('loading video cancelled.')
         else:
             self.api.video.load(path)
-            self.api.log.info('Loading {}'.format(path))
+            self.info('loading {}'.format(path))
 
 
 class FileSaveCommand(CoreCommand):
@@ -68,10 +67,10 @@ class FileSaveCommand(CoreCommand):
                 directory=_get_dialog_dir(self.api),
                 initialFilter='*.ass')
             if not path:
-                self.api.log.info('Saving cancelled.')
+                self.info('saving cancelled.')
                 return
         self.api.subs.save_ass(path, remember_path=True)
-        self.api.log.info('Saved subtitles to {}'.format(path))
+        self.info('saved subtitles to {}'.format(path))
 
 
 class FileSaveAsCommand(CoreCommand):
@@ -83,10 +82,10 @@ class FileSaveAsCommand(CoreCommand):
             directory=_get_dialog_dir(self.api),
             initialFilter='*.ass')
         if not path:
-            self.api.log.info('Saving cancelled.')
+            self.info('saving cancelled.')
         else:
             self.api.subs.save_ass(path, remember_path=True)
-            self.api.log.info('Saved subtitles to {}'.format(path))
+            self.info('saved subtitles to {}'.format(path))
 
 
 class FileQuitCommand(CoreCommand):

@@ -79,7 +79,7 @@ def _replace_selection(api, new_text):
     edit.document().setPlainText(text)
 
 
-def _replace_all(api, regex, new_text):
+def _replace_all(api, logger, regex, new_text):
     replacement_count = 0
     for sub in api.subs.lines:
         old_sub_text = sub.text
@@ -90,14 +90,15 @@ def _replace_all(api, regex, new_text):
     api.subs.selected_indexes = []
     if not replacement_count:
         bubblesub.ui.util.notice('No occurrences found.')
-    api.log.info('Replaced content in {} lines.'.format(replacement_count))
+    logger.info('replaced content in {} lines.'.format(replacement_count))
     return replacement_count > 0
 
 
 class SearchDialog(QtWidgets.QDialog):
-    def __init__(self, api, show_replace_controls, parent=None):
+    def __init__(self, api, logger, show_replace_controls, parent=None):
         super().__init__(parent)
         self._api = api
+        self._logger = logger
 
         self.search_text_edit = QtWidgets.QComboBox(
             self,
@@ -178,6 +179,7 @@ class SearchDialog(QtWidgets.QDialog):
     def _replace_all(self):
         _replace_all(
             self._api,
+            self._logger,
             _create_search_regex(
                 self.search_text_edit.currentText(),
                 self.case_chkbox.isChecked(),
@@ -217,7 +219,7 @@ class SearchCommand(CoreCommand):
     name = 'edit/search'
 
     def run(self):
-        dialog = SearchDialog(self.api, show_replace_controls=False)
+        dialog = SearchDialog(self.api, self, show_replace_controls=False)
         dialog.exec_()
 
 
@@ -225,7 +227,7 @@ class SearchAndReplaceCommand(CoreCommand):
     name = 'edit/search-and-replace'
 
     def run(self):
-        dialog = SearchDialog(self.api, show_replace_controls=True)
+        dialog = SearchDialog(self.api, self, show_replace_controls=True)
         dialog.exec_()
 
 

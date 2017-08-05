@@ -1,4 +1,5 @@
 import sys
+import time
 import bubblesub.util
 import importlib.util
 
@@ -19,8 +20,23 @@ class BaseCommand:
     def enabled(self):
         return True
 
-    def run(self, *args, **kwargs):
+    def run(self, text):
         raise NotImplementedError('Command has no implementation')
+
+    def debug(self, text):
+        self.api.log.debug('cmd/{}: '.format(self.name, text))
+
+    def info(self, text):
+        self.api.log.info('cmd/{}: {}'.format(self.name, text))
+
+    def warn(self, text):
+        self.api.log.warn('cmd/{}: {}'.format(self.name, text))
+
+    def error(self, text):
+        self.api.log.error('cmd/{}: {}'.format(self.name, text))
+
+    def log(self, level, text):
+        self.logged.emit(level, text)
 
 
 class CommandApi:
@@ -30,11 +46,16 @@ class CommandApi:
     def __init__(self, api):
         self._api = api
 
-    @staticmethod
-    def run(cmd, cmd_args):
-        with bubblesub.util.Benchmark('Executing command {}'.format(cmd.name)):
-            if cmd.enabled():
-                cmd.run(*cmd_args)
+    def run(self, cmd, cmd_args):
+        if cmd.enabled():
+            self._api.log.info('cmd/{}: running...'.format(cmd.name))
+            start_time = time.time()
+            cmd.run(*cmd_args)
+            end_time = time.time()
+            self._api.log.info('cmd/{}: ran in {:.02f} s'.format(
+                cmd.name, end_time - start_time))
+        else:
+            self._api.log.info('cmd/{}: not available right now', cmd.name)
 
     def get(self, name):
         ret = self.plugin_registry.get(name)
