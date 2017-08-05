@@ -70,7 +70,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                 return _HEADERS[column_type]
             elif role == QtCore.Qt.TextAlignmentRole:
                 if column_type == ColumnType.Text:
-                    return QtCore.Qt.AlignLeft
+                    return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
                 return QtCore.Qt.AlignCenter
 
         return QtCore.QVariant()
@@ -133,7 +133,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
             column_number = index.column()
             column_type = self._column_order[column_number]
             if column_type == ColumnType.Text:
-                return QtCore.Qt.AlignLeft
+                return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
 
         return QtCore.QVariant()
