@@ -69,4 +69,4 @@ class EditKaraokeJoinCommand(CoreCommand):
             text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
         subs[0].text = text
         subs[0].end = subs[-1].end
-        self.api.subs.selected_indexes = [subs[0].number]
+        self.api.subs.selected_indexes = [subs[0].id]

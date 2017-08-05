@@ -66,36 +66,44 @@ class Subtitle(bubblesub.util.ObservableObject):
         return self.end - self.start
 
     @property
-    def number(self):
+    def id(self):
+        # XXX: meh
         for i, item in enumerate(self._subtitles):
             if item == self:
                 return i
         return None
 
     @property
-    def prev(self):
-        num = self.number
-        if num is None:
+    def number(self):
+        id_ = self.id
+        if id_ is None:
             return None
-        return self._subtitles.get(num - 1, None)
+        return id_ + 1
+
+    @property
+    def prev(self):
+        id_ = self.id
+        if id_ is None:
+            return None
+        return self._subtitles.get(id_ - 1, None)
 
     @property
     def next(self):
-        num = self.number
-        if num is None:
+        id_ = self.id
+        if id_ is None:
             return None
-        return self._subtitles.get(num + 1, None)
+        return self._subtitles.get(id_ + 1, None)
 
     def _before_change(self):
-        num = self.number
-        if num is not None:
-            self._subtitles.item_about_to_change.emit(num)
+        id_ = self.id
+        if id_ is not None:
+            self._subtitles.item_about_to_change.emit(id_)
 
     def _after_change(self):
         self._sync_ssa_event()
-        num = self.number
-        if num is not None:
-            self._subtitles.item_changed.emit(num)
+        id_ = self.id
+        if id_ is not None:
+            self._subtitles.item_changed.emit(id_)
 
     def _sync_ssa_event(self):
         self.ssa_event.start = self.start
