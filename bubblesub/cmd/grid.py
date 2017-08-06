@@ -120,8 +120,8 @@ class GridSelectNothingCommand(CoreCommand):
         self.api.subs.selected_indexes = []
 
 
-class GridCopyToClipboardCommand(CoreCommand):
-    name = 'grid/copy-to-clipboard'
+class GridCopyTextToClipboardCommand(CoreCommand):
+    name = 'grid/copy-text-to-clipboard'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -129,6 +129,59 @@ class GridCopyToClipboardCommand(CoreCommand):
     def run(self):
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             line.text for line in self.api.subs.selected_lines))
+
+
+class GridCopyTimesToClipboardCommand(CoreCommand):
+    name = 'grid/copy-times-to-clipboard'
+
+    def enabled(self):
+        return self.api.subs.has_selection
+
+    def run(self):
+        QtWidgets.QApplication.clipboard().setText('\n'.join(
+            '{} - {}'.format(
+                bubblesub.util.ms_to_str(line.start),
+                bubblesub.util.ms_to_str(line.end))
+            for line in self.api.subs.selected_lines))
+
+
+class GridPasteTimesFromClipboardCommand(CoreCommand):
+    name = 'grid/paste-times-from-clipboard'
+
+    def enabled(self):
+        return self.api.subs.has_selection
+
+    def run(self):
+        text = QtWidgets.QApplication.clipboard().text()
+        if not text:
+            self.error('Clipboard is empty, aborting.')
+            return
+
+        lines = text.split('\n')
+        if len(lines) != len(self.api.subs.selected_lines):
+            self.error(
+                'Size mismatch (selected {} lines, got {} lines in clipboard.'
+                .format(len(self.api.subs.selected_lines), len(lines)))
+            return
+
+        times = []
+        for line in lines:
+            try:
+                start, end = line.strip().split(' - ')
+                print(start)
+                print(end)
+                start = bubblesub.util.str_to_ms(start)
+                print(start)
+                end = bubblesub.util.str_to_ms(end)
+                print(end)
+                times.append((start, end))
+            except:
+                self.error('Invalid time format: {}'.format(line))
+                return
+
+        for i, line in enumerate(self.api.subs.selected_lines):
+            line.start = times[i][0]
+            line.end = times[i][1]
 
 
 class SaveAudioSampleCommand(CoreCommand):
