@@ -11,6 +11,7 @@ class ColumnType(enum.Enum):
     Style = 'style'
     Actor = 'actor'
     Text = 'text'
+    Note = 'note'
     Duration = 'duration'
     CharactersPerSecond = 'cps'
 
@@ -24,6 +25,7 @@ _HEADERS = {
     ColumnType.Style: 'Style',
     ColumnType.Actor: 'Actor',
     ColumnType.Text: 'Text',
+    ColumnType.Note: 'Note',
     ColumnType.Duration: 'Duration',
     ColumnType.CharactersPerSecond: 'CPS',
 }
@@ -65,7 +67,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
             if role == QtCore.Qt.DisplayRole:
                 return _HEADERS[column_type]
             elif role == QtCore.Qt.TextAlignmentRole:
-                if column_type == ColumnType.Text:
+                if column_type in (ColumnType.Text, ColumnType.Note):
                     return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
                 return QtCore.Qt.AlignCenter
 
@@ -87,6 +89,8 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                     ColumnType.Actor: subtitle.actor,
                     ColumnType.Text:
                         bubblesub.util.ass_to_plaintext(subtitle.text, True),
+                    ColumnType.Note:
+                        bubblesub.util.ass_to_plaintext(subtitle.note, True),
                     ColumnType.Duration:
                         '{:.1f}'.format(subtitle.duration / 1000.0),
                     ColumnType.CharactersPerSecond: (
@@ -128,7 +132,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         elif role == QtCore.Qt.TextAlignmentRole:
             column_number = index.column()
             column_type = self.column_order[column_number]
-            if column_type == ColumnType.Text:
+            if column_type in (ColumnType.Text, ColumnType.Note):
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
 
@@ -178,7 +182,7 @@ class SubsGrid(QtWidgets.QTableView):
         self.setTabKeyNavigation(False)
 
         for i, column_type in enumerate(self.model().column_order):
-            if column_type == ColumnType.Text:
+            if column_type in (ColumnType.Text, ColumnType.Note):
                 self.horizontalHeader().setSectionResizeMode(
                     i, QtWidgets.QHeaderView.Stretch)
 

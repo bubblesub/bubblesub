@@ -24,6 +24,7 @@ _DEFAULT_GENERAL = {
             'style',
             'actor',
             'text',
+            'note',
             'duration',
             'cps',
         ],
