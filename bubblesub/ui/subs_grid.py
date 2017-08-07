@@ -6,13 +6,13 @@ from PyQt5 import QtWidgets
 
 
 class ColumnType(enum.Enum):
-    Start = 0
-    End = 1
-    Style = 2
-    Actor = 3
-    Text = 4
-    Duration = 5
-    CharactersPerSecond = 6
+    Start = 'start'
+    End = 'end'
+    Style = 'style'
+    Actor = 'actor'
+    Text = 'text'
+    Duration = 'duration'
+    CharactersPerSecond = 'cps'
 
 
 _CACHE_TEXT = 0
@@ -32,19 +32,15 @@ _HEADERS = {
 class SubsGridModel(QtCore.QAbstractTableModel):
     def __init__(self, api, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.column_order = [
+            ColumnType(name) for name in api.opt.general['grid']['columns']
+        ]
+
         self._subtitles = api.subs.lines
         self._subtitles.item_changed.connect(self._proxy_data_changed)
         self._subtitles.items_inserted.connect(self._proxy_items_inserted)
         self._subtitles.items_removed.connect(self._proxy_items_removed)
-        self._column_order = [
-            ColumnType.Start,
-            ColumnType.End,
-            ColumnType.Style,
-            ColumnType.Actor,
-            ColumnType.Text,
-            ColumnType.Duration,
-            ColumnType.CharactersPerSecond,
-        ]
         self._cache = []
         self._reset_cache()
 
@@ -55,7 +51,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         return len(self._subtitles)
 
     def columnCount(self, _parent=QtCore.QModelIndex()):
-        return len(self._column_order)
+        return len(self.column_order)
 
     def headerData(self, idx, orientation, role=QtCore.Qt.DisplayRole):
         if orientation == QtCore.Qt.Vertical:
@@ -65,7 +61,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                 return QtCore.Qt.AlignRight
 
         elif orientation == QtCore.Qt.Horizontal:
-            column_type = self._column_order[idx]
+            column_type = self.column_order[idx]
             if role == QtCore.Qt.DisplayRole:
                 return _HEADERS[column_type]
             elif role == QtCore.Qt.TextAlignmentRole:
@@ -79,7 +75,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             row_number = index.row()
             column_number = index.column()
-            column_type = self._column_order[column_number]
+            column_type = self.column_order[column_number]
 
             data = self._cache[row_number][_CACHE_TEXT]
             if not data:
@@ -106,7 +102,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         elif role == QtCore.Qt.BackgroundRole:
             row_number = index.row()
             column_number = index.column()
-            column_type = self._column_order[column_number]
+            column_type = self.column_order[column_number]
 
             if column_type != ColumnType.CharactersPerSecond:
                 return
@@ -131,7 +127,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
 
         elif role == QtCore.Qt.TextAlignmentRole:
             column_number = index.column()
-            column_type = self._column_order[column_number]
+            column_type = self.column_order[column_number]
             if column_type == ColumnType.Text:
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
@@ -177,11 +173,14 @@ class SubsGrid(QtWidgets.QTableView):
         super().__init__(parent)
         self._api = api
         self.setModel(SubsGridModel(api, self))
-        self.horizontalHeader().setSectionResizeMode(
-            4, QtWidgets.QHeaderView.Stretch)
         self.verticalHeader().setDefaultSectionSize(24)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
+
+        for i, column_type in enumerate(self.model().column_order):
+            if column_type == ColumnType.Text:
+                self.horizontalHeader().setSectionResizeMode(
+                    i, QtWidgets.QHeaderView.Stretch)
 
         api.subs.loaded.connect(self._subs_loaded)
         api.subs.selection_changed.connect(self._api_selection_changed)

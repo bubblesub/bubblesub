@@ -17,6 +17,17 @@ _DEFAULT_GENERAL = {
         'spectrogram_resolution': 10,
         'spectrogram_sync_interval': 65,
     },
+    'grid': {
+        'columns': [
+            'start',
+            'end',
+            'style',
+            'actor',
+            'text',
+            'duration',
+            'cps',
+        ],
+    },
 }
 
 _DEFAULT_HOTKEYS = {
