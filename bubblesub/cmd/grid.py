@@ -10,16 +10,22 @@ class GridJumpToLineCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.lines) > 0
 
-    def run(self):
-        dialog = QtWidgets.QInputDialog(self.api.gui.main_window)
-        dialog.setLabelText('Line number to jump to:')
-        dialog.setIntMinimum(1)
-        dialog.setIntMaximum(len(self.api.subs.lines))
-        if self.api.subs.has_selection:
-            dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
-        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-        if dialog.exec_():
-            self.api.subs.selected_indexes = [dialog.intValue() - 1]
+    async def run(self):
+        async def run_dialog(api, main_window):
+            dialog = QtWidgets.QInputDialog(main_window)
+            dialog.setLabelText('Line number to jump to:')
+            dialog.setIntMinimum(1)
+            dialog.setIntMaximum(len(self.api.subs.lines))
+            if self.api.subs.has_selection:
+                dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
+            dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+            if dialog.exec_():
+                return dialog.intValue()
+            return None
+
+        value = await self.api.gui.exec(run_dialog)
+        if value is not None:
+            self.api.subs.selected_indexes = [value - 1]
 
 
 class GridJumpToTimeCommand(CoreCommand):
@@ -28,7 +34,7 @@ class GridJumpToTimeCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.lines) > 0
 
-    def run(self):
+    async def run(self):
         dialog = self.JumpToTimeDialog()
         if self.api.subs.has_selection:
             dialog.setValue(self.api.subs.selected_lines[0].start)
@@ -79,7 +85,7 @@ class GridSelectPrevSubtitleCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.lines) > 0
 
-    def run(self):
+    async def run(self):
         if not self.api.subs.selected_indexes:
             self.api.subs.selected_indexes = [len(self.api.subs.lines) - 1, 0]
         else:
@@ -93,7 +99,7 @@ class GridSelectNextSubtitleCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.lines) > 0
 
-    def run(self):
+    async def run(self):
         if not self.api.subs.selected_indexes:
             self.api.subs.selected_indexes = [0]
         else:
@@ -109,14 +115,14 @@ class GridSelectAllCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.lines) > 0
 
-    def run(self):
+    async def run(self):
         self.api.subs.selected_indexes = list(range(len(self.api.subs.lines)))
 
 
 class GridSelectNothingCommand(CoreCommand):
     name = 'grid/select-nothing'
 
-    def run(self):
+    async def run(self):
         self.api.subs.selected_indexes = []
 
 
@@ -126,7 +132,7 @@ class GridCopyTextToClipboardCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             line.text for line in self.api.subs.selected_lines))
 
@@ -137,7 +143,7 @@ class GridCopyTimesToClipboardCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             '{} - {}'.format(
                 bubblesub.util.ms_to_str(line.start),
@@ -151,7 +157,7 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
             self.error('Clipboard is empty, aborting.')
@@ -190,12 +196,15 @@ class SaveAudioSampleCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection and self.api.audio.has_audio_source
 
-    def run(self):
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(
-            self.api.gui.main_window,
-            directory=QtCore.QDir.homePath(),
-            initialFilter='*.wav')
+    async def run(self):
+        async def run_dialog(api, main_window):
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                main_window,
+                directory=QtCore.QDir.homePath(),
+                initialFilter='*.wav')
+            return path
 
+        path = await self.api.gui.exec(run_dialog)
         if path:
             start_pts = self.api.subs.selected_lines[0].start
             end_pts = self.api.subs.selected_lines[-1].end

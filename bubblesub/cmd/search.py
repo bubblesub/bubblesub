@@ -15,7 +15,7 @@ def _create_search_regex(text, case_sensitive, use_regexes):
         flags=(0 if case_sensitive else re.I))
 
 
-def _search(api, regex, direction):
+def _search(api, main_window, regex, direction):
     num_lines = len(api.subs.lines)
     if not api.subs.has_selection:
         sub_idx = None
@@ -36,7 +36,7 @@ def _search(api, regex, direction):
 
         sel_match = None
         if idx == sub_idx:
-            cursor = api.gui.main_window.editor.text_edit.textCursor()
+            cursor = main_window.editor.text_edit.textCursor()
             if cursor.selectionEnd() == cursor.selectionStart():
                 if direction > 0:
                     sel_match = matches[0]
@@ -59,18 +59,18 @@ def _search(api, regex, direction):
             continue
 
         api.subs.selected_indexes = [idx]
-        cursor = api.gui.main_window.editor.text_edit.textCursor()
+        cursor = main_window.editor.text_edit.textCursor()
         cursor.setPosition(sel_match.start())
         cursor.setPosition(sel_match.end(), QtGui.QTextCursor.KeepAnchor)
-        api.gui.main_window.editor.text_edit.setTextCursor(cursor)
+        main_window.editor.text_edit.setTextCursor(cursor)
         return True
 
     bubblesub.ui.util.notice('No occurrences found.')
     return False
 
 
-def _replace_selection(api, new_text):
-    edit = api.gui.main_window.editor.text_edit
+def _replace_selection(api, main_window, new_text):
+    edit = main_window.editor.text_edit
     text = edit.toPlainText()
     text = (
         text[:edit.textCursor().selectionStart()] +
@@ -95,8 +95,15 @@ def _replace_all(api, logger, regex, new_text):
 
 
 class SearchDialog(QtWidgets.QDialog):
-    def __init__(self, api, logger, show_replace_controls, parent=None):
+    def __init__(
+            self,
+            api,
+            main_window,
+            logger,
+            show_replace_controls,
+            parent=None):
         super().__init__(parent)
+        self._main_window = main_window
         self._api = api
         self._logger = logger
 
@@ -169,7 +176,7 @@ class SearchDialog(QtWidgets.QDialog):
             self._search(1)
 
     def _update_replacement_enabled(self):
-        cursor = self._api.gui.main_window.editor.text_edit.textCursor()
+        cursor = self._main_window.editor.text_edit.textCursor()
         self.replace_sel_btn.setEnabled(cursor.selectedText() != '')
 
     def _replace_selection(self):
@@ -179,6 +186,7 @@ class SearchDialog(QtWidgets.QDialog):
     def _replace_all(self):
         _replace_all(
             self._api,
+            self._main_window,
             self._logger,
             _create_search_regex(
                 self.search_text_edit.currentText(),
@@ -189,6 +197,7 @@ class SearchDialog(QtWidgets.QDialog):
     def _search(self, direction):
         _search(
             self._api,
+            self._main_window,
             _create_search_regex(
                 self.search_text_edit.currentText(),
                 self.case_chkbox.isChecked(),
@@ -218,17 +227,22 @@ class SearchDialog(QtWidgets.QDialog):
 class SearchCommand(CoreCommand):
     name = 'edit/search'
 
-    def run(self):
-        dialog = SearchDialog(self.api, self, show_replace_controls=False)
-        dialog.exec_()
+    async def run(self):
+        async def run(api, main_window):
+            SearchDialog(
+                api, main_window, self, show_replace_controls=False).exec_()
 
+        await self.api.gui.exec(run)
 
 class SearchAndReplaceCommand(CoreCommand):
     name = 'edit/search-and-replace'
 
-    def run(self):
-        dialog = SearchDialog(self.api, self, show_replace_controls=True)
-        dialog.exec_()
+    async def run(self):
+        async def run(api, main_window):
+            SearchDialog(
+                api, main_window, self, show_replace_controls=True).exec_()
+
+        await self.api.gui.exec(run)
 
 
 class SearchRepeatCommand(CoreCommand):
@@ -237,12 +251,16 @@ class SearchRepeatCommand(CoreCommand):
     def enabled(self):
         return len(self.api.opt.general['search']['history']) > 0
 
-    def run(self, direction):
-        opt = self.api.opt.general['search']
-        _search(
-            self.api,
-            _create_search_regex(
-                opt['history'][0],
-                opt['case_sensitive'],
-                opt['use_regexes']),
-            direction)
+    async def run(self, direction):
+        async def run(api, main_window):
+            opt = self.api.opt.general['search']
+            _search(
+                api,
+                main_window,
+                _create_search_regex(
+                    opt['history'][0],
+                    opt['case_sensitive'],
+                    opt['use_regexes']),
+                direction)
+
+        await self.api.gui.exec(run)

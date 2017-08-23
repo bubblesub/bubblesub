@@ -9,7 +9,7 @@ class EditKaraokeSplitCommand(CoreCommand):
         return (len(self.api.subs.selected_indexes) == 1
             and '\\k' in self.api.subs.selected_lines[0].text)
 
-    def run(self):
+    async def run(self):
         idx = self.api.subs.selected_indexes[0]
         sub = self.api.subs.lines[idx]
         start = sub.start
@@ -60,7 +60,7 @@ class EditKaraokeJoinCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.selected_indexes) > 1
 
-    def run(self):
+    async def run(self):
         subs = self.api.subs.selected_lines
         for idx in reversed(self.api.subs.selected_indexes[1:]):
             self.api.subs.lines.remove(idx, 1)

@@ -4,7 +4,7 @@ from bubblesub.api.cmd import CoreCommand
 class AudioScrollCommand(CoreCommand):
     name = 'audio/scroll'
 
-    def run(self, delta):
+    async def run(self, delta):
         distance = delta * self.api.audio.view_size * 0.05
         self.api.audio.move_view(distance)
 
@@ -15,7 +15,7 @@ class AudioSnapSelectionStartToVideoCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection and self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         self.api.audio.select(
             self.api.video.current_pts,
             self.api.audio.selection_end)
@@ -27,7 +27,7 @@ class AudioSnapSelectionEndToVideoCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection and self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         self.api.audio.select(
             self.api.audio.selection_start,
             self.api.video.current_pts)
@@ -39,7 +39,7 @@ class AudioRealignSelectionToVideoCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection and self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         self.api.audio.select(
             self.api.video.current_pts,
             self.api.video.current_pts
@@ -56,7 +56,7 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
             return False
         return self.api.subs.selected_lines[0].prev is not None
 
-    def run(self):
+    async def run(self):
         self.api.audio.select(
             self.api.subs.selected_lines[0].prev.end,
             self.api.audio.selection_end)
@@ -72,7 +72,7 @@ class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
             return False
         return self.api.subs.selected_lines[-1].next is not None
 
-    def run(self):
+    async def run(self):
         self.api.audio.select(
             self.api.audio.selection_start,
             self.api.subs.selected_lines[-1].next.start)
@@ -84,7 +84,7 @@ class AudioMoveSelectionStartCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection
 
-    def run(self, ms):
+    async def run(self, ms):
         self.api.audio.select(
             min(
                 self.api.audio.selection_end,
@@ -98,7 +98,7 @@ class AudioMoveSelectionEndCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection
 
-    def run(self, ms):
+    async def run(self, ms):
         self.api.audio.select(
             self.api.audio.selection_start,
             max(
@@ -112,7 +112,7 @@ class AudioMoveSelectionCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection
 
-    def run(self, ms):
+    async def run(self, ms):
         self.api.audio.select(
             self.api.audio.selection_start + ms,
             self.api.audio.selection_end + ms)
@@ -124,7 +124,7 @@ class AudioCommitSelectionCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection and self.api.audio.has_selection
 
-    def run(self):
+    async def run(self):
         for sub in self.api.subs.selected_lines:
             sub.begin_update()
             sub.start = self.api.audio.selection_start

@@ -9,6 +9,22 @@ def _get_dialog_dir(api):
     return None
 
 
+async def _get_save_file_name(api, main_window, filter):
+    path, _ = QtWidgets.QFileDialog.getSaveFileName(
+        main_window,
+        directory=_get_dialog_dir(api),
+        initialFilter=filter)
+    return path
+
+
+async def _get_load_file_name(api, main_window, filter):
+    path, _ = QtWidgets.QFileDialog.getOpenFileName(
+        main_window,
+        directory=_get_dialog_dir(api),
+        initialFilter=filter)
+    return path
+
+
 def _ask_about_unsaved_changes(api):
     if not api.undo.needs_save:
         return True
@@ -20,7 +36,7 @@ def _ask_about_unsaved_changes(api):
 class FileNewCommand(CoreCommand):
     name = 'file/new'
 
-    def run(self):
+    async def run(self):
         if _ask_about_unsaved_changes(self.api):
             self.api.subs.unload()
 
@@ -28,12 +44,9 @@ class FileNewCommand(CoreCommand):
 class FileOpenCommand(CoreCommand):
     name = 'file/open'
 
-    def run(self):
+    async def run(self):
         if _ask_about_unsaved_changes(self.api):
-            path, _ = QtWidgets.QFileDialog.getOpenFileName(
-                self.api.gui.main_window,
-                directory=_get_dialog_dir(self.api),
-                initialFilter='*.ass')
+            path = await self.api.gui.exec(_get_load_file_name, '*.mkv')
             if not path:
                 self.info('opening cancelled.')
             else:
@@ -44,11 +57,8 @@ class FileOpenCommand(CoreCommand):
 class FileLoadVideo(CoreCommand):
     name = 'file/load-video'
 
-    def run(self):
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self.api.gui.main_window,
-            directory=_get_dialog_dir(self.api),
-            initialFilter='*.mkv')
+    async def run(self):
+        path = await self.api.gui.exec(_get_load_file_name, '*.mkv')
         if not path:
             self.info('loading video cancelled.')
         else:
@@ -59,13 +69,10 @@ class FileLoadVideo(CoreCommand):
 class FileSaveCommand(CoreCommand):
     name = 'file/save'
 
-    def run(self):
+    async def run(self):
         path = self.api.subs.path
-        if not self.api.subs.path:
-            path, _ = QtWidgets.QFileDialog.getSaveFileName(
-                self.api.gui.main_window,
-                directory=_get_dialog_dir(self.api),
-                initialFilter='*.ass')
+        if not path:
+            path = await self.api.gui.exec(_get_save_file_name, '*.ass')
             if not path:
                 self.info('saving cancelled.')
                 return
@@ -76,11 +83,8 @@ class FileSaveCommand(CoreCommand):
 class FileSaveAsCommand(CoreCommand):
     name = 'file/save-as'
 
-    def run(self):
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(
-            self.api.gui.main_window,
-            directory=_get_dialog_dir(self.api),
-            initialFilter='*.ass')
+    async def run(self):
+        path = await self.api.gui.exec(_get_save_file_name, '*.ass')
         if not path:
             self.info('saving cancelled.')
         else:
@@ -91,5 +95,5 @@ class FileSaveAsCommand(CoreCommand):
 class FileQuitCommand(CoreCommand):
     name = 'file/quit'
 
-    def run(self):
+    async def run(self):
         self.api.gui.quit()

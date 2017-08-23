@@ -56,6 +56,7 @@ Screenshot:
 
 ```python
 import io
+import asyncio
 import speech_recognition as sr
 from bubblesub.api.cmd import PluginCommand
 
@@ -63,16 +64,21 @@ from bubblesub.api.cmd import PluginCommand
 LANGUAGE = 'ja'
 
 
-def _work(api, logger, line):
+async def _work(api, logger, line):
     logger.info('line #{} - analyzing'.format(line.number))
     recognizer = sr.Recognizer()
     try:
-        with io.BytesIO() as handle:
-            api.audio.save_wav(handle, line.start, line.end)
-            handle.seek(0, io.SEEK_SET)
-            with sr.AudioFile(handle) as source:
-                audio = recognizer.record(source)
-        note = recognizer.recognize_google(audio, language=LANGUAGE)
+        def recognize():
+            with io.BytesIO() as handle:
+                api.audio.save_wav(handle, line.start, line.end)
+                handle.seek(0, io.SEEK_SET)
+                with sr.AudioFile(handle) as source:
+                    audio = recognizer.record(source)
+            return recognizer.recognize_google(audio, language=LANGUAGE)
+
+        # don't clog the UI thread
+        note = await asyncio.get_event_loop().run_in_executor(None, recognize)
+
     except sr.UnknownValueError:
         logger.warn('line #{}: not recognized'.format(line.number))
     except sr.RequestError as ex:
@@ -91,9 +97,9 @@ class SpeechRecognitionCommand(PluginCommand):
     def enabled(self):
         return self.api.subs.has_selection and self.api.audio.has_audio_source
 
-    def run(self):
+    async def run(self):
         for line in self.api.subs.selected_lines:
-            _work(self.api, self, line)
+            await _work(self.api, self, line)
 ```
 
 ## Questions

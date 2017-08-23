@@ -12,7 +12,7 @@ class Api:
         super().__init__()
         self.opt = opt
         self.log = bubblesub.api.log.LogApi()
-        self.gui = bubblesub.api.gui.GuiApi()
+        self.gui = bubblesub.api.gui.GuiApi(self)
         self.subs = bubblesub.api.subs.SubtitlesApi()
         self.video = bubblesub.api.video.VideoApi(self.subs, self.log, self.opt)
         self.audio = bubblesub.api.audio.AudioApi(self.video, self.log)

@@ -9,7 +9,7 @@ class EditUndoCommand(CoreCommand):
     def enabled(self):
         return self.api.undo.has_undo
 
-    def run(self):
+    async def run(self):
         self.api.undo.undo()
 
 
@@ -19,14 +19,14 @@ class EditRedoCommand(CoreCommand):
     def enabled(self):
         return self.api.undo.has_redo
 
-    def run(self):
+    async def run(self):
         self.api.undo.redo()
 
 
 class EditInsertAboveCommand(CoreCommand):
     name = 'edit/insert-above'
 
-    def run(self):
+    async def run(self):
         if not self.api.subs.selected_indexes:
             idx = 0
             prev_sub = None
@@ -55,7 +55,7 @@ class EditInsertAboveCommand(CoreCommand):
 class EditInsertBelowCommand(CoreCommand):
     name = 'edit/insert-below'
 
-    def run(self):
+    async def run(self):
         if not self.api.subs.selected_indexes:
             idx = 0
             cur_sub = None
@@ -83,7 +83,7 @@ class EditDuplicateCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         new_selection = []
         self.api.gui.begin_update()
         for idx in reversed(self.api.subs.selected_indexes):
@@ -103,7 +103,7 @@ class EditDeleteCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         for idx in reversed(self.api.subs.selected_indexes):
             self.api.subs.lines.remove(idx, 1)
         self.api.subs.selected_indexes = []
@@ -115,7 +115,7 @@ class EditSwapTextAndNotesCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         for sub in self.api.subs.selected_lines:
             sub.begin_update()
             sub.text, sub.note = sub.note, sub.text
@@ -128,7 +128,7 @@ class EditSplitSubAtVideoCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.selected_indexes) == 1
 
-    def run(self):
+    async def run(self):
         idx = self.api.subs.selected_indexes[0]
         sub = self.api.subs.lines[idx]
         split_pos = self.api.video.current_pts
@@ -149,7 +149,7 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.selected_indexes) > 1
 
-    def run(self):
+    async def run(self):
         idx = self.api.subs.selected_indexes[0]
         last_idx = self.api.subs.selected_indexes[-1]
         self.api.subs.lines[idx].end = self.api.subs.lines[last_idx].end
@@ -164,7 +164,7 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
     def enabled(self):
         return len(self.api.subs.selected_indexes) > 1
 
-    def run(self):
+    async def run(self):
         idx = self.api.subs.selected_indexes[0]
         last_idx = self.api.subs.selected_indexes[-1]
 
@@ -191,7 +191,7 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         dialog = self.ShiftTimesDialog()
         if dialog.exec_():
             delta = dialog.value()
@@ -231,7 +231,7 @@ class EditSnapSubsStartToVideoCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         for sub in self.api.subs.selected_lines:
             sub.start = self.api.video.current_pts
 
@@ -242,7 +242,7 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         for sub in self.api.subs.selected_lines:
             sub.end = self.api.video.current_pts
 
@@ -253,7 +253,7 @@ class EditSnapSubsToVideoCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         for sub in self.api.subs.selected_lines:
             sub.start = self.api.video.current_pts
             sub.end = (
@@ -269,7 +269,7 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
             return False
         return self.api.subs.selected_lines[0].prev is not None
 
-    def run(self):
+    async def run(self):
         prev_sub = self.api.subs.selected_lines[0].prev
         for sub in self.api.subs.selected_lines:
             sub.start = prev_sub.end
@@ -283,7 +283,7 @@ class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
             return False
         return self.api.subs.selected_lines[-1].next is not None
 
-    def run(self):
+    async def run(self):
         next_sub = self.api.subs.selected_lines[-1].next
         for sub in self.api.subs.selected_lines:
             sub.end = next_sub.start
@@ -295,7 +295,7 @@ class EditShiftSubsStartCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self, ms):
+    async def run(self, ms):
         for sub in self.api.subs.selected_lines:
             sub.start = max(0, sub.start + ms)
 
@@ -306,7 +306,7 @@ class EditShiftSubsEndCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self, ms):
+    async def run(self, ms):
         for sub in self.api.subs.selected_lines:
             sub.end = max(0, sub.end + ms)
 
@@ -317,7 +317,7 @@ class EditShiftSubsCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self, ms):
+    async def run(self, ms):
         for sub in self.api.subs.selected_lines:
             sub.start = max(0, sub.start + ms)
             sub.end = max(0, sub.end + ms)

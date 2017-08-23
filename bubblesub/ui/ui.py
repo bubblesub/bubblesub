@@ -1,9 +1,11 @@
+import asyncio
 import sys
 import time
 import traceback
 import io
 import bubblesub.ui.main_window
 import bubblesub.ui.util
+import quamash
 from PyQt5 import QtWidgets
 
 
@@ -38,11 +40,14 @@ class Ui:
 
     def run(self):
         app = QtWidgets.QApplication(sys.argv)
+        loop = quamash.QEventLoop(app)
+        asyncio.set_event_loop(loop)
         main_window = bubblesub.ui.main_window.MainWindow(self._api)
-        self._api.gui.main_window = main_window
+        self._api.gui.set_main_window(main_window)
 
         if self._args.file:
             self._api.subs.load_ass(self._args.file)
 
         main_window.show()
-        app.exec_()
+        with loop:
+            loop.run_forever()

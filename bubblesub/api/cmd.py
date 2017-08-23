@@ -1,4 +1,6 @@
+import asyncio
 import sys
+from PyQt5 import QtCore
 import time
 import bubblesub.util
 import importlib.util
@@ -45,17 +47,22 @@ class CommandApi:
 
     def __init__(self, api):
         self._api = api
+        self._thread = None
 
     def run(self, cmd, cmd_args):
-        if cmd.enabled():
+        if not cmd.enabled():
+            self._api.log.info('cmd/{}: not available right now', cmd.name)
+            return
+
+        async def run():
             self._api.log.info('cmd/{}: running...'.format(cmd.name))
             start_time = time.time()
-            cmd.run(*cmd_args)
+            await cmd.run(*cmd_args)
             end_time = time.time()
             self._api.log.info('cmd/{}: ran in {:.02f} s'.format(
                 cmd.name, end_time - start_time))
-        else:
-            self._api.log.info('cmd/{}: not available right now', cmd.name)
+
+        asyncio.ensure_future(run())
 
     def get(self, name):
         ret = self.plugin_registry.get(name)

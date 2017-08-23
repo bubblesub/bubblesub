@@ -22,6 +22,7 @@ setup(
         'pysubs2',
         'pyfftw',
         'PyQT5',
+        'quamash',
     ],
 
     classifiers=[

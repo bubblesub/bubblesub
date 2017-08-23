@@ -8,7 +8,7 @@ class VideoPlayCurrentLineCommand(CoreCommand):
     def enabled(self):
         return self.api.subs.has_selection
 
-    def run(self):
+    async def run(self):
         sub = self.api.subs.selected_lines[0]
         self.api.video.play(sub.start, sub.end)
 
@@ -19,7 +19,7 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection
 
-    def run(self, delta_start, delta_end):
+    async def run(self, delta_start, delta_end):
         self.api.video.play(
             self.api.audio.selection_start + delta_start,
             self.api.audio.selection_end + delta_end)
@@ -31,7 +31,7 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection
 
-    def run(self, delta_start, delta_end):
+    async def run(self, delta_start, delta_end):
         self.api.video.play(
             self.api.audio.selection_start + delta_start,
             self.api.audio.selection_start + delta_end)
@@ -43,7 +43,7 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
     def enabled(self):
         return self.api.audio.has_selection
 
-    def run(self, delta_start, delta_end):
+    async def run(self, delta_start, delta_end):
         self.api.video.play(
             self.api.audio.selection_end + delta_start,
             self.api.audio.selection_end + delta_end)
@@ -55,7 +55,7 @@ class VideoStepFrameCommand(CoreCommand):
     def enabled(self):
         return len(self.api.video.timecodes) > 0
 
-    def run(self, delta):
+    async def run(self, delta):
         current_pts = self.api.video.current_pts
         idx = bisect.bisect_left(self.api.video.timecodes, current_pts)
         if idx + delta not in range(len(self.api.video.timecodes)):
@@ -69,14 +69,14 @@ class VideoSetPlaybackSpeed(CoreCommand):
     def enabled(self):
         return len(self.api.video.timecodes) > 0
 
-    def run(self, speed):
+    async def run(self, speed):
         self.api.video.playback_speed = speed
 
 
 class VideoTogglePauseCommand(CoreCommand):
     name = 'video/toggle-pause'
 
-    def run(self):
+    async def run(self):
         if self.api.video.is_paused:
             self.api.video.unpause()
         else:
@@ -86,7 +86,7 @@ class VideoTogglePauseCommand(CoreCommand):
 class VideoUnpauseCommand(CoreCommand):
     name = 'video/unpause'
 
-    def run(self):
+    async def run(self):
         if not self.api.video.is_paused:
             return
         self.api.video.unpause()
@@ -95,7 +95,7 @@ class VideoUnpauseCommand(CoreCommand):
 class VideoPauseCommand(CoreCommand):
     name = 'video/pause'
 
-    def run(self):
+    async def run(self):
         if self.api.video.is_paused:
             return
         self.api.video.pause()
