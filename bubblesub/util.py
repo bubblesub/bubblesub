@@ -1,7 +1,7 @@
 import re
 import sys
 import time
-import json
+import pickle
 import queue
 import traceback
 from numbers import Number
@@ -63,26 +63,23 @@ def str_to_ms(text):
     raise ValueError('Invalid time')
 
 
-def _get_cache_file_path(section_name):
-    return Path('~/.cache/bubblesub/').expanduser() / (section_name + '.json')
+def _get_cache_file_path(cache_name):
+    return Path('~/.cache/bubblesub/').expanduser() / (cache_name + '.dat')
 
 
-def load_cache(section_name, key_name):
-    cache_file = _get_cache_file_path(section_name)
+def load_cache(cache_name):
+    cache_file = _get_cache_file_path(cache_name)
     if cache_file.exists():
-        return json.loads(cache_file.read_text()).get(key_name, None)
+        with cache_file.open(mode='rb') as handle:
+            return pickle.load(handle)
     return None
 
 
-def save_cache(section_name, key_name, value):
-    cache_file = _get_cache_file_path(section_name)
-    if cache_file.exists():
-        data = json.loads(cache_file.read_text())
-    else:
-        data = {}
-    data[key_name] = value
+def save_cache(cache_name, data):
+    cache_file = _get_cache_file_path(cache_name)
     cache_file.parent.mkdir(parents=True, exist_ok=True)
-    cache_file.write_text(json.dumps(data))
+    with cache_file.open(mode='wb') as handle:
+        pickle.dump(data, handle)
 
 
 class Benchmark:
