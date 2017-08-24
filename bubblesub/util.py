@@ -11,6 +11,11 @@ from PyQt5 import QtCore
 import pysubs2.time
 
 
+class classproperty(property):
+    def __get__(self, cls, owner):
+        return classmethod(self.fget).__get__(None, owner)()
+
+
 def escape_ass_tag(text):
     return (
         text

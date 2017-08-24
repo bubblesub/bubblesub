@@ -6,16 +6,11 @@ import bubblesub.util
 import importlib.util
 
 
-class classproperty(property):
-    def __get__(self, cls, owner):
-        return classmethod(self.fget).__get__(None, owner)()
-
-
 class BaseCommand:
     def __init__(self, api):
         self.api = api
 
-    @classproperty
+    @bubblesub.util.classproperty
     def name(cls):
         raise NotImplementedError('Command has no name')
 
