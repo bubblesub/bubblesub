@@ -46,7 +46,8 @@ class CommandApi:
 
     def run(self, cmd, cmd_args):
         if not cmd.enabled():
-            self._api.log.info('cmd/{}: not available right now', cmd.name)
+            self._api.log.info(
+                'cmd/{}: not available right now'.format(cmd.name))
             return
 
         async def run():
