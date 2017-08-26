@@ -3,6 +3,10 @@ from bubblesub.api.cmd import CoreCommand
 from PyQt5 import QtWidgets
 
 
+VIDEO_FILTER = 'Video filters (*.avi, *.mkv, *.webm, *.mp4);;All files (*.*)'
+SUBS_FILTER = 'Advanced Substation Alpha (*.ass)'
+
+
 def _get_dialog_dir(api):
     if api.subs.path:
         return str(api.subs.path.parent)
@@ -42,7 +46,7 @@ class FileOpenCommand(CoreCommand):
 
     async def run(self):
         if _ask_about_unsaved_changes(self.api):
-            path = await self.api.gui.exec(_get_load_file_name, '*.mkv')
+            path = await self.api.gui.exec(_get_load_file_name, VIDEO_FILTER)
             if not path:
                 self.info('opening cancelled.')
             else:
@@ -55,7 +59,7 @@ class FileLoadVideo(CoreCommand):
     menu_name = 'Load video'
 
     async def run(self):
-        path = await self.api.gui.exec(_get_load_file_name, '*.mkv')
+        path = await self.api.gui.exec(_get_load_file_name, VIDEO_FILTER)
         if not path:
             self.info('loading video cancelled.')
         else:
@@ -70,7 +74,7 @@ class FileSaveCommand(CoreCommand):
     async def run(self):
         path = self.api.subs.path
         if not path:
-            path = await self.api.gui.exec(_get_save_file_name, '*.ass')
+            path = await self.api.gui.exec(_get_save_file_name, SUBS_FILTER)
             if not path:
                 self.info('saving cancelled.')
                 return
@@ -83,7 +87,7 @@ class FileSaveAsCommand(CoreCommand):
     menu_name = 'Save as'
 
     async def run(self):
-        path = await self.api.gui.exec(_get_save_file_name, '*.ass')
+        path = await self.api.gui.exec(_get_save_file_name, SUBS_FILTER)
         if not path:
             self.info('saving cancelled.')
         else:

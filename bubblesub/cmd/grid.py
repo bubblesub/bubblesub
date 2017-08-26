@@ -209,7 +209,8 @@ class SaveAudioSampleCommand(CoreCommand):
 
     async def run(self):
         async def run_dialog(_api, main_window):
-            return bubblesub.ui.util.save_dialog(main_window, '*.wav')
+            return bubblesub.ui.util.save_dialog(
+                main_window, 'Waveform Audio File (*.wav)')
 
         path = await self.api.gui.exec(run_dialog)
         if path:
