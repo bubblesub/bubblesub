@@ -21,16 +21,16 @@ def main():
     if not args.no_config:
         opt.load(cfg_path)
 
-    print('Loading API...')
+    print('loading API...')
     from bubblesub.api import Api
 
-    print('Loading commands...')
+    print('loading commands...')
     from bubblesub import cmd as _
 
     api = Api(opt)
     api.cmd.load_plugins(cfg_path / 'scripts')
 
-    print('Loading UI...')
+    print('loading UI...')
     bubblesub.ui.Ui(api, args).run()
     if not args.no_config:
         opt.save(cfg_path)
