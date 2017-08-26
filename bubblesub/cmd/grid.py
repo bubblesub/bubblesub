@@ -109,7 +109,7 @@ class GridSelectNextSubtitleCommand(CoreCommand):
         else:
             self.api.subs.selected_indexes = [
                 min(
-                    self.api.subs.selected_indexes[0] + 1,
+                    self.api.subs.selected_indexes[-1] + 1,
                     len(self.api.subs.lines) - 1)]
 
 

@@ -197,6 +197,9 @@ class SubsGrid(QtWidgets.QTableView):
         bubblesub.ui.util.setup_cmd_menu(
             self._api, self.menu, self._api.opt.context_menu)
 
+    def keyboardSearch(self, _text):
+        pass
+
     def changeEvent(self, _event):
         self.model().reset_cache()
 
@@ -216,23 +219,37 @@ class SubsGrid(QtWidgets.QTableView):
 
     def _widget_selection_changed(self, _selected, _deselected):
         if self._collect_rows() != self._api.subs.selected_indexes:
+            self._api.subs.selection_changed.disconnect(
+                self._api_selection_changed)
             self._api.subs.selected_indexes = self._collect_rows()
+            self._api.subs.selection_changed.connect(
+                self._api_selection_changed)
 
     def _api_selection_changed(self):
         if self._collect_rows() == self._api.subs.selected_indexes:
             return
+
+        self.selectionModel().selectionChanged.disconnect(
+            self._widget_selection_changed)
 
         selection = QtCore.QItemSelection()
         for row in self._api.subs.selected_indexes:
             idx = self.model().index(row, 0)
             selection.select(idx, idx)
 
-        self.selectionModel().select(
-            selection,
-            QtCore.QItemSelectionModel.Clear |
-            QtCore.QItemSelectionModel.Rows |
-            QtCore.QItemSelectionModel.Select)
+        self.selectionModel().clear()
 
         if self._api.subs.selected_indexes:
-            self.scrollTo(
-                self.model().index(self._api.subs.selected_indexes[0], 0))
+            first_row = self._api.subs.selected_indexes[0]
+            cell_index = self.model().index(first_row, 0)
+            self.setCurrentIndex(cell_index)
+            self.scrollTo(cell_index)
+
+        self.selectionModel().select(
+            selection,
+            QtCore.QItemSelectionModel.Rows |
+            QtCore.QItemSelectionModel.Current |
+            QtCore.QItemSelectionModel.Select)
+
+        self.selectionModel().selectionChanged.connect(
+            self._widget_selection_changed)
