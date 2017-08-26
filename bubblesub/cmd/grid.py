@@ -1,6 +1,5 @@
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
-from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 

@@ -34,7 +34,8 @@ class BaseAudioWidget(QtWidgets.QWidget):
 
     def wheelEvent(self, event):
         if event.modifiers() & QtCore.Qt.ControlModifier:
-            self._zoomed(event.angleDelta().y(), event.pos().x() / self.width())
+            self._zoomed(
+                event.angleDelta().y(), event.pos().x() / self.width())
         else:
             self._scrolled(event.angleDelta().y())
 

@@ -1,6 +1,5 @@
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
-from PyQt5 import QtWidgets
 
 
 VIDEO_FILTER = 'Video filters (*.avi, *.mkv, *.webm, *.mp4);;All files (*.*)'
