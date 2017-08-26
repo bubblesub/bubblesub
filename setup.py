@@ -23,6 +23,8 @@ setup(
         'pyfftw',
         'PyQT5',
         'quamash',
+        'regex',
+        'pyenchant',
     ],
 
     classifiers=[

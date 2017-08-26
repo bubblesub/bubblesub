@@ -27,7 +27,6 @@ Simple extensible ASS subtitle editor for Linux
     - Built-in commands
     - Configuration files
     - The API
-- Spell checker
 - Style editor
 - Meta data editor
 
