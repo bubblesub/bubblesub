@@ -23,12 +23,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, api):
         super().__init__()
         self._api = api
+        self._update_title()
 
         api.gui.quit_requested.connect(self.close)
         api.gui.begin_update_requested.connect(
             lambda: self.setUpdatesEnabled(False))
         api.gui.end_update_requested.connect(
             lambda: self.setUpdatesEnabled(True))
+        api.subs.loaded.connect(self._update_title)
 
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
@@ -168,3 +170,9 @@ class MainWindow(QtWidgets.QMainWindow):
             'main': _get_splitter_state(self.main_splitter),
             'console': _get_splitter_state(self.console_splitter),
         }
+
+    def _update_title(self):
+        self.setWindowTitle(
+            'bubblesub - {}'.format(self._api.subs.path)
+            if self._api.subs.path else
+            'bubblesub')
