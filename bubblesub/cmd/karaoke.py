@@ -4,6 +4,7 @@ from bubblesub.api.cmd import CoreCommand
 
 class EditKaraokeSplitCommand(CoreCommand):
     name = 'edit/karaoke-split'
+    menu_name = 'Split subtitles as karaoke'
 
     def enabled(self):
         return (len(self.api.subs.selected_indexes) == 1
@@ -56,6 +57,7 @@ class EditKaraokeSplitCommand(CoreCommand):
 
 class EditKaraokeJoinCommand(CoreCommand):
     name = 'edit/karaoke-join'
+    menu_name = 'Join subtitles (as karaoke)'
 
     def enabled(self):
         return len(self.api.subs.selected_indexes) > 1

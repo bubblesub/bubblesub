@@ -93,6 +93,7 @@ async def _work(api, logger, line):
 
 class SpeechRecognitionCommand(PluginCommand):
     name = 'grid/speech-recognition'
+    menu_name = 'Speech recognition'
 
     def enabled(self):
         return self.api.subs.has_selection and self.api.audio.has_audio_source

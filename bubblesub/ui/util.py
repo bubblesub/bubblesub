@@ -87,10 +87,8 @@ class _CommandAction(QtWidgets.QAction):
         super().__init__()
         self.api = api
         self.cmd_name = cmd_name
-        self.cmd = api.cmd.get(cmd_name)
-        self.triggered.connect(
-            functools.partial(
-                api.cmd.run, api.cmd.get(cmd_name), cmd_args))
+        self.cmd = api.cmd.get(cmd_name, cmd_args)
+        self.triggered.connect(functools.partial(api.cmd.run, self.cmd))
 
 
 def setup_cmd_menu(api, parent, menu_def):
@@ -101,16 +99,16 @@ def setup_cmd_menu(api, parent, menu_def):
     for item in menu_def:
         if item is None:
             parent.addSeparator()
-        elif isinstance(item[1], list):
+        elif len(item) > 1 and isinstance(item[1], list):
             submenu = parent.addMenu(item[0])
             submenu.aboutToShow.connect(
                 functools.partial(_menu_about_to_show, submenu))
             action_map.update(setup_cmd_menu(api, submenu, item[1]))
         else:
-            action_name, cmd_name, *cmd_args = item
+            cmd_name, *cmd_args = item
             action = _CommandAction(api, cmd_name, cmd_args)
             action.setParent(parent)
-            action.setText(action_name)
+            action.setText(api.cmd.get(cmd_name, cmd_args).menu_name)
             parent.addAction(action)
             action_map[(cmd_name, *cmd_args)] = action
     return action_map

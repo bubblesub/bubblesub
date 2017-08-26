@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets
 
 class GridJumpToLineCommand(CoreCommand):
     name = 'grid/jump-to-line'
+    menu_name = 'Jump to line...'
 
     def enabled(self):
         return len(self.api.subs.lines) > 0
@@ -30,6 +31,7 @@ class GridJumpToLineCommand(CoreCommand):
 
 class GridJumpToTimeCommand(CoreCommand):
     name = 'grid/jump-to-time'
+    menu_name = 'Jump to time...'
 
     def enabled(self):
         return len(self.api.subs.lines) > 0
@@ -81,6 +83,7 @@ class GridJumpToTimeCommand(CoreCommand):
 
 class GridSelectPrevSubtitleCommand(CoreCommand):
     name = 'grid/select-prev-sub'
+    menu_name = 'Select previous subtitle'
 
     def enabled(self):
         return len(self.api.subs.lines) > 0
@@ -95,6 +98,7 @@ class GridSelectPrevSubtitleCommand(CoreCommand):
 
 class GridSelectNextSubtitleCommand(CoreCommand):
     name = 'grid/select-next-sub'
+    menu_name = 'Select next subtitle'
 
     def enabled(self):
         return len(self.api.subs.lines) > 0
@@ -111,6 +115,7 @@ class GridSelectNextSubtitleCommand(CoreCommand):
 
 class GridSelectAllCommand(CoreCommand):
     name = 'grid/select-all'
+    menu_name = 'Select all subtitles'
 
     def enabled(self):
         return len(self.api.subs.lines) > 0
@@ -121,6 +126,7 @@ class GridSelectAllCommand(CoreCommand):
 
 class GridSelectNothingCommand(CoreCommand):
     name = 'grid/select-nothing'
+    menu_name = 'Clear subtitle selection'
 
     async def run(self):
         self.api.subs.selected_indexes = []
@@ -128,6 +134,7 @@ class GridSelectNothingCommand(CoreCommand):
 
 class GridCopyTextToClipboardCommand(CoreCommand):
     name = 'grid/copy-text-to-clipboard'
+    menu_name = 'Copy selected subtitles text to clipboard'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -139,6 +146,7 @@ class GridCopyTextToClipboardCommand(CoreCommand):
 
 class GridCopyTimesToClipboardCommand(CoreCommand):
     name = 'grid/copy-times-to-clipboard'
+    menu_name = 'Copy selected subtitles times to clipboard'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -153,6 +161,7 @@ class GridCopyTimesToClipboardCommand(CoreCommand):
 
 class GridPasteTimesFromClipboardCommand(CoreCommand):
     name = 'grid/paste-times-from-clipboard'
+    menu_name = 'Paste times to selected subtitles from clipboard'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -192,6 +201,7 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
 
 class SaveAudioSampleCommand(CoreCommand):
     name = 'grid/create-audio-sample'
+    menu_name = 'Create audio sample...'
 
     def enabled(self):
         return self.api.subs.has_selection and self.api.audio.has_audio_source

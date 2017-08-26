@@ -121,8 +121,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 shortcut.activated.connect(
                     functools.partial(
                         self._api.cmd.run,
-                        self._api.cmd.get(cmd_name),
-                        cmd_args))
+                        self._api.cmd.get(cmd_name, cmd_args)))
                 if context == 'global':
                     shortcut.setContext(QtCore.Qt.ApplicationShortcut)
                 elif context == 'audio':

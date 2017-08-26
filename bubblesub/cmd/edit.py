@@ -5,6 +5,7 @@ from PyQt5 import QtWidgets
 
 class EditUndoCommand(CoreCommand):
     name = 'edit/undo'
+    menu_name = 'Undo'
 
     def enabled(self):
         return self.api.undo.has_undo
@@ -15,6 +16,7 @@ class EditUndoCommand(CoreCommand):
 
 class EditRedoCommand(CoreCommand):
     name = 'edit/redo'
+    menu_name = 'Redo'
 
     def enabled(self):
         return self.api.undo.has_redo
@@ -25,6 +27,7 @@ class EditRedoCommand(CoreCommand):
 
 class EditInsertAboveCommand(CoreCommand):
     name = 'edit/insert-above'
+    menu_name = 'Insert subtitle (above)'
 
     async def run(self):
         if not self.api.subs.selected_indexes:
@@ -54,6 +57,7 @@ class EditInsertAboveCommand(CoreCommand):
 
 class EditInsertBelowCommand(CoreCommand):
     name = 'edit/insert-below'
+    menu_name = 'Insert subtitle (below)'
 
     async def run(self):
         if not self.api.subs.selected_indexes:
@@ -79,6 +83,7 @@ class EditInsertBelowCommand(CoreCommand):
 
 class EditDuplicateCommand(CoreCommand):
     name = 'edit/duplicate'
+    menu_name = 'Duplicate selected subtitles'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -99,6 +104,7 @@ class EditDuplicateCommand(CoreCommand):
 
 class EditDeleteCommand(CoreCommand):
     name = 'edit/delete'
+    menu_name = 'Delete selected subtitles'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -111,6 +117,7 @@ class EditDeleteCommand(CoreCommand):
 
 class EditSwapTextAndNotesCommand(CoreCommand):
     name = 'edit/swap-text-and-notes'
+    menu_name = 'Swap notes with subtitle text'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -124,6 +131,7 @@ class EditSwapTextAndNotesCommand(CoreCommand):
 
 class EditSplitSubAtVideoCommand(CoreCommand):
     name = 'edit/split-sub-at-video'
+    menu_name = 'Split selected subtitle at video frame'
 
     def enabled(self):
         return len(self.api.subs.selected_indexes) == 1
@@ -145,6 +153,7 @@ class EditSplitSubAtVideoCommand(CoreCommand):
 
 class EditJoinSubsKeepFirstCommand(CoreCommand):
     name = 'edit/join-subs/keep-first'
+    menu_name = 'Join subtitles (keep first)'
 
     def enabled(self):
         return len(self.api.subs.selected_indexes) > 1
@@ -160,6 +169,7 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
 
 class EditJoinSubsConcatenateCommand(CoreCommand):
     name = 'edit/join-subs/concatenate'
+    menu_name = 'Join subtitles (concatenate)'
 
     def enabled(self):
         return len(self.api.subs.selected_indexes) > 1
@@ -187,6 +197,7 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
 
 class EditShiftSubsWithGuiCommand(CoreCommand):
     name = 'edit/shift-subs-with-gui'
+    menu_name = 'Shift times...'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -227,6 +238,7 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
 
 class EditSnapSubsStartToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-start-to-video'
+    menu_name = 'Snap subtitles start to video'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -238,6 +250,7 @@ class EditSnapSubsStartToVideoCommand(CoreCommand):
 
 class EditSnapSubsEndToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-end-to-video'
+    menu_name = 'Snap subtitles end to video'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -249,6 +262,7 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
 
 class EditSnapSubsToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-to-video'
+    menu_name = 'Snap subtitles to video'
 
     def enabled(self):
         return self.api.subs.has_selection
@@ -263,6 +277,7 @@ class EditSnapSubsToVideoCommand(CoreCommand):
 
 class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
     name = 'edit/snap-subs-start-to-prev-sub'
+    menu_name = 'Snap subtitles start to previous subtitle'
 
     def enabled(self):
         if not self.api.subs.has_selection:
@@ -277,6 +292,7 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
 
 class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
     name = 'edit/snap-subs-end-to-next-sub'
+    menu_name = 'Snap subtitles end to next subtitle'
 
     def enabled(self):
         if not self.api.subs.has_selection:
@@ -292,32 +308,56 @@ class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
 class EditShiftSubsStartCommand(CoreCommand):
     name = 'edit/shift-subs-start'
 
+    def __init__(self, api, ms):
+        super().__init__(api)
+        self._ms = ms
+
+    @property
+    def menu_name(self):
+        return 'Shift subtitles start ({:+})'.format(self._ms)
+
     def enabled(self):
         return self.api.subs.has_selection
 
-    async def run(self, ms):
+    async def run(self):
         for sub in self.api.subs.selected_lines:
-            sub.start = max(0, sub.start + ms)
+            sub.start = max(0, sub.start + self._ms)
 
 
 class EditShiftSubsEndCommand(CoreCommand):
     name = 'edit/shift-subs-end'
 
+    def __init__(self, api, ms):
+        super().__init__(api)
+        self._ms = ms
+
+    @property
+    def menu_name(self):
+        return 'Shift subtitles end ({:+})'.format(self._ms)
+
     def enabled(self):
         return self.api.subs.has_selection
 
-    async def run(self, ms):
+    async def run(self):
         for sub in self.api.subs.selected_lines:
-            sub.end = max(0, sub.end + ms)
+            sub.end = max(0, sub.end + self._ms)
 
 
 class EditShiftSubsCommand(CoreCommand):
     name = 'edit/shift-subs'
 
+    def __init__(self, api, ms):
+        super().__init__(api)
+        self._ms = ms
+
+    @property
+    def menu_name(self):
+        return 'Shift subtitles end ({:+})'.format(self._ms)
+
     def enabled(self):
         return self.api.subs.has_selection
 
-    async def run(self, ms):
+    async def run(self):
         for sub in self.api.subs.selected_lines:
-            sub.start = max(0, sub.start + ms)
-            sub.end = max(0, sub.end + ms)
+            sub.start = max(0, sub.start + self._ms)
+            sub.end = max(0, sub.end + self._ms)

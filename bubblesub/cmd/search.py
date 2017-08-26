@@ -79,7 +79,7 @@ def _replace_selection(api, main_window, new_text):
     edit.document().setPlainText(text)
 
 
-def _replace_all(api, logger, regex, new_text):
+def _replace_all(api, main_window, logger, regex, new_text):
     replacement_count = 0
     for sub in api.subs.lines:
         old_sub_text = sub.text
@@ -180,7 +180,8 @@ class SearchDialog(QtWidgets.QDialog):
         self.replace_sel_btn.setEnabled(cursor.selectedText() != '')
 
     def _replace_selection(self):
-        _replace_selection(self._api, self.replacement_text_edit.text())
+        _replace_selection(
+            self._api, self._main_window, self.replacement_text_edit.text())
         self._update_replacement_enabled()
 
     def _replace_all(self):
@@ -226,6 +227,7 @@ class SearchDialog(QtWidgets.QDialog):
 
 class SearchCommand(CoreCommand):
     name = 'edit/search'
+    menu_name = 'Search...'
 
     async def run(self):
         async def run(api, main_window):
@@ -236,6 +238,7 @@ class SearchCommand(CoreCommand):
 
 class SearchAndReplaceCommand(CoreCommand):
     name = 'edit/search-and-replace'
+    menu_name = 'Search and replace...'
 
     async def run(self):
         async def run(api, main_window):
@@ -248,10 +251,18 @@ class SearchAndReplaceCommand(CoreCommand):
 class SearchRepeatCommand(CoreCommand):
     name = 'edit/search-repeat'
 
+    def __init__(self, api, direction):
+        super().__init__(api)
+        self._direction = direction
+
+    @property
+    def menu_name(self):
+        return 'Search %s' % ['previous', 'next'][self._direction > 0]
+
     def enabled(self):
         return len(self.api.opt.general['search']['history']) > 0
 
-    async def run(self, direction):
+    async def run(self):
         async def run(api, main_window):
             opt = self.api.opt.general['search']
             _search(
@@ -261,6 +272,6 @@ class SearchRepeatCommand(CoreCommand):
                     opt['history'][0],
                     opt['case_sensitive'],
                     opt['use_regexes']),
-                direction)
+                self._direction)
 
         await self.api.gui.exec(run)

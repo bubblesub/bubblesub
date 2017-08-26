@@ -7,7 +7,7 @@ import importlib.util
 
 
 class BaseCommand:
-    def __init__(self, api):
+    def __init__(self, api, *_args):
         self.api = api
 
     @bubblesub.util.classproperty
@@ -17,7 +17,7 @@ class BaseCommand:
     def enabled(self):
         return True
 
-    def run(self, text):
+    def run(self):
         raise NotImplementedError('Command has no implementation')
 
     def debug(self, text):
@@ -44,7 +44,7 @@ class CommandApi:
         self._api = api
         self._thread = None
 
-    def run(self, cmd, cmd_args):
+    def run(self, cmd):
         if not cmd.enabled():
             self._api.log.info(
                 'cmd/{}: not available right now'.format(cmd.name))
@@ -53,21 +53,21 @@ class CommandApi:
         async def run():
             self._api.log.info('cmd/{}: running...'.format(cmd.name))
             start_time = time.time()
-            await cmd.run(*cmd_args)
+            await cmd.run()
             end_time = time.time()
             self._api.log.info('cmd/{}: ran in {:.02f} s'.format(
                 cmd.name, end_time - start_time))
 
         asyncio.ensure_future(run())
 
-    def get(self, name):
+    def get(self, name, args):
         ret = self.plugin_registry.get(name)
         if not ret:
             ret = self.core_registry.get(name)
         if not ret:
             raise KeyError('No command named {}'.format(name))
         try:
-            return ret(self._api)
+            return ret(self._api, *args)
         except:
             print('Error creating command {}'.format(name), file=sys.stderr)
             raise
