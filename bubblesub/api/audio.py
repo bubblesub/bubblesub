@@ -153,13 +153,13 @@ class AudioApi(QtCore.QObject):
         self._view_end = self._clip(end_pts)
         self.view_changed.emit()
 
-    def zoom_view(self, factor):
+    def zoom_view(self, factor, origin):
         factor = max(0.001, min(1, factor))
         old_origin = self.view_start - self._min
-        old_view_size = self.view_size / 2
+        old_view_size = self.view_size * origin
         self._view_start = self.min
         self._view_end = self._clip(self.min + self.size * factor)
-        new_view_size = self.view_size / 2
+        new_view_size = self.view_size * origin
         distance = old_origin - new_view_size + old_view_size
         self.move_view(distance)  # emits view_changed
 
@@ -197,7 +197,7 @@ class AudioApi(QtCore.QObject):
     def _set_max_pts(self, max_pts):
         self._min = 0
         self._max = max_pts
-        self.zoom_view(1)  # emits view_changed
+        self.zoom_view(1, 0.5)  # emits view_changed
 
     def _video_parsed(self):
         self._set_max_pts(self._video_api.max_pts)
