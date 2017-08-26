@@ -200,7 +200,10 @@ _DEFAULT_TOP_MENU = [
         ['file/quit'],
     ]],
 
-    ['&Grid', [
+    ['&Edit', [
+        ['edit/undo'],
+        ['edit/redo'],
+        None,
         ['grid/jump-to-line'],
         ['grid/jump-to-time'],
         ['grid/select-prev-sub'],
@@ -208,6 +211,34 @@ _DEFAULT_TOP_MENU = [
         ['grid/select-all'],
         ['grid/select-nothing'],
         ['grid/create-audio-sample'],
+        None,
+        ['edit/search'],
+        ['edit/search-and-replace'],
+        ['edit/search-repeat', 1],
+        ['edit/search-repeat', -1],
+        None,
+        ['edit/insert-above'],
+        ['edit/insert-below'],
+        ['edit/duplicate'],
+        ['edit/delete'],
+        None,
+        ['edit/swap-text-and-notes'],
+        ['edit/split-sub-at-video'],
+        ['edit/karaoke-split'],
+        ['edit/karaoke-join'],
+        ['edit/join-subs/keep-first'],
+        ['edit/join-subs/concatenate'],
+        None,
+        ['grid/copy-text-to-clipboard'],
+        ['grid/copy-times-to-clipboard'],
+        ['grid/paste-times-from-clipboard'],
+        None,
+        # ['edit/style-editor'],  # TODO
+    ]],
+
+    ['&View', [
+        ['view/set-palette', 'light'],
+        ['view/set-palette', 'dark'],
     ]],
 
     ['&Playback', [
@@ -259,39 +290,6 @@ _DEFAULT_TOP_MENU = [
         None,
         ['audio/scroll', -1],
         ['audio/scroll', 1],
-    ]],
-
-    ['&Edit', [
-        ['edit/undo'],
-        ['edit/redo'],
-        None,
-        ['edit/search'],
-        ['edit/search'],
-        ['edit/search-repeat', 1],
-        ['edit/search-repeat', -1],
-        ['grid/copy-text-to-clipboard'],
-        None,
-        ['edit/insert-above'],
-        ['edit/insert-below'],
-        ['edit/duplicate'],
-        ['edit/delete'],
-        None,
-        ['edit/swap-text-and-notes'],
-        ['edit/split-sub-at-video'],
-        ['edit/karaoke-split'],
-        ['edit/karaoke-join'],
-        ['edit/join-subs/keep-first'],
-        ['edit/join-subs/concatenate'],
-        None,
-        ['grid/copy-times-to-clipboard'],
-        ['grid/paste-times-from-clipboard'],
-        None,
-        # ['edit/style-editor'],  # TODO
-    ]],
-
-    ['&View', [
-        ['view/set-palette', 'light'],
-        ['view/set-palette', 'dark'],
     ]],
 ]
 
