@@ -15,17 +15,37 @@ def _create_search_regex(text, case_sensitive, use_regexes):
         flags=(0 if case_sensitive else re.I))
 
 
+def _get_sel_match(matches, idx, selected_idx, direction, main_window):
+    if idx == selected_idx:
+        cursor = main_window.editor.text_edit.textCursor()
+        if cursor.selectionEnd() == cursor.selectionStart():
+            if direction > 0:
+                return matches[0]
+        elif direction > 0:
+            for match in matches:
+                if match.end() > cursor.selectionEnd():
+                    return match
+        elif direction < 0:
+            for match in reversed(matches):
+                if match.start() < cursor.selectionStart():
+                    return match
+    elif direction > 0:
+        return matches[0]
+    elif direction < 0:
+        return matches[-1]
+
+
 def _search(api, main_window, regex, direction):
     num_lines = len(api.subs.lines)
     if not api.subs.has_selection:
-        sub_idx = None
+        selected_idx = None
         iterator = range(num_lines)
         if direction < 0:
             iterator = reversed(iterator)
     else:
-        sub_idx = api.subs.selected_indexes[0]
+        selected_idx = api.subs.selected_indexes[0]
         iterator = list(
-            (sub_idx + direction * i) % num_lines
+            (selected_idx + direction * i) % num_lines
             for i in range(num_lines)
         )
 
@@ -34,26 +54,8 @@ def _search(api, main_window, regex, direction):
         if not matches:
             continue
 
-        sel_match = None
-        if idx == sub_idx:
-            cursor = main_window.editor.text_edit.textCursor()
-            if cursor.selectionEnd() == cursor.selectionStart():
-                if direction > 0:
-                    sel_match = matches[0]
-            elif direction > 0:
-                for match in matches:
-                    if match.end() > cursor.selectionEnd():
-                        sel_match = match
-                        break
-            elif direction < 0:
-                for match in reversed(matches):
-                    if match.start() < cursor.selectionStart():
-                        sel_match = match
-                        break
-        elif direction > 0:
-            sel_match = matches[0]
-        elif direction < 0:
-            sel_match = matches[-1]
+        sel_match = _get_sel_match(
+            matches, idx, selected_idx, direction, main_window)
 
         if not sel_match:
             continue
@@ -69,7 +71,7 @@ def _search(api, main_window, regex, direction):
     return False
 
 
-def _replace_selection(api, main_window, new_text):
+def _replace_selection(_api, main_window, new_text):
     edit = main_window.editor.text_edit
     text = edit.toPlainText()
     text = (
@@ -79,7 +81,7 @@ def _replace_selection(api, main_window, new_text):
     edit.document().setPlainText(text)
 
 
-def _replace_all(api, main_window, logger, regex, new_text):
+def _replace_all(api, _main_window, logger, regex, new_text):
     replacement_count = 0
     for sub in api.subs.lines:
         old_sub_text = sub.text
@@ -235,6 +237,7 @@ class SearchCommand(CoreCommand):
                 api, main_window, self, show_replace_controls=False).exec_()
 
         await self.api.gui.exec(run)
+
 
 class SearchAndReplaceCommand(CoreCommand):
     name = 'edit/search-and-replace'

@@ -16,9 +16,9 @@ class GridJumpToLineCommand(CoreCommand):
             dialog = QtWidgets.QInputDialog(main_window)
             dialog.setLabelText('Line number to jump to:')
             dialog.setIntMinimum(1)
-            dialog.setIntMaximum(len(self.api.subs.lines))
-            if self.api.subs.has_selection:
-                dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
+            dialog.setIntMaximum(len(api.subs.lines))
+            if api.subs.has_selection:
+                dialog.setIntValue(api.subs.selected_indexes[0] + 1)
             dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
             if dialog.exec_():
                 return dialog.intValue()
@@ -190,7 +190,7 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
                 end = bubblesub.util.str_to_ms(end)
                 print(end)
                 times.append((start, end))
-            except:
+            except Exception:
                 self.error('Invalid time format: {}'.format(line))
                 return
 
@@ -207,7 +207,7 @@ class SaveAudioSampleCommand(CoreCommand):
         return self.api.subs.has_selection and self.api.audio.has_audio_source
 
     async def run(self):
-        async def run_dialog(api, main_window):
+        async def run_dialog(_api, main_window):
             path, _ = QtWidgets.QFileDialog.getSaveFileName(
                 main_window,
                 directory=QtCore.QDir.homePath(),

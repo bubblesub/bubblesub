@@ -7,7 +7,8 @@ class EditKaraokeSplitCommand(CoreCommand):
     menu_name = 'Split subtitles as karaoke'
 
     def enabled(self):
-        return (len(self.api.subs.selected_indexes) == 1
+        return (
+            len(self.api.subs.selected_indexes) == 1
             and '\\k' in self.api.subs.selected_lines[0].text)
 
     async def run(self):

@@ -1,9 +1,8 @@
 import asyncio
-import sys
-from PyQt5 import QtCore
 import time
-import bubblesub.util
+import sys
 import importlib.util
+import bubblesub.util
 
 
 class BaseCommand:
@@ -31,9 +30,6 @@ class BaseCommand:
 
     def error(self, text):
         self.api.log.error('cmd/{}: {}'.format(self.name, text))
-
-    def log(self, level, text):
-        self.logged.emit(level, text)
 
 
 class CommandApi:
@@ -68,7 +64,7 @@ class CommandApi:
             raise KeyError('No command named {}'.format(name))
         try:
             return ret(self._api, *args)
-        except:
+        except Exception:
             print('Error creating command {}'.format(name), file=sys.stderr)
             raise
 

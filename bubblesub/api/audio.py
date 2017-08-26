@@ -1,6 +1,5 @@
 import time
 import threading
-import wave
 import bubblesub.util
 import ffms
 import scipy.io.wavfile
