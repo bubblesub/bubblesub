@@ -10,19 +10,13 @@ def _get_dialog_dir(api):
 
 
 async def _get_save_file_name(api, main_window, filter):
-    path, _ = QtWidgets.QFileDialog.getSaveFileName(
-        main_window,
-        directory=_get_dialog_dir(api),
-        initialFilter=filter)
-    return path
+    return bubblesub.ui.util.save_dialog(
+        main_window, filter, directory=_get_dialog_dir(api))
 
 
 async def _get_load_file_name(api, main_window, filter):
-    path, _ = QtWidgets.QFileDialog.getOpenFileName(
-        main_window,
-        directory=_get_dialog_dir(api),
-        initialFilter=filter)
-    return path
+    return bubblesub.ui.util.load_dialog(
+        main_window, filter, directory=_get_dialog_dir(api))
 
 
 def _ask_about_unsaved_changes(api):

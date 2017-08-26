@@ -119,3 +119,19 @@ def get_color(api, color_name):
     palette_def = api.opt.general['palettes'][current_palette]
     red, green, blue = palette_def[color_name]
     return QtGui.QColor(red, green, blue)
+
+
+def load_dialog(parent, filter, directory=None):
+    path, _ = QtWidgets.QFileDialog.getOpenFileName(
+        parent,
+        directory=directory or QtCore.QDir.homePath(),
+        filter=filter)
+    return path
+
+
+def save_dialog(parent, filter, directory=None):
+    path, _ = QtWidgets.QFileDialog.getSaveFileName(
+        parent,
+        directory=directory or QtCore.QDir.homePath(),
+        filter=filter)
+    return path

@@ -209,11 +209,7 @@ class SaveAudioSampleCommand(CoreCommand):
 
     async def run(self):
         async def run_dialog(_api, main_window):
-            path, _ = QtWidgets.QFileDialog.getSaveFileName(
-                main_window,
-                directory=QtCore.QDir.homePath(),
-                initialFilter='*.wav')
-            return path
+            return bubblesub.ui.util.save_dialog(main_window, '*.wav')
 
         path = await self.api.gui.exec(run_dialog)
         if path:
