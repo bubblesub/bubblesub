@@ -129,9 +129,12 @@ def load_dialog(parent, filter, directory=None):
     return path
 
 
-def save_dialog(parent, filter, directory=None):
+def save_dialog(parent, filter, directory=None, file_name=None):
+    directory = directory or QtCore.QDir.homePath()
+    if file_name:
+        directory += '/' + file_name
     path, _ = QtWidgets.QFileDialog.getSaveFileName(
         parent,
-        directory=directory or QtCore.QDir.homePath(),
+        directory=directory,
         filter=filter)
     return path

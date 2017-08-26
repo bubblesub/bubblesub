@@ -1,4 +1,7 @@
+import os
+import re
 import bisect
+import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
 
 
@@ -163,3 +166,35 @@ class VideoPauseCommand(CoreCommand):
         if self.api.video.is_paused:
             return
         self.api.video.pause()
+
+
+class VideoScreenshotCommand(CoreCommand):
+    name = 'video/screenshot'
+
+    def __init__(self, api, include_subtitles):
+        super().__init__(api)
+        self._include_subtitles = include_subtitles
+
+    @property
+    def menu_name(self):
+        return 'Save screenshot ({} subtitles)'.format(
+            'with' if self._include_subtitles else 'without')
+
+    async def run(self):
+        async def run_dialog(api, main_window):
+            file_name = 'shot-{}-{}.png'.format(
+                os.path.basename(api.video.path),
+                bubblesub.util.ms_to_str(api.video.current_pts))
+
+            file_name = file_name.replace(':', '.')
+            file_name = file_name.replace(' ', '_')
+            file_name = re.sub(r'(?u)[^-\w.]', '', file_name)
+
+            return bubblesub.ui.util.save_dialog(
+                main_window,
+                'Portable Network Graphics (*.png)',
+                file_name=file_name)
+
+        path = await self.api.gui.exec(run_dialog)
+        if path:
+            self.api.video.screenshot(path, self._include_subtitles)

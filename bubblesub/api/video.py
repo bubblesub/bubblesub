@@ -134,6 +134,12 @@ class VideoApi(QtCore.QObject):
     def pause(self):
         self._mpv.pause = True
 
+    def screenshot(self, path, include_subtitles):
+        self._mpv.command(
+            'screenshot-to-file',
+            path,
+            'subtitles' if include_subtitles else 'video')
+
     @property
     def playback_speed(self):
         return self._mpv.speed

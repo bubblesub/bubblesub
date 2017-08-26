@@ -210,7 +210,6 @@ _DEFAULT_TOP_MENU = [
         ['grid/select-next-sub'],
         ['grid/select-all'],
         ['grid/select-nothing'],
-        ['grid/create-audio-sample'],
         None,
         ['edit/search'],
         ['edit/search-and-replace'],
@@ -239,6 +238,10 @@ _DEFAULT_TOP_MENU = [
     ['&View', [
         ['view/set-palette', 'light'],
         ['view/set-palette', 'dark'],
+        None,
+        ['grid/create-audio-sample'],
+        ['video/screenshot', False],
+        ['video/screenshot', True],
     ]],
 
     ['&Playback', [
