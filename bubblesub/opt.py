@@ -242,6 +242,11 @@ _DEFAULT_TOP_MENU = [
         ['grid/create-audio-sample'],
         ['video/screenshot', False],
         ['video/screenshot', True],
+        None,
+        ['view/focus-text-editor'],
+        ['view/focus-note-editor'],
+        ['view/focus-grid'],
+        ['view/focus-spectrogram'],
     ]],
 
     ['&Playback', [

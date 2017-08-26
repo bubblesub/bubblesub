@@ -18,3 +18,47 @@ class ViewSetPaletteCommand(CoreCommand):
             main_window.apply_palette(self._palette_name)
 
         await self.api.gui.exec(run)
+
+
+class ViewFocusTextEditorCommand(CoreCommand):
+    name = 'view/focus-text-editor'
+    menu_name = 'Focus text editor'
+
+    async def run(self):
+        async def run(_api, main_window):
+            main_window.editor.text_edit.setFocus()
+
+        await self.api.gui.exec(run)
+
+
+class ViewFocusNoteEditorCommand(CoreCommand):
+    name = 'view/focus-note-editor'
+    menu_name = 'Focus note editor'
+
+    async def run(self):
+        async def run(_api, main_window):
+            main_window.editor.note_edit.setFocus()
+
+        await self.api.gui.exec(run)
+
+
+class ViewFocusGridCommand(CoreCommand):
+    name = 'view/focus-grid'
+    menu_name = 'Focus subtitles grid'
+
+    async def run(self):
+        async def run(_api, main_window):
+            main_window.subs_grid.setFocus()
+
+        await self.api.gui.exec(run)
+
+
+class ViewFocusSpectrogramCommand(CoreCommand):
+    name = 'view/focus-spectrogram'
+    menu_name = 'Focus spectrogram'
+
+    async def run(self):
+        async def run(_api, main_window):
+            main_window.audio.setFocus()
+
+        await self.api.gui.exec(run)
