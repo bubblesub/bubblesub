@@ -117,7 +117,7 @@ class SearchDialog(QtWidgets.QDialog):
             sizePolicy=QtWidgets.QSizePolicy(
                 QtWidgets.QSizePolicy.Expanding,
                 QtWidgets.QSizePolicy.Preferred),
-            insertPolicy=QtWidgets.QComboBox.InsertAtTop)
+            insertPolicy=QtWidgets.QComboBox.NoInsert)
         self.replacement_text_edit = QtWidgets.QLineEdit(self)
         self.case_chkbox = QtWidgets.QCheckBox('Case sensitivity', self)
         self.regex_chkbox = QtWidgets.QCheckBox(
@@ -199,11 +199,19 @@ class SearchDialog(QtWidgets.QDialog):
             self.replacement_text_edit.text())
 
     def _search(self, direction):
+        text = self.search_text_edit.currentText()
+
+        idx = self.search_text_edit.findText(text)
+        if idx is not None:
+            self.search_text_edit.removeItem(idx)
+        self.search_text_edit.insertItem(0, text)
+        self.search_text_edit.setCurrentIndex(0)
+
         _search(
             self._api,
             self._main_window,
             _create_search_regex(
-                self.search_text_edit.currentText(),
+                text,
                 self.case_chkbox.isChecked(),
                 self.regex_chkbox.isChecked()),
             direction)
