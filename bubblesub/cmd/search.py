@@ -64,6 +64,7 @@ def _search(api, main_window, regex, direction):
         cursor = main_window.editor.text_edit.textCursor()
         cursor.setPosition(sel_match.start())
         cursor.setPosition(sel_match.end(), QtGui.QTextCursor.KeepAnchor)
+        main_window.editor.text_edit.setFocus()
         main_window.editor.text_edit.setTextCursor(cursor)
         return True
 
