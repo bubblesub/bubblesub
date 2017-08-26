@@ -29,6 +29,13 @@ _DEFAULT_GENERAL = {
             'cps',
         ],
     },
+    'search': {
+        'history': [],
+        'regex': False,
+        'case_sensitive': False,
+        'use_regexes': False,
+    },
+
     'current_palette': 'light',
     'palettes': {
         'dark': {
