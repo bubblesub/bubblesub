@@ -163,6 +163,8 @@ class SearchDialog(QtWidgets.QDialog):
         layout.addWidget(strip)
         self.setLayout(layout)
 
+        self.search_text_edit.lineEdit().selectAll()
+
     def reject(self, *args):
         self._save_opt()
         return super().reject(*args)
