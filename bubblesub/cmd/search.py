@@ -82,18 +82,19 @@ def _replace_selection(_api, main_window, new_text):
 
 
 def _replace_all(api, _main_window, logger, regex, new_text):
-    replacement_count = 0
-    for sub in api.subs.lines:
-        old_sub_text = sub.text
-        new_sub_text = re.sub(regex, new_text, old_sub_text)
-        if old_sub_text != new_sub_text:
-            sub.text = new_sub_text
-            replacement_count += 1
-    api.subs.selected_indexes = []
-    if not replacement_count:
-        bubblesub.ui.util.notice('No occurrences found.')
-    logger.info('replaced content in {} lines.'.format(replacement_count))
-    return replacement_count > 0
+    with api.undo.bulk():
+        replacement_count = 0
+        for sub in api.subs.lines:
+            old_sub_text = sub.text
+            new_sub_text = re.sub(regex, new_text, old_sub_text)
+            if old_sub_text != new_sub_text:
+                sub.text = new_sub_text
+                replacement_count += 1
+        api.subs.selected_indexes = []
+        if not replacement_count:
+            bubblesub.ui.util.notice('No occurrences found.')
+        logger.info('replaced content in {} lines.'.format(replacement_count))
+        return replacement_count > 0
 
 
 class SearchDialog(QtWidgets.QDialog):

@@ -12,26 +12,27 @@ class EditKaraokeSplitCommand(CoreCommand):
             and '\\k' in self.api.subs.selected_lines[0].text)
 
     async def run(self):
-        idx = self.api.subs.selected_indexes[0]
-        sub = self.api.subs.lines[idx]
-        start = sub.start
-        end = sub.end
-        syllables = self._get_syllables(sub.text)
+        with self.api.undo.bulk():
+            idx = self.api.subs.selected_indexes[0]
+            sub = self.api.subs.lines[idx]
+            start = sub.start
+            end = sub.end
+            syllables = self._get_syllables(sub.text)
 
-        new_selection = []
-        self.api.gui.begin_update()
-        self.api.subs.lines.remove(idx, 1)
-        for i, syllable in enumerate(syllables):
-            sub_def = {k: getattr(sub, k) for k in sub.prop.keys()}
-            sub_def['text'] = syllable['text']
-            sub_def['start'] = start
-            sub_def['end'] = min(end, start + syllable['duration'] * 10)
-            start = sub_def['end']
+            new_selection = []
+            self.api.gui.begin_update()
+            self.api.subs.lines.remove(idx, 1)
+            for i, syllable in enumerate(syllables):
+                sub_def = {k: getattr(sub, k) for k in sub.prop.keys()}
+                sub_def['text'] = syllable['text']
+                sub_def['start'] = start
+                sub_def['end'] = min(end, start + syllable['duration'] * 10)
+                start = sub_def['end']
 
-            self.api.subs.lines.insert_one(idx + i, **sub_def)
-            new_selection.append(idx + i)
-        self.api.subs.selected_indexes = new_selection
-        self.api.gui.end_update()
+                self.api.subs.lines.insert_one(idx + i, **sub_def)
+                new_selection.append(idx + i)
+            self.api.subs.selected_indexes = new_selection
+            self.api.gui.end_update()
 
     def _get_syllables(self, text):
         match = re.split('({[^{}]*})', text)
@@ -64,12 +65,13 @@ class EditKaraokeJoinCommand(CoreCommand):
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self):
-        subs = self.api.subs.selected_lines
-        for idx in reversed(self.api.subs.selected_indexes[1:]):
-            self.api.subs.lines.remove(idx, 1)
-        text = ''
-        for sub in subs:
-            text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
-        subs[0].text = text
-        subs[0].end = subs[-1].end
-        self.api.subs.selected_indexes = [subs[0].id]
+        with self.api.undo.bulk():
+            subs = self.api.subs.selected_lines
+            for idx in reversed(self.api.subs.selected_indexes[1:]):
+                self.api.subs.lines.remove(idx, 1)
+            text = ''
+            for sub in subs:
+                text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
+            subs[0].text = text
+            subs[0].end = subs[-1].end
+            self.api.subs.selected_indexes = [subs[0].id]

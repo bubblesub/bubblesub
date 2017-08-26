@@ -194,9 +194,10 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
                 self.error('Invalid time format: {}'.format(line))
                 return
 
-        for i, line in enumerate(self.api.subs.selected_lines):
-            line.start = times[i][0]
-            line.end = times[i][1]
+        with self.api.undo.bulk():
+            for i, line in enumerate(self.api.subs.selected_lines):
+                line.start = times[i][0]
+                line.end = times[i][1]
 
 
 class SaveAudioSampleCommand(CoreCommand):

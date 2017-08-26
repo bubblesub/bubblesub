@@ -13,6 +13,17 @@ class UndoOperation(enum.Enum):
     # TODO: handle changes to styles once the style editor is in
 
 
+class UndoBulk:
+    def __init__(self, undo_api):
+        self._undo_api = undo_api
+
+    def __enter__(self):
+        self._undo_api.start_bulk()
+
+    def __exit__(self, _type, _value, _traceback):
+        self._undo_api.end_bulk()
+
+
 class UndoApi(QtCore.QObject):
     def __init__(self, subs_api):
         super().__init__()
@@ -37,6 +48,20 @@ class UndoApi(QtCore.QObject):
     def has_redo(self):
         return self._undo_stack_pos + 1 < len(self._undo_stack)
 
+    def bulk(self):
+        return UndoBulk(self)
+
+    def start_bulk(self):
+        self._disconnect_signals()
+        self._tmp_state = self._serialize_lines(0, len(self._subs_api.lines))
+
+    def end_bulk(self):
+        self._trim_undo_stack_and_append(
+            UndoOperation.Reset,
+            self._tmp_state,
+            self._serialize_lines(0, len(self._subs_api.lines)))
+        self._connect_signals()
+
     def undo(self):
         if not self.has_undo:
             raise RuntimeError('No more undo.')
@@ -46,8 +71,8 @@ class UndoApi(QtCore.QObject):
         self._undo_stack_pos -= 1
 
         if op_type == UndoOperation.Reset:
-            lines, = op_args
-            self._subs_api.lines[:] = self._deserialize_lines(lines)
+            old_lines, _new_lines = op_args
+            self._subs_api.lines[:] = self._deserialize_lines(old_lines)
         elif op_type == UndoOperation.SubtitleChange:
             idx, old_lines, _new_lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(old_lines)[0]
@@ -69,8 +94,8 @@ class UndoApi(QtCore.QObject):
         op_type, *op_args = self._undo_stack[self._undo_stack_pos]
 
         if op_type == UndoOperation.Reset:
-            lines, = op_args
-            self._subs_api.lines = lines
+            _old_lines, new_lines = op_args
+            self._subs_api.lines[:] = self._deserialize_lines(new_lines)
         elif op_type == UndoOperation.SubtitleChange:
             idx, _old_lines, new_lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(new_lines)[0]
@@ -112,7 +137,8 @@ class UndoApi(QtCore.QObject):
     def _subtitles_loaded(self):
         self._undo_stack = [(
             UndoOperation.Reset,
-            self._serialize_lines(0, len(self._subs_api.lines)))]
+            self._serialize_lines(0, len(self._subs_api.lines)),
+            [])]
         self._undo_stack_pos = 0
         self._undo_stack_pos_when_saved = 0
 
@@ -123,8 +149,6 @@ class UndoApi(QtCore.QObject):
         self._tmp_state = self._serialize_lines(idx, 1)
 
     def _subtitle_changed(self, idx):
-        # XXX: merge with previous operation if it concerns the same subtitle
-        # and only one field has changed (difficult)
         self._trim_undo_stack_and_append(
             UndoOperation.SubtitleChange,
             idx,

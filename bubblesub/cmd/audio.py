@@ -163,8 +163,9 @@ class AudioCommitSelectionCommand(CoreCommand):
         return self.api.subs.has_selection and self.api.audio.has_selection
 
     async def run(self):
-        for sub in self.api.subs.selected_lines:
-            sub.begin_update()
-            sub.start = self.api.audio.selection_start
-            sub.end = self.api.audio.selection_end
-            sub.end_update()
+        with self.api.undo.bulk():
+            for sub in self.api.subs.selected_lines:
+                sub.begin_update()
+                sub.start = self.api.audio.selection_start
+                sub.end = self.api.audio.selection_end
+                sub.end_update()
