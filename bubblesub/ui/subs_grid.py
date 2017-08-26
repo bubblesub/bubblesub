@@ -44,7 +44,7 @@ class SubsGridModel(QtCore.QAbstractTableModel):
         self._subtitles.items_inserted.connect(self._proxy_items_inserted)
         self._subtitles.items_removed.connect(self._proxy_items_removed)
         self._cache = []
-        self._reset_cache()
+        self.reset_cache()
 
         self._character_limit = (
             api.opt.general['subs']['max_characters_per_second'])
@@ -141,8 +141,14 @@ class SubsGridModel(QtCore.QAbstractTableModel):
     def flags(self, _index):
         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
+    def reset_cache(self, idx=None):
+        if idx:
+            self._cache[idx] = [None, None]
+        else:
+            self._cache = [[None, None] for i in range(len(self._subtitles))]
+
     def _proxy_data_changed(self, idx):
-        self._reset_cache(idx)
+        self.reset_cache(idx)
 
         # XXX: this causes qt to call .data() for EVERY VISIBLE CELL. really.
         # self.dataChanged.emit(
@@ -156,20 +162,14 @@ class SubsGridModel(QtCore.QAbstractTableModel):
                 [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole])
 
     def _proxy_items_inserted(self, idx, count):
-        self._reset_cache()
+        self.reset_cache()
         if count:
             self.rowsInserted.emit(QtCore.QModelIndex(), idx, idx + count - 1)
 
     def _proxy_items_removed(self, idx, count):
-        self._reset_cache()
+        self.reset_cache()
         if count:
             self.rowsRemoved.emit(QtCore.QModelIndex(), idx, idx + count - 1)
-
-    def _reset_cache(self, idx=None):
-        if idx:
-            self._cache[idx] = [None, None]
-        else:
-            self._cache = [[None, None] for i in range(len(self._subtitles))]
 
 
 class SubsGrid(QtWidgets.QTableView):
@@ -196,6 +196,9 @@ class SubsGrid(QtWidgets.QTableView):
         self.menu = QtWidgets.QMenu(self)
         bubblesub.ui.util.setup_cmd_menu(
             self._api, self.menu, self._api.opt.context_menu)
+
+    def changeEvent(self, _event):
+        self.model().reset_cache()
 
     def _open_menu(self, position):
         self.menu.exec_(self.viewport().mapToGlobal(position))

@@ -5,3 +5,4 @@ import bubblesub.cmd.search
 import bubblesub.cmd.audio
 import bubblesub.cmd.video
 import bubblesub.cmd.karaoke
+import bubblesub.cmd.view

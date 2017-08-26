@@ -73,6 +73,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         api.log.logged.connect(self._logged)
 
+        self.apply_palette(api.opt.general['current_palette'])
+
         self.subs_grid.setFocus()
         self._restore_splitters()
 
@@ -84,6 +86,25 @@ class MainWindow(QtWidgets.QMainWindow):
             event.ignore()
         else:
             event.accept()
+
+    def apply_palette(self, palette_name):
+        palette_def = self._api.opt.general['palettes'][palette_name]
+        palette = QtGui.QPalette()
+        for color_type, (red, green, blue) in palette_def.items():
+            if '+' in color_type:
+                group_name, role_name = color_type.split('+')
+            else:
+                group_name = ''
+                role_name = color_type
+            target_group = getattr(QtGui.QPalette, group_name, None)
+            target_role = getattr(QtGui.QPalette, role_name, None)
+            if target_group is not None and target_role is not None:
+                palette.setColor(
+                    target_group, target_role, QtGui.QColor(red, green, blue))
+            elif target_role is not None:
+                palette.setColor(target_role, QtGui.QColor(red, green, blue))
+        self.setPalette(palette)
+        self.update()
 
     def _logged(self, level, text):
         line = '[{}] {}\n'.format(level.name.lower(), text)

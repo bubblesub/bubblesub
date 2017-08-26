@@ -3,7 +3,7 @@ import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
-from bubblesub.ui.util import blend_colors
+from bubblesub.ui.util import blend_colors, get_color
 from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
 
 
@@ -117,14 +117,9 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._spectrum_cache = {}
         self._need_repaint = False
         self._drag_mode = DragMode.Off
+        self._color_table = None
 
-        self._color_table = []
-        for i in range(256):
-            self._color_table.append(
-                blend_colors(
-                    self.palette().window().color(),
-                    self.palette().text().color(),
-                    i / 255))
+        self._generate_color_table()
 
         timer = QtCore.QTimer(
             self,
@@ -134,6 +129,9 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         api.video.current_pts_changed.connect(self._video_current_pts_changed)
         api.video.loaded.connect(self._video_loaded)
+
+    def changeEvent(self, _event):
+        self._generate_color_table()
 
     def paintEvent(self, _event):
         painter = QtGui.QPainter()
@@ -183,6 +181,14 @@ class AudioPreviewWidget(BaseAudioWidget):
                     max(self._api.audio.selection_start, pts))
         elif self._drag_mode == DragMode.VideoPosition:
             self._api.video.seek(pts)
+
+    def _generate_color_table(self):
+        self._color_table = [
+            blend_colors(
+                self.palette().window().color(),
+                self.palette().text().color(),
+                i / 255)
+            for i in range(256)]
 
     def _repaint_if_needed(self):
         if self._need_repaint:
@@ -235,11 +241,12 @@ class AudioPreviewWidget(BaseAudioWidget):
 
     def _draw_subtitle_rects(self, painter):
         h = self.height()
+        color = get_color(self._api, 'spectrogram/subtitle')
         painter.setPen(
-            QtGui.QPen(self.palette().highlight(), 1, QtCore.Qt.SolidLine))
+            QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         for i, line in enumerate(self._api.subs.lines):
             painter.setBrush(QtGui.QBrush(
-                self.palette().highlight().color(),
+                color,
                 QtCore.Qt.FDiagPattern if i & 1 else QtCore.Qt.BDiagPattern))
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
@@ -249,10 +256,11 @@ class AudioPreviewWidget(BaseAudioWidget):
         if not self._api.audio.has_selection:
             return
         h = self.height()
-        if self.parent().hasFocus():
-            color = QtGui.QColor(0xFF, 0xA0, 0x00)
-        else:
-            color = QtGui.QColor(0xA0, 0xA0, 0x60)
+        color = get_color(
+            self._api,
+            'spectrogram/focused-selection'
+            if self.parent().hasFocus() else
+            'spectrogram/unfocused-selection')
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         color.setAlpha(0x40)
         painter.setBrush(QtGui.QBrush(color))
@@ -271,12 +279,10 @@ class AudioPreviewWidget(BaseAudioWidget):
             return
         base_x = self._pts_to_x(self._api.video.current_pts)
         width = 4
+        color = get_color(self._api, 'spectrogram/video-marker')
         for dist in range(width):
             x = base_x + 1 - dist
-            painter.setPen(
-                QtGui.QPen(
-                    QtGui.QColor(0, 160, 0, 255 - dist * 255 / width),
-                    1, QtCore.Qt.SolidLine))
+            painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
             painter.drawLine(x, 0, x, self.height() - 1)
 
     def _pts_to_x(self, pts):

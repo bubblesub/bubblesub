@@ -112,3 +112,10 @@ def setup_cmd_menu(api, parent, menu_def):
             parent.addAction(action)
             action_map[(cmd_name, *cmd_args)] = action
     return action_map
+
+
+def get_color(api, color_name):
+    current_palette = api.opt.general['current_palette']
+    palette_def = api.opt.general['palettes'][current_palette]
+    red, green, blue = palette_def[color_name]
+    return QtGui.QColor(red, green, blue)
