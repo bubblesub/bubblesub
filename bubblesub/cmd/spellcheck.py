@@ -19,8 +19,8 @@ def _match_words(api):
 
 
 class SpellCheckDialog(QtWidgets.QDialog):
-    def __init__(self, api, main_window, word_matches, parent=None):
-        super().__init__(parent)
+    def __init__(self, api, main_window, word_matches):
+        super().__init__(main_window)
         self._main_window = main_window
         self._api = api
         self._word_matches = list(word_matches)
@@ -28,9 +28,9 @@ class SpellCheckDialog(QtWidgets.QDialog):
 
         self._mispelt_text_edit = QtWidgets.QLineEdit(self, readOnly=True)
         self._replacement_text_edit = QtWidgets.QLineEdit(self)
-        self._suggestions_list_box = QtWidgets.QListView(self)
-        self._suggestions_list_box.setModel(QtGui.QStandardItemModel())
-        self._suggestions_list_box.clicked.connect(self._suggestion_clicked)
+        self._suggestions_list_view = QtWidgets.QListView(self)
+        self._suggestions_list_view.setModel(QtGui.QStandardItemModel())
+        self._suggestions_list_view.clicked.connect(self._suggestion_clicked)
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -39,7 +39,7 @@ class SpellCheckDialog(QtWidgets.QDialog):
         layout.addWidget(QtWidgets.QLabel('Replacement:', self))
         layout.addWidget(self._replacement_text_edit)
         layout.addWidget(QtWidgets.QLabel('Suggestions:', self))
-        layout.addWidget(self._suggestions_list_box)
+        layout.addWidget(self._suggestions_list_view)
         box = QtWidgets.QWidget(self)
         box.setLayout(layout)
 
@@ -118,10 +118,11 @@ class SpellCheckDialog(QtWidgets.QDialog):
 
         self._mispelt_text_edit.setText(match.group(0))
 
-        self._suggestions_list_box.model().clear()
+        self._suggestions_list_view.model().clear()
         for suggestion in self._dict.suggest(match.group(0)):
-            self._suggestions_list_box.model().appendRow(
-                QtGui.QStandardItem(suggestion))
+            item = QtGui.QStandardItem(suggestion)
+            item.setEditable(False)
+            self._suggestions_list_view.model().appendRow(item)
 
     def _suggestion_clicked(self, event):
         self._replacement_text_edit.setText(event.data())
