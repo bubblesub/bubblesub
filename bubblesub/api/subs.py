@@ -293,8 +293,8 @@ class SubtitlesApi(QtCore.QObject):
         self.styles.insert_one('Default')
 
     @property
-    def meta(self):
-        return self._ass_source.meta
+    def info(self):
+        return self._ass_source.info
 
     @property
     def aegisub_project(self):

@@ -1,13 +1,130 @@
+import os
+import tempfile
+import atexit
+import pysubs2
 import bubblesub.util
 import bubblesub.ui.util
+import bubblesub.mpv
 from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
 from bubblesub.api.cmd import CoreCommand
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
-class StyleList(QtWidgets.QWidget):
-    selection_changed = QtCore.pyqtSignal()
+class StylePreview(QtWidgets.QGroupBox):
+    def __init__(self, api, selection_model, parent):
+        super().__init__('Preview', parent)
+        self._api = api
+        self._selection_model = selection_model
+
+        self._preview_box = QtWidgets.QFrame(
+            self,
+            sizePolicy=QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.MinimumExpanding,
+                QtWidgets.QSizePolicy.MinimumExpanding))
+        self._slider = QtWidgets.QSlider(
+            self,
+            orientation=QtCore.Qt.Horizontal,
+            minimum=0,
+            maximum=api.video.max_pts)
+        self._text_box = QtWidgets.QPlainTextEdit(
+            self,
+            sizePolicy=QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Expanding,
+                QtWidgets.QSizePolicy.Maximum))
+        self._text_box.setFixedHeight(100)
+        if self._api.subs.selected_lines:
+            self._text_box.document().setPlainText(
+                self._api.subs.selected_lines[0].text)
+
+        layout = QtWidgets.QVBoxLayout(self, margin=0)
+        layout.addWidget(self._preview_box)
+        layout.addWidget(self._slider)
+        layout.addWidget(self._text_box)
+
+        _, self._tmp_subs_path = tempfile.mkstemp(suffix='.ass')
+        atexit.register(lambda: os.unlink(self._tmp_subs_path))
+        self._ass_source = pysubs2.SSAFile()
+        self._fake_styles_list = bubblesub.api.subs.StyleList()
+        self._fake_subs_list = bubblesub.api.subs.SubtitleList()
+        self._save_subs()
+
+        self._mpv = bubblesub.mpv.MPV(
+            osd_bar=False,
+            osc=False,
+            cursor_autohide='no',
+            input_cursor=False,
+            input_vo_keyboard=False,
+            input_default_bindings=False,
+            wid=str(int(self._preview_box.winId())),
+            keep_open=True,
+            log_handler=lambda _log_level, _component, _message: None)
+        self._mpv_ready = False
+        self._mpv.loadfile(str(api.video.path))
+
+        @self._mpv.event_callback('file_loaded')
+        def _init_handler(*_):
+            self._mpv_loaded()
+
+        self._slider.valueChanged.connect(self._slider_moved)
+        self._text_box.textChanged.connect(self._text_changed)
+        api.subs.styles.item_changed.connect(self._styles_changed)
+        api.subs.styles.items_inserted.connect(self._styles_changed)
+        api.subs.styles.items_removed.connect(self._styles_changed)
+        selection_model.selectionChanged.connect(self._selection_changed)
+
+    def sizeHint(self):
+        return QtCore.QSize(640, 480)
+
+    def _mpv_loaded(self):
+        self._mpv_ready = True
+        self._mpv.pause = True
+        self._mpv.sub_add(self._tmp_subs_path)
+        self._slider.setValue(self._api.video.current_pts)
+
+    def _save_subs(self):
+        if self._selection_model.selectedIndexes():
+            row = self._selection_model.selectedIndexes()[0].row()
+            style = self._api.subs.styles[row]
+            self._fake_styles_list.remove(0, len(self._fake_styles_list))
+            self._fake_styles_list.insert_one(
+                name='Default', **{
+                    k: getattr(style, k)
+                    for k in style.prop.keys()
+                    if k != 'name'
+                })
+        self._fake_styles_list.put_to_ass(self._ass_source)
+
+        self._fake_subs_list.remove(0, len(self._fake_subs_list))
+        self._fake_subs_list.insert_one(
+            0,
+            start=0,
+            end=self._api.video.max_pts,
+            style='Default',
+            text=self._text_box.toPlainText())
+        self._fake_subs_list.put_to_ass(self._ass_source)
+
+        self._ass_source.info = self._api.subs.info
+        self._ass_source.save(
+            self._tmp_subs_path, header_notice=bubblesub.api.subs.NOTICE)
+
+    def _refresh_subs(self):
+        if self._mpv_ready:
+            self._save_subs()
+            self._mpv.sub_reload()
+
+    def _selection_changed(self, _value):
+        self._refresh_subs()
+
+    def _styles_changed(self):
+        self._refresh_subs()
+
+    def _text_changed(self):
+        self._refresh_subs()
+
+    def _slider_moved(self, value):
+        self._mpv.seek(value / 1000.0, 'absolute+exact')
+
 
 class StyleList(QtWidgets.QWidget):
     def __init__(self, api, model, selection_model, parent):
@@ -417,11 +534,18 @@ class StylesManagerDialog(QtWidgets.QDialog):
 
         self._style_list = StyleList(api, model, selection_model, self)
         self._style_editor = StyleEditor(model, selection_model, self)
+        if api.video.path:
+            self._preview_box = StylePreview(api, selection_model, self)
+        else:
+            self._preview_box = None
+
         self._style_editor.setEnabled(False)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.addWidget(self._style_list)
         layout.addWidget(self._style_editor)
+        if self._preview_box:
+            layout.addWidget(self._preview_box)
 
 
 class StylesManagerCommand(CoreCommand):
