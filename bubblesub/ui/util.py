@@ -1,3 +1,4 @@
+import re
 import functools
 import bubblesub.util
 from PyQt5 import QtGui
@@ -33,6 +34,44 @@ def blend_colors(color1, color2, ratio):
         color1.red() * (1 - ratio) + color2.red() * ratio,
         color1.green() * (1 - ratio) + color2.green() * ratio,
         color1.blue() * (1 - ratio) + color2.blue() * ratio)
+
+
+class ColorPicker(QtWidgets.QWidget):
+    changed = QtCore.pyqtSignal()
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._label = QtWidgets.QLabel(self)
+        self._button = QtWidgets.QPushButton('Change', self)
+        self._button.clicked.connect(self._button_clicked)
+        layout = QtWidgets.QHBoxLayout(self, margin=0)
+        layout.addWidget(self._label)
+        layout.addWidget(self._button)
+        self._color = QtGui.QColor(0, 0, 0, 0)
+        self.set_color(self._color)
+
+    def _button_clicked(self, _event):
+        dialog = QtWidgets.QColorDialog(self)
+        dialog.setCurrentColor(self._color)
+        dialog.setOption(dialog.ShowAlphaChannel, True)
+        if dialog.exec_():
+            self.set_color(dialog.selectedColor())
+
+    def get_color(self):
+        return self._color
+
+    def set_color(self, color):
+        style = '''QLabel:enabled {{
+            background-color: #{:02x}{:02x}{:02x};
+            opacity: {};
+            border: 1px solid black;
+        }}'''.format(color.red(), color.green(), color.blue(), color.alpha())
+        self._label.setStyleSheet(style)
+        if self._color != color:
+            self._color = color
+            self.changed.emit()
+
+    color = QtCore.pyqtProperty(QtGui.QColor, get_color, set_color)
 
 
 class TimeEdit(QtWidgets.QLineEdit):

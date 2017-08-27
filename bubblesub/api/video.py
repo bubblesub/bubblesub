@@ -64,6 +64,9 @@ class VideoApi(QtCore.QObject):
         self._subs_api.lines.item_changed.connect(self._subs_changed)
         self._subs_api.lines.items_removed.connect(self._subs_changed)
         self._subs_api.lines.items_inserted.connect(self._subs_changed)
+        self._subs_api.styles.item_changed.connect(self._subs_changed)
+        self._subs_api.styles.items_removed.connect(self._subs_changed)
+        self._subs_api.styles.items_inserted.connect(self._subs_changed)
 
     def unload(self):
         self._path = None

@@ -7,3 +7,4 @@ import bubblesub.cmd.video
 import bubblesub.cmd.karaoke
 import bubblesub.cmd.view
 import bubblesub.cmd.spellcheck
+import bubblesub.cmd.styles_manager

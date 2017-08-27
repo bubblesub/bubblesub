@@ -140,12 +140,15 @@ class Style(bubblesub.util.ObservableObject):
         self._styles.item_about_to_change.emit(self.name)
 
     def _after_change(self):
+        self._sync_ssa_style()
         self._styles.item_changed.emit(self._old_name)
 
 
 class StyleList(bubblesub.util.ListModel):
     def insert_one(self, name, **kwargs):
-        self.insert(0, [Style(styles=self, name=name, **kwargs)])
+        style = Style(styles=self, name=name, **kwargs)
+        self.insert(len(self), [style])
+        return style
 
     def load_from_ass(self, ass_source):
         collection = []
@@ -213,8 +216,8 @@ class Subtitle(bubblesub.util.ObservableObject):
             return None
         return self._subtitles.get(id_ + 1, None)
 
-    @classmethod
-    def from_ssa_event(self, subtitles, ssa_event):
+    @staticmethod
+    def from_ssa_event(subtitles, ssa_event):
         text, note = _extract_note(ssa_event.text)
         return Subtitle(
             subtitles,
@@ -256,7 +259,9 @@ class Subtitle(bubblesub.util.ObservableObject):
 
 class SubtitleList(bubblesub.util.ListModel):
     def insert_one(self, idx, **kwargs):
-        self.insert(idx, [Subtitle(self, **kwargs)])
+        subtitle = Subtitle(self, **kwargs)
+        self.insert(idx, [subtitle])
+        return subtitle
 
     def load_from_ass(self, ass_source):
         collection = []

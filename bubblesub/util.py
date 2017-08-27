@@ -208,6 +208,12 @@ class ListModel(QtCore.QObject):
             return default
         return self[idx]
 
+    def index(self, data):
+        for idx, item in enumerate(self):
+            if item == data:
+                return idx
+        return None
+
     def insert(self, idx, data):
         if not data:
             return

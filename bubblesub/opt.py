@@ -233,7 +233,7 @@ _DEFAULT_TOP_MENU = [
         ['grid/paste-times-from-clipboard'],
         None,
         ['edit/spell-check'],
-        # ['edit/style-editor'],  # TODO
+        ['edit/manage-styles'],
     ]],
 
     ['&View', [
