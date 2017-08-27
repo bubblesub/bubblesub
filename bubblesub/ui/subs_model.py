@@ -1,0 +1,177 @@
+import enum
+import bubblesub.util
+import bubblesub.ui.util
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+
+
+class SubsModelColumn(enum.Enum):
+    Start = 'start'
+    End = 'end'
+    Style = 'style'
+    Actor = 'actor'
+    Text = 'text'
+    Note = 'note'
+    Duration = 'duration'
+    CharactersPerSecond = 'cps'
+
+
+_CACHE_TEXT = 0
+_CACHE_CPS_BK = 1
+
+_HEADERS = {
+    SubsModelColumn.Start: 'Start',
+    SubsModelColumn.End: 'End',
+    SubsModelColumn.Style: 'Style',
+    SubsModelColumn.Actor: 'Actor',
+    SubsModelColumn.Text: 'Text',
+    SubsModelColumn.Note: 'Note',
+    SubsModelColumn.Duration: 'Duration',
+    SubsModelColumn.CharactersPerSecond: 'CPS',
+}
+
+
+class SubsModel(QtCore.QAbstractTableModel):
+    def __init__(self, api, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.column_order = [
+            SubsModelColumn(name)
+            for name in api.opt.general['grid']['columns']
+        ]
+
+        self._subtitles = api.subs.lines
+        self._subtitles.item_changed.connect(self._proxy_data_changed)
+        self._subtitles.items_inserted.connect(self._proxy_items_inserted)
+        self._subtitles.items_removed.connect(self._proxy_items_removed)
+        self._cache = []
+        self.reset_cache()
+
+        self._character_limit = (
+            api.opt.general['subs']['max_characters_per_second'])
+
+    def rowCount(self, _parent=QtCore.QModelIndex()):
+        return len(self._subtitles)
+
+    def columnCount(self, _parent=QtCore.QModelIndex()):
+        return len(self.column_order)
+
+    def headerData(self, idx, orientation, role=QtCore.Qt.DisplayRole):
+        if orientation == QtCore.Qt.Vertical:
+            if role == QtCore.Qt.DisplayRole:
+                return idx + 1
+            elif role == QtCore.Qt.TextAlignmentRole:
+                return QtCore.Qt.AlignRight
+
+        elif orientation == QtCore.Qt.Horizontal:
+            column_type = self.column_order[idx]
+            if role == QtCore.Qt.DisplayRole:
+                return _HEADERS[column_type]
+            elif role == QtCore.Qt.TextAlignmentRole:
+                if column_type in (SubsModelColumn.Text, SubsModelColumn.Note):
+                    return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+                return QtCore.Qt.AlignCenter
+
+        return QtCore.QVariant()
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if role == QtCore.Qt.DisplayRole:
+            row_number = index.row()
+            column_number = index.column()
+            column_type = self.column_order[column_number]
+
+            data = self._cache[row_number][_CACHE_TEXT]
+            if not data:
+                subtitle = self._subtitles[row_number]
+                data = {
+                    SubsModelColumn.Start:
+                        bubblesub.util.ms_to_str(subtitle.start),
+                    SubsModelColumn.End:
+                        bubblesub.util.ms_to_str(subtitle.end),
+                    SubsModelColumn.Style:
+                        subtitle.style,
+                    SubsModelColumn.Actor:
+                        subtitle.actor,
+                    SubsModelColumn.Text:
+                        bubblesub.util.ass_to_plaintext(subtitle.text, True),
+                    SubsModelColumn.Note:
+                        bubblesub.util.ass_to_plaintext(subtitle.note, True),
+                    SubsModelColumn.Duration:
+                        '{:.1f}'.format(subtitle.duration / 1000.0),
+                    SubsModelColumn.CharactersPerSecond: (
+                        '{:.1f}'.format(
+                            bubblesub.util.character_count(subtitle.text) /
+                            max(1, subtitle.duration / 1000.0))
+                        if subtitle.duration > 0
+                        else '-')
+                }
+                self._cache[row_number][_CACHE_TEXT] = data
+            return data[column_type]
+
+        elif role == QtCore.Qt.BackgroundRole:
+            row_number = index.row()
+            column_number = index.column()
+            column_type = self.column_order[column_number]
+
+            if column_type != SubsModelColumn.CharactersPerSecond:
+                return
+
+            data = self._cache[row_number][_CACHE_CPS_BK]
+            if not data:
+                subtitle = self._subtitles[row_number]
+                ratio = (
+                    bubblesub.util.character_count(subtitle.text) /
+                    max(1, subtitle.duration / 1000.0))
+                ratio -= self._character_limit
+                ratio = max(0, ratio)
+                ratio /= self._character_limit
+                ratio = min(1, ratio)
+                data = QtGui.QColor(
+                    bubblesub.ui.util.blend_colors(
+                        self.parent().palette().base().color(),
+                        self.parent().palette().highlight().color(),
+                        ratio))
+                self._cache[row_number][_CACHE_CPS_BK] = data
+            return data
+
+        elif role == QtCore.Qt.TextAlignmentRole:
+            column_number = index.column()
+            column_type = self.column_order[column_number]
+            if column_type in (SubsModelColumn.Text, SubsModelColumn.Note):
+                return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+            return QtCore.Qt.AlignCenter
+
+        return QtCore.QVariant()
+
+    def flags(self, _index):
+        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+    def reset_cache(self, idx=None):
+        if idx:
+            self._cache[idx] = [None, None]
+        else:
+            self._cache = [[None, None] for i in range(len(self._subtitles))]
+
+    def _proxy_data_changed(self, idx):
+        self.reset_cache(idx)
+
+        # XXX: this causes qt to call .data() for EVERY VISIBLE CELL. really.
+        # self.dataChanged.emit(
+        #     self.index(idx, 0),
+        #     self.index(idx, self.columnCount() - 1),
+        #     [QtCore.Qt.DisplayRole | QtCore.Qt.BackgroundRole])
+        for i in range(self.columnCount()):
+            self.dataChanged.emit(
+                self.index(idx, i),
+                self.index(idx, i),
+                [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole])
+
+    def _proxy_items_inserted(self, idx, count):
+        self.reset_cache()
+        if count:
+            self.rowsInserted.emit(QtCore.QModelIndex(), idx, idx + count - 1)
+
+    def _proxy_items_removed(self, idx, count):
+        self.reset_cache()
+        if count:
+            self.rowsRemoved.emit(QtCore.QModelIndex(), idx, idx + count - 1)
