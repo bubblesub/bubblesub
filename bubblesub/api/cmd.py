@@ -20,7 +20,7 @@ class BaseCommand:
         raise NotImplementedError('Command has no implementation')
 
     def debug(self, text):
-        self.api.log.debug('cmd/{}: '.format(self.name, text))
+        self.api.log.debug('cmd/{}: {}'.format(self.name, text))
 
     def info(self, text):
         self.api.log.info('cmd/{}: {}'.format(self.name, text))
