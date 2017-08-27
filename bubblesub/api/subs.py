@@ -15,10 +15,6 @@ ScaledBorderAndShadow: yes
 YCbCr Matrix: TV.601
 PlayResY: 288
 
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00202020,&H7F202020,-1,0,0,0,100,100,0,0,1,3,0,2,20,20,20,1
-
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 '''
@@ -41,6 +37,127 @@ def _pack_note(text, note):
         text += '{NOTE:%s}' % (
             bubblesub.util.escape_ass_tag(note.replace('\n', '\\N')))
     return text
+
+
+def _tuple_to_ssa_color(color):
+    red, green, blue, alpha = color
+    return pysubs2.Color(red, green, blue, alpha)
+
+
+def _ssa_color_to_tuple(color):
+    return (color.r, color.g, color.b, color.a)
+
+
+class Style(bubblesub.util.ObservableObject):
+    prop = {
+        'name': bubblesub.util.ObservableObject.REQUIRED,
+        'font_name': 'Arial',
+        'font_size': 20,
+        'primary_color': (255, 255, 255, 0),
+        'secondary_color': (255, 0, 0, 0),
+        'outline_color': (32, 32, 32, 0),
+        'back_color': (32, 32, 32, 127),
+        'bold': True,
+        'italic': False,
+        'underline': False,
+        'strike_out': False,
+        'scale_x': 100,
+        'scale_y': 100,
+        'spacing': 0,
+        'angle': 0,
+        'border_style': 1,
+        'outline': 3,
+        'shadow': 0,
+        'alignment': 2,
+        'margin_left': 20,
+        'margin_right': 20,
+        'margin_vertical': 20,
+        'encoding': 1,
+    }
+
+    def __init__(self, styles, **kwargs):
+        super().__init__(**kwargs)
+        self.ssa_style = pysubs2.SSAStyle()
+        self._styles = styles
+        self._sync_ssa_style()
+        self._old_name = None
+
+    @staticmethod
+    def from_ssa_style(styles, name, ssa_style):
+        return Style(
+            styles=styles,
+            name=name,
+            font_name=ssa_style.fontname,
+            font_size=ssa_style.fontsize,
+            primary_color=_ssa_color_to_tuple(ssa_style.primarycolor),
+            secondary_color=_ssa_color_to_tuple(ssa_style.secondarycolor),
+            outline_color=_ssa_color_to_tuple(ssa_style.outlinecolor),
+            back_color=_ssa_color_to_tuple(ssa_style.backcolor),
+            bold=ssa_style.bold,
+            italic=ssa_style.italic,
+            underline=ssa_style.underline,
+            strike_out=ssa_style.strikeout,
+            scale_x=ssa_style.scalex,
+            scale_y=ssa_style.scaley,
+            spacing=ssa_style.spacing,
+            angle=ssa_style.angle,
+            border_style=ssa_style.borderstyle,
+            outline=ssa_style.outline,
+            shadow=ssa_style.shadow,
+            alignment=ssa_style.alignment,
+            margin_left=ssa_style.marginl,
+            margin_right=ssa_style.marginr,
+            margin_vertical=ssa_style.marginv,
+            encoding=ssa_style.encoding)
+
+    def _sync_ssa_style(self):
+        self.ssa_style.fontname = self.font_name
+        self.ssa_style.fontsize = self.font_size
+        self.ssa_style.primarycolor = _tuple_to_ssa_color(self.primary_color)
+        self.ssa_style.secondarycolor = _tuple_to_ssa_color(
+            self.secondary_color)
+        self.ssa_style.outlinecolor = _tuple_to_ssa_color(self.outline_color)
+        self.ssa_style.backcolor = _tuple_to_ssa_color(self.back_color)
+        self.ssa_style.bold = self.bold
+        self.ssa_style.italic = self.italic
+        self.ssa_style.underline = self.underline
+        self.ssa_style.strikeout = self.strike_out
+        self.ssa_style.scalex = self.scale_x
+        self.ssa_style.scaley = self.scale_y
+        self.ssa_style.spacing = self.spacing
+        self.ssa_style.angle = self.angle
+        self.ssa_style.borderstyle = self.border_style
+        self.ssa_style.outline = self.outline
+        self.ssa_style.shadow = self.shadow
+        self.ssa_style.alignment = self.alignment
+        self.ssa_style.marginl = self.margin_left
+        self.ssa_style.marginr = self.margin_right
+        self.ssa_style.marginv = self.margin_vertical
+        self.ssa_style.encoding = self.encoding
+
+    def _before_change(self):
+        self._old_name = self.name
+        self._styles.item_about_to_change.emit(self.name)
+
+    def _after_change(self):
+        self._styles.item_changed.emit(self._old_name)
+
+
+class StyleList(bubblesub.util.ListModel):
+    def insert_one(self, name, **kwargs):
+        self.insert(0, [Style(styles=self, name=name, **kwargs)])
+
+    def load_from_ass(self, ass_source):
+        collection = []
+        for name, ssa_style in ass_source.styles.items():
+            collection.append(Style.from_ssa_style(self, name, ssa_style))
+        self.remove(0, len(self))
+        self.insert(0, collection)
+
+    def put_to_ass(self, ass_source):
+        ass_source.styles.clear()
+        for style in self:
+            ass_source.styles[style.name] = style.ssa_style
 
 
 class Subtitle(bubblesub.util.ObservableObject):
@@ -96,16 +213,21 @@ class Subtitle(bubblesub.util.ObservableObject):
             return None
         return self._subtitles.get(id_ + 1, None)
 
-    def _before_change(self):
-        id_ = self.id
-        if id_ is not None:
-            self._subtitles.item_about_to_change.emit(id_)
-
-    def _after_change(self):
-        self._sync_ssa_event()
-        id_ = self.id
-        if id_ is not None:
-            self._subtitles.item_changed.emit(id_)
+    @classmethod
+    def from_ssa_event(self, subtitles, ssa_event):
+        text, note = _extract_note(ssa_event.text)
+        return Subtitle(
+            subtitles,
+            start=ssa_event.start,
+            end=ssa_event.end,
+            style=ssa_event.style,
+            actor=ssa_event.name,
+            text=text,
+            note=note,
+            effect=ssa_event.effect,
+            layer=ssa_event.layer,
+            margins=(ssa_event.marginl, ssa_event.marginv, ssa_event.marginr),
+            is_comment=ssa_event.is_comment)
 
     def _sync_ssa_event(self):
         self.ssa_event.start = self.start
@@ -120,10 +242,33 @@ class Subtitle(bubblesub.util.ObservableObject):
         self.ssa_event.marginr = self.margins[2]
         self.ssa_event.type = 'Comment' if self.is_comment else 'Dialogue'
 
+    def _before_change(self):
+        id_ = self.id
+        if id_ is not None:
+            self._subtitles.item_about_to_change.emit(id_)
+
+    def _after_change(self):
+        self._sync_ssa_event()
+        id_ = self.id
+        if id_ is not None:
+            self._subtitles.item_changed.emit(id_)
+
 
 class SubtitleList(bubblesub.util.ListModel):
     def insert_one(self, idx, **kwargs):
         self.insert(idx, [Subtitle(self, **kwargs)])
+
+    def load_from_ass(self, ass_source):
+        collection = []
+        for ssa_event in ass_source:
+            collection.append(Subtitle.from_ssa_event(self, ssa_event))
+        self.remove(0, len(self))
+        self.insert(0, collection)
+
+    def put_to_ass(self, ass_source):
+        del ass_source[:]
+        for subtitle in self:
+            ass_source.append(subtitle.ssa_event)
 
 
 class SubtitlesApi(QtCore.QObject):
@@ -138,7 +283,9 @@ class SubtitlesApi(QtCore.QObject):
         self._ass_source = pysubs2.SSAFile.from_string(
             EMPTY_ASS, format_='ass')
         self._path = None
-        self.lines = bubblesub.api.subs.SubtitleList()
+        self.lines = SubtitleList()
+        self.styles = StyleList()
+        self.styles.insert_one('Default')
 
     @property
     def meta(self):
@@ -190,6 +337,7 @@ class SubtitlesApi(QtCore.QObject):
         self._ass_source = pysubs2.SSAFile.from_string(
             EMPTY_ASS, format_='ass')
         self.lines.remove(0, len(self.lines))
+        self.styles.remove(0, len(self.styles))
         self.selected_indexes = []
         self.loaded.emit()
 
@@ -206,37 +354,18 @@ class SubtitlesApi(QtCore.QObject):
         self.selected_indexes = []
 
         with bubblesub.util.Benchmark('loading subs'):
-            collection = []
-            for line in self._ass_source:
-                text, note = _extract_note(line.text)
-                collection.append(
-                    bubblesub.api.subs.Subtitle(
-                        self.lines,
-                        start=line.start,
-                        end=line.end,
-                        style=line.style,
-                        actor=line.name,
-                        text=text,
-                        note=note,
-                        effect=line.effect,
-                        layer=line.layer,
-                        margins=(line.marginl, line.marginv, line.marginr),
-                        is_comment=line.is_comment))
-
-            self.lines.remove(0, len(self.lines))
-            self.lines.insert(0, collection)
+            self.lines.load_from_ass(self._ass_source)
+            self.styles.load_from_ass(self._ass_source)
         self.loaded.emit()
 
     def save_ass(self, path, remember_path=False):
         with bubblesub.util.Benchmark('saving subs'):
             assert path
             path = Path(path)
-            del self._ass_source[:]
-            for subtitle in self.lines:
-                self._ass_source.append(subtitle.ssa_event)
+            self.lines.put_to_ass(self._ass_source)
+            self.styles.put_to_ass(self._ass_source)
             if remember_path:
                 self._path = path
             self._ass_source.save(path, header_notice=NOTICE)
-
             if remember_path:
                 self.saved.emit()
