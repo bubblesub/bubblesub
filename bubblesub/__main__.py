@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 from pathlib import Path
+import xdg
 import bubblesub.opt
 import bubblesub.ui
 
@@ -15,7 +16,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    cfg_path = Path('~/.config/bubblesub').expanduser()
+    cfg_path = Path(xdg.XDG_CONFIG_HOME) / 'bubblesub'
 
     opt = bubblesub.opt.Options()
     if not args.no_config:

@@ -8,6 +8,7 @@ from numbers import Number
 from collections import Set, Mapping, deque
 from pathlib import Path
 from PyQt5 import QtCore
+import xdg
 import pysubs2.time
 
 
@@ -69,7 +70,7 @@ def str_to_ms(text):
 
 
 def _get_cache_file_path(cache_name):
-    return Path('~/.cache/bubblesub/').expanduser() / (cache_name + '.dat')
+    return Path(xdg.XDG_CACHE_HOME) / 'bubblesub' / (cache_name + '.dat')
 
 
 def load_cache(cache_name):
