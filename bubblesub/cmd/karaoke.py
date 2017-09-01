@@ -75,3 +75,28 @@ class EditKaraokeJoinCommand(CoreCommand):
             subs[0].text = text
             subs[0].end = subs[-1].end
             self.api.subs.selected_indexes = [subs[0].id]
+
+
+class EditTransformationJoinCommand(CoreCommand):
+    name = 'edit/transformation-join'
+    menu_name = 'Join subtitles (as transformation)'
+
+    def enabled(self):
+        return len(self.api.subs.selected_indexes) > 1
+
+    async def run(self):
+        with self.api.undo.bulk():
+            subs = self.api.subs.selected_lines
+            for idx in reversed(self.api.subs.selected_indexes[1:]):
+                self.api.subs.lines.remove(idx, 1)
+            text = ''
+            pos = 0
+            for i, sub in enumerate(subs):
+                pos += sub.duration
+                text += sub.text
+                if i != len(subs) - 1:
+                    text += (
+                        '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos))
+            subs[0].text = text
+            subs[0].end = subs[-1].end
+            self.api.subs.selected_indexes = [subs[0].id]
