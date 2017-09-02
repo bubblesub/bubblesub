@@ -10,7 +10,9 @@ class UndoOperation(enum.Enum):
     SubtitleChange = 1
     SubtitlesInsertion = 2
     SubtitlesRemoval = 3
-    # TODO: handle changes to styles once the style editor is in
+    StyleChange = 4
+    StylesInsertion = 5
+    StylesRemoval = 6
 
 
 class UndoBulk:
@@ -53,13 +55,17 @@ class UndoApi(QtCore.QObject):
 
     def start_bulk(self):
         self._disconnect_signals()
-        self._tmp_state = self._serialize_lines(0, len(self._subs_api.lines))
+        self._tmp_state = (
+            self._serialize_lines(0, len(self._subs_api.lines)),
+            self._serialize_styles(0, len(self._subs_api.styles)))
 
     def end_bulk(self):
         self._trim_undo_stack_and_append(
             UndoOperation.Reset,
-            self._tmp_state,
-            self._serialize_lines(0, len(self._subs_api.lines)))
+            self._tmp_state[0],
+            self._serialize_lines(0, len(self._subs_api.lines)),
+            self._tmp_state[1],
+            self._serialize_styles(0, len(self._subs_api.styles)))
         self._connect_signals()
 
     def undo(self):
@@ -71,8 +77,9 @@ class UndoApi(QtCore.QObject):
         self._undo_stack_pos -= 1
 
         if op_type == UndoOperation.Reset:
-            old_lines, _new_lines = op_args
+            old_lines, _new_lines, old_styles, _new_styles = op_args
             self._subs_api.lines[:] = self._deserialize_lines(old_lines)
+            self._subs_api.styles[:] = self._deserialize_styles(old_styles)
         elif op_type == UndoOperation.SubtitleChange:
             idx, old_lines, _new_lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(old_lines)[0]
@@ -82,6 +89,16 @@ class UndoApi(QtCore.QObject):
         elif op_type == UndoOperation.SubtitlesRemoval:
             idx, count, lines = op_args
             self._subs_api.lines.insert(idx, self._deserialize_lines(lines))
+        elif op_type == UndoOperation.StyleChange:
+            idx, old_styles, _new_styles = op_args
+            self._subs_api.styles[idx] = (
+                self._deserialize_styles(old_styles)[0])
+        elif op_type == UndoOperation.StylesInsertion:
+            idx, count, styles = op_args
+            self._subs_api.styles.remove(idx, count)
+        elif op_type == UndoOperation.StylesRemoval:
+            idx, count, styles = op_args
+            self._subs_api.styles.insert(idx, self._deserialize_styles(styles))
 
         self._connect_signals()
 
@@ -94,8 +111,9 @@ class UndoApi(QtCore.QObject):
         op_type, *op_args = self._undo_stack[self._undo_stack_pos]
 
         if op_type == UndoOperation.Reset:
-            _old_lines, new_lines = op_args
+            _old_lines, new_lines, _old_styles, new_styles = op_args
             self._subs_api.lines[:] = self._deserialize_lines(new_lines)
+            self._subs_api.styles[:] = self._deserialize_styles(new_styles)
         elif op_type == UndoOperation.SubtitleChange:
             idx, _old_lines, new_lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(new_lines)[0]
@@ -105,6 +123,16 @@ class UndoApi(QtCore.QObject):
         elif op_type == UndoOperation.SubtitlesRemoval:
             idx, count, lines = op_args
             self._subs_api.lines.remove(idx, count)
+        elif op_type == UndoOperation.StyleChange:
+            idx, _old_styles, new_styles = op_args
+            self._subs_api.styles[idx] = (
+                self._deserialize_styles(new_styles)[0])
+        elif op_type == UndoOperation.StylesInsertion:
+            idx, count, styles = op_args
+            self._subs_api.styles.insert(idx, self._deserialize_styles(styles))
+        elif op_type == UndoOperation.StylesRemoval:
+            idx, count, styles = op_args
+            self._subs_api.styles.remove(idx, count)
 
         self._connect_signals()
 
@@ -124,6 +152,12 @@ class UndoApi(QtCore.QObject):
             self._subtitle_about_to_change)
         self._subs_api.lines.items_about_to_be_removed.connect(
             self._subtitles_removed)
+        self._subs_api.styles.items_inserted.connect(self._styles_inserted)
+        self._subs_api.styles.item_changed.connect(self._style_changed)
+        self._subs_api.styles.item_about_to_change.connect(
+            self._style_about_to_change)
+        self._subs_api.styles.items_about_to_be_removed.connect(
+            self._styles_removed)
 
     def _disconnect_signals(self):
         self._subs_api.lines.items_inserted.disconnect(
@@ -133,11 +167,19 @@ class UndoApi(QtCore.QObject):
             self._subtitle_about_to_change)
         self._subs_api.lines.items_about_to_be_removed.disconnect(
             self._subtitles_removed)
+        self._subs_api.styles.items_inserted.disconnect(self._styles_inserted)
+        self._subs_api.styles.item_changed.disconnect(self._style_changed)
+        self._subs_api.styles.item_about_to_change.disconnect(
+            self._style_about_to_change)
+        self._subs_api.styles.items_about_to_be_removed.disconnect(
+            self._styles_removed)
 
     def _subtitles_loaded(self):
         self._undo_stack = [(
             UndoOperation.Reset,
             self._serialize_lines(0, len(self._subs_api.lines)),
+            [],
+            self._serialize_styles(0, len(self._subs_api.styles)),
             [])]
         self._undo_stack_pos = 0
         self._undo_stack_pos_when_saved = 0
@@ -169,6 +211,30 @@ class UndoApi(QtCore.QObject):
             count,
             self._serialize_lines(idx, count))
 
+    def _style_about_to_change(self, idx):
+        self._tmp_state = self._serialize_styles(idx, 1)
+
+    def _style_changed(self, idx):
+        self._trim_undo_stack_and_append(
+            UndoOperation.StyleChange,
+            idx,
+            self._tmp_state,
+            self._serialize_styles(idx, 1))
+
+    def _styles_inserted(self, idx, count):
+        self._trim_undo_stack_and_append(
+            UndoOperation.StylesInsertion,
+            idx,
+            count,
+            self._serialize_styles(idx, count))
+
+    def _styles_removed(self, idx, count):
+        self._trim_undo_stack_and_append(
+            UndoOperation.StylesRemoval,
+            idx,
+            count,
+            self._serialize_styles(idx, count))
+
     def _serialize_lines(self, idx, count):
         return pickle.dumps([
             {k: getattr(item, k) for k in item.prop.keys()}
@@ -179,4 +245,16 @@ class UndoApi(QtCore.QObject):
         return [
             bubblesub.api.subs.Subtitle(self._subs_api.lines, **item)
             for item in pickle.loads(lines)
+        ]
+
+    def _serialize_styles(self, idx, count):
+        return pickle.dumps([
+            {k: getattr(item, k) for k in item.prop.keys()}
+            for item in self._subs_api.styles[idx:idx+count]
+        ])
+
+    def _deserialize_styles(self, styles):
+        return [
+            bubblesub.api.subs.Style(self._subs_api.styles, **item)
+            for item in pickle.loads(styles)
         ]

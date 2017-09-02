@@ -18,6 +18,7 @@ Simple extensible ASS subtitle editor for Linux
 - Separate control for persistent inline comments (useful for translating)
 - Newlines support in the editor
 - Seeking is aligned to video frames
+- Style editor with realistic preview (taken from video source)
 - No bloat
 
 **Planned features**
@@ -27,7 +28,6 @@ Simple extensible ASS subtitle editor for Linux
     - Built-in commands
     - Configuration files
     - The API
-- Style editor
 - Meta data editor
 
 Screenshot:
