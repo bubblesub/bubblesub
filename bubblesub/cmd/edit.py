@@ -237,11 +237,10 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
             strip.accepted.connect(self.accept)
             strip.rejected.connect(self.reject)
 
-            layout = QtWidgets.QVBoxLayout()
+            layout = QtWidgets.QVBoxLayout(self)
             layout.addWidget(label)
             layout.addWidget(self.time_widget)
             layout.addWidget(strip)
-            self.setLayout(layout)
 
         def value(self):
             return bubblesub.util.str_to_ms(self.time_widget.text())

@@ -32,7 +32,8 @@ class SpellCheckDialog(QtWidgets.QDialog):
         self._suggestions_list_view.setModel(QtGui.QStandardItemModel())
         self._suggestions_list_view.clicked.connect(self._suggestion_clicked)
 
-        layout = QtWidgets.QVBoxLayout(self)
+        box = QtWidgets.QWidget(self)
+        layout = QtWidgets.QVBoxLayout(box)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(QtWidgets.QLabel('Mispelt word:', self))
         layout.addWidget(self._mispelt_text_edit)
@@ -40,8 +41,6 @@ class SpellCheckDialog(QtWidgets.QDialog):
         layout.addWidget(self._replacement_text_edit)
         layout.addWidget(QtWidgets.QLabel('Suggestions:', self))
         layout.addWidget(self._suggestions_list_view)
-        box = QtWidgets.QWidget(self)
-        box.setLayout(layout)
 
         strip = QtWidgets.QDialogButtonBox(
             self, orientation=QtCore.Qt.Vertical)
@@ -56,7 +55,6 @@ class SpellCheckDialog(QtWidgets.QDialog):
         layout = QtWidgets.QHBoxLayout(self, spacing=24)
         layout.addWidget(box)
         layout.addWidget(strip)
-        self.setLayout(layout)
 
         if self._next():
             self.exec_()

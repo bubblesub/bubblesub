@@ -66,11 +66,10 @@ class GridJumpToTimeCommand(CoreCommand):
             strip.accepted.connect(self.accept)
             strip.rejected.connect(self.reject)
 
-            layout = QtWidgets.QVBoxLayout()
+            layout = QtWidgets.QVBoxLayout(self)
             layout.addWidget(label)
             layout.addWidget(self.time_widget)
             layout.addWidget(strip)
-            self.setLayout(layout)
 
         def setValue(self, value):
             self.time_widget.setText(bubblesub.util.ms_to_str(value))

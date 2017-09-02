@@ -141,7 +141,8 @@ class SearchDialog(QtWidgets.QDialog):
         self._load_opt()
         self._update_replacement_enabled()
 
-        layout = QtWidgets.QVBoxLayout(self)
+        settings_box = QtWidgets.QWidget(self)
+        layout = QtWidgets.QVBoxLayout(settings_box)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(search_label)
         layout.addWidget(self.search_text_edit)
@@ -150,8 +151,6 @@ class SearchDialog(QtWidgets.QDialog):
         layout.addWidget(self.case_chkbox)
         layout.addWidget(self.regex_chkbox)
         layout.addWidget(strip)
-        settings_box = QtWidgets.QWidget(self)
-        settings_box.setLayout(layout)
 
         if not show_replace_controls:
             replace_label.hide()
@@ -162,7 +161,6 @@ class SearchDialog(QtWidgets.QDialog):
         layout = QtWidgets.QHBoxLayout(self, spacing=24)
         layout.addWidget(settings_box)
         layout.addWidget(strip)
-        self.setLayout(layout)
 
         self.search_text_edit.lineEdit().selectAll()
 
