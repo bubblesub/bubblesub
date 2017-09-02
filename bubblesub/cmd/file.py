@@ -45,7 +45,7 @@ class FileOpenCommand(CoreCommand):
 
     async def run(self):
         if _ask_about_unsaved_changes(self.api):
-            path = await self.api.gui.exec(_get_load_file_name, VIDEO_FILTER)
+            path = await self.api.gui.exec(_get_load_file_name, SUBS_FILTER)
             if not path:
                 self.info('opening cancelled.')
             else:
