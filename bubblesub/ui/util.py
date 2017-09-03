@@ -1,4 +1,3 @@
-import re
 import functools
 import bubblesub.util
 from PyQt5 import QtGui
