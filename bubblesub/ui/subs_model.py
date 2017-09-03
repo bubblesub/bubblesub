@@ -34,6 +34,7 @@ _HEADERS = {
 class SubsModel(QtCore.QAbstractTableModel):
     def __init__(self, api, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._api = api
 
         self.column_order = [
             SubsModelColumn(name)
@@ -113,12 +114,15 @@ class SubsModel(QtCore.QAbstractTableModel):
             column_number = index.column()
             column_type = self.column_order[column_number]
 
+            subtitle = self._subtitles[row_number]
+            if subtitle.is_comment:
+                return bubblesub.ui.util.get_color(self._api, 'grid/comment')
+
             if column_type != SubsModelColumn.CharactersPerSecond:
                 return
 
             data = self._cache[row_number][_CACHE_CPS_BK]
             if not data:
-                subtitle = self._subtitles[row_number]
                 ratio = (
                     bubblesub.util.character_count(subtitle.text) /
                     max(1, subtitle.duration / 1000.0))

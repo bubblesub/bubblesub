@@ -65,6 +65,7 @@ _DEFAULT_GENERAL = {
             'spectrogram/subtitle':            (42, 130, 218),
             'spectrogram/focused-selection':   (0xFF, 0xA0, 0x00),
             'spectrogram/unfocused-selection': (0xA0, 0xA0, 0x60),
+            'grid/comment':                    (53, 53, 53),
         },
 
         'light': {
@@ -108,6 +109,7 @@ _DEFAULT_GENERAL = {
             'spectrogram/subtitle':            (42, 130, 218),
             'spectrogram/focused-selection':   (0xFF, 0xA0, 0x00),
             'spectrogram/unfocused-selection': (0xA0, 0xA0, 0x60),
+            'grid/comment':                    (239, 235, 231),
         },
     },
 }
