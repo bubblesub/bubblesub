@@ -214,7 +214,10 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
     async def run(self):
         dialog = self.ShiftTimesDialog()
         if dialog.exec_():
-            delta = dialog.value()
+            delta, is_relative = dialog.value()
+
+            if not is_relative:
+                delta -= self.api.subs.selected_lines[0].start
 
             with self.api.undo.bulk():
                 for sub in self.api.subs.selected_lines:
@@ -227,23 +230,41 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
         def __init__(self, parent=None):
             super().__init__(parent)
 
-            self.time_widget = bubblesub.ui.util.TimeEdit(
-                self, allow_negative=True)
-
-            label = QtWidgets.QLabel('Time to add:')
+            self._label = QtWidgets.QLabel('', self)
+            self._time_edit = bubblesub.ui.util.TimeEdit(self)
+            self._radio_rel = QtWidgets.QRadioButton('Relative', self)
+            self._radio_rel.setChecked(True)
+            self._radio_abs = QtWidgets.QRadioButton('Absolute', self)
             strip = QtWidgets.QDialogButtonBox(self)
             strip.addButton(strip.Ok)
             strip.addButton(strip.Cancel)
+
             strip.accepted.connect(self.accept)
             strip.rejected.connect(self.reject)
+            self._radio_rel.clicked.connect(self._radio_clicked)
+            self._radio_abs.clicked.connect(self._radio_clicked)
 
             layout = QtWidgets.QVBoxLayout(self)
-            layout.addWidget(label)
-            layout.addWidget(self.time_widget)
+            layout.addWidget(self._label)
+            layout.addWidget(self._time_edit)
+            layout.addWidget(self._radio_rel)
+            layout.addWidget(self._radio_abs)
             layout.addWidget(strip)
 
+            self._radio_clicked()
+
+        def _radio_clicked(self):
+            is_relative = self._radio_rel.isChecked()
+            if is_relative:
+                self._label.setText('Time to add:')
+            else:
+                self._label.setText('Time to move to:')
+            self._time_edit.set_allow_negative(is_relative)
+
         def value(self):
-            return bubblesub.util.str_to_ms(self.time_widget.text())
+            return (
+                bubblesub.util.str_to_ms(self._time_edit.text()),
+                self._radio_rel.isChecked())
 
 
 class EditSnapSubsStartToVideoCommand(CoreCommand):

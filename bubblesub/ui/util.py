@@ -76,12 +76,17 @@ class ColorPicker(QtWidgets.QWidget):
 class TimeEdit(QtWidgets.QLineEdit):
     def __init__(self, parent=None, allow_negative=False):
         super().__init__(parent)
-        self._allow_negative = allow_negative
-        if allow_negative:
+        self._allow_negative = False
+        self.set_allow_negative(allow_negative)
+
+    def set_allow_negative(self, allow):
+        self._allow_negative = allow
+        if allow:
             self.setInputMask('X9:99:99.999')
             self.setValidator(
                 QtGui.QRegExpValidator(
-                    QtCore.QRegExp(r'[+-]\d:\d\d:\d\d\.\d\d\d'), parent))
+                    QtCore.QRegExp(r'[+-]\d:\d\d:\d\d\.\d\d\d'),
+                    self.parent()))
         else:
             self.setInputMask('9:99:99.999')
         self.reset_text()
