@@ -37,6 +37,7 @@ _DEFAULT_GENERAL = {
         'regex': False,
         'case_sensitive': False,
         'use_regexes': False,
+        'mode': 1,
     },
 
     'current_palette': 'light',
