@@ -1,3 +1,4 @@
+import json
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
 from PyQt5 import QtWidgets
@@ -196,6 +197,54 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
             for i, line in enumerate(self.api.subs.selected_lines):
                 line.start = times[i][0]
                 line.end = times[i][1]
+
+
+class GridCopyToClipboardCommand(CoreCommand):
+    name = 'grid/copy-to-clipboard'
+    menu_name = 'Copy selected subtitles to clipboard'
+
+    def enabled(self):
+        return self.api.subs.has_selection
+
+    async def run(self):
+        QtWidgets.QApplication.clipboard().setText(json.dumps([
+            {k: getattr(item, k) for k in item.prop.keys()}
+            for item in self.api.subs.selected_lines
+        ]))
+
+
+class PasteFromClipboardCommand(CoreCommand):
+    name = 'grid/paste-from-clipboard-below'
+    menu_name = 'Paste subtitles from clipboard (below)'
+
+    async def run(self):
+        text = QtWidgets.QApplication.clipboard().text()
+        if not text:
+            self.error('Clipboard is empty, aborting.')
+            return
+        idx = self.api.subs.selected_indexes[-1] + 1
+        with self.api.undo.bulk():
+            items = json.loads(text)
+            for i, item in enumerate(items):
+                self.api.subs.lines.insert_one(idx + i, **item)
+        self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
+
+
+class PasteFromClipboardCommand(CoreCommand):
+    name = 'grid/paste-from-clipboard-above'
+    menu_name = 'Paste subtitles from clipboard (above)'
+
+    async def run(self):
+        text = QtWidgets.QApplication.clipboard().text()
+        if not text:
+            self.error('Clipboard is empty, aborting.')
+            return
+        idx = self.api.subs.selected_indexes[0]
+        with self.api.undo.bulk():
+            items = json.loads(text)
+            for i, item in enumerate(reversed(items)):
+                self.api.subs.lines.insert_one(idx, **item)
+        self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
 class SaveAudioSampleCommand(CoreCommand):
