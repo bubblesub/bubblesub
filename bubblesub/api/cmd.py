@@ -49,7 +49,10 @@ class CommandApi:
         async def run():
             self._api.log.info('cmd/{}: running...'.format(cmd.name))
             start_time = time.time()
-            await cmd.run()
+            try:
+                await cmd.run()
+            except Exception as ex:
+                self._api.log.info('cmd/{}: error: {}'.format(cmd.name, ex))
             end_time = time.time()
             self._api.log.info('cmd/{}: ran in {:.02f} s'.format(
                 cmd.name, end_time - start_time))
