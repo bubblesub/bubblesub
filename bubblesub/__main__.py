@@ -14,8 +14,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    opt = bubblesub.opt.Options(
-        None if args.no_config else bubblesub.opt.DEFAULT_PATH)
+    opt = bubblesub.opt.Options()
 
     print('loading API...')
     from bubblesub.api import Api
@@ -26,12 +25,7 @@ def main():
     api = Api(opt)
 
     print('loading UI...')
-    ui = bubblesub.ui.Ui(api, args)
-
-    ui.run()
-
-    if not args.no_config:
-        opt.save(opt.location)
+    bubblesub.ui.run(api, args)
 
 
 if __name__ == '__main__':

@@ -6,27 +6,29 @@ import quamash
 from PyQt5 import QtWidgets
 
 
-class Ui:
-    def __init__(self, api, args):
-        self._api = api
-        self._args = args
+def run(api, args):
+    app = QtWidgets.QApplication(sys.argv)
+    loop = quamash.QEventLoop(app)
+    asyncio.set_event_loop(loop)
 
-    def run(self):
-        app = QtWidgets.QApplication(sys.argv)
-        loop = quamash.QEventLoop(app)
-        asyncio.set_event_loop(loop)
-        main_window = bubblesub.ui.main_window.MainWindow(self._api)
-        self._api.gui.set_main_window(main_window)
+    if not args.no_config:
+        api.opt.load(api.opt.DEFAULT_PATH)
 
-        if self._args.file:
-            self._api.subs.load_ass(self._args.file)
+    main_window = bubblesub.ui.main_window.MainWindow(api)
+    api.gui.set_main_window(main_window)
 
-        if self._api.opt.location:
-            try:
-                self._api.cmd.load_plugins(self._api.opt.location / 'scripts')
-            except Exception as ex:
-                self._api.log.error(str(ex))
+    if args.file:
+        api.subs.load_ass(args.file)
 
-        main_window.show()
-        with loop:
-            loop.run_forever()
+    if not args.no_config:
+        try:
+            api.cmd.load_plugins(api.opt.location / 'scripts')
+        except Exception as ex:
+            api.log.error(str(ex))
+
+    main_window.show()
+    with loop:
+        loop.run_forever()
+
+    if not args.no_config:
+        api.opt.save(api.opt.location)

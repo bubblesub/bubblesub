@@ -3,12 +3,11 @@ import json
 import xdg
 
 
-DEFAULT_PATH = Path(xdg.XDG_CONFIG_HOME) / 'bubblesub'
-
 _DEFAULT_GENERAL = {
     'convert_newlines': True,
     'fonts': {
-        'editor': None,
+        'editor': '',
+        'notes': '',
     },
     'subs': {
         'max_characters_per_second': 15,
@@ -365,20 +364,17 @@ class Serializer:
 
 
 class Options:
-    def __init__(self, location):
+    DEFAULT_PATH = Path(xdg.XDG_CONFIG_HOME) / 'bubblesub'
+
+    def __init__(self):
         self.general = _DEFAULT_GENERAL
         self.hotkeys = _DEFAULT_HOTKEYS
         self.main_menu = _DEFAULT_TOP_MENU
         self.context_menu = _DEFAULT_CONTEXT_MENU
+        self.location = None
+
+    def load(self, location):
         self.location = location
-
-        if location:
-            self._load(location)
-
-    def save(self, location):
-        self._save(location)
-
-    def _load(self, location):
         serializer = Serializer(location)
         hotkeys, menu, general = serializer.load()
         if hotkeys:
@@ -390,7 +386,7 @@ class Options:
             self.general = general
         self._ensure_defaults(self.general, _DEFAULT_GENERAL)
 
-    def _save(self, location):
+    def save(self, location):
         serializer = Serializer(location)
         serializer.write(
             self.hotkeys,
@@ -398,8 +394,16 @@ class Options:
             self.general)
 
     def _ensure_defaults(self, target, source):
-        for key, value in source.items():
-            if key not in target:
-                target[key] = value
-            elif isinstance(value, dict):
-                self._ensure_defaults(target[key], value)
+        if isinstance(source, list) or isinstance(source, tuple):
+            if not isinstance(target, list):
+                raise RuntimeError('Expected list')
+        elif isinstance(source, dict):
+            if not isinstance(target, dict):
+                raise RuntimeError('Expected dictionary')
+            for key, value in source.items():
+                if key not in target:
+                    target[key] = value
+                else:
+                    self._ensure_defaults(target[key], value)
+        elif type(target) != type(source):
+            raise RuntimeError(f'Expected {type(source)}')

@@ -1,1 +1,1 @@
-from bubblesub.ui.ui import Ui
+from bubblesub.ui.ui import run
