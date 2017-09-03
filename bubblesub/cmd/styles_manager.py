@@ -182,6 +182,7 @@ class StyleList(QtWidgets.QWidget):
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(
                 self._api.subs.styles.index(style), 0),
+            QtCore.QItemSelectionModel.Clear |
             QtCore.QItemSelectionModel.Select)
 
     def _prompt_for_unique_style_name(self, style_name=''):
