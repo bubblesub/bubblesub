@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-from pathlib import Path
-import xdg
 import bubblesub.opt
 import bubblesub.ui
 
@@ -16,11 +14,8 @@ def parse_args():
 def main():
     args = parse_args()
 
-    cfg_path = Path(xdg.XDG_CONFIG_HOME) / 'bubblesub'
-
-    opt = bubblesub.opt.Options()
-    if not args.no_config:
-        opt.load(cfg_path)
+    opt = bubblesub.opt.Options(
+        None if args.no_config else bubblesub.opt.DEFAULT_PATH)
 
     print('loading API...')
     from bubblesub.api import Api
@@ -29,12 +24,14 @@ def main():
     from bubblesub import cmd as _
 
     api = Api(opt)
-    api.cmd.load_plugins(cfg_path / 'scripts')
 
     print('loading UI...')
-    bubblesub.ui.Ui(api, args).run()
+    ui = bubblesub.ui.Ui(api, args)
+
+    ui.run()
+
     if not args.no_config:
-        opt.save(cfg_path)
+        opt.save(opt.location)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 import asyncio
 import sys
 import bubblesub.ui.main_window
+import bubblesub.ui.util
 import quamash
 from PyQt5 import QtWidgets
 
@@ -19,6 +20,12 @@ class Ui:
 
         if self._args.file:
             self._api.subs.load_ass(self._args.file)
+
+        if self._api.opt.location:
+            try:
+                self._api.cmd.load_plugins(self._api.opt.location / 'scripts')
+            except Exception as ex:
+                self._api.log.error(str(ex))
 
         main_window.show()
         with loop:

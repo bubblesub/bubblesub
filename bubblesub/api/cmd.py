@@ -3,6 +3,7 @@ import time
 import sys
 import importlib.util
 import bubblesub.util
+from PyQt5 import QtCore
 
 
 class BaseCommand:
@@ -32,11 +33,13 @@ class BaseCommand:
         self.api.log.error('cmd/{}: {}'.format(self.name, text))
 
 
-class CommandApi:
+class CommandApi(QtCore.QObject):
     core_registry = {}
     plugin_registry = {}
+    plugins_loaded = QtCore.pyqtSignal()
 
     def __init__(self, api):
+        super().__init__()
         self._api = api
         self._thread = None
 
@@ -73,14 +76,18 @@ class CommandApi:
 
     def load_plugins(self, path):
         self.plugin_registry.clear()
-        if not path.exists():
-            return
-        for subpath in path.glob('*.py'):
-            spec = importlib.util.spec_from_file_location(
-                'bubblesub.plugin', subpath)
-            if spec is None:
-                continue
-            spec.loader.exec_module(importlib.util.module_from_spec(spec))
+        specs = []
+        if path.exists():
+            for subpath in path.glob('*.py'):
+                spec = importlib.util.spec_from_file_location(
+                    'bubblesub.plugin', subpath)
+                if spec is not None:
+                    specs.append(spec)
+        try:
+            for spec in specs:
+                spec.loader.exec_module(importlib.util.module_from_spec(spec))
+        finally:
+            self.plugins_loaded.emit()
 
 
 class CoreCommand(BaseCommand):

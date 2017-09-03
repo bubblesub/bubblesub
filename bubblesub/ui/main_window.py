@@ -31,6 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         api.gui.end_update_requested.connect(
             lambda: self.setUpdatesEnabled(True))
         api.subs.loaded.connect(self._update_title)
+        api.cmd.plugins_loaded.connect(self._setup_plugins_menu)
 
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
@@ -120,14 +121,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self._api, self.menuBar(), self._api.opt.main_menu)
 
     def _setup_plugins_menu(self):
-        plugins_menu_def = []
+        plugins_menu_def = [['misc/reload-plugins'], None]
         for plugin_name in self._api.cmd.plugin_registry:
             plugins_menu_def.append((plugin_name, plugin_name))
-        if len(plugins_menu_def) == 0:
-            return
-        plugins_submenu = self.menuBar().addMenu('Plugins')
+        for action in self.menuBar().children():
+            if action.objectName() == 'plugins-menu':
+                self.menuBar().removeAction(action.menuAction())
+        plugins_menu = self.menuBar().addMenu('Pl&ugins')
+        plugins_menu.setObjectName('plugins-menu')
         bubblesub.ui.util.setup_cmd_menu(
-            self._api, plugins_submenu, plugins_menu_def)
+            self._api, plugins_menu, plugins_menu_def)
 
     def _setup_hotkeys(self, action_map):
         for context, items in self._api.opt.hotkeys.items():

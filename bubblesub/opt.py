@@ -1,5 +1,9 @@
+from pathlib import Path
 import json
+import xdg
 
+
+DEFAULT_PATH = Path(xdg.XDG_CONFIG_HOME) / 'bubblesub'
 
 _DEFAULT_GENERAL = {
     'convert_newlines': True,
@@ -361,13 +365,20 @@ class Serializer:
 
 
 class Options:
-    def __init__(self):
+    def __init__(self, location):
         self.general = _DEFAULT_GENERAL
         self.hotkeys = _DEFAULT_HOTKEYS
         self.main_menu = _DEFAULT_TOP_MENU
         self.context_menu = _DEFAULT_CONTEXT_MENU
+        self.location = location
 
-    def load(self, location):
+        if location:
+            self._load(location)
+
+    def save(self, location):
+        self._save(location)
+
+    def _load(self, location):
         serializer = Serializer(location)
         hotkeys, menu, general = serializer.load()
         if hotkeys:
@@ -379,7 +390,7 @@ class Options:
             self.general = general
         self._ensure_defaults(self.general, _DEFAULT_GENERAL)
 
-    def save(self, location):
+    def _save(self, location):
         serializer = Serializer(location)
         serializer.write(
             self.hotkeys,
