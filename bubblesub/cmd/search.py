@@ -82,7 +82,6 @@ def _get_selection_from_widget(widget):
             widget.selectionStart(),
             widget.selectionStart() + len(widget.selectedText()))
     else:
-        print(type(widget))
         assert False, 'Unknown widget type'
 
 
@@ -108,7 +107,6 @@ def _narrow_match(matches, idx, selected_idx, direction, subject_widget):
     if idx == selected_idx:
         selection_start, selection_end = (
             _get_selection_from_widget(subject_widget))
-        print(selection_start, selection_end)
         if selection_end == selection_start:
             if direction > 0:
                 return matches[0]
