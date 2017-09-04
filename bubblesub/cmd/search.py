@@ -297,8 +297,11 @@ class SearchDialog(QtWidgets.QDialog):
             self._search(1)
 
     def _update_replacement_enabled(self):
-        cursor = self._main_window.editor.text_edit.textCursor()
-        self.replace_sel_btn.setEnabled(cursor.selectedText() != '')
+        mode = self.search_mode_group_box.get_value()
+        subject_widget = _get_subject_widget_by_mode(self._main_window, mode)
+        selection_start, selection_end = _get_selection_from_widget(
+            subject_widget)
+        self.replace_sel_btn.setEnabled(selection_start != selection_end)
 
     def _replace_selection(self):
         _replace_selection(
