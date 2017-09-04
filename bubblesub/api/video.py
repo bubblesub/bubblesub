@@ -219,9 +219,9 @@ class VideoApi(QtCore.QObject):
 
     def _reload_video(self):
         self._subs_api.save_ass(self._tmp_subs_path)
+        self._mpv_ready = False
         if not self.path or not self.path.exists():
             self._mpv.loadfile('')
-            self._mpv_ready = False
         else:
             self._mpv.loadfile(str(self.path))
 
