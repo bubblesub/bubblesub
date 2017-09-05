@@ -197,7 +197,7 @@ class GridCopyToClipboardCommand(CoreCommand):
         ]))
 
 
-class PasteFromClipboardCommand(CoreCommand):
+class PasteFromClipboardBelowCommand(CoreCommand):
     name = 'grid/paste-from-clipboard-below'
     menu_name = 'Paste subtitles from clipboard (below)'
 
@@ -214,7 +214,7 @@ class PasteFromClipboardCommand(CoreCommand):
         self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
-class PasteFromClipboardCommand(CoreCommand):
+class PasteFromClipboardAboveCommand(CoreCommand):
     name = 'grid/paste-from-clipboard-above'
     menu_name = 'Paste subtitles from clipboard (above)'
 
@@ -226,7 +226,7 @@ class PasteFromClipboardCommand(CoreCommand):
         idx = self.api.subs.selected_indexes[0]
         with self.api.undo.bulk():
             items = json.loads(text)
-            for i, item in enumerate(reversed(items)):
+            for item in reversed(items):
                 self.api.subs.lines.insert_one(idx, **item)
         self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 

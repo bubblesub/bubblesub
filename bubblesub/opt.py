@@ -402,7 +402,7 @@ class Options:
             self.general)
 
     def _ensure_defaults(self, target, source):
-        if isinstance(source, list) or isinstance(source, tuple):
+        if isinstance(source, (list, tuple)):
             if not isinstance(target, list):
                 raise RuntimeError('Expected list')
         elif isinstance(source, dict):

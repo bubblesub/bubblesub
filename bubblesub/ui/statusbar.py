@@ -38,7 +38,11 @@ class StatusBar(QtWidgets.QStatusBar):
             'Subtitles: {}/{} ({:.1%})'.format(
                 idx if idx is not None else '-',
                 len(self._api.subs.lines),
-                (idx / max(1, len(self._api.subs.lines)) if idx is not None else 0)))
+                (
+                    idx / max(1, len(self._api.subs.lines))
+                    if idx is not None
+                    else 0
+                )))
 
     def _video_current_pts_changed(self):
         self._video_frame_label.setText(
