@@ -203,7 +203,7 @@ class AudioApi(QtCore.QObject):
         self._set_max_pts(self._video_api.max_pts)
         self._audio_source = _LOADING
         if self._video_api.path:
-            self._audio_source_provider.schedule(self._video_api.path)
+            self._audio_source_provider.schedule_task(self._video_api.path)
 
     def _got_audio_source(self, result):
         self._audio_source = result

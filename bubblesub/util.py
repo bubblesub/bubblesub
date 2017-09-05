@@ -290,7 +290,15 @@ class Provider(QtCore.QObject):
     def __del__(self):
         self.worker.stop()
 
-    def schedule(self, task_data):
+    def clear_tasks(self):
+        while not self._queue.empty():
+            try:
+                self._queue.get(False)
+            except queue.Empty:
+                continue
+            self._queue.task_done()
+
+    def schedule_task(self, task_data):
         self._queue.put(task_data)
 
     def _work_finished(self, result):

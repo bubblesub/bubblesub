@@ -128,6 +128,7 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         api.video.current_pts_changed.connect(self._video_current_pts_changed)
         api.video.loaded.connect(self._video_loaded)
+        api.audio.view_changed.connect(self._audio_view_changed)
 
     def changeEvent(self, _event):
         self._generate_color_table()
@@ -193,8 +194,17 @@ class AudioPreviewWidget(BaseAudioWidget):
         if self._need_repaint:
             self.update()
 
+    def _audio_view_changed(self):
+        self._spectrum_cache = {
+            key: value
+            for key, value in self._spectrum_cache.items()
+            if value is not CACHING
+        }
+        self._spectrum_provider.clear_tasks()
+
     def _video_loaded(self):
         self._spectrum_cache.clear()
+        self._spectrum_provider.clear_tasks()
         self.update()
 
     def _video_current_pts_changed(self):
@@ -220,7 +230,7 @@ class AudioPreviewWidget(BaseAudioWidget):
             pts = (pts // horizontal_res) * horizontal_res
             column = self._spectrum_cache.get(pts, NOT_CACHED)
             if column is NOT_CACHED:
-                self._spectrum_provider.schedule(pts)
+                self._spectrum_provider.schedule_task(pts)
                 self._spectrum_cache[pts] = CACHING
                 continue
             if column is CACHING:

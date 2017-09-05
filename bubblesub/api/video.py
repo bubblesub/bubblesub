@@ -82,7 +82,7 @@ class VideoApi(QtCore.QObject):
             self._subs_api.remembered_video_path = self._path
         self._timecodes = []
         self.timecodes_updated.emit()
-        self._timecodes_provider.schedule(self._path)
+        self._timecodes_provider.schedule_task(self._path)
         self._reload_video()
         self.loaded.emit()
 

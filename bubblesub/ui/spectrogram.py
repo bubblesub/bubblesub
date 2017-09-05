@@ -58,5 +58,4 @@ class SpectrumProviderContext(bubblesub.util.ProviderContext):
 
 class SpectrumProvider(bubblesub.util.Provider):
     def __init__(self, parent, api):
-        self._cache = {}
         super().__init__(parent, SpectrumProviderContext(api))
