@@ -6,7 +6,7 @@ from PyQt5 import QtWidgets
 
 class GridJumpToLineCommand(CoreCommand):
     name = 'grid/jump-to-line'
-    menu_name = 'Jump to line...'
+    menu_name = 'Jump to line by number...'
 
     def enabled(self):
         return len(self.api.subs.lines) > 0
@@ -31,7 +31,7 @@ class GridJumpToLineCommand(CoreCommand):
 
 class GridJumpToTimeCommand(CoreCommand):
     name = 'grid/jump-to-time'
-    menu_name = 'Jump to time...'
+    menu_name = 'Jump to line by time...'
 
     def enabled(self):
         return len(self.api.subs.lines) > 0

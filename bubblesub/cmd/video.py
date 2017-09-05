@@ -119,6 +119,33 @@ class VideoStepFrameCommand(CoreCommand):
         self.api.video.seek(self.api.video.timecodes[idx + self._delta])
 
 
+class VideoSeekWithGuiCommand(CoreCommand):
+    name = 'video/seek-with-gui'
+    menu_name = 'Seek to...'
+
+    def enabled(self):
+        return len(self.api.video.timecodes) > 0
+
+    async def run(self):
+        async def _run_dialog(_api, main_window, **kwargs):
+            return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
+
+        ret = await self.api.gui.exec(
+            _run_dialog,
+            absolute_label='Time to jump to:',
+            relative_label='Time to jump by:',
+            relative_checked=False)
+
+        if ret:
+            value, is_relative = ret
+
+            if is_relative:
+                self.api.video.seek(
+                    self.api.video.current_pts + value)
+            else:
+                self.api.video.seek(value)
+
+
 class VideoSetPlaybackSpeed(CoreCommand):
     name = 'video/set-playback-speed'
 
