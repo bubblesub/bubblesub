@@ -1,6 +1,5 @@
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
-from PyQt5 import QtWidgets
 
 
 class EditUndoCommand(CoreCommand):
@@ -212,9 +211,17 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self):
-        dialog = self.ShiftTimesDialog()
-        if dialog.exec_():
-            delta, is_relative = dialog.value()
+        async def _run_dialog(_api, main_window, **kwargs):
+            return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
+
+        ret = await self.api.gui.exec(
+            _run_dialog,
+            absolute_label='Time to move to:',
+            relative_label='Time to add:',
+            relative_checked=True)
+
+        if ret:
+            delta, is_relative = ret
 
             if not is_relative:
                 delta -= self.api.subs.selected_lines[0].start
@@ -225,46 +232,6 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
                     sub.start += delta
                     sub.end += delta
                     sub.end_update()
-
-    class ShiftTimesDialog(QtWidgets.QDialog):
-        def __init__(self, parent=None):
-            super().__init__(parent)
-
-            self._label = QtWidgets.QLabel('', self)
-            self._time_edit = bubblesub.ui.util.TimeEdit(self)
-            self._radio_rel = QtWidgets.QRadioButton('Relative', self)
-            self._radio_rel.setChecked(True)
-            self._radio_abs = QtWidgets.QRadioButton('Absolute', self)
-            strip = QtWidgets.QDialogButtonBox(self)
-            strip.addButton(strip.Ok)
-            strip.addButton(strip.Cancel)
-
-            strip.accepted.connect(self.accept)
-            strip.rejected.connect(self.reject)
-            self._radio_rel.clicked.connect(self._radio_clicked)
-            self._radio_abs.clicked.connect(self._radio_clicked)
-
-            layout = QtWidgets.QVBoxLayout(self)
-            layout.addWidget(self._label)
-            layout.addWidget(self._time_edit)
-            layout.addWidget(self._radio_rel)
-            layout.addWidget(self._radio_abs)
-            layout.addWidget(strip)
-
-            self._radio_clicked()
-
-        def _radio_clicked(self):
-            is_relative = self._radio_rel.isChecked()
-            if is_relative:
-                self._label.setText('Time to add:')
-            else:
-                self._label.setText('Time to move to:')
-            self._time_edit.set_allow_negative(is_relative)
-
-        def value(self):
-            return (
-                bubblesub.util.str_to_ms(self._time_edit.text()),
-                self._radio_rel.isChecked())
 
 
 class EditSnapSubsStartToVideoCommand(CoreCommand):

@@ -37,11 +37,21 @@ class GridJumpToTimeCommand(CoreCommand):
         return len(self.api.subs.lines) > 0
 
     async def run(self):
-        dialog = self.JumpToTimeDialog()
-        if self.api.subs.has_selection:
-            dialog.setValue(self.api.subs.selected_lines[0].start)
-        if dialog.exec_():
-            target_pts = dialog.value()
+        async def _run_dialog(_api, main_window, **kwargs):
+            return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
+
+        ret = await self.api.gui.exec(
+            _run_dialog,
+            value=(
+                self.api.subs.selected_lines[0].start
+                if self.api.subs.has_selection
+                else 0),
+            absolute_label='Time to jump to:',
+            relative_checked=False,
+            show_radio=False)
+
+        if ret:
+            target_pts, _is_relative = ret
             best_distance = None
             best_idx = None
             for i, sub in enumerate(self.api.subs.lines):
@@ -52,32 +62,6 @@ class GridJumpToTimeCommand(CoreCommand):
                     best_idx = i
             if best_idx is not None:
                 self.api.subs.selected_indexes = [best_idx]
-
-    class JumpToTimeDialog(QtWidgets.QDialog):
-        def __init__(self, parent=None):
-            super().__init__(parent)
-
-            self.time_widget = bubblesub.ui.util.TimeEdit(
-                self, allow_negative=False)
-
-            label = QtWidgets.QLabel('Time to jump to:')
-            strip = QtWidgets.QDialogButtonBox(self)
-            strip.addButton(strip.Ok)
-            strip.addButton(strip.Cancel)
-            strip.accepted.connect(self.accept)
-            strip.rejected.connect(self.reject)
-
-            layout = QtWidgets.QVBoxLayout(self)
-            layout.addWidget(label)
-            layout.addWidget(self.time_widget)
-            layout.addWidget(strip)
-
-        def setValue(self, value):
-            self.time_widget.setText(bubblesub.util.ms_to_str(value))
-            self.time_widget.setCursorPosition(0)
-
-        def value(self):
-            return bubblesub.util.str_to_ms(self.time_widget.text())
 
 
 class GridSelectPrevSubtitleCommand(CoreCommand):

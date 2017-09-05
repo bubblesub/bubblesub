@@ -125,9 +125,9 @@ class Editor(QtWidgets.QWidget):
     def _fetch_selection(self, index):
         self._index = index
         subtitle = self._api.subs.lines[index]
-        self.start_time_edit.setText(bubblesub.util.ms_to_str(subtitle.start))
-        self.end_time_edit.setText(bubblesub.util.ms_to_str(subtitle.end))
-        self.duration_edit.setText(bubblesub.util.ms_to_str(subtitle.duration))
+        self.start_time_edit.set_value(subtitle.start)
+        self.end_time_edit.set_value(subtitle.end)
+        self.duration_edit.set_value(subtitle.duration)
         self.effect_edit.setText(subtitle.effect)
         self.layer_edit.setValue(subtitle.layer)
         self.comment_checkbox.setChecked(subtitle.is_comment)
@@ -180,8 +180,8 @@ class Editor(QtWidgets.QWidget):
         self._disconnect_api_signals()
         subtitle = self._api.subs.lines[self._index]
         subtitle.begin_update()
-        subtitle.start = bubblesub.util.str_to_ms(self.start_time_edit.text())
-        subtitle.end = bubblesub.util.str_to_ms(self.end_time_edit.text())
+        subtitle.start = self.start_time_edit.get_value()
+        subtitle.end = self.end_time_edit.get_value()
         subtitle.style = self.style_edit.lineEdit().text()
         subtitle.actor = self.actor_edit.lineEdit().text()
         subtitle.text = self.text_edit.toPlainText()
@@ -211,18 +211,22 @@ class Editor(QtWidgets.QWidget):
             self._connect_ui_signals()
 
     def _time_end_edited(self):
-        start = bubblesub.util.str_to_ms(self.start_time_edit.text())
-        end = bubblesub.util.str_to_ms(self.end_time_edit.text())
+        self._disconnect_ui_signals()
+        start = self.start_time_edit.get_value()
+        end = self.end_time_edit.get_value()
         duration = end - start
-        self.duration_edit.setText(bubblesub.util.ms_to_str(duration))
+        self.duration_edit.set_value(duration)
         self._push_selection()
+        self._connect_ui_signals()
 
     def _duration_edited(self):
-        start = bubblesub.util.str_to_ms(self.start_time_edit.text())
-        duration = bubblesub.util.str_to_ms(self.duration_edit.text())
+        self._disconnect_ui_signals()
+        start = self.start_time_edit.get_value()
+        duration = self.duration_edit.get_value()
         end = start + duration
-        self.end_time_edit.setText(bubblesub.util.ms_to_str(end))
+        self.end_time_edit.set_value(end)
         self._push_selection()
+        self._connect_ui_signals()
 
     def _generic_edited(self):
         self._push_selection()

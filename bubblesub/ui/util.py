@@ -104,19 +104,25 @@ class TimeEdit(QtWidgets.QLineEdit):
         if not event.key() in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Down):
             return
 
-        text = self.text()
+        value = self.get_value()
         delta = 10
         if event.key() == QtCore.Qt.Key_Up:
-            time = bubblesub.util.str_to_ms(text) + delta
+            value += delta
         elif event.key() == QtCore.Qt.Key_Down:
-            time = bubblesub.util.str_to_ms(text) - delta
+            value -= delta
 
+        self.set_value(value)
+
+    def get_value(self):
+        return bubblesub.util.str_to_ms(self.text())
+
+    def set_value(self, time):
         text = bubblesub.util.ms_to_str(time)
         if self._allow_negative and time >= 0:
             text = '+' + text
-
         self.setText(text)
         self.textEdited.emit(self.text())
+        self.setCursorPosition(0)
 
 
 def _menu_about_to_show(menu):
@@ -181,3 +187,64 @@ def save_dialog(parent, filter, directory=None, file_name=None):
         directory=directory,
         filter=filter)
     return path
+
+
+def time_jump_dialog(
+        parent,
+        value=0,
+        relative_label='Time:',
+        absolute_label='Time:',
+        relative_checked=True,
+        show_radio=True):
+    class TimeJumpDialog(QtWidgets.QDialog):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+
+            self._label = QtWidgets.QLabel('', self)
+            self._time_edit = bubblesub.ui.util.TimeEdit(self)
+            self._radio_rel = QtWidgets.QRadioButton('Relative', self)
+            self._radio_abs = QtWidgets.QRadioButton('Absolute', self)
+            if relative_checked:
+                self._radio_rel.setChecked(True)
+            else:
+                self._radio_abs.setChecked(True)
+            strip = QtWidgets.QDialogButtonBox(self)
+            strip.addButton(strip.Ok)
+            strip.addButton(strip.Cancel)
+
+            if not show_radio:
+                self._radio_abs.setHidden(True)
+                self._radio_rel.setHidden(True)
+
+            strip.accepted.connect(self.accept)
+            strip.rejected.connect(self.reject)
+            self._radio_rel.clicked.connect(self._radio_clicked)
+            self._radio_abs.clicked.connect(self._radio_clicked)
+
+            layout = QtWidgets.QVBoxLayout(self)
+            layout.addWidget(self._label)
+            layout.addWidget(self._time_edit)
+            layout.addWidget(self._radio_rel)
+            layout.addWidget(self._radio_abs)
+            layout.addWidget(strip)
+
+            self._radio_clicked()
+            self._time_edit.set_value(value)
+
+        def _radio_clicked(self):
+            is_relative = self._radio_rel.isChecked()
+            if is_relative:
+                self._label.setText(relative_label)
+            else:
+                self._label.setText(absolute_label)
+            self._time_edit.set_allow_negative(is_relative)
+
+        def value(self):
+            return (
+                self._time_edit.get_value(),
+                self._radio_rel.isChecked())
+
+    dialog = TimeJumpDialog(parent)
+    if dialog.exec_():
+        return dialog.value()
+    return None
