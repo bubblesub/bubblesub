@@ -1,10 +1,12 @@
 import os
+import locale
 import tempfile
 import atexit
 import pysubs2
+import mpv
 import bubblesub.util
 import bubblesub.ui.util
-import bubblesub.mpv
+import bubblesub.ui.mpv
 from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
 from bubblesub.api.cmd import CoreCommand
 from PyQt5 import QtCore
@@ -22,11 +24,13 @@ class StylePreview(QtWidgets.QGroupBox):
             sizePolicy=QtWidgets.QSizePolicy(
                 QtWidgets.QSizePolicy.MinimumExpanding,
                 QtWidgets.QSizePolicy.MinimumExpanding))
+
         self._slider = QtWidgets.QSlider(
             self,
             orientation=QtCore.Qt.Horizontal,
             minimum=0,
             maximum=api.video.max_pts)
+
         self._text_box = QtWidgets.QPlainTextEdit(
             self,
             sizePolicy=QtWidgets.QSizePolicy(
@@ -36,6 +40,34 @@ class StylePreview(QtWidgets.QGroupBox):
         if self._api.subs.selected_lines:
             self._text_box.document().setPlainText(
                 self._api.subs.selected_lines[0].text)
+
+        locale.setlocale(locale.LC_NUMERIC, 'C')
+        self._mpv = mpv.Context()
+        self._mpv.set_log_level('v')
+        self._mpv.set_option('config', False)
+        self._mpv.set_option('quiet', False)
+        self._mpv.set_option('msg-level', 'all=error')
+        self._mpv.set_option('osc', False)
+        self._mpv.set_option('osd-bar', False)
+        self._mpv.set_option('cursor-autohide', 'no')
+        self._mpv.set_option('input-cursor', False)
+        self._mpv.set_option('input-vo-keyboard', False)
+        self._mpv.set_option('input-default-bindings', False)
+        self._mpv.set_option('ytdl', False)
+        self._mpv.set_option('sub-auto', False)
+        self._mpv.set_option('audio-file-auto', False)
+        self._mpv.set_option('vo', 'opengl')
+        self._mpv.set_option('pause', True)
+        self._mpv.set_option('idle', True)
+        self._mpv.set_option('sid', False)
+        self._mpv.set_option('wid', str(int(self._preview_box.winId())))
+        self._mpv.set_option('video-sync', 'display-vdrop')
+        self._mpv.set_option('keepaspect', True)
+        self._mpv.set_option('hwdec', 'auto')
+        self._mpv.set_option('stop-playback-on-init-failure', False)
+        self._mpv.set_option('keep-open', True)
+        self._mpv.set_wakeup_callback(self._mpv_event_handler)
+        self._mpv.initialize()
 
         layout = QtWidgets.QVBoxLayout(self, margin=0)
         layout.addWidget(self._preview_box)
@@ -49,22 +81,8 @@ class StylePreview(QtWidgets.QGroupBox):
         self._fake_subs_list = bubblesub.api.subs.SubtitleList()
         self._save_subs()
 
-        self._mpv = bubblesub.mpv.MPV(
-            osd_bar=False,
-            osc=False,
-            cursor_autohide='no',
-            input_cursor=False,
-            input_vo_keyboard=False,
-            input_default_bindings=False,
-            wid=str(int(self._preview_box.winId())),
-            keep_open=True,
-            log_handler=lambda _log_level, _component, _message: None)
+        self._mpv.command('loadfile', str(api.video.path))
         self._mpv_ready = False
-        self._mpv.loadfile(str(api.video.path))
-
-        @self._mpv.event_callback('file_loaded')
-        def _init_handler(*_):
-            self._mpv_loaded()
 
         self._slider.valueChanged.connect(self._slider_moved)
         self._text_box.textChanged.connect(self._text_changed)
@@ -76,10 +94,18 @@ class StylePreview(QtWidgets.QGroupBox):
     def sizeHint(self):
         return QtCore.QSize(640, 480)
 
+    def _mpv_event_handler(self):
+        while self._mpv:
+            event = self._mpv.wait_event(.01)
+            if event.id == mpv.Events.none:
+                break
+            elif event.id == mpv.Events.file_loaded:
+                self._mpv_loaded()
+
     def _mpv_loaded(self):
         self._mpv_ready = True
-        self._mpv.pause = True
-        self._mpv.sub_add(self._tmp_subs_path)
+        self._mpv.set_property('pause', True)
+        self._mpv.command('sub_add', self._tmp_subs_path)
         self._slider.setValue(self._api.video.current_pts)
 
     def _save_subs(self):
@@ -111,7 +137,7 @@ class StylePreview(QtWidgets.QGroupBox):
     def _refresh_subs(self):
         if self._mpv_ready:
             self._save_subs()
-            self._mpv.sub_reload()
+            self._mpv.command('sub_reload')
 
     def _selection_changed(self, _value):
         self._refresh_subs()
@@ -123,7 +149,7 @@ class StylePreview(QtWidgets.QGroupBox):
         self._refresh_subs()
 
     def _slider_moved(self, value):
-        self._mpv.seek(value / 1000.0, 'absolute+exact')
+        self._mpv.command('seek', str(value / 1000), 'absolute+exact')
 
 
 class StyleList(QtWidgets.QWidget):

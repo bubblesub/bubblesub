@@ -25,6 +25,7 @@ setup(
         'quamash',
         'regex',
         'pyenchant',
+        'pympv',
     ],
 
     classifiers=[

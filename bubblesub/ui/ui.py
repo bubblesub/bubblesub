@@ -17,16 +17,18 @@ def run(api, args):
     main_window = bubblesub.ui.main_window.MainWindow(api)
     api.gui.set_main_window(main_window)
 
-    if args.file:
-        api.subs.load_ass(args.file)
-
     if not args.no_config:
         try:
             api.cmd.load_plugins(api.opt.location / 'scripts')
         except Exception as ex:
             api.log.error(str(ex))
 
+    api.video.start()
     main_window.show()
+
+    if args.file:
+        api.subs.load_ass(args.file)
+
     with loop:
         loop.run_forever()
 

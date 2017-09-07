@@ -5,7 +5,7 @@ import tempfile
 import hashlib
 from pathlib import Path
 import ffms
-import bubblesub.mpv
+import mpv
 import bubblesub.util
 from PyQt5 import QtCore
 
@@ -51,7 +51,8 @@ class VideoApi(QtCore.QObject):
 
         self._timecodes = []
         self._path = None
-        self._current_pts = None
+        self._current_pts = 0
+        self._max_pts = 0
         self._mpv = None
         self._mpv_ready = False
         self._need_subs_refresh = False
@@ -67,6 +68,44 @@ class VideoApi(QtCore.QObject):
         self._subs_api.styles.item_changed.connect(self._subs_changed)
         self._subs_api.styles.items_removed.connect(self._subs_changed)
         self._subs_api.styles.items_inserted.connect(self._subs_changed)
+
+        locale.setlocale(locale.LC_NUMERIC, 'C')
+        self._mpv = mpv.Context()
+        self._mpv.set_log_level('error')
+        self._mpv.set_option('config', False)
+        self._mpv.set_option('quiet', False)
+        self._mpv.set_option('msg-level', 'all=error')
+        self._mpv.set_option('osc', False)
+        self._mpv.set_option('osd-bar', False)
+        self._mpv.set_option('cursor-autohide', 'no')
+        self._mpv.set_option('input-cursor', False)
+        self._mpv.set_option('input-vo-keyboard', False)
+        self._mpv.set_option('input-default-bindings', False)
+        self._mpv.set_option('ytdl', False)
+        self._mpv.set_option('sub-auto', False)
+        self._mpv.set_option('audio-file-auto', False)
+        self._mpv.set_option('vo', 'opengl-cb')
+        self._mpv.set_option('pause', True)
+        self._mpv.set_option('idle', True)
+        self._mpv.set_option('sid', False)
+        self._mpv.set_option('video-sync', 'display-vdrop')
+        self._mpv.set_option('keepaspect', True)
+        self._mpv.set_option('hwdec', 'auto')
+        self._mpv.set_option('stop-playback-on-init-failure', False)
+        self._mpv.set_option('keep-open', True)
+
+        self._mpv.observe_property('time-pos')
+        self._mpv.observe_property('duration')
+        self._mpv.set_wakeup_callback(self._mpv_event_handler)
+        self._mpv.initialize()
+
+        self._timer = QtCore.QTimer(
+            self,
+            interval=self._opt_api.general['video']['subs_sync_interval'])
+        self._timer.timeout.connect(self._refresh_subs_if_needed)
+
+    def start(self):
+        self._timer.start()
 
     def unload(self):
         self._path = None
@@ -86,39 +125,32 @@ class VideoApi(QtCore.QObject):
         self._reload_video()
         self.loaded.emit()
 
-    def connect_presenter(self, window_id):
-        if self._mpv:
-            raise RuntimeError('Already connected!')
-        locale.setlocale(locale.LC_NUMERIC, 'C')
+    def get_opengl_context(self):
+        return self._mpv.opengl_cb_api()
 
-        def _mpv_log_handler(log_level, component, message):
-            self._log_api.debug(
-                'video/{}[{}]: {}'.format(component, log_level, message))
-
-        self._mpv = bubblesub.mpv.MPV(
-            osd_bar=False,
-            osc=False,
-            cursor_autohide='no',
-            input_cursor=False,
-            input_vo_keyboard=False,
-            input_default_bindings=False,
-            wid=str(window_id),
-            keep_open=True,  # without this reaching mpv['end'] borks playback
-            log_handler=_mpv_log_handler)
-
-        @self._mpv.event_callback('file_loaded')
-        def _init_handler(*_):
-            self._mpv_loaded()
-
-        @self._mpv.property_observer('time-pos')
-        def _time_pos_handler(_prop_name, time_pos):
-            self.current_pts = time_pos * 1000
-
-        timer = QtCore.QTimer(
-            self,
-            interval=self._opt_api.general['video']['subs_sync_interval'])
-        timer.timeout.connect(self._refresh_subs_if_needed)
-        timer.start()
+    def _mpv_event_handler(self):
+        while self._mpv:
+            event = self._mpv.wait_event(.01)
+            if event.id == mpv.Events.none:
+                break
+            elif event.id == mpv.Events.file_loaded:
+                self._mpv_loaded()
+            elif event.id == mpv.Events.log_message:
+                event_log = event.data
+                self._log_api.debug(
+                    'video/{}: {}'.format(
+                        event_log.prefix,
+                        event_log.text.strip()))
+            elif event.id == mpv.Events.property_change:
+                event_prop = event.data
+                if event_prop.name == 'time-pos':
+                    self._current_pts = (
+                        self._mpv.get_property('time-pos') * 1000)
+                    self.current_pts_changed.emit()
+                elif event_prop.name == 'duration':
+                    self._max_pts = self._mpv.get_property('duration') * 1000
+            # if event.id in [mpv.Events.end_file, mpv.Events.shutdown]:
+            #     break
 
     def seek(self, pts):
         if not self._mpv_ready:
@@ -126,7 +158,8 @@ class VideoApi(QtCore.QObject):
         self._set_end(None)  # mpv refuses to seek beyond --end
         pts = max(0, pts)
         pts = self._align_pts_to_next_frame(pts)
-        self._mpv.seek(bubblesub.util.ms_to_str(pts), 'absolute+exact')
+        self._mpv.command(
+            'seek', bubblesub.util.ms_to_str(pts), 'absolute+exact')
 
     def play(self, start, end):
         self._play(start, end)
@@ -135,7 +168,7 @@ class VideoApi(QtCore.QObject):
         self._play(None, None)
 
     def pause(self):
-        self._mpv.pause = True
+        self._mpv.set_property('pause', True)
 
     def screenshot(self, path, include_subtitles):
         self._mpv.command(
@@ -145,32 +178,25 @@ class VideoApi(QtCore.QObject):
 
     @property
     def playback_speed(self):
-        return self._mpv.speed
+        return self._mpv.get_property('speed')
 
     @playback_speed.setter
     def playback_speed(self, speed):
-        self._mpv.speed = speed
+        self._mpv.set_property('speed', speed)
 
     @property
     def current_pts(self):
         return self._current_pts
 
-    @current_pts.setter
-    def current_pts(self, new_pts):
-        self._current_pts = new_pts
-        self.current_pts_changed.emit()
-
     @property
     def max_pts(self):
-        if not self._mpv:
-            return 0
-        return self._mpv.duration * 1000
+        return self._max_pts
 
     @property
     def is_paused(self):
         if not self._mpv_ready:
             return True
-        return self._mpv.pause
+        return self._mpv.get_property('pause')
 
     @property
     def path(self):
@@ -192,18 +218,18 @@ class VideoApi(QtCore.QObject):
         if start is not None:
             self.seek(start)
         self._set_end(end)
-        self._mpv.pause = False
+        self._mpv.set_property('pause', False)
 
     def _set_end(self, end):
         if end is None:
             # XXX: mpv doesn't accept None nor "" so we use max pts
-            end = self._mpv.duration * 1000
+            end = self._mpv.get_property('duration') * 1000
         end = max(0, end)
-        self._mpv['end'] = bubblesub.util.ms_to_str(end)
+        self._mpv.set_option('end', bubblesub.util.ms_to_str(end))
 
     def _mpv_loaded(self):
         self._mpv_ready = True
-        self._mpv.sub_add(self._tmp_subs_path)
+        self._mpv.command('sub_add', str(self._tmp_subs_path))
         self._refresh_subs()
         self.parsed.emit()
 
@@ -220,10 +246,11 @@ class VideoApi(QtCore.QObject):
     def _reload_video(self):
         self._subs_api.save_ass(self._tmp_subs_path)
         self._mpv_ready = False
+        self._mpv.set_property('pause', True)
         if not self.path or not self.path.exists():
-            self._mpv.loadfile('')
+            self._mpv.command('loadfile')
         else:
-            self._mpv.loadfile(str(self.path))
+            self._mpv.command('loadfile', str(self.path))
 
     def _refresh_subs_if_needed(self):
         if self._need_subs_refresh:
@@ -233,8 +260,8 @@ class VideoApi(QtCore.QObject):
         if not self._mpv_ready:
             return
         self._subs_api.save_ass(self._tmp_subs_path)
-        if self._mpv.sub:
-            self._mpv.sub_reload()
+        if self._mpv.get_property('sub'):
+            self._mpv.command('sub_reload')
             self._need_subs_refresh = False
 
     def _grid_selection_changed(self, rows):
