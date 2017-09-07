@@ -9,9 +9,10 @@ class SubsGrid(QtWidgets.QTableView):
         super().__init__(parent)
         self._api = api
         self.setModel(SubsModel(api, self))
-        self.verticalHeader().setDefaultSectionSize(24)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
+        self.verticalHeader().setDefaultSectionSize(
+            self.fontMetrics().height() + 2)
 
         for i, column_type in enumerate(self.model().column_order):
             if column_type in (SubsModelColumn.Text, SubsModelColumn.Note):
