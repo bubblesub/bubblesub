@@ -122,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _setup_plugins_menu(self):
         plugins_menu_def = [['misc/reload-plugins'], None]
-        for plugin_name in self._api.cmd.plugin_registry:
+        for plugin_name in sorted(self._api.cmd.plugin_registry):
             plugins_menu_def.append((plugin_name, plugin_name))
         for action in self.menuBar().children():
             if action.objectName() == 'plugins-menu':
