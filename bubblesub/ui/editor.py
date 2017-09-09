@@ -31,12 +31,9 @@ class TextEdit(QtWidgets.QPlainTextEdit):
                 self.font().toString())
 
 
-class Editor(QtWidgets.QWidget):
-    def __init__(self, api, parent=None):
+class TopBar(QtWidgets.QWidget):
+    def __init__(self, parent=None):
         super().__init__(parent)
-
-        self._index = None
-        self._api = api
 
         self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
         self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
@@ -54,9 +51,44 @@ class Editor(QtWidgets.QWidget):
 
         self.layer_edit = QtWidgets.QSpinBox(self, minimum=0)
 
-        self.text_edit = TextEdit(api, 'editor', self, tabChangesFocus=True)
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setSpacing(12)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(QtWidgets.QLabel('Start time:', self))
+        layout.addWidget(self.start_time_edit)
+        layout.addWidget(QtWidgets.QLabel('End time:', self))
+        layout.addWidget(self.end_time_edit)
+        layout.addWidget(QtWidgets.QLabel('Duration:', self))
+        layout.addWidget(self.duration_edit)
+        layout.addStretch()
+        layout.addWidget(QtWidgets.QLabel('Margins:', self))
+        layout.addWidget(self.margins_widget)
+        layout.addWidget(QtWidgets.QLabel('Layer:', self))
+        layout.addWidget(self.layer_edit)
+
+
+class CenterBar(QtWidgets.QWidget):
+    def __init__(self, api, parent=None):
+        super().__init__(parent)
+
+        self.text_edit = TextEdit(
+            api, 'editor', self,
+            tabChangesFocus=True)
         self.note_edit = TextEdit(
-            api, 'notes', self, tabChangesFocus=True, placeholderText='Notes')
+            api, 'notes', self,
+            tabChangesFocus=True,
+            placeholderText='Notes')
+
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setSpacing(4)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.text_edit)
+        layout.addWidget(self.note_edit)
+
+
+class BottomBar(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         self.style_edit = QtWidgets.QComboBox(
             self,
@@ -75,24 +107,7 @@ class Editor(QtWidgets.QWidget):
         self.effect_edit = QtWidgets.QLineEdit(self)
         self.comment_checkbox = QtWidgets.QCheckBox('Comment', self)
 
-        self.top_bar = QtWidgets.QWidget(self)
-        layout = QtWidgets.QHBoxLayout(self.top_bar)
-        layout.setSpacing(12)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(QtWidgets.QLabel('Start time:', self))
-        layout.addWidget(self.start_time_edit)
-        layout.addWidget(QtWidgets.QLabel('End time:', self))
-        layout.addWidget(self.end_time_edit)
-        layout.addWidget(QtWidgets.QLabel('Duration:', self))
-        layout.addWidget(self.duration_edit)
-        layout.addStretch()
-        layout.addWidget(QtWidgets.QLabel('Margins:', self))
-        layout.addWidget(self.margins_widget)
-        layout.addWidget(QtWidgets.QLabel('Layer:', self))
-        layout.addWidget(self.layer_edit)
-
-        self.bottom_bar = QtWidgets.QWidget(self)
-        layout = QtWidgets.QHBoxLayout(self.bottom_bar)
+        layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(12)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(QtWidgets.QLabel('Style:', self))
@@ -104,12 +119,17 @@ class Editor(QtWidgets.QWidget):
         layout.addWidget(self.effect_edit)
         layout.addWidget(self.comment_checkbox)
 
-        self.center = QtWidgets.QWidget(self)
-        layout = QtWidgets.QHBoxLayout(self.center)
-        layout.setSpacing(4)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.text_edit)
-        layout.addWidget(self.note_edit)
+
+class Editor(QtWidgets.QWidget):
+    def __init__(self, api, parent=None):
+        super().__init__(parent)
+
+        self._index = None
+        self._api = api
+
+        self.top_bar = TopBar(self)
+        self.center = CenterBar(api, self)
+        self.bottom_bar = BottomBar(self)
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(4)
@@ -125,29 +145,29 @@ class Editor(QtWidgets.QWidget):
     def _fetch_selection(self, index):
         self._index = index
         subtitle = self._api.subs.lines[index]
-        self.start_time_edit.set_value(subtitle.start)
-        self.end_time_edit.set_value(subtitle.end)
-        self.duration_edit.set_value(subtitle.duration)
-        self.effect_edit.setText(subtitle.effect)
-        self.layer_edit.setValue(subtitle.layer)
-        self.comment_checkbox.setChecked(subtitle.is_comment)
-        self.margin_l_edit.setValue(subtitle.margins[0])
-        self.margin_v_edit.setValue(subtitle.margins[1])
-        self.margin_r_edit.setValue(subtitle.margins[2])
+        self.top_bar.start_time_edit.set_value(subtitle.start)
+        self.top_bar.end_time_edit.set_value(subtitle.end)
+        self.top_bar.duration_edit.set_value(subtitle.duration)
+        self.bottom_bar.effect_edit.setText(subtitle.effect)
+        self.top_bar.layer_edit.setValue(subtitle.layer)
+        self.bottom_bar.comment_checkbox.setChecked(subtitle.is_comment)
+        self.top_bar.margin_l_edit.setValue(subtitle.margins[0])
+        self.top_bar.margin_v_edit.setValue(subtitle.margins[1])
+        self.top_bar.margin_r_edit.setValue(subtitle.margins[2])
 
-        self.actor_edit.clear()
-        self.actor_edit.addItems(
+        self.bottom_bar.actor_edit.clear()
+        self.bottom_bar.actor_edit.addItems(
             sorted(list(set(sub.actor for sub in self._api.subs.lines))))
-        self.actor_edit.lineEdit().setText(subtitle.actor)
+        self.bottom_bar.actor_edit.lineEdit().setText(subtitle.actor)
 
-        self.style_edit.clear()
-        self.style_edit.addItems(
+        self.bottom_bar.style_edit.clear()
+        self.bottom_bar.style_edit.addItems(
             sorted(list(set(sub.style for sub in self._api.subs.lines))))
-        self.style_edit.lineEdit().setText(subtitle.style)
+        self.bottom_bar.style_edit.lineEdit().setText(subtitle.style)
 
-        self.text_edit.document().setPlainText(
+        self.center.text_edit.document().setPlainText(
             self._convert_newlines(subtitle.text))
-        self.note_edit.document().setPlainText(
+        self.center.note_edit.document().setPlainText(
             self._convert_newlines(subtitle.note))
         self.setEnabled(True)
 
@@ -158,19 +178,19 @@ class Editor(QtWidgets.QWidget):
 
     def _clear_selection(self):
         self._index = None
-        self.start_time_edit.reset_text()
-        self.end_time_edit.reset_text()
-        self.duration_edit.reset_text()
-        self.style_edit.lineEdit().setText('')
-        self.actor_edit.lineEdit().setText('')
-        self.effect_edit.setText('')
-        self.layer_edit.setValue(0)
-        self.comment_checkbox.setChecked(False)
-        self.margin_l_edit.setValue(0)
-        self.margin_v_edit.setValue(0)
-        self.margin_r_edit.setValue(0)
-        self.text_edit.document().setPlainText('')
-        self.note_edit.document().setPlainText('')
+        self.top_bar.start_time_edit.reset_text()
+        self.top_bar.end_time_edit.reset_text()
+        self.top_bar.duration_edit.reset_text()
+        self.bottom_bar.style_edit.lineEdit().setText('')
+        self.bottom_bar.actor_edit.lineEdit().setText('')
+        self.bottom_bar.effect_edit.setText('')
+        self.top_bar.layer_edit.setValue(0)
+        self.bottom_bar.comment_checkbox.setChecked(False)
+        self.top_bar.margin_l_edit.setValue(0)
+        self.top_bar.margin_v_edit.setValue(0)
+        self.top_bar.margin_r_edit.setValue(0)
+        self.center.text_edit.document().setPlainText('')
+        self.center.note_edit.document().setPlainText('')
         self.setEnabled(False)
 
     def _push_selection(self):
@@ -180,19 +200,19 @@ class Editor(QtWidgets.QWidget):
         self._disconnect_api_signals()
         subtitle = self._api.subs.lines[self._index]
         subtitle.begin_update()
-        subtitle.start = self.start_time_edit.get_value()
-        subtitle.end = self.end_time_edit.get_value()
-        subtitle.style = self.style_edit.lineEdit().text()
-        subtitle.actor = self.actor_edit.lineEdit().text()
-        subtitle.text = self.text_edit.toPlainText()
-        subtitle.note = self.note_edit.toPlainText()
-        subtitle.effect = self.effect_edit.text()
-        subtitle.layer = self.layer_edit.value()
+        subtitle.start = self.top_bar.start_time_edit.get_value()
+        subtitle.end = self.top_bar.end_time_edit.get_value()
+        subtitle.style = self.bottom_bar.style_edit.lineEdit().text()
+        subtitle.actor = self.bottom_bar.actor_edit.lineEdit().text()
+        subtitle.text = self.center.text_edit.toPlainText()
+        subtitle.note = self.center.note_edit.toPlainText()
+        subtitle.effect = self.bottom_bar.effect_edit.text()
+        subtitle.layer = self.top_bar.layer_edit.value()
         subtitle.margins = (
-            self.margin_l_edit.value(),
-            self.margin_v_edit.value(),
-            self.margin_r_edit.value())
-        subtitle.is_comment = self.comment_checkbox.isChecked()
+            self.top_bar.margin_l_edit.value(),
+            self.top_bar.margin_v_edit.value(),
+            self.top_bar.margin_r_edit.value())
+        subtitle.is_comment = self.bottom_bar.comment_checkbox.isChecked()
         subtitle.end_update()
         self._connect_api_signals()
 
@@ -212,19 +232,19 @@ class Editor(QtWidgets.QWidget):
 
     def _time_end_edited(self):
         self._disconnect_ui_signals()
-        start = self.start_time_edit.get_value()
-        end = self.end_time_edit.get_value()
+        start = self.top_bar.start_time_edit.get_value()
+        end = self.top_bar.end_time_edit.get_value()
         duration = end - start
-        self.duration_edit.set_value(duration)
+        self.top_bar.duration_edit.set_value(duration)
         self._push_selection()
         self._connect_ui_signals()
 
     def _duration_edited(self):
         self._disconnect_ui_signals()
-        start = self.start_time_edit.get_value()
-        duration = self.duration_edit.get_value()
+        start = self.top_bar.start_time_edit.get_value()
+        duration = self.top_bar.duration_edit.get_value()
         end = start + duration
-        self.end_time_edit.set_value(end)
+        self.top_bar.end_time_edit.set_value(end)
         self._push_selection()
         self._connect_ui_signals()
 
@@ -240,32 +260,45 @@ class Editor(QtWidgets.QWidget):
         self._api.subs.selection_changed.disconnect(
             self._grid_selection_changed)
 
+    # TODO: get rid of this crap
+
     def _connect_ui_signals(self):
-        self.start_time_edit.textEdited.connect(self._generic_edited)
-        self.end_time_edit.textEdited.connect(self._time_end_edited)
-        self.duration_edit.textEdited.connect(self._duration_edited)
-        self.actor_edit.editTextChanged.connect(self._generic_edited)
-        self.style_edit.editTextChanged.connect(self._generic_edited)
-        self.text_edit.textChanged.connect(self._generic_edited)
-        self.note_edit.textChanged.connect(self._generic_edited)
-        self.effect_edit.textChanged.connect(self._generic_edited)
-        self.layer_edit.valueChanged.connect(self._generic_edited)
-        self.margin_l_edit.valueChanged.connect(self._generic_edited)
-        self.margin_v_edit.valueChanged.connect(self._generic_edited)
-        self.margin_r_edit.valueChanged.connect(self._generic_edited)
-        self.comment_checkbox.stateChanged.connect(self._generic_edited)
+        self.top_bar.start_time_edit.textEdited.connect(self._generic_edited)
+        self.top_bar.end_time_edit.textEdited.connect(self._time_end_edited)
+        self.top_bar.duration_edit.textEdited.connect(self._duration_edited)
+        self.bottom_bar.actor_edit.editTextChanged.connect(
+            self._generic_edited)
+        self.bottom_bar.style_edit.editTextChanged.connect(
+            self._generic_edited)
+        self.center.text_edit.textChanged.connect(self._generic_edited)
+        self.center.note_edit.textChanged.connect(self._generic_edited)
+        self.bottom_bar.effect_edit.textChanged.connect(self._generic_edited)
+        self.top_bar.layer_edit.valueChanged.connect(self._generic_edited)
+        self.top_bar.margin_l_edit.valueChanged.connect(self._generic_edited)
+        self.top_bar.margin_v_edit.valueChanged.connect(self._generic_edited)
+        self.top_bar.margin_r_edit.valueChanged.connect(self._generic_edited)
+        self.bottom_bar.comment_checkbox.stateChanged.connect(
+            self._generic_edited)
 
     def _disconnect_ui_signals(self):
-        self.start_time_edit.textEdited.disconnect(self._generic_edited)
-        self.end_time_edit.textEdited.disconnect(self._time_end_edited)
-        self.duration_edit.textEdited.disconnect(self._duration_edited)
-        self.actor_edit.editTextChanged.disconnect(self._generic_edited)
-        self.style_edit.editTextChanged.disconnect(self._generic_edited)
-        self.text_edit.textChanged.disconnect(self._generic_edited)
-        self.note_edit.textChanged.disconnect(self._generic_edited)
-        self.effect_edit.textChanged.disconnect(self._generic_edited)
-        self.layer_edit.valueChanged.disconnect(self._generic_edited)
-        self.margin_l_edit.valueChanged.disconnect(self._generic_edited)
-        self.margin_v_edit.valueChanged.disconnect(self._generic_edited)
-        self.margin_r_edit.valueChanged.disconnect(self._generic_edited)
-        self.comment_checkbox.stateChanged.disconnect(self._generic_edited)
+        self.top_bar.start_time_edit.textEdited.disconnect(
+            self._generic_edited)
+        self.top_bar.end_time_edit.textEdited.disconnect(self._time_end_edited)
+        self.top_bar.duration_edit.textEdited.disconnect(self._duration_edited)
+        self.bottom_bar.actor_edit.editTextChanged.disconnect(
+            self._generic_edited)
+        self.bottom_bar.style_edit.editTextChanged.disconnect(
+            self._generic_edited)
+        self.center.text_edit.textChanged.disconnect(self._generic_edited)
+        self.center.note_edit.textChanged.disconnect(self._generic_edited)
+        self.bottom_bar.effect_edit.textChanged.disconnect(
+            self._generic_edited)
+        self.top_bar.layer_edit.valueChanged.disconnect(self._generic_edited)
+        self.top_bar.margin_l_edit.valueChanged.disconnect(
+            self._generic_edited)
+        self.top_bar.margin_v_edit.valueChanged.disconnect(
+            self._generic_edited)
+        self.top_bar.margin_r_edit.valueChanged.disconnect(
+            self._generic_edited)
+        self.bottom_bar.comment_checkbox.stateChanged.disconnect(
+            self._generic_edited)

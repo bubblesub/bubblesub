@@ -70,7 +70,7 @@ class SpellCheckDialog(QtWidgets.QDialog):
             self._ignore_all()
 
     def _replace(self):
-        edit = self._main_window.editor.text_edit
+        edit = self._main_window.editor.center.text_edit
         text = edit.toPlainText()
         text = (
             text[:edit.textCursor().selectionStart()] +
@@ -109,10 +109,10 @@ class SpellCheckDialog(QtWidgets.QDialog):
     def _focus_match(self, idx, match):
         self._api.subs.selected_indexes = [idx]
 
-        cursor = self._main_window.editor.text_edit.textCursor()
+        cursor = self._main_window.editor.center.text_edit.textCursor()
         cursor.setPosition(match.start())
         cursor.setPosition(match.end(), QtGui.QTextCursor.KeepAnchor)
-        self._main_window.editor.text_edit.setTextCursor(cursor)
+        self._main_window.editor.center.text_edit.setTextCursor(cursor)
 
         self._mispelt_text_edit.setText(match.group(0))
 

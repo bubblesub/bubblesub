@@ -36,7 +36,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
         self.editor = bubblesub.ui.editor.Editor(api, self)
-        self.console = QtWidgets.QPlainTextEdit(readOnly=True)
+        self.console = QtWidgets.QPlainTextEdit(self, readOnly=True)
         self.subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
         self.status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
 

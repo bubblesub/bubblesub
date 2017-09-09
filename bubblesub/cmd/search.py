@@ -51,13 +51,13 @@ def _set_subject_text_by_mode(sub, mode, value):
 
 def _get_subject_widget_by_mode(main_window, mode):
     if mode == SearchMode.Text:
-        return main_window.editor.text_edit
+        return main_window.editor.center.text_edit
     elif mode == SearchMode.Note:
-        return main_window.editor.note_edit
+        return main_window.editor.center.note_edit
     elif mode == SearchMode.Actor:
-        return main_window.editor.actor_edit.lineEdit()
+        return main_window.editor.bottom_bar.actor_edit.lineEdit()
     elif mode == SearchMode.Style:
-        return main_window.editor.style_edit.lineEdit()
+        return main_window.editor.bottom_bar.style_edit.lineEdit()
 
 
 def _select_text_on_widget(widget, selection_start, selection_end):
