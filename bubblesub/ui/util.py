@@ -125,19 +125,33 @@ class TimeEdit(QtWidgets.QLineEdit):
         self.setCursorPosition(0)
 
 
+def _window_from_menu(menu):
+    window = menu
+    while window.parent() is not None:
+        window = window.parent()
+    return window
+
+
 def _menu_about_to_show(menu):
+    window = _window_from_menu(menu)
+    window.setProperty('focused-widget', window.focusWidget())
     for action in menu.actions():
         if hasattr(action, 'cmd') and action.cmd:
             action.setEnabled(action.cmd.enabled())
 
 
+def _menu_about_to_hide(menu):
+    window = _window_from_menu(menu)
+    focused_widget = window.property('focused-widget')
+    if focused_widget:
+        focused_widget.setFocus()
+
+
 class _CommandAction(QtWidgets.QAction):
-    def __init__(self, api, cmd_name, cmd_args):
-        super().__init__()
-        self.api = api
-        self.cmd_name = cmd_name
+    def __init__(self, api, cmd_name, cmd_args, parent):
+        super().__init__(parent)
         self.cmd = api.cmd.get(cmd_name, cmd_args)
-        self.triggered.connect(functools.partial(api.cmd.run, self.cmd))
+        self.triggered.connect(lambda: api.cmd.run(self.cmd))
 
 
 def setup_cmd_menu(api, parent, menu_def):
@@ -145,18 +159,17 @@ def setup_cmd_menu(api, parent, menu_def):
     if hasattr(parent, 'aboutToShow'):
         parent.aboutToShow.connect(
             functools.partial(_menu_about_to_show, parent))
+        parent.aboutToHide.connect(
+            functools.partial(_menu_about_to_hide, parent))
     for item in menu_def:
         if item is None:
             parent.addSeparator()
         elif len(item) > 1 and isinstance(item[1], list):
             submenu = parent.addMenu(item[0])
-            submenu.aboutToShow.connect(
-                functools.partial(_menu_about_to_show, submenu))
             action_map.update(setup_cmd_menu(api, submenu, item[1]))
         else:
             cmd_name, *cmd_args = item
-            action = _CommandAction(api, cmd_name, cmd_args)
-            action.setParent(parent)
+            action = _CommandAction(api, cmd_name, cmd_args, parent)
             action.setText(api.cmd.get(cmd_name, cmd_args).menu_name)
             parent.addAction(action)
             action_map[(cmd_name, *cmd_args)] = action
