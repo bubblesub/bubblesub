@@ -39,6 +39,7 @@ class VideoApi(QtCore.QObject):
     parsed = QtCore.pyqtSignal()
     timecodes_updated = QtCore.pyqtSignal()
     current_pts_changed = QtCore.pyqtSignal()
+    max_pts_changed = QtCore.pyqtSignal()
 
     def __init__(self, subs_api, log_api, opt_api):
         super().__init__()
@@ -149,8 +150,7 @@ class VideoApi(QtCore.QObject):
                     self.current_pts_changed.emit()
                 elif event_prop.name == 'duration':
                     self._max_pts = self._mpv.get_property('duration') * 1000
-            # if event.id in [mpv.Events.end_file, mpv.Events.shutdown]:
-            #     break
+                    self.max_pts_changed.emit()
 
     def seek(self, pts):
         if not self._mpv_ready:

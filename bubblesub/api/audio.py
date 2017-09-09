@@ -46,6 +46,7 @@ class AudioApi(QtCore.QObject):
         self._log_api = log_api
         self._video_api = video_api
         self._video_api.parsed.connect(self._video_parsed)
+        self._video_api.max_pts_changed.connect(self._max_pts_changed)
         self._audio_source = None
         self._audio_source_provider = AudioSourceProvider(self, self._log_api)
         self._audio_source_provider.finished.connect(self._got_audio_source)
@@ -194,16 +195,18 @@ class AudioApi(QtCore.QObject):
             samples = (samples * (1 << 31)).astype(np.int32)
         scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
 
-    def _set_max_pts(self, max_pts):
-        self._min = 0
-        self._max = max_pts
-        self.zoom_view(1, 0.5)  # emits view_changed
-
     def _video_parsed(self):
-        self._set_max_pts(self._video_api.max_pts)
+        self._min = 0
+        self._max = 0
+        self.zoom_view(1, 0.5)  # emits view_changed
         self._audio_source = _LOADING
         if self._video_api.path:
             self._audio_source_provider.schedule_task(self._video_api.path)
+
+    def _max_pts_changed(self):
+        self._min = 0
+        self._max = self._video_api.max_pts
+        self.zoom_view(1, 0.5)  # emits view_changed
 
     def _got_audio_source(self, result):
         self._audio_source = result
