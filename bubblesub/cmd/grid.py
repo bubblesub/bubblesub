@@ -166,12 +166,8 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
         for line in lines:
             try:
                 start, end = line.strip().split(' - ')
-                print(start)
-                print(end)
                 start = bubblesub.util.str_to_ms(start)
-                print(start)
                 end = bubblesub.util.str_to_ms(end)
-                print(end)
                 times.append((start, end))
             except Exception:
                 self.error('Invalid time format: {}'.format(line))
