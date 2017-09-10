@@ -139,7 +139,8 @@ class VideoSeekWithGuiCommand(CoreCommand):
             _run_dialog,
             absolute_label='Time to jump to:',
             relative_label='Time to jump by:',
-            relative_checked=False)
+            relative_checked=False,
+            value=self.api.video.current_pts)
 
         if ret:
             value, is_relative = ret
