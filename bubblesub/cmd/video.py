@@ -124,6 +124,26 @@ class VideoStepFrameCommand(CoreCommand):
             self.api.video.seek(self.api.video.timecodes[idx + self._delta])
 
 
+class VideoStepMillisecondsCommand(CoreCommand):
+    name = 'video/step-ms'
+
+    def __init__(self, api, delta):
+        super().__init__(api)
+        self._delta = delta
+
+    @property
+    def menu_name(self):
+        return 'Seek {} by {} ms'.format(
+            ['backward', 'forward'][self._delta > 0],
+            abs(self._delta))
+
+    def enabled(self):
+        return len(self.api.video.timecodes) > 0
+
+    async def run(self):
+        self.api.video.seek(self.api.video.current_pts + self._delta)
+
+
 class VideoSeekWithGuiCommand(CoreCommand):
     name = 'video/seek-with-gui'
     menu_name = 'Seek to...'
