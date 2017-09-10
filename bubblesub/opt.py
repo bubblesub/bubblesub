@@ -403,7 +403,7 @@ class Options:
 
     def _ensure_defaults(self, target, source):
         if isinstance(source, (list, tuple)):
-            if not isinstance(target, list):
+            if not isinstance(target, list) and not isinstance(target, tuple):
                 raise RuntimeError('Expected list')
         elif isinstance(source, dict):
             if not isinstance(target, dict):
