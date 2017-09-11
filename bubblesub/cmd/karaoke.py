@@ -90,13 +90,16 @@ class EditTransformationJoinCommand(CoreCommand):
             for idx in reversed(self.api.subs.selected_indexes[1:]):
                 self.api.subs.lines.remove(idx, 1)
             text = ''
+            note = ''
             pos = 0
             for i, sub in enumerate(subs):
                 pos += sub.duration
                 text += sub.text
+                note += sub.note
                 if i != len(subs) - 1:
                     text += (
                         '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos))
             subs[0].text = text
+            subs[0].note = note
             subs[0].end = subs[-1].end
             self.api.subs.selected_indexes = [subs[0].id]
