@@ -29,20 +29,35 @@ class StatusBar(QtWidgets.QStatusBar):
         api.subs.selection_changed.connect(self._subs_selection_changed)
 
     def _subs_selection_changed(self):
-        idx = (
-            self._api.subs.selected_indexes[0]
-            if self._api.subs.has_selection
-            else None)
+        count = len(self._api.subs.selected_indexes)
+        total = len(self._api.subs.lines)
 
-        self._subs_label.setText(
-            'Subtitles: {}/{} ({:.1%})'.format(
-                idx if idx is not None else '-',
-                len(self._api.subs.lines),
-                (
-                    idx / max(1, len(self._api.subs.lines))
-                    if idx is not None
-                    else 0
-                )))
+        if count == 0:
+            self._subs_label.setText(f'Subtitles: -/{total} (-%)')
+        elif count == 1:
+            idx = self._api.subs.selected_indexes[0]
+            self._subs_label.setText(
+                f'Subtitles: {idx + 1}/{total} ({idx / total:.1%})')
+        else:
+            def format_range(low, high):
+                return f'{low}..{high}' if low != high else str(low)
+
+            ranges = []
+            for idx in self._api.subs.selected_indexes:
+                if ranges and ranges[-1][1] == idx - 1:
+                    ranges[-1] = (ranges[-1][0], idx)
+                else:
+                    ranges.append((idx, idx))
+
+            self._subs_label.setText(
+                'Subtitles: {}/{} ({}, {:.1%})'.format(
+                    ','.join(
+                        format_range(low + 1, high + 1)
+                        for low, high in ranges),
+                    total,
+                    count,
+                    count / total))
+
 
     def _video_current_pts_changed(self):
         self._video_frame_label.setText(
