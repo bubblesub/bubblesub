@@ -161,6 +161,18 @@ class VideoApi(QtCore.QObject):
         self._mpv.command(
             'seek', bubblesub.util.ms_to_str(pts), 'absolute+exact')
 
+    def step_frame_forward(self):
+        if not self._mpv_ready:
+            return
+        self._set_end(None)  # mpv refuses to seek beyond --end
+        self._mpv.command('frame-step')
+
+    def step_frame_backward(self):
+        if not self._mpv_ready:
+            return
+        self._set_end(None)  # mpv refuses to seek beyond --end
+        self._mpv.command('frame-back-step')
+
     def play(self, start, end):
         self._play(start, end)
 

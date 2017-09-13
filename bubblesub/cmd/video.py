@@ -112,11 +112,16 @@ class VideoStepFrameCommand(CoreCommand):
         return len(self.api.video.timecodes) > 0
 
     async def run(self):
-        current_pts = self.api.video.current_pts
-        idx = bisect.bisect_left(self.api.video.timecodes, current_pts)
-        if idx + self._delta not in range(len(self.api.video.timecodes)):
-            return
-        self.api.video.seek(self.api.video.timecodes[idx + self._delta])
+        if self._delta == 1:
+            self.api.video.step_frame_forward()
+        elif self._delta == -1:
+            self.api.video.step_frame_backward()
+        else:
+            current_pts = self.api.video.current_pts
+            idx = bisect.bisect_left(self.api.video.timecodes, current_pts)
+            if idx + self._delta not in range(len(self.api.video.timecodes)):
+                return
+            self.api.video.seek(self.api.video.timecodes[idx + self._delta])
 
 
 class VideoSeekWithGuiCommand(CoreCommand):
