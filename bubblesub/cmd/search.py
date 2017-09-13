@@ -157,7 +157,6 @@ def _search(api, main_window, regex, direction, mode):
             subject_widget, final_match.start(), final_match.end())
         return True
 
-    bubblesub.ui.util.notice('No occurrences found.')
     return False
 
 
@@ -172,21 +171,26 @@ def _replace_selection(main_window, new_text, mode):
     _set_widget_text(subject_widget, new_subject)
 
 
-def _replace_all(api, _main_window, regex, new_text, mode):
+def _replace_all(api, regex, new_text, mode):
     with api.undo.bulk():
-        replacement_count = 0
+        count = 0
         for sub in api.subs.lines:
             old_subject_text = _get_subject_text_by_mode(sub, mode)
             new_subject_text = re.sub(regex, new_text, old_subject_text)
             if old_subject_text != new_subject_text:
                 _set_subject_text_by_mode(sub, mode, new_subject_text)
-                replacement_count += 1
-        api.subs.selected_indexes = []
-        if not replacement_count:
-            bubblesub.ui.util.notice('No occurrences found.')
-        bubblesub.ui.util.notice(
-            'Replaced content in {} lines.'.format(replacement_count))
-        return replacement_count > 0
+                count += len(re.findall(regex, old_subject_text))
+        if count:
+            api.subs.selected_indexes = []
+        return count
+
+
+def _count(api, regex, mode):
+    count = 0
+    for sub in api.subs.lines:
+        subject_text = _get_subject_text_by_mode(sub, mode)
+        count += len(re.findall(regex, subject_text))
+    return count
 
 
 class SearchModeGroupBox(QtWidgets.QGroupBox):
@@ -245,6 +249,7 @@ class SearchDialog(QtWidgets.QDialog):
             self, orientation=QtCore.Qt.Vertical)
         self.find_next_btn = strip.addButton('Find next', strip.ActionRole)
         self.find_prev_btn = strip.addButton('Find previous', strip.ActionRole)
+        self.count_btn = strip.addButton('Count occurences', strip.ActionRole)
         self.replace_sel_btn = strip.addButton(
             'Replace selection', strip.ActionRole)
         self.replace_all_btn = strip.addButton('Replace all', strip.ActionRole)
@@ -293,52 +298,61 @@ class SearchDialog(QtWidgets.QDialog):
             self._search(-1)
         elif sender == self.find_next_btn:
             self._search(1)
+        elif sender == self.count_btn:
+            self._count()
+
+    def _replace_selection(self):
+        _replace_selection(self._main_window, self._target_text, self._mode)
+        self._update_replacement_enabled()
+
+    def _replace_all(self):
+        self._push_search_history()
+        count = _replace_all(
+            self._api,
+            self._create_search_regex(),
+            self._target_text,
+            self._mode)
+        bubblesub.ui.util.notice(
+            f'Replaced {count} occurences.'
+            if count
+            else 'No occurences found.')
+
+    def _search(self, direction):
+        self._push_search_history()
+        result = _search(
+            self._api,
+            self._main_window,
+            self._create_search_regex(),
+            direction,
+            self._mode)
+        if not result:
+            bubblesub.ui.util.notice('No occurences found.')
+        self._update_replacement_enabled()
+
+    def _count(self):
+        self._push_search_history()
+        count = _count(self._api, self._text, self._mode)
+        bubblesub.ui.util.notice(
+            f'Found {count} occurences.' if count else 'No occurences found.')
 
     def _update_replacement_enabled(self):
-        mode = self.search_mode_group_box.get_value()
+        mode = self._mode
         subject_widget = _get_subject_widget_by_mode(self._main_window, mode)
         selection_start, selection_end = _get_selection_from_widget(
             subject_widget)
         self.replace_sel_btn.setEnabled(selection_start != selection_end)
 
-    def _replace_selection(self):
-        _replace_selection(
-            self._main_window,
-            self.replacement_text_edit.text(),
-            self.search_mode_group_box.get_value())
-        self._update_replacement_enabled()
+    def _create_search_regex(self):
+        return _create_search_regex(
+            self._text, self._use_regexes, self._case_sensitive)
 
-    def _replace_all(self):
-        _replace_all(
-            self._api,
-            self._main_window,
-            _create_search_regex(
-                self.search_text_edit.currentText(),
-                self.case_chkbox.isChecked(),
-                self.regex_chkbox.isChecked()),
-            self.replacement_text_edit.text(),
-            self.search_mode_group_box.get_value())
-
-    def _search(self, direction):
-        text = self.search_text_edit.currentText()
-        mode = self.search_mode_group_box.get_value()
-
+    def _push_search_history(self):
+        text = self._text  # binding it to a variable is important
         idx = self.search_text_edit.findText(text)
         if idx is not None:
             self.search_text_edit.removeItem(idx)
         self.search_text_edit.insertItem(0, text)
         self.search_text_edit.setCurrentIndex(0)
-
-        _search(
-            self._api,
-            self._main_window,
-            _create_search_regex(
-                text,
-                self.case_chkbox.isChecked(),
-                self.regex_chkbox.isChecked()),
-            direction,
-            mode)
-        self._update_replacement_enabled()
 
     def _load_opt(self):
         self.search_text_edit.clear()
@@ -359,6 +373,26 @@ class SearchDialog(QtWidgets.QDialog):
     @property
     def _opt(self):
         return self._api.opt.general['search']
+
+    @property
+    def _text(self):
+        return self.search_text_edit.currentText()
+
+    @property
+    def _target_text(self):
+        return self.replacement_text_edit.text()
+
+    @property
+    def _use_regexes(self):
+        return self.regex_chkbox.isChecked()
+
+    @property
+    def _case_sensitive(self):
+        return self.case_chkbox.isChecked()
+
+    @property
+    def _mode(self):
+        return self.search_mode_group_box.get_value()
 
 
 class SearchCommand(CoreCommand):
@@ -400,7 +434,7 @@ class SearchRepeatCommand(CoreCommand):
     async def run(self):
         async def run(api, main_window):
             opt = self.api.opt.general['search']
-            _search(
+            result = _search(
                 api,
                 main_window,
                 _create_search_regex(
@@ -409,5 +443,7 @@ class SearchRepeatCommand(CoreCommand):
                     opt['use_regexes']),
                 self._direction,
                 opt['mode'])
+            if not result:
+                bubblesub.ui.util.notice('No occurences found.')
 
         await self.api.gui.exec(run)
