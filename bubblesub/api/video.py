@@ -134,6 +134,8 @@ class VideoApi(QtCore.QObject):
             event = self._mpv.wait_event(.01)
             if event.id == mpv.Events.none:
                 break
+            elif event.id == mpv.Events.end_file:
+                self._mpv_unloaded()
             elif event.id == mpv.Events.file_loaded:
                 self._mpv_loaded()
             elif event.id == mpv.Events.log_message:
@@ -239,6 +241,10 @@ class VideoApi(QtCore.QObject):
         end = max(0, end)
         self._mpv.set_option('end', bubblesub.util.ms_to_str(end))
 
+    def _mpv_unloaded(self):
+        self._mpv_ready = False
+        self.parsed.emit()
+
     def _mpv_loaded(self):
         self._mpv_ready = True
         self._mpv.command('sub_add', str(self._tmp_subs_path))
@@ -260,7 +266,7 @@ class VideoApi(QtCore.QObject):
         self._mpv_ready = False
         self._mpv.set_property('pause', True)
         if not self.path or not self.path.exists():
-            self._mpv.command('loadfile')
+            self._mpv.command('loadfile', '')
         else:
             self._mpv.command('loadfile', str(self.path))
 
