@@ -78,8 +78,8 @@ class UndoApi(QtCore.QObject):
 
         if op_type == UndoOperation.Reset:
             old_lines, _new_lines, old_styles, _new_styles = op_args
-            self._subs_api.lines[:] = self._deserialize_lines(old_lines)
-            self._subs_api.styles[:] = self._deserialize_styles(old_styles)
+            self._subs_api.lines.replace(self._deserialize_lines(old_lines))
+            self._subs_api.styles.replace(self._deserialize_styles(old_styles))
         elif op_type == UndoOperation.SubtitleChange:
             idx, old_lines, _new_lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(old_lines)[0]
@@ -112,8 +112,8 @@ class UndoApi(QtCore.QObject):
 
         if op_type == UndoOperation.Reset:
             _old_lines, new_lines, _old_styles, new_styles = op_args
-            self._subs_api.lines[:] = self._deserialize_lines(new_lines)
-            self._subs_api.styles[:] = self._deserialize_styles(new_styles)
+            self._subs_api.lines.replace(self._deserialize_lines(new_lines))
+            self._subs_api.styles.replace(self._deserialize_styles(new_styles))
         elif op_type == UndoOperation.SubtitleChange:
             idx, _old_lines, new_lines = op_args
             self._subs_api.lines[idx] = self._deserialize_lines(new_lines)[0]

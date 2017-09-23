@@ -197,11 +197,10 @@ class ListModel(QtCore.QObject):
         return self._data[idx]
 
     def __setitem__(self, idx, value):
-        self._data[idx] = value
         if isinstance(idx, slice):
-            for i, _ in enumerate(self._data[idx]):
-                self.item_changed.emit(i)
+            raise RuntimeError('Slice assignment is not supported')
         else:
+            self._data[idx] = value
             self.item_changed.emit(idx)
 
     def get(self, idx, default=None):
@@ -226,6 +225,16 @@ class ListModel(QtCore.QObject):
         self.items_about_to_be_removed.emit(idx, count)
         self._data = self._data[:idx] + self._data[idx + count:]
         self.items_removed.emit(idx, count)
+
+    def replace(self, values):
+        old_size = len(self)
+        new_size = len(values)
+        self.items_about_to_be_removed.emit(0, old_size)
+        self._data[:] = []
+        self.items_removed.emit(0, old_size)
+        self.items_about_to_be_inserted.emit(0, new_size)
+        self._data[:] = values
+        self.items_inserted.emit(0, new_size)
 
 
 class ProviderContext:
