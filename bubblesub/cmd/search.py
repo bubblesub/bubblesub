@@ -124,7 +124,7 @@ def _narrow_match(matches, idx, selected_idx, direction, subject_widget):
         return matches[-1]
 
 
-def _search(api, main_window, regex, direction, mode):
+def _search(api, main_window, regex, mode, direction):
     num_lines = len(api.subs.lines)
     if not api.subs.has_selection:
         selected_idx = None
@@ -309,7 +309,7 @@ class SearchDialog(QtWidgets.QDialog):
         self._push_search_history()
         count = _replace_all(
             self._api,
-            self._create_search_regex(),
+            self._search_regex,
             self._target_text,
             self._mode)
         bubblesub.ui.util.notice(
@@ -322,16 +322,16 @@ class SearchDialog(QtWidgets.QDialog):
         result = _search(
             self._api,
             self._main_window,
-            self._create_search_regex(),
-            direction,
-            self._mode)
+            self._search_regex,
+            self._mode,
+            direction)
         if not result:
             bubblesub.ui.util.notice('No occurences found.')
         self._update_replacement_enabled()
 
     def _count(self):
         self._push_search_history()
-        count = _count(self._api, self._text, self._mode)
+        count = _count(self._api, self._search_regex, self._mode)
         bubblesub.ui.util.notice(
             f'Found {count} occurences.' if count else 'No occurences found.')
 
@@ -341,10 +341,6 @@ class SearchDialog(QtWidgets.QDialog):
         selection_start, selection_end = _get_selection_from_widget(
             subject_widget)
         self.replace_sel_btn.setEnabled(selection_start != selection_end)
-
-    def _create_search_regex(self):
-        return _create_search_regex(
-            self._text, self._use_regexes, self._case_sensitive)
 
     def _push_search_history(self):
         text = self._text  # binding it to a variable is important
@@ -394,6 +390,11 @@ class SearchDialog(QtWidgets.QDialog):
     def _mode(self):
         return self.search_mode_group_box.get_value()
 
+    @property
+    def _search_regex(self):
+        return _create_search_regex(
+            self._text, self._use_regexes, self._case_sensitive)
+
 
 class SearchCommand(CoreCommand):
     name = 'edit/search'
@@ -441,8 +442,8 @@ class SearchRepeatCommand(CoreCommand):
                     opt['history'][0],
                     opt['case_sensitive'],
                     opt['use_regexes']),
-                self._direction,
-                opt['mode'])
+                opt['mode'],
+                self._direction)
             if not result:
                 bubblesub.ui.util.notice('No occurences found.')
 
