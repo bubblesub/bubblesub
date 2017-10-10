@@ -16,9 +16,8 @@ class MpvWidget(QOpenGLWidget):
     def __init__(self, opengl_context, parent=None):
         super().__init__(parent)
         self._opengl = opengl_context
-        self._opengl.set_update_callback(self.updateHandler)
-        self.frameSwapped.connect(
-            self.swapped, QtCore.Qt.DirectConnection)
+        self._opengl.set_update_callback(self.maybe_update)
+        self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
 
     def shutdown(self):
         self.makeCurrent()
@@ -43,12 +42,5 @@ class MpvWidget(QOpenGLWidget):
         if self._opengl:
             self._opengl.report_flip(0)
 
-    def updateHandler(self):
-        if self.window().isMinimized():
-            self.makeCurrent()
-            self.paintGL()
-            self.context().swapBuffers(self.context().surface())
-            self.swapped()
-            self.doneCurrent()
-        else:
-            self.update()
+    def maybe_update(self):
+        self.update()
