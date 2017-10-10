@@ -127,9 +127,10 @@ class VideoStepFrameCommand(CoreCommand):
 class VideoStepMillisecondsCommand(CoreCommand):
     name = 'video/step-ms'
 
-    def __init__(self, api, delta):
+    def __init__(self, api, delta, precise):
         super().__init__(api)
         self._delta = delta
+        self._precise = precise
 
     @property
     def menu_name(self):
@@ -141,7 +142,8 @@ class VideoStepMillisecondsCommand(CoreCommand):
         return len(self.api.video.timecodes) > 0
 
     async def run(self):
-        self.api.video.seek(self.api.video.current_pts + self._delta)
+        self.api.video.seek(
+            self.api.video.current_pts + self._delta, self._precise)
 
 
 class VideoSeekWithGuiCommand(CoreCommand):
