@@ -150,6 +150,12 @@ class StyleList(bubblesub.util.ListModel):
         self.insert(len(self), [style])
         return style
 
+    def get_by_name(self, name):
+        for style in self:
+            if style.name == name:
+                return style
+        return None
+
     def load_from_ass(self, ass_source):
         collection = []
         for name, ssa_style in ass_source.styles.items():
