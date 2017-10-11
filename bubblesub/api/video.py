@@ -160,10 +160,11 @@ class VideoApi(QtCore.QObject):
         self._set_end(None)  # mpv refuses to seek beyond --end
         pts = max(0, pts)
         pts = self._align_pts_to_next_frame(pts)
-        self._mpv.command(
-            'seek',
-            bubblesub.util.ms_to_str(pts),
-            'absolute+exact' if precise else 'absolute')
+        if pts != self.current_pts:
+            self._mpv.command(
+                'seek',
+                bubblesub.util.ms_to_str(pts),
+                'absolute+exact' if precise else 'absolute')
 
     def step_frame_forward(self):
         if not self._mpv_ready:
