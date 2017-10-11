@@ -40,9 +40,12 @@ class TopBar(QtWidgets.QWidget):
         self.duration_edit = bubblesub.ui.util.TimeEdit(self)
 
         self.margins_widget = QtWidgets.QWidget(self)
-        self.margin_l_edit = QtWidgets.QSpinBox(self.margins_widget, minimum=0)
-        self.margin_v_edit = QtWidgets.QSpinBox(self.margins_widget, minimum=0)
-        self.margin_r_edit = QtWidgets.QSpinBox(self.margins_widget, minimum=0)
+        self.margin_l_edit = QtWidgets.QSpinBox(
+            self.margins_widget, minimum=0, maximum=999)
+        self.margin_v_edit = QtWidgets.QSpinBox(
+            self.margins_widget, minimum=0, maximum=999)
+        self.margin_r_edit = QtWidgets.QSpinBox(
+            self.margins_widget, minimum=0, maximum=999)
         layout = QtWidgets.QHBoxLayout(self.margins_widget, spacing=0)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.margin_l_edit)
