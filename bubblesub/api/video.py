@@ -54,7 +54,6 @@ class VideoApi(QtCore.QObject):
         self._path = None
         self._current_pts = 0
         self._max_pts = 0
-        self._mpv = None
         self._mpv_ready = False
         self._need_subs_refresh = False
 
@@ -132,7 +131,7 @@ class VideoApi(QtCore.QObject):
     def _mpv_event_handler(self):
         while self._mpv:
             event = self._mpv.wait_event(.01)
-            if event.id == mpv.Events.none:
+            if event.id in {mpv.Events.none, mpv.Events.shutdown}:
                 break
             elif event.id == mpv.Events.end_file:
                 self._mpv_unloaded()

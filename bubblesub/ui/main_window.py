@@ -90,6 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 'Are you sure you want to exit the program?'):
             event.ignore()
         else:
+            self.video.shutdown()
             event.accept()
 
     def apply_palette(self, palette_name):

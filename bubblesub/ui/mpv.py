@@ -22,8 +22,8 @@ class MpvWidget(QOpenGLWidget):
     def shutdown(self):
         self.makeCurrent()
         if self._opengl:
-            self._opengl.set_update_callback(None)
-        self._opengl.uninit_gl()
+            self._opengl.set_update_callback(lambda: None)
+            self._opengl.uninit_gl()
         self.deleteLater()
 
     def initializeGL(self):
