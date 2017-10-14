@@ -44,13 +44,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor_splitter.setOrientation(QtCore.Qt.Vertical)
         self.editor_splitter.addWidget(self.audio)
         self.editor_splitter.addWidget(self.editor)
+        self.editor_splitter.setStretchFactor(0, 4)
+        self.editor_splitter.setStretchFactor(1, 1)
 
         self.top_bar = QtWidgets.QSplitter(self)
         self.top_bar.setOrientation(QtCore.Qt.Horizontal)
         self.top_bar.addWidget(self.video)
         self.top_bar.addWidget(self.editor_splitter)
         self.top_bar.setStretchFactor(0, 1)
-        self.top_bar.setStretchFactor(1, 2)
+        self.top_bar.setStretchFactor(1, 1)
 
         self.console_splitter = QtWidgets.QSplitter(self)
         self.console_splitter.setOrientation(QtCore.Qt.Horizontal)
