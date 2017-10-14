@@ -135,29 +135,63 @@ class MainWindow(QtWidgets.QMainWindow):
             self._api, plugins_menu, plugins_menu_def)
 
     def _setup_hotkeys(self, action_map):
+        shortcuts = {}
+
+        def resolve_ambiguity(keys):
+            widget = QtWidgets.QApplication.focusWidget()
+            while widget:
+                if widget == self.audio:
+                    shortcuts[keys].activated.emit()
+                widget = widget.parent()
+
         for context, items in self._api.opt.hotkeys.items():
             for item in items:
                 keys, cmd_name, *cmd_args = item
 
                 action = action_map.get((cmd_name, *cmd_args))
                 if action and context == 'global':
+                    # add shortcut hint text to the buttons in the menu
                     action.setShortcut(QtGui.QKeySequence(keys))
-                    continue
+                    # prevent the action from triggering any signal on pressing
+                    # its shortcut. (the action is parent of the main window,
+                    # and the main window widget can never have focus by
+                    # itself.)
+                    # basically, all hotkey triggers are to be handled by the
+                    # QShortcut below.
+                    action.setShortcutContext(QtCore.Qt.WidgetShortcut)
 
-                shortcut = QtWidgets.QShortcut(
-                    QtGui.QKeySequence(keys), self)
-                shortcut.activated.connect(
-                    functools.partial(
-                        self._api.cmd.run,
-                        self._api.cmd.get(cmd_name, cmd_args)))
-                if context == 'global':
-                    shortcut.setContext(QtCore.Qt.ApplicationShortcut)
-                elif context == 'audio':
+                shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(keys), self)
+                shortcuts[keys] = shortcut
+
+                shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+                shortcut.activated.connect(functools.partial(
+                    self._api.cmd.run,
+                    self._api.cmd.get(cmd_name, cmd_args)))
+                if context == 'audio':
                     shortcut.setParent(self.audio)
-                    shortcut.setContext(
-                        QtCore.Qt.WidgetWithChildrenShortcut)
-                else:
+                elif context != 'global':
                     raise RuntimeError('Invalid shortcut context')
+
+                # when the user focuses some widget X or its child, and presses
+                # a hotkey that's defined both for widget X and for the window,
+                # qt doesn't know whether the user meant to use global hotkey
+                # or the widget X hotkey since the focused widget is a
+                # descendant of both the widget X and the main window.
+                #
+                # in case a shortcut is ambiguous, qt invokes the ambiguous
+                # signals in turns each time user presses given shortcut.
+                if context == 'global':
+                    # since ambiguous keypress happens only if user has
+                    # actually focused an ambiguous widget X, in case when it
+                    # is the main window that receives ambiguous trigger, the
+                    # main window must pass the event to the widget X.
+                    shortcut.activatedAmbiguously.connect(
+                        functools.partial(resolve_ambiguity, keys))
+                else:
+                    # in case where it is the ambiguous widget X that receives
+                    # ambiguous trigger, it can just carry on with execution.
+                    shortcut.activatedAmbiguously.connect(
+                        shortcut.activated.emit)
 
     def _restore_splitters(self):
         splitter_cfg = self._api.opt.general.get('splitters', None)
