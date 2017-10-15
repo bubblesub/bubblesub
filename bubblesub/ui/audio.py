@@ -252,6 +252,8 @@ class AudioPreviewWidget(BaseAudioWidget):
         h = self.height()
         color = get_color(self._api, 'spectrogram/subtitle')
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
+        painter.setFont(QtGui.QFont(self.font().family(), 10))
+        text_height = painter.fontMetrics().capHeight()
         for i, line in enumerate(self._api.subs.lines):
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
@@ -261,6 +263,12 @@ class AudioPreviewWidget(BaseAudioWidget):
                 color,
                 QtCore.Qt.FDiagPattern if i & 1 else QtCore.Qt.BDiagPattern))
             painter.drawRect(x1, 0, x2 - x1, h - 1)
+            if x2 - x1 > 20:
+                painter.drawText(
+                    x1 + 8,
+                    text_height + 8,
+                    str(line.number))
+
 
     def _draw_selection(self, painter):
         if not self._api.audio.has_selection:
