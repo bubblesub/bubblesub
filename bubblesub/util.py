@@ -63,7 +63,7 @@ def str_to_ms(text):
         minute = int(result.group('minute'))
         second = int(result.group('second'))
         millisecond = int(result.group('millisecond'))
-        ret = (((hour * 60) + minute * 60) + second) * 1000 + millisecond
+        ret = ((((hour * 60) + minute) * 60) + second) * 1000 + millisecond
         if sign == '-':
             ret = -ret
         return ret
