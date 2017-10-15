@@ -4,6 +4,7 @@ import time
 import pickle
 import queue
 import traceback
+import hashlib
 from numbers import Number
 from collections import Set, Mapping, deque
 from pathlib import Path
@@ -69,12 +70,16 @@ def str_to_ms(text):
     raise ValueError('Invalid time')
 
 
-def _get_cache_file_path(cache_name):
+def get_cache_file_path(cache_name):
     return Path(xdg.XDG_CACHE_HOME) / 'bubblesub' / (cache_name + '.dat')
 
 
+def hash(path):
+    return hashlib.md5(str(path).encode('utf-8')).hexdigest()
+
+
 def load_cache(cache_name):
-    cache_file = _get_cache_file_path(cache_name)
+    cache_file = get_cache_file_path(cache_name)
     if cache_file.exists():
         with cache_file.open(mode='rb') as handle:
             return pickle.load(handle)
@@ -82,7 +87,7 @@ def load_cache(cache_name):
 
 
 def save_cache(cache_name, data):
-    cache_file = _get_cache_file_path(cache_name)
+    cache_file = get_cache_file_path(cache_name)
     cache_file.parent.mkdir(parents=True, exist_ok=True)
     with cache_file.open(mode='wb') as handle:
         pickle.dump(data, handle)

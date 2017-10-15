@@ -19,7 +19,26 @@ class AudioSourceProviderContext(bubblesub.util.ProviderContext):
     def work(self, task):
         path = task
         self._log_api.info('audio/sampler: loading... ({})'.format(path))
-        audio_source = ffms.AudioSource(str(path))
+
+        path_hash = bubblesub.util.hash(path)
+        cache_name = f'index-{path_hash}-audio'
+        cache_path = bubblesub.util.get_cache_file_path(cache_name)
+
+        index = None
+        if cache_path.exists():
+            index = ffms.Index.read(
+                index_file=str(cache_path), source_file=str(path))
+            if not index.belongs_to_file(str(path)):
+                index = None
+
+        if not index:
+            indexer = ffms.Indexer(str(path))
+            index = indexer.do_indexing(-1)
+            index.write(str(cache_path))
+
+        track_number = index.get_first_indexed_track_of_type(
+            ffms.FFMS_TYPE_AUDIO)
+        audio_source = ffms.AudioSource(str(path), track_number, index)
         self._log_api.info('audio/sampler: loaded')
         return audio_source
 

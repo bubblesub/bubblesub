@@ -2,7 +2,6 @@ import os
 import locale
 import atexit
 import tempfile
-import hashlib
 from pathlib import Path
 import ffms
 import mpv
@@ -18,13 +17,16 @@ class TimecodesProviderContext(bubblesub.util.ProviderContext):
     def work(self, task):
         path = task
         self._log_api.info('video/timecodes: loading... ({})'.format(path))
-        cache_name = (
-            'index-' + hashlib.md5(str(path).encode('utf-8')).hexdigest())
+
+        path_hash = bubblesub.util.hash(path)
+        cache_name = f'index-{path_hash}-video'
+
         timecodes = bubblesub.util.load_cache(cache_name)
         if not timecodes:
             video = ffms.VideoSource(str(path))
             timecodes = video.track.timecodes
             bubblesub.util.save_cache(cache_name, timecodes)
+
         self._log_api.info('video/timecodes: loaded')
         return path, timecodes
 
