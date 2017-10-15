@@ -251,14 +251,15 @@ class AudioPreviewWidget(BaseAudioWidget):
     def _draw_subtitle_rects(self, painter):
         h = self.height()
         color = get_color(self._api, 'spectrogram/subtitle')
-        painter.setPen(
-            QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
+        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         for i, line in enumerate(self._api.subs.lines):
+            x1 = self._pts_to_x(line.start)
+            x2 = self._pts_to_x(line.end)
+            if x2 < 0 or x1 >= self.width():
+                continue
             painter.setBrush(QtGui.QBrush(
                 color,
                 QtCore.Qt.FDiagPattern if i & 1 else QtCore.Qt.BDiagPattern))
-            x1 = self._pts_to_x(line.start)
-            x2 = self._pts_to_x(line.end)
             painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_selection(self, painter):
