@@ -295,6 +295,8 @@ class SubtitlesApi(QtCore.QObject):
             EMPTY_ASS, format_='ass')
         self._path = None
         self.lines = SubtitleList()
+        self.lines.items_about_to_be_removed.connect(
+            self._on_items_about_to_be_removed)
         self.styles = StyleList()
         self.styles.insert_one('Default')
 
@@ -347,9 +349,9 @@ class SubtitlesApi(QtCore.QObject):
         self._path = None
         self._ass_source = pysubs2.SSAFile.from_string(
             EMPTY_ASS, format_='ass')
+        self.selected_indexes = []
         self.lines.remove(0, len(self.lines))
         self.styles.remove(0, len(self.styles))
-        self.selected_indexes = []
         self.loaded.emit()
 
     def load_ass(self, path):
@@ -380,3 +382,12 @@ class SubtitlesApi(QtCore.QObject):
             self._ass_source.save(path, header_notice=NOTICE)
             if remember_path:
                 self.saved.emit()
+
+    def _on_items_about_to_be_removed(self, idx, count):
+        new_indexes = list(sorted(self.selected_indexes))
+        for i in range(idx, idx + count):
+            new_indexes = [
+                j - 1 if j > i else j
+                for j in new_indexes
+                if j != i]
+        self.selected_indexes = new_indexes
