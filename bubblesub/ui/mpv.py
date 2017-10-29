@@ -34,8 +34,8 @@ class MpvWidget(QOpenGLWidget):
         if self._opengl:
             self._opengl.draw(
                 self.defaultFramebufferObject(),
-                self.width(),
-                -self.height())
+                round(self.width() * self.devicePixelRatioF()),
+                round(-self.height() * self.devicePixelRatioF()))
 
     @QtCore.pyqtSlot()
     def swapped(self):
