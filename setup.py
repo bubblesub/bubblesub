@@ -26,6 +26,7 @@ setup(
         'regex',
         'pyenchant',
         'pympv',
+        'xdg',
     ],
 
     classifiers=[
