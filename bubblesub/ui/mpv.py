@@ -13,11 +13,14 @@ def get_proc_address(proc):
 
 
 class MpvWidget(QOpenGLWidget):
+    _schedule_update = QtCore.pyqtSignal()
+
     def __init__(self, opengl_context, parent=None):
         super().__init__(parent)
         self._opengl = opengl_context
         self._opengl.set_update_callback(self.maybe_update)
         self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
+        self._schedule_update.connect(self.update)
 
     def shutdown(self):
         self.makeCurrent()
@@ -43,4 +46,4 @@ class MpvWidget(QOpenGLWidget):
             self._opengl.report_flip(0)
 
     def maybe_update(self):
-        self.update()
+        self._schedule_update.emit()
