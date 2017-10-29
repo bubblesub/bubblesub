@@ -108,9 +108,6 @@ class VideoStepFrameCommand(CoreCommand):
             's' if abs(self._delta) > 1 else '',
             ['backward', 'forward'][self._delta > 0])
 
-    def enabled(self):
-        return len(self.api.video.timecodes) > 0
-
     async def run(self):
         if self._delta == 1:
             self.api.video.step_frame_forward()
@@ -138,9 +135,6 @@ class VideoStepMillisecondsCommand(CoreCommand):
             ['backward', 'forward'][self._delta > 0],
             abs(self._delta))
 
-    def enabled(self):
-        return len(self.api.video.timecodes) > 0
-
     async def run(self):
         self.api.video.seek(
             self.api.video.current_pts + self._delta, self._precise)
@@ -149,9 +143,6 @@ class VideoStepMillisecondsCommand(CoreCommand):
 class VideoSeekWithGuiCommand(CoreCommand):
     name = 'video/seek-with-gui'
     menu_name = 'Seek to...'
-
-    def enabled(self):
-        return len(self.api.video.timecodes) > 0
 
     async def run(self):
         async def _run_dialog(_api, main_window, **kwargs):
@@ -168,8 +159,7 @@ class VideoSeekWithGuiCommand(CoreCommand):
             value, is_relative = ret
 
             if is_relative:
-                self.api.video.seek(
-                    self.api.video.current_pts + value)
+                self.api.video.seek(self.api.video.current_pts + value)
             else:
                 self.api.video.seek(value)
 
@@ -184,9 +174,6 @@ class VideoSetPlaybackSpeed(CoreCommand):
     @property
     def menu_name(self):
         return 'Set playback speed to {}x'.format(self._speed)
-
-    def enabled(self):
-        return len(self.api.video.timecodes) > 0
 
     async def run(self):
         self.api.video.playback_speed = self._speed
