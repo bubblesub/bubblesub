@@ -221,6 +221,10 @@ class VideoApi(QtCore.QObject):
         return self._path
 
     @property
+    def is_loaded(self):
+        return self._path is not None
+
+    @property
     def timecodes(self):
         return self._timecodes
 

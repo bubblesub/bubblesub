@@ -10,7 +10,7 @@ class VideoPlayCurrentLineCommand(CoreCommand):
     menu_name = 'Play current line'
 
     def enabled(self):
-        return self.api.subs.has_selection
+        return self.api.video.is_loaded and self.api.subs.has_selection
 
     async def run(self):
         sub = self.api.subs.selected_lines[0]
@@ -30,7 +30,7 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
         return 'Play selection'
 
     def enabled(self):
-        return self.api.audio.has_selection
+        return self.api.video.is_loaded and self.api.audio.has_selection
 
     async def run(self):
         self.api.video.play(
@@ -58,7 +58,7 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
             self._delta_start, self._delta_end)
 
     def enabled(self):
-        return self.api.audio.has_selection
+        return self.api.video.is_loaded and self.api.audio.has_selection
 
     async def run(self):
         self.api.video.play(
@@ -86,7 +86,7 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
             self._delta_start, self._delta_end)
 
     def enabled(self):
-        return self.api.audio.has_selection
+        return self.api.video.is_loaded and self.api.audio.has_selection
 
     async def run(self):
         self.api.video.play(
@@ -107,6 +107,9 @@ class VideoStepFrameCommand(CoreCommand):
             abs(self._delta),
             's' if abs(self._delta) > 1 else '',
             ['backward', 'forward'][self._delta > 0])
+
+    def enabled(self):
+        return self.api.video.is_loaded
 
     async def run(self):
         if self._delta == 1:
@@ -135,6 +138,9 @@ class VideoStepMillisecondsCommand(CoreCommand):
             ['backward', 'forward'][self._delta > 0],
             abs(self._delta))
 
+    def enabled(self):
+        return self.api.video.is_loaded
+
     async def run(self):
         self.api.video.seek(
             self.api.video.current_pts + self._delta, self._precise)
@@ -143,6 +149,9 @@ class VideoStepMillisecondsCommand(CoreCommand):
 class VideoSeekWithGuiCommand(CoreCommand):
     name = 'video/seek-with-gui'
     menu_name = 'Seek to...'
+
+    def enabled(self):
+        return self.api.video.is_loaded
 
     async def run(self):
         async def _run_dialog(_api, main_window, **kwargs):
@@ -183,6 +192,9 @@ class VideoTogglePauseCommand(CoreCommand):
     name = 'video/toggle-pause'
     menu_name = 'Toggle pause'
 
+    def enabled(self):
+        return self.api.video.is_loaded
+
     async def run(self):
         if self.api.video.is_paused:
             self.api.video.unpause()
@@ -194,6 +206,9 @@ class VideoUnpauseCommand(CoreCommand):
     name = 'video/unpause'
     menu_name = 'Play until end of the file'
 
+    def enabled(self):
+        return self.api.video.is_loaded
+
     async def run(self):
         if not self.api.video.is_paused:
             return
@@ -203,6 +218,9 @@ class VideoUnpauseCommand(CoreCommand):
 class VideoPauseCommand(CoreCommand):
     name = 'video/pause'
     menu_name = 'Pause playback'
+
+    def enabled(self):
+        return self.api.video.is_loaded
 
     async def run(self):
         if self.api.video.is_paused:
@@ -216,6 +234,9 @@ class VideoScreenshotCommand(CoreCommand):
     def __init__(self, api, include_subtitles):
         super().__init__(api)
         self._include_subtitles = include_subtitles
+
+    def enabled(self):
+        return self.api.video.is_loaded
 
     @property
     def menu_name(self):
