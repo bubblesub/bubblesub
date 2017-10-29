@@ -84,12 +84,12 @@ class StylePreview(QtWidgets.QGroupBox):
         self._mpv.command('loadfile', str(api.video.path))
         self._mpv_ready = False
 
-        self._slider.valueChanged.connect(self._slider_moved)
-        self._text_box.textChanged.connect(self._text_changed)
-        api.subs.styles.item_changed.connect(self._styles_changed)
-        api.subs.styles.items_inserted.connect(self._styles_changed)
-        api.subs.styles.items_removed.connect(self._styles_changed)
-        selection_model.selectionChanged.connect(self._selection_changed)
+        self._slider.valueChanged.connect(self._on_slider_move)
+        self._text_box.textChanged.connect(self._on_text_change)
+        api.subs.styles.item_changed.connect(self._on_styles_change)
+        api.subs.styles.items_inserted.connect(self._on_styles_change)
+        api.subs.styles.items_removed.connect(self._on_styles_change)
+        selection_model.selectionChanged.connect(self._on_selection_change)
 
     def sizeHint(self):
         return QtCore.QSize(640, 480)
@@ -139,16 +139,16 @@ class StylePreview(QtWidgets.QGroupBox):
             self._save_subs()
             self._mpv.command('sub_reload')
 
-    def _selection_changed(self, _value):
+    def _on_selection_change(self, _value):
         self._refresh_subs()
 
-    def _styles_changed(self):
+    def _on_styles_change(self):
         self._refresh_subs()
 
-    def _text_changed(self):
+    def _on_text_change(self):
         self._refresh_subs()
 
-    def _slider_moved(self, value):
+    def _on_slider_move(self, value):
         self._mpv.command('seek', str(value / 1000), 'absolute+exact')
 
 
@@ -156,20 +156,20 @@ class StyleList(QtWidgets.QWidget):
     def __init__(self, api, model, selection_model, parent):
         super().__init__(parent)
         self._api = api
-        selection_model.selectionChanged.connect(self._selection_changed)
+        selection_model.selectionChanged.connect(self._on_selection_change)
 
         self._styles_list_view = QtWidgets.QListView(self)
         self._styles_list_view.setModel(model)
         self._styles_list_view.setSelectionModel(selection_model)
 
         self._add_button = QtWidgets.QPushButton('Add', self)
-        self._add_button.clicked.connect(self._add_button_clicked)
+        self._add_button.clicked.connect(self._on_add_button_click)
         self._remove_button = QtWidgets.QPushButton('Remove', self)
         self._remove_button.setEnabled(False)
-        self._remove_button.clicked.connect(self._remove_button_clicked)
+        self._remove_button.clicked.connect(self._on_remove_button_click)
         self._rename_button = QtWidgets.QPushButton('Rename', self)
         self._rename_button.setEnabled(False)
-        self._rename_button.clicked.connect(self._rename_button_clicked)
+        self._rename_button.clicked.connect(self._on_rename_button_click)
 
         strip = QtWidgets.QWidget(self)
         layout = QtWidgets.QHBoxLayout(strip, margin=0)
@@ -195,12 +195,12 @@ class StyleList(QtWidgets.QWidget):
             return None
         return indexes[0].row()
 
-    def _selection_changed(self, event):
+    def _on_selection_change(self, event):
         anything_selected = len(event.indexes()) > 0
         self._remove_button.setEnabled(anything_selected)
         self._rename_button.setEnabled(anything_selected)
 
-    def _add_button_clicked(self, _event):
+    def _on_add_button_click(self, _event):
         style_name = self._prompt_for_unique_style_name()
         if not style_name:
             return
@@ -234,7 +234,7 @@ class StyleList(QtWidgets.QWidget):
                 '"{}" already exists. Choose different name:'
                 .format(style_name))
 
-    def _remove_button_clicked(self, _event):
+    def _on_remove_button_click(self, _event):
         if not bubblesub.ui.util.ask(
                 'Are you sure you want to remove style "{}"?'
                 .format(self._selected_style.name)):
@@ -244,7 +244,7 @@ class StyleList(QtWidgets.QWidget):
         self._styles_list_view.selectionModel().clear()
         self._api.subs.styles.remove(self._api.subs.styles.index(style), 1)
 
-    def _rename_button_clicked(self, _event):
+    def _on_rename_button_click(self, _event):
         style = self._selected_style
         old_name = style.name
         new_name = self._prompt_for_unique_style_name(old_name)
@@ -425,7 +425,7 @@ class StyleEditor(QtWidgets.QWidget):
     def __init__(self, model, selection_model, parent):
         super().__init__(parent)
         self._model = model
-        selection_model.selectionChanged.connect(self._selection_changed)
+        selection_model.selectionChanged.connect(self._on_selection_change)
 
         self.font_group_box = FontGroupBox(self)
         self.colors_group_box = ColorsGroupBox(self)
@@ -504,7 +504,7 @@ class StyleEditor(QtWidgets.QWidget):
 
         self._connect_signals()
 
-    def _selection_changed(self, event):
+    def _on_selection_change(self, event):
         if event.indexes():
             self.setEnabled(True)
             self.mapper.setCurrentIndex(event.indexes()[0].row())

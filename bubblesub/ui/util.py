@@ -42,14 +42,14 @@ class ColorPicker(QtWidgets.QWidget):
         super().__init__(parent)
         self._label = QtWidgets.QLabel(self)
         self._button = QtWidgets.QPushButton('Change', self)
-        self._button.clicked.connect(self._button_clicked)
+        self._button.clicked.connect(self._on_button_click)
         layout = QtWidgets.QHBoxLayout(self, margin=0)
         layout.addWidget(self._label)
         layout.addWidget(self._button)
         self._color = QtGui.QColor(0, 0, 0, 0)
         self.set_color(self._color)
 
-    def _button_clicked(self, _event):
+    def _on_button_click(self, _event):
         dialog = QtWidgets.QColorDialog(self)
         dialog.setCurrentColor(self._color)
         dialog.setOption(dialog.ShowAlphaChannel, True)
@@ -132,7 +132,7 @@ def _window_from_menu(menu):
     return window
 
 
-def _menu_about_to_show(menu):
+def _on_menu_about_to_show(menu):
     window = _window_from_menu(menu)
     window.setProperty('focused-widget', window.focusWidget())
     for action in menu.actions():
@@ -140,7 +140,7 @@ def _menu_about_to_show(menu):
             action.setEnabled(action.cmd.is_enabled)
 
 
-def _menu_about_to_hide(menu):
+def _on_menu_about_to_hide(menu):
     window = _window_from_menu(menu)
     focused_widget = window.property('focused-widget')
     if focused_widget:
@@ -158,9 +158,9 @@ def setup_cmd_menu(api, parent, menu_def):
     action_map = {}
     if hasattr(parent, 'aboutToShow'):
         parent.aboutToShow.connect(
-            functools.partial(_menu_about_to_show, parent))
+            functools.partial(_on_menu_about_to_show, parent))
         parent.aboutToHide.connect(
-            functools.partial(_menu_about_to_hide, parent))
+            functools.partial(_on_menu_about_to_hide, parent))
     for item in menu_def:
         if item is None:
             parent.addSeparator()
@@ -231,8 +231,8 @@ def time_jump_dialog(
 
             strip.accepted.connect(self.accept)
             strip.rejected.connect(self.reject)
-            self._radio_rel.clicked.connect(self._radio_clicked)
-            self._radio_abs.clicked.connect(self._radio_clicked)
+            self._radio_rel.clicked.connect(self._on_radio_click)
+            self._radio_abs.clicked.connect(self._on_radio_click)
 
             layout = QtWidgets.QVBoxLayout(self)
             layout.addWidget(self._label)
@@ -241,10 +241,10 @@ def time_jump_dialog(
             layout.addWidget(self._radio_abs)
             layout.addWidget(strip)
 
-            self._radio_clicked()
+            self._on_radio_click()
             self._time_edit.set_value(value)
 
-        def _radio_clicked(self):
+        def _on_radio_click(self):
             is_relative = self._radio_rel.isChecked()
             if is_relative:
                 self._label.setText(relative_label)

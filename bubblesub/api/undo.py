@@ -34,8 +34,8 @@ class UndoApi(QtCore.QObject):
         self._undo_stack = []
         self._undo_stack_pos = -1
         self._undo_stack_pos_when_saved = -1
-        self._subs_api.loaded.connect(self._subtitles_loaded)
-        self._subs_api.saved.connect(self._subtitles_saved)
+        self._subs_api.loaded.connect(self._on_subtitles_load)
+        self._subs_api.saved.connect(self._on_subtitles_save)
         self._tmp_state = None
 
     @property
@@ -146,35 +146,35 @@ class UndoApi(QtCore.QObject):
         self._undo_stack_pos = len(self._undo_stack) - 1
 
     def _connect_signals(self):
-        self._subs_api.lines.items_inserted.connect(self._subtitles_inserted)
-        self._subs_api.lines.item_changed.connect(self._subtitle_changed)
+        self._subs_api.lines.items_inserted.connect(self._on_subtitles_insert)
+        self._subs_api.lines.item_changed.connect(self._on_subtitle_change)
         self._subs_api.lines.item_about_to_change.connect(
-            self._subtitle_about_to_change)
+            self._on_subtitle_about_to_change)
         self._subs_api.lines.items_about_to_be_removed.connect(
-            self._subtitles_removed)
-        self._subs_api.styles.items_inserted.connect(self._styles_inserted)
-        self._subs_api.styles.item_changed.connect(self._style_changed)
+            self._on_subtitles_remove)
+        self._subs_api.styles.items_inserted.connect(self._on_styles_insert)
+        self._subs_api.styles.item_changed.connect(self._on_style_change)
         self._subs_api.styles.item_about_to_change.connect(
-            self._style_about_to_change)
+            self._on_style_about_to_change)
         self._subs_api.styles.items_about_to_be_removed.connect(
-            self._styles_removed)
+            self._on_styles_remove)
 
     def _disconnect_signals(self):
         self._subs_api.lines.items_inserted.disconnect(
-            self._subtitles_inserted)
-        self._subs_api.lines.item_changed.disconnect(self._subtitle_changed)
+            self._on_subtitles_insert)
+        self._subs_api.lines.item_changed.disconnect(self._on_subtitle_change)
         self._subs_api.lines.item_about_to_change.disconnect(
-            self._subtitle_about_to_change)
+            self._on_subtitle_about_to_change)
         self._subs_api.lines.items_about_to_be_removed.disconnect(
-            self._subtitles_removed)
-        self._subs_api.styles.items_inserted.disconnect(self._styles_inserted)
-        self._subs_api.styles.item_changed.disconnect(self._style_changed)
+            self._on_subtitles_remove)
+        self._subs_api.styles.items_inserted.disconnect(self._on_styles_insert)
+        self._subs_api.styles.item_changed.disconnect(self._on_style_change)
         self._subs_api.styles.item_about_to_change.disconnect(
-            self._style_about_to_change)
+            self._on_style_about_to_change)
         self._subs_api.styles.items_about_to_be_removed.disconnect(
-            self._styles_removed)
+            self._on_styles_remove)
 
-    def _subtitles_loaded(self):
+    def _on_subtitles_load(self):
         self._undo_stack = [(
             UndoOperation.Reset,
             self._serialize_lines(0, len(self._subs_api.lines)),
@@ -184,51 +184,51 @@ class UndoApi(QtCore.QObject):
         self._undo_stack_pos = 0
         self._undo_stack_pos_when_saved = 0
 
-    def _subtitles_saved(self):
+    def _on_subtitles_save(self):
         self._undo_stack_pos_when_saved = self._undo_stack_pos
 
-    def _subtitle_about_to_change(self, idx):
+    def _on_subtitle_about_to_change(self, idx):
         self._tmp_state = self._serialize_lines(idx, 1)
 
-    def _subtitle_changed(self, idx):
+    def _on_subtitle_change(self, idx):
         self._trim_undo_stack_and_append(
             UndoOperation.SubtitleChange,
             idx,
             self._tmp_state,
             self._serialize_lines(idx, 1))
 
-    def _subtitles_inserted(self, idx, count):
+    def _on_subtitles_insert(self, idx, count):
         self._trim_undo_stack_and_append(
             UndoOperation.SubtitlesInsertion,
             idx,
             count,
             self._serialize_lines(idx, count))
 
-    def _subtitles_removed(self, idx, count):
+    def _on_subtitles_remove(self, idx, count):
         self._trim_undo_stack_and_append(
             UndoOperation.SubtitlesRemoval,
             idx,
             count,
             self._serialize_lines(idx, count))
 
-    def _style_about_to_change(self, idx):
+    def _on_style_about_to_change(self, idx):
         self._tmp_state = self._serialize_styles(idx, 1)
 
-    def _style_changed(self, idx):
+    def _on_style_change(self, idx):
         self._trim_undo_stack_and_append(
             UndoOperation.StyleChange,
             idx,
             self._tmp_state,
             self._serialize_styles(idx, 1))
 
-    def _styles_inserted(self, idx, count):
+    def _on_styles_insert(self, idx, count):
         self._trim_undo_stack_and_append(
             UndoOperation.StylesInsertion,
             idx,
             count,
             self._serialize_styles(idx, count))
 
-    def _styles_removed(self, idx, count):
+    def _on_styles_remove(self, idx, count):
         self._trim_undo_stack_and_append(
             UndoOperation.StylesRemoval,
             idx,

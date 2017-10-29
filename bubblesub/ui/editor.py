@@ -219,7 +219,7 @@ class Editor(QtWidgets.QWidget):
         subtitle.end_update()
         self._connect_api_signals()
 
-    def _grid_selection_changed(self, rows):
+    def _on_grid_selection_change(self, rows):
         self._disconnect_ui_signals()
         if len(rows) == 1:
             self._fetch_selection(rows[0])
@@ -227,13 +227,13 @@ class Editor(QtWidgets.QWidget):
             self._clear_selection()
         self._connect_ui_signals()
 
-    def _item_changed(self, idx):
+    def _on_item_change(self, idx):
         if idx == self._index or idx is None:
             self._disconnect_ui_signals()
             self._fetch_selection(self._index)
             self._connect_ui_signals()
 
-    def _time_end_edited(self):
+    def _on_time_end_edit(self):
         self._disconnect_ui_signals()
         start = self.top_bar.start_time_edit.get_value()
         end = self.top_bar.end_time_edit.get_value()
@@ -242,7 +242,7 @@ class Editor(QtWidgets.QWidget):
         self._push_selection()
         self._connect_ui_signals()
 
-    def _duration_edited(self):
+    def _on_duration_edit(self):
         self._disconnect_ui_signals()
         start = self.top_bar.start_time_edit.get_value()
         duration = self.top_bar.duration_edit.get_value()
@@ -251,57 +251,60 @@ class Editor(QtWidgets.QWidget):
         self._push_selection()
         self._connect_ui_signals()
 
-    def _generic_edited(self):
+    def _on_generic_edit(self):
         self._push_selection()
 
     def _connect_api_signals(self):
-        self._api.subs.lines.item_changed.connect(self._item_changed)
-        self._api.subs.selection_changed.connect(self._grid_selection_changed)
+        self._api.subs.lines.item_changed.connect(self._on_item_change)
+        self._api.subs.selection_changed.connect(
+            self._on_grid_selection_change)
 
     def _disconnect_api_signals(self):
-        self._api.subs.lines.item_changed.disconnect(self._item_changed)
+        self._api.subs.lines.item_changed.disconnect(self._on_item_change)
         self._api.subs.selection_changed.disconnect(
-            self._grid_selection_changed)
+            self._on_grid_selection_change)
 
     # TODO: get rid of this crap
 
     def _connect_ui_signals(self):
-        self.top_bar.start_time_edit.textEdited.connect(self._generic_edited)
-        self.top_bar.end_time_edit.textEdited.connect(self._time_end_edited)
-        self.top_bar.duration_edit.textEdited.connect(self._duration_edited)
+        self.top_bar.start_time_edit.textEdited.connect(self._on_generic_edit)
+        self.top_bar.end_time_edit.textEdited.connect(self._on_time_end_edit)
+        self.top_bar.duration_edit.textEdited.connect(self._on_duration_edit)
         self.bottom_bar.actor_edit.editTextChanged.connect(
-            self._generic_edited)
+            self._on_generic_edit)
         self.bottom_bar.style_edit.editTextChanged.connect(
-            self._generic_edited)
-        self.center.text_edit.textChanged.connect(self._generic_edited)
-        self.center.note_edit.textChanged.connect(self._generic_edited)
-        self.bottom_bar.effect_edit.textChanged.connect(self._generic_edited)
-        self.top_bar.layer_edit.valueChanged.connect(self._generic_edited)
-        self.top_bar.margin_l_edit.valueChanged.connect(self._generic_edited)
-        self.top_bar.margin_v_edit.valueChanged.connect(self._generic_edited)
-        self.top_bar.margin_r_edit.valueChanged.connect(self._generic_edited)
+            self._on_generic_edit)
+        self.center.text_edit.textChanged.connect(self._on_generic_edit)
+        self.center.note_edit.textChanged.connect(self._on_generic_edit)
+        self.bottom_bar.effect_edit.textChanged.connect(self._on_generic_edit)
+        self.top_bar.layer_edit.valueChanged.connect(self._on_generic_edit)
+        self.top_bar.margin_l_edit.valueChanged.connect(self._on_generic_edit)
+        self.top_bar.margin_v_edit.valueChanged.connect(self._on_generic_edit)
+        self.top_bar.margin_r_edit.valueChanged.connect(self._on_generic_edit)
         self.bottom_bar.comment_checkbox.stateChanged.connect(
-            self._generic_edited)
+            self._on_generic_edit)
 
     def _disconnect_ui_signals(self):
         self.top_bar.start_time_edit.textEdited.disconnect(
-            self._generic_edited)
-        self.top_bar.end_time_edit.textEdited.disconnect(self._time_end_edited)
-        self.top_bar.duration_edit.textEdited.disconnect(self._duration_edited)
+            self._on_generic_edit)
+        self.top_bar.end_time_edit.textEdited.disconnect(
+            self._on_time_end_edit)
+        self.top_bar.duration_edit.textEdited.disconnect(
+            self._on_duration_edit)
         self.bottom_bar.actor_edit.editTextChanged.disconnect(
-            self._generic_edited)
+            self._on_generic_edit)
         self.bottom_bar.style_edit.editTextChanged.disconnect(
-            self._generic_edited)
-        self.center.text_edit.textChanged.disconnect(self._generic_edited)
-        self.center.note_edit.textChanged.disconnect(self._generic_edited)
+            self._on_generic_edit)
+        self.center.text_edit.textChanged.disconnect(self._on_generic_edit)
+        self.center.note_edit.textChanged.disconnect(self._on_generic_edit)
         self.bottom_bar.effect_edit.textChanged.disconnect(
-            self._generic_edited)
-        self.top_bar.layer_edit.valueChanged.disconnect(self._generic_edited)
+            self._on_generic_edit)
+        self.top_bar.layer_edit.valueChanged.disconnect(self._on_generic_edit)
         self.top_bar.margin_l_edit.valueChanged.disconnect(
-            self._generic_edited)
+            self._on_generic_edit)
         self.top_bar.margin_v_edit.valueChanged.disconnect(
-            self._generic_edited)
+            self._on_generic_edit)
         self.top_bar.margin_r_edit.valueChanged.disconnect(
-            self._generic_edited)
+            self._on_generic_edit)
         self.bottom_bar.comment_checkbox.stateChanged.disconnect(
-            self._generic_edited)
+            self._on_generic_edit)

@@ -30,7 +30,7 @@ class SpellCheckDialog(QtWidgets.QDialog):
         self._replacement_text_edit = QtWidgets.QLineEdit(self)
         self._suggestions_list_view = QtWidgets.QListView(self)
         self._suggestions_list_view.setModel(QtGui.QStandardItemModel())
-        self._suggestions_list_view.clicked.connect(self._suggestion_clicked)
+        self._suggestions_list_view.clicked.connect(self._on_suggestion_click)
 
         box = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout(box)
@@ -122,7 +122,7 @@ class SpellCheckDialog(QtWidgets.QDialog):
             item.setEditable(False)
             self._suggestions_list_view.model().appendRow(item)
 
-    def _suggestion_clicked(self, event):
+    def _on_suggestion_click(self, event):
         self._replacement_text_edit.setText(event.data())
 
 

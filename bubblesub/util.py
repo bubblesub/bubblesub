@@ -298,7 +298,7 @@ class Provider(QtCore.QObject):
         self._queue = queue.LifoQueue()
         self.worker = ProviderThread(self._queue, context)
         self.worker.setParent(parent)
-        self.worker.finished.connect(self._work_finished)
+        self.worker.finished.connect(self._on_work_finish)
         self.worker.start()
 
     def __del__(self):
@@ -315,7 +315,7 @@ class Provider(QtCore.QObject):
     def schedule_task(self, task_data):
         self._queue.put(task_data)
 
-    def _work_finished(self, result):
+    def _on_work_finish(self, result):
         self.finished.emit(result)
 
 

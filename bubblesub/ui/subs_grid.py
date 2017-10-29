@@ -19,8 +19,8 @@ class SubsGrid(QtWidgets.QTableView):
                 self.horizontalHeader().setSectionResizeMode(
                     i, QtWidgets.QHeaderView.Stretch)
 
-        api.subs.loaded.connect(self._subs_loaded)
-        api.subs.selection_changed.connect(self._api_selection_changed)
+        api.subs.loaded.connect(self._on_subs_load)
+        api.subs.selection_changed.connect(self._on_api_selection_change)
         self.selectionModel().selectionChanged.connect(
             self._widget_selection_changed)
 
@@ -45,7 +45,7 @@ class SubsGrid(QtWidgets.QTableView):
             rows.add(index.row())
         return list(rows)
 
-    def _subs_loaded(self):
+    def _on_subs_load(self):
         self.scrollTo(
             self.model().index(0, 0),
             self.EnsureVisible | self.PositionAtTop)
@@ -53,12 +53,12 @@ class SubsGrid(QtWidgets.QTableView):
     def _widget_selection_changed(self, _selected, _deselected):
         if self._collect_rows() != self._api.subs.selected_indexes:
             self._api.subs.selection_changed.disconnect(
-                self._api_selection_changed)
+                self._on_api_selection_change)
             self._api.subs.selected_indexes = self._collect_rows()
             self._api.subs.selection_changed.connect(
-                self._api_selection_changed)
+                self._on_api_selection_change)
 
-    def _api_selection_changed(self):
+    def _on_api_selection_change(self):
         if self._collect_rows() == self._api.subs.selected_indexes:
             return
 

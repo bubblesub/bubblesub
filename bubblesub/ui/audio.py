@@ -23,14 +23,14 @@ class BaseAudioWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self._api = api
 
-        def upd(*_):
+        def update(*_):
             self.update()
 
-        api.audio.selection_changed.connect(upd)
-        api.audio.view_changed.connect(upd)
-        api.subs.lines.items_inserted.connect(upd)
-        api.subs.lines.items_removed.connect(upd)
-        api.subs.lines.item_changed.connect(upd)
+        api.audio.selection_changed.connect(update)
+        api.audio.view_changed.connect(update)
+        api.subs.lines.items_inserted.connect(update)
+        api.subs.lines.items_removed.connect(update)
+        api.subs.lines.item_changed.connect(update)
 
     def wheelEvent(self, event):
         if event.modifiers() & QtCore.Qt.ControlModifier:
@@ -112,7 +112,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         super().__init__(api, parent)
         self.setMinimumHeight(50)
         self._spectrum_provider = SpectrumProvider(self, self._api)
-        self._spectrum_provider.finished.connect(self._spectrum_updated)
+        self._spectrum_provider.finished.connect(self._on_spectrum_update)
         self._spectrum_cache = {}
         self._need_repaint = False
         self._drag_mode = DragMode.Off
@@ -126,9 +126,10 @@ class AudioPreviewWidget(BaseAudioWidget):
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
-        api.video.current_pts_changed.connect(self._video_current_pts_changed)
-        api.video.loaded.connect(self._video_loaded)
-        api.audio.view_changed.connect(self._audio_view_changed)
+        api.video.current_pts_changed.connect(
+            self._on_video_current_pts_change)
+        api.video.loaded.connect(self._on_video_load)
+        api.audio.view_changed.connect(self._on_audio_view_change)
 
     def changeEvent(self, _event):
         self._generate_color_table()
@@ -194,7 +195,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         if self._need_repaint:
             self.update()
 
-    def _audio_view_changed(self):
+    def _on_audio_view_change(self):
         self._spectrum_cache = {
             key: value
             for key, value in self._spectrum_cache.items()
@@ -202,15 +203,15 @@ class AudioPreviewWidget(BaseAudioWidget):
         }
         self._spectrum_provider.clear_tasks()
 
-    def _video_loaded(self):
+    def _on_video_load(self):
         self._spectrum_cache.clear()
         self._spectrum_provider.clear_tasks()
         self.update()
 
-    def _video_current_pts_changed(self):
+    def _on_video_current_pts_change(self):
         self._need_repaint = True
 
-    def _spectrum_updated(self, result):
+    def _on_spectrum_update(self, result):
         pts, column = result
         self._spectrum_cache[pts] = column
         self._need_repaint = True
@@ -392,9 +393,9 @@ class Audio(QtWidgets.QWidget):
         layout.addWidget(self.preview)
         layout.addWidget(self.slider)
 
-        api.subs.selection_changed.connect(self._grid_selection_changed)
+        api.subs.selection_changed.connect(self._on_grid_selection_change)
 
-    def _grid_selection_changed(self, rows):
+    def _on_grid_selection_change(self, rows):
         if len(rows) == 1:
             sub = self._api.subs.lines[rows[0]]
             self._api.audio.view(sub.start - 10000, sub.end + 10000)

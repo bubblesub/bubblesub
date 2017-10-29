@@ -76,7 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
 
-        api.log.logged.connect(self._logged)
+        api.log.logged.connect(self._on_log)
 
         self.apply_palette(api.opt.general['current_palette'])
 
@@ -112,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setPalette(palette)
         self.update()
 
-    def _logged(self, level, text):
+    def _on_log(self, level, text):
         line = '[{}] {}\n'.format(level.name.lower(), text)
         print(line, end='')
         if level.name.lower() != 'debug':

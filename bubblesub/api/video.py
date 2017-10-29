@@ -62,14 +62,15 @@ class VideoApi(QtCore.QObject):
         self._timecodes_provider = TimecodesProvider(self, log_api)
         self._timecodes_provider.finished.connect(self._got_timecodes)
 
-        self._subs_api.loaded.connect(self._subs_loaded)
-        self._subs_api.selection_changed.connect(self._grid_selection_changed)
-        self._subs_api.lines.item_changed.connect(self._subs_changed)
-        self._subs_api.lines.items_removed.connect(self._subs_changed)
-        self._subs_api.lines.items_inserted.connect(self._subs_changed)
-        self._subs_api.styles.item_changed.connect(self._subs_changed)
-        self._subs_api.styles.items_removed.connect(self._subs_changed)
-        self._subs_api.styles.items_inserted.connect(self._subs_changed)
+        self._subs_api.loaded.connect(self._on_subs_load)
+        self._subs_api.lines.item_changed.connect(self._on_subs_change)
+        self._subs_api.lines.items_removed.connect(self._on_subs_change)
+        self._subs_api.lines.items_inserted.connect(self._on_subs_change)
+        self._subs_api.styles.item_changed.connect(self._on_subs_change)
+        self._subs_api.styles.items_removed.connect(self._on_subs_change)
+        self._subs_api.styles.items_inserted.connect(self._on_subs_change)
+        self._subs_api.selection_changed.connect(
+            self._on_grid_selection_change)
 
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = mpv.Context()
@@ -259,14 +260,14 @@ class VideoApi(QtCore.QObject):
         self._refresh_subs()
         self.parsed.emit()
 
-    def _subs_loaded(self):
+    def _on_subs_load(self):
         if self._subs_api.remembered_video_path:
             self.load(self._subs_api.remembered_video_path)
         else:
             self.unload()
-        self._subs_changed()
+        self._on_subs_change()
 
-    def _subs_changed(self):
+    def _on_subs_change(self):
         self._need_subs_refresh = True
 
     def _reload_video(self):
@@ -290,7 +291,7 @@ class VideoApi(QtCore.QObject):
             self._mpv.command('sub_reload')
             self._need_subs_refresh = False
 
-    def _grid_selection_changed(self, rows):
+    def _on_grid_selection_change(self, rows):
         if len(rows) == 1:
             self.pause()
             self.seek(self._subs_api.lines[rows[0]].start)

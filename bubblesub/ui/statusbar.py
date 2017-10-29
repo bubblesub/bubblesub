@@ -24,11 +24,12 @@ class StatusBar(QtWidgets.QStatusBar):
         self.addPermanentWidget(self._video_frame_label)
         self.addPermanentWidget(self._audio_selection_label)
 
-        api.video.current_pts_changed.connect(self._video_current_pts_changed)
-        api.audio.selection_changed.connect(self._audio_selection_changed)
-        api.subs.selection_changed.connect(self._subs_selection_changed)
+        api.subs.selection_changed.connect(self._on_subs_selection_change)
+        api.audio.selection_changed.connect(self._on_audio_selection_change)
+        api.video.current_pts_changed.connect(
+            self._on_video_current_pts_change)
 
-    def _subs_selection_changed(self):
+    def _on_subs_selection_change(self):
         count = len(self._api.subs.selected_indexes)
         total = len(self._api.subs.lines)
 
@@ -59,13 +60,13 @@ class StatusBar(QtWidgets.QStatusBar):
                     count / total))
 
 
-    def _video_current_pts_changed(self):
+    def _on_video_current_pts_change(self):
         self._video_frame_label.setText(
             'Video frame: {} ({:.1%})'.format(
                 bubblesub.util.ms_to_str(self._api.video.current_pts),
                 self._api.video.current_pts / max(1, self._api.video.max_pts)))
 
-    def _audio_selection_changed(self):
+    def _on_audio_selection_change(self):
         if len(self._api.subs.selected_lines) != 1:
             return
         sub = self._api.subs.selected_lines[0]
