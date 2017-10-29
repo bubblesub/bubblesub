@@ -236,6 +236,10 @@ class SearchDialog(QtWidgets.QDialog):
                 QtWidgets.QSizePolicy.Expanding,
                 QtWidgets.QSizePolicy.Preferred),
             insertPolicy=QtWidgets.QComboBox.NoInsert)
+        completer = self.search_text_edit.completer()
+        completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
+        self.search_text_edit.setCompleter(completer)
+
         self.replacement_text_edit = QtWidgets.QLineEdit(self)
         self.case_chkbox = QtWidgets.QCheckBox('Case sensitivity', self)
         self.regex_chkbox = QtWidgets.QCheckBox(
