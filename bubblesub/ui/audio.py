@@ -270,7 +270,6 @@ class AudioPreviewWidget(BaseAudioWidget):
                     text_height + 8,
                     str(line.number))
 
-
     def _draw_selection(self, painter):
         if not self._api.audio.has_selection:
             return
@@ -393,11 +392,13 @@ class Audio(QtWidgets.QWidget):
         layout.addWidget(self.preview)
         layout.addWidget(self.slider)
 
-        api.subs.selection_changed.connect(self._on_grid_selection_change)
+        api.subs.lines.items_inserted.connect(self._sync_selection)
+        api.subs.lines.items_removed.connect(self._sync_selection)
+        api.subs.selection_changed.connect(lambda _: self._sync_selection())
 
-    def _on_grid_selection_change(self, rows):
-        if len(rows) == 1:
-            sub = self._api.subs.lines[rows[0]]
+    def _sync_selection(self):
+        if len(self._api.subs.selected_indexes) == 1:
+            sub = self._api.subs.selected_lines[0]
             self._api.audio.view(sub.start - 10000, sub.end + 10000)
             self._api.audio.select(sub.start, sub.end)
         else:
