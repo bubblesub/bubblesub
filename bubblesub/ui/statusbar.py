@@ -59,7 +59,6 @@ class StatusBar(QtWidgets.QStatusBar):
                     count,
                     count / total))
 
-
     def _on_video_current_pts_change(self):
         self._video_frame_label.setText(
             'Video frame: {} ({:.1%})'.format(
