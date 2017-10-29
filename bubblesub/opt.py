@@ -162,6 +162,9 @@ _DEFAULT_HOTKEYS = {
         ('Ctrl+]', 'video/set-playback-speed', 1),
         ('F3', 'edit/search-repeat', 1),
         ('Shift+F3', 'edit/search-repeat', -1),
+        ('Alt+A', 'view/focus-spectrogram'),
+        ('Alt+S', 'view/focus-grid'),
+        ('Alt+D', 'view/focus-text-editor'),
     ],
 
     'audio': [
