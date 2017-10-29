@@ -433,7 +433,8 @@ class SearchRepeatCommand(CoreCommand):
     def menu_name(self):
         return 'Search %s' % ['previous', 'next'][self._direction > 0]
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return len(self.api.opt.general['search']['history']) > 0
 
     async def run(self):

@@ -14,7 +14,12 @@ class BaseCommand:
     def name(cls):
         raise NotImplementedError('Command has no name')
 
-    def enabled(self):
+    @property
+    def menu_name(self):
+        raise NotImplementedError('Command has no menu name')
+
+    @property
+    def is_enabled(self):
         return True
 
     def run(self):
@@ -44,7 +49,7 @@ class CommandApi(QtCore.QObject):
         self._thread = None
 
     def run(self, cmd):
-        if not cmd.enabled():
+        if not cmd.is_enabled:
             self._api.log.info(
                 'cmd/{}: not available right now'.format(cmd.name))
             return

@@ -6,7 +6,8 @@ class EditKaraokeSplitCommand(CoreCommand):
     name = 'edit/karaoke-split'
     menu_name = 'Split subtitles as karaoke'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return (
             len(self.api.subs.selected_indexes) == 1
             and '\\k' in self.api.subs.selected_lines[0].text)
@@ -61,7 +62,8 @@ class EditKaraokeJoinCommand(CoreCommand):
     name = 'edit/karaoke-join'
     menu_name = 'Join subtitles (as karaoke)'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self):
@@ -81,7 +83,8 @@ class EditTransformationJoinCommand(CoreCommand):
     name = 'edit/transformation-join'
     menu_name = 'Join subtitles (as transformation)'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self):

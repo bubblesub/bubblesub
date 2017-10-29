@@ -130,7 +130,8 @@ class EditSpellCheckCommand(CoreCommand):
     name = 'edit/spell-check'
     menu_name = 'Spell check...'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):

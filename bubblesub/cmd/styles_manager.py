@@ -579,7 +579,8 @@ class StylesManagerCommand(CoreCommand):
     name = 'edit/manage-styles'
     menu_name = 'Manage styles...'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return True
 
     async def run(self):

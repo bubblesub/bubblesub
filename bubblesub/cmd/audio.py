@@ -21,7 +21,8 @@ class AudioSnapSelectionStartToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-start-to-video'
     menu_name = 'Snap selection start to video'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.audio.has_selection and self.api.subs.has_selection
 
     async def run(self):
@@ -34,7 +35,8 @@ class AudioSnapSelectionEndToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-end-to-video'
     menu_name = 'Snap selection end to video'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.audio.has_selection and self.api.subs.has_selection
 
     async def run(self):
@@ -47,7 +49,8 @@ class AudioRealignSelectionToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-to-video'
     menu_name = 'Snap selection to video'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.audio.has_selection and self.api.subs.has_selection
 
     async def run(self):
@@ -61,7 +64,8 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
     name = 'audio/snap-sel-start-to-prev-sub'
     menu_name = 'Snap selection start to previous subtitle'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         if not self.api.audio.has_selection:
             return False
         if not self.api.subs.has_selection:
@@ -78,7 +82,8 @@ class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
     name = 'audio/snap-sel-end-to-next-sub'
     menu_name = 'Snap selection start to next subtitle'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         if not self.api.audio.has_selection:
             return False
         if not self.api.subs.has_selection:
@@ -102,7 +107,8 @@ class AudioShiftSelectionStartCommand(CoreCommand):
     def menu_name(self):
         return 'Shift selection start ({:+} ms)'.format(self._ms)
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.audio.has_selection
 
     async def run(self):
@@ -124,7 +130,8 @@ class AudioShiftSelectionEndCommand(CoreCommand):
     def menu_name(self):
         return 'Shift selection end ({:+} ms)'.format(self._ms)
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.audio.has_selection
 
     async def run(self):
@@ -146,7 +153,8 @@ class AudioShiftSelectionCommand(CoreCommand):
     def menu_name(self):
         return 'Shift selection ({:+} ms)'.format(self._ms)
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.audio.has_selection
 
     async def run(self):
@@ -159,7 +167,8 @@ class AudioCommitSelectionCommand(CoreCommand):
     name = 'audio/commit-sel'
     menu_name = 'Commit selection to subtitle'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection and self.api.audio.has_selection
 
     async def run(self):

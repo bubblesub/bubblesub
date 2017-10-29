@@ -137,7 +137,7 @@ def _menu_about_to_show(menu):
     window.setProperty('focused-widget', window.focusWidget())
     for action in menu.actions():
         if hasattr(action, 'cmd') and action.cmd:
-            action.setEnabled(action.cmd.enabled())
+            action.setEnabled(action.cmd.is_enabled)
 
 
 def _menu_about_to_hide(menu):

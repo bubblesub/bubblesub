@@ -9,7 +9,8 @@ class VideoPlayCurrentLineCommand(CoreCommand):
     name = 'video/play-current-line'
     menu_name = 'Play current line'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded and self.api.subs.has_selection
 
     async def run(self):
@@ -29,7 +30,8 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
     def menu_name(self):
         return 'Play selection'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded and self.api.audio.has_selection
 
     async def run(self):
@@ -57,7 +59,8 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
         return 'Play {:+} ms / {:+} ms around selection start'.format(
             self._delta_start, self._delta_end)
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded and self.api.audio.has_selection
 
     async def run(self):
@@ -85,7 +88,8 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
         return 'Play {:+} ms / {:+} ms around selection end'.format(
             self._delta_start, self._delta_end)
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded and self.api.audio.has_selection
 
     async def run(self):
@@ -108,7 +112,8 @@ class VideoStepFrameCommand(CoreCommand):
             's' if abs(self._delta) > 1 else '',
             ['backward', 'forward'][self._delta > 0])
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded
 
     async def run(self):
@@ -138,7 +143,8 @@ class VideoStepMillisecondsCommand(CoreCommand):
             ['backward', 'forward'][self._delta > 0],
             abs(self._delta))
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded
 
     async def run(self):
@@ -150,7 +156,8 @@ class VideoSeekWithGuiCommand(CoreCommand):
     name = 'video/seek-with-gui'
     menu_name = 'Seek to...'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded
 
     async def run(self):
@@ -192,7 +199,8 @@ class VideoTogglePauseCommand(CoreCommand):
     name = 'video/toggle-pause'
     menu_name = 'Toggle pause'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded
 
     async def run(self):
@@ -206,7 +214,8 @@ class VideoUnpauseCommand(CoreCommand):
     name = 'video/unpause'
     menu_name = 'Play until end of the file'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded
 
     async def run(self):
@@ -219,7 +228,8 @@ class VideoPauseCommand(CoreCommand):
     name = 'video/pause'
     menu_name = 'Pause playback'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded
 
     async def run(self):
@@ -235,7 +245,8 @@ class VideoScreenshotCommand(CoreCommand):
         super().__init__(api)
         self._include_subtitles = include_subtitles
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.video.is_loaded
 
     @property

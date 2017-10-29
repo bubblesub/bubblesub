@@ -6,7 +6,8 @@ class EditUndoCommand(CoreCommand):
     name = 'edit/undo'
     menu_name = 'Undo'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.undo.has_undo
 
     async def run(self):
@@ -17,7 +18,8 @@ class EditRedoCommand(CoreCommand):
     name = 'edit/redo'
     menu_name = 'Redo'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.undo.has_redo
 
     async def run(self):
@@ -84,7 +86,8 @@ class EditDuplicateCommand(CoreCommand):
     name = 'edit/duplicate'
     menu_name = 'Duplicate selected subtitles'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -108,7 +111,8 @@ class EditDeleteCommand(CoreCommand):
     name = 'edit/delete'
     menu_name = 'Delete selected subtitles'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -122,7 +126,8 @@ class EditSwapTextAndNotesCommand(CoreCommand):
     name = 'edit/swap-text-and-notes'
     menu_name = 'Swap notes with subtitle text'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -137,7 +142,8 @@ class EditSplitSubAtVideoCommand(CoreCommand):
     name = 'edit/split-sub-at-video'
     menu_name = 'Split selected subtitle at video frame'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return len(self.api.subs.selected_indexes) == 1
 
     async def run(self):
@@ -160,7 +166,8 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
     name = 'edit/join-subs/keep-first'
     menu_name = 'Join subtitles (keep first)'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self):
@@ -177,7 +184,8 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
     name = 'edit/join-subs/concatenate'
     menu_name = 'Join subtitles (concatenate)'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self):
@@ -207,7 +215,8 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
     name = 'edit/shift-subs-with-gui'
     menu_name = 'Shift times...'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -238,7 +247,8 @@ class EditSnapSubsStartToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-start-to-video'
     menu_name = 'Snap subtitles start to video'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -251,7 +261,8 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-end-to-video'
     menu_name = 'Snap subtitles end to video'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -264,7 +275,8 @@ class EditSnapSubsToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-to-video'
     menu_name = 'Snap subtitles to video'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -280,7 +292,8 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
     name = 'edit/snap-subs-start-to-prev-sub'
     menu_name = 'Snap subtitles start to previous subtitle'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         if not self.api.subs.has_selection:
             return False
         return self.api.subs.selected_lines[0].prev is not None
@@ -296,7 +309,8 @@ class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
     name = 'edit/snap-subs-end-to-next-sub'
     menu_name = 'Snap subtitles end to next subtitle'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         if not self.api.subs.has_selection:
             return False
         return self.api.subs.selected_lines[-1].next is not None
@@ -319,7 +333,8 @@ class EditShiftSubsStartCommand(CoreCommand):
     def menu_name(self):
         return 'Shift subtitles start ({:+})'.format(self._ms)
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -339,7 +354,8 @@ class EditShiftSubsEndCommand(CoreCommand):
     def menu_name(self):
         return 'Shift subtitles end ({:+})'.format(self._ms)
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):
@@ -359,7 +375,8 @@ class EditShiftSubsCommand(CoreCommand):
     def menu_name(self):
         return 'Shift subtitles end ({:+})'.format(self._ms)
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection
 
     async def run(self):

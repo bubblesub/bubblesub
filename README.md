@@ -94,7 +94,8 @@ class SpeechRecognitionCommand(PluginCommand):
     name = 'grid/speech-recognition'
     menu_name = 'Speech recognition'
 
-    def enabled(self):
+    @property
+    def is_enabled(self):
         return self.api.subs.has_selection and self.api.audio.has_audio_source
 
     async def run(self):
