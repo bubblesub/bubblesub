@@ -227,6 +227,18 @@ class Editor(QtWidgets.QWidget):
             self._clear_selection()
         self._connect_ui_signals()
 
+    def _on_items_insert(self, idx, count):
+        if self._index in range(idx, idx + count):
+            self._disconnect_ui_signals()
+            self._fetch_selection(self._index)
+            self._connect_ui_signals()
+
+    def _on_items_remove(self, idx, count):
+        if self._index in range(idx, idx + count):
+            self._disconnect_ui_signals()
+            self._clear_selection()
+            self._connect_ui_signals()
+
     def _on_item_change(self, idx):
         if idx == self._index or idx is None:
             self._disconnect_ui_signals()
@@ -255,11 +267,15 @@ class Editor(QtWidgets.QWidget):
         self._push_selection()
 
     def _connect_api_signals(self):
+        self._api.subs.lines.items_inserted.connect(self._on_items_insert)
+        self._api.subs.lines.items_removed.connect(self._on_items_remove)
         self._api.subs.lines.item_changed.connect(self._on_item_change)
         self._api.subs.selection_changed.connect(
             self._on_grid_selection_change)
 
     def _disconnect_api_signals(self):
+        self._api.subs.lines.items_inserted.disconnect(self._on_items_insert)
+        self._api.subs.lines.items_removed.disconnect(self._on_items_remove)
         self._api.subs.lines.item_changed.disconnect(self._on_item_change)
         self._api.subs.selection_changed.disconnect(
             self._on_grid_selection_change)
