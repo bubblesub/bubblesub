@@ -319,6 +319,8 @@ _DEFAULT_TOP_MENU = [
         None,
         ['audio/scroll', -1],
         ['audio/scroll', 1],
+        ('audio/zoom', 1.1),
+        ('audio/zoom', 0.9),
     ]],
 ]
 
