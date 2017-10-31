@@ -17,6 +17,24 @@ class AudioScrollCommand(CoreCommand):
         self.api.audio.move_view(distance)
 
 
+class AudioZoomCommand(CoreCommand):
+    name = 'audio/zoom'
+
+    @property
+    def menu_name(self):
+        return 'Zoom waveform %s' % ['in', 'out'][self._delta < 1]
+
+    def __init__(self, api, delta):
+        super().__init__(api)
+        self._delta = delta
+
+    async def run(self):
+        mouse_x = 0.5
+        cur_factor = self.api.audio.view_size / self.api.audio.size
+        new_factor = cur_factor * self._delta
+        self.api.audio.zoom_view(new_factor, mouse_x)
+
+
 class AudioSnapSelectionStartToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-start-to-video'
     menu_name = 'Snap selection start to video'
