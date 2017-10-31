@@ -255,7 +255,8 @@ class AudioPreviewWidget(BaseAudioWidget):
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         painter.setFont(QtGui.QFont(self.font().family(), 10))
         text_height = painter.fontMetrics().capHeight()
-        for i, line in enumerate(self._api.subs.lines):
+        for i, line in enumerate(
+                sorted(self._api.subs.lines, key=lambda line: line.start)):
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
             if x2 < 0 or x1 >= self.width():
