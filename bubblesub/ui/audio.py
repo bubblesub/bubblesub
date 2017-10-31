@@ -1,3 +1,4 @@
+import math
 import enum
 import numpy as np
 from PyQt5 import QtWidgets
@@ -306,7 +307,7 @@ class AudioPreviewWidget(BaseAudioWidget):
 
     def _pts_to_x(self, pts):
         scale = self.width() / max(1, self._api.audio.view_size)
-        return (pts - self._api.audio.view_start) * scale
+        return math.floor((pts - self._api.audio.view_start) * scale)
 
     def _pts_from_x(self, x):
         scale = self._api.audio.view_size / self.width()
