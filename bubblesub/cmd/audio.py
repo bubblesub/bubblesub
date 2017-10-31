@@ -22,7 +22,7 @@ class AudioZoomCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Zoom waveform %s' % ['in', 'out'][self._delta < 1]
+        return 'Zoom waveform %s' % ['in', 'out'][self._delta > 1]
 
     def __init__(self, api, delta):
         super().__init__(api)
