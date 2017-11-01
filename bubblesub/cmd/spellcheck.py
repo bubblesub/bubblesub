@@ -132,8 +132,10 @@ class EditSpellCheckCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self):
-        # TODO: move to settings
-        dictionary = Dict('en_US')
+        if not self.api.opt.general['spell_check']:
+            bubblesub.ui.util.error('Spell check was disabled in config.')
+
+        dictionary = Dict(self.api.opt.general['spell_check'])
 
         async def run(api, main_window):
             SpellCheckDialog(api, main_window, dictionary)

@@ -7,11 +7,13 @@ from PyQt5 import QtWidgets
 
 
 class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
-    def __init__(self, *args):
+    def __init__(self, api, *args):
         super().__init__(*args)
 
-        # TODO: move to settings
-        self._dictionary = Dict('en_US')
+        self._dictionary = (
+            Dict(api.opt.general['spell_check'])
+            if api.opt.general['spell_check']
+            else None)
 
         self._fmt = QtGui.QTextCharFormat()
         self._fmt.setUnderlineColor(QtCore.Qt.red)
@@ -106,7 +108,7 @@ class CenterBar(QtWidgets.QWidget):
             placeholderText='Notes')
 
         self.text_edit.highlighter = \
-            SpellCheckHighlighter(self.text_edit.document())
+            SpellCheckHighlighter(api, self.text_edit.document())
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(4)
