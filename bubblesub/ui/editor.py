@@ -1,7 +1,30 @@
 import bubblesub.util
+import ass_tag_parser
+from enchant import Dict
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+
+
+class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        # TODO: move to settings
+        self._dictionary = Dict('en_US')
+
+        self._fmt = QtGui.QTextCharFormat()
+        self._fmt.setUnderlineColor(QtCore.Qt.red)
+        self._fmt.setUnderlineStyle(QtGui.QTextCharFormat.SpellCheckUnderline)
+        self._fmt.setFontUnderline(True)
+
+    def highlightBlock(self, text):
+        if not self._dictionary:
+            return
+
+        for start, end in bubblesub.util.spell_check_ass_line(
+                self._dictionary, text):
+            self.setFormat(start, end - start, self._fmt)
 
 
 class TextEdit(QtWidgets.QPlainTextEdit):
@@ -81,6 +104,9 @@ class CenterBar(QtWidgets.QWidget):
             api, 'notes', self,
             tabChangesFocus=True,
             placeholderText='Notes')
+
+        self.text_edit.highlighter = \
+            SpellCheckHighlighter(self.text_edit.document())
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(4)

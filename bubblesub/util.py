@@ -5,6 +5,8 @@ import pickle
 import queue
 import traceback
 import hashlib
+import regex
+import ass_tag_parser
 from numbers import Number
 from collections import Set, Mapping, deque
 from pathlib import Path
@@ -345,3 +347,26 @@ def getsize(top_obj):
         return size
 
     return inner(top_obj)
+
+
+def spell_check_plain_text(dictionary, text):
+    text = regex.sub(
+        r'\\[Nnh]',
+        '  ',  # two spaces so that matches mantain position in text
+        text)
+
+    for match in regex.finditer(r'\p{L}[\p{L}\p{P}]*\p{L}|\p{L}', text):
+        if not dictionary.check(match.group(0)):
+            yield (match.start(), match.end())
+
+
+def spell_check_ass_line(dictionary, ass_text):
+    try:
+        ass_struct = ass_tag_parser.parse_ass(ass_text)
+    except ass_tag_parser.ParsingError:
+        return
+    for item in ass_struct:
+        if item['type'] == 'text':
+            text_start, _text_end = item['pos']
+            for start, end in spell_check_plain_text(dictionary, item['text']):
+                yield (start + text_start, end + text_start)

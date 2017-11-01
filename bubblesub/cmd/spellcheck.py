@@ -7,24 +7,13 @@ from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 
-def _match_words(api):
-    import regex
-    for sub in api.subs.selected_lines:
-        text = regex.sub(
-            r'\\[Nnh]',
-            '  ',  # two spaces so that matches mantain position in text
-            sub.text)
-        for match in regex.finditer(r'\p{L}[\p{L}\p{P}]*\p{L}|\p{L}', text):
-            yield (sub.id, match)
-
-
 class SpellCheckDialog(QtWidgets.QDialog):
-    def __init__(self, api, main_window, word_matches):
+    def __init__(self, api, main_window, dictionary):
         super().__init__(main_window)
         self._main_window = main_window
         self._api = api
-        self._word_matches = list(word_matches)
-        self._dict = Dict('en_US')
+        self._dictionary = dictionary
+        self._lines_to_spellcheck = api.subs.selected_lines
 
         self._mispelt_text_edit = QtWidgets.QLineEdit(self, readOnly=True)
         self._replacement_text_edit = QtWidgets.QLineEdit(self)
@@ -80,44 +69,52 @@ class SpellCheckDialog(QtWidgets.QDialog):
         self._next()
 
     def _add_to_dictionary(self):
-        self._dict.add(self._mispelt_text_edit.text())
+        self._dictionary.add(self._mispelt_text_edit.text())
         self._next()
 
     def _ignore(self):
         self._next()
 
     def _ignore_all(self):
-        self._dict.add_to_session(self._mispelt_text_edit.text())
+        self._dictionary.add_to_session(self._mispelt_text_edit.text())
         self._next()
 
     def _next(self):
-        idx, match = self._iter_to_next_mispelt_match()
-        if match:
-            self._focus_match(idx, match)
+        idx, start, end = self._iter_to_next_mispelt_match()
+        if idx is not None:
+            self._focus_match(idx, start, end)
             return True
         bubblesub.ui.util.notice('No more results.')
         self.reject()
         return False
 
     def _iter_to_next_mispelt_match(self):
-        while len(self._word_matches):
-            idx, match = self._word_matches.pop(0)
-            if not self._dict.check(match.group(0)):
-                return idx, match
-        return None, None
+        cursor = self._main_window.editor.center.text_edit.textCursor()
+        while self._lines_to_spellcheck:
+            line = self._lines_to_spellcheck[0]
+            for start, end in bubblesub.util.spell_check_ass_line(
+                    self._dictionary, line.text):
+                if len(self._api.subs.selected_indexes) > 1 \
+                or line.id > self._api.subs.selected_indexes[0] \
+                or start > cursor.selectionStart() \
+                or cursor.selectionStart() == cursor.selectionEnd():
+                    return line.id, start, end
+            self._lines_to_spellcheck.pop(0)
+        return None, None, None
 
-    def _focus_match(self, idx, match):
+    def _focus_match(self, idx, start, end):
         self._api.subs.selected_indexes = [idx]
+        mispelt_word = self._api.subs.lines[idx].text[start:end]
 
         cursor = self._main_window.editor.center.text_edit.textCursor()
-        cursor.setPosition(match.start())
-        cursor.setPosition(match.end(), QtGui.QTextCursor.KeepAnchor)
+        cursor.setPosition(start)
+        cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
         self._main_window.editor.center.text_edit.setTextCursor(cursor)
 
-        self._mispelt_text_edit.setText(match.group(0))
+        self._mispelt_text_edit.setText(mispelt_word)
 
         self._suggestions_list_view.model().clear()
-        for suggestion in self._dict.suggest(match.group(0)):
+        for suggestion in self._dictionary.suggest(mispelt_word):
             item = QtGui.QStandardItem(suggestion)
             item.setEditable(False)
             self._suggestions_list_view.model().appendRow(item)
@@ -135,9 +132,10 @@ class EditSpellCheckCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self):
-        word_matches = _match_words(self.api)
+        # TODO: move to settings
+        dictionary = Dict('en_US')
 
         async def run(api, main_window):
-            SpellCheckDialog(api, main_window, word_matches)
+            SpellCheckDialog(api, main_window, dictionary)
 
         await self.api.gui.exec(run)

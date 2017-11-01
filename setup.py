@@ -27,6 +27,7 @@ setup(
         'pyenchant',
         'pympv',
         'xdg',
+        'ass_tag_parser',
     ],
 
     classifiers=[
