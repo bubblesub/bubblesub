@@ -385,7 +385,7 @@ class SubtitlesApi(QtCore.QObject):
 
     def _on_items_about_to_be_removed(self, idx, count):
         new_indexes = list(sorted(self.selected_indexes))
-        for i in range(idx, idx + count):
+        for i in reversed(range(idx, idx + count)):
             new_indexes = [
                 j - 1 if j > i else j
                 for j in new_indexes
