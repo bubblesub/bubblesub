@@ -3,10 +3,12 @@ import sys
 import bubblesub.ui.main_window
 import bubblesub.ui.util
 import quamash
+from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 
 def run(api, args):
+    QtCore.pyqtRemoveInputHook()
     app = QtWidgets.QApplication(sys.argv)
     loop = quamash.QEventLoop(app)
     asyncio.set_event_loop(loop)
