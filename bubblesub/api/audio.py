@@ -26,9 +26,12 @@ class AudioSourceProviderContext(bubblesub.util.ProviderContext):
 
         index = None
         if cache_path.exists():
-            index = ffms.Index.read(
-                index_file=str(cache_path), source_file=str(path))
-            if not index.belongs_to_file(str(path)):
+            try:
+                index = ffms.Index.read(
+                    index_file=str(cache_path), source_file=str(path))
+                if not index.belongs_to_file(str(path)):
+                    index = None
+            except ffms.Error:
                 index = None
 
         if not index:
