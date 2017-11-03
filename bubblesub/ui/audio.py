@@ -10,6 +10,7 @@ from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
 
 NOT_CACHED = object()
 CACHING = object()
+SLIDER_SIZE = 20
 
 
 class DragMode(enum.Enum):
@@ -51,67 +52,10 @@ class BaseAudioWidget(QtWidgets.QWidget):
         self._api.audio.move_view(distance)
 
 
-class AudioScaleWidget(BaseAudioWidget):
-    def __init__(self, api, parent=None):
-        super().__init__(api, parent)
-        self.setFixedHeight(20)
-
-    def paintEvent(self, _event):
-        painter = QtGui.QPainter()
-        painter.begin(self)
-        self._draw_scale(painter)
-        self._draw_frame(painter)
-        painter.end()
-
-    def _draw_frame(self, painter):
-        w, h = self.width(), self.height()
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
-        painter.drawLine(0, 0, w - 1, 0)
-        painter.drawLine(0, 0, 0, h - 1)
-        painter.drawLine(w - 1, 0, w - 1, h - 1)
-
-    def _draw_scale(self, painter):
-        h = self.height()
-        one_second = 1000
-        one_minute = 60 * one_second
-
-        start_pts = int(self._api.audio.view_start // one_minute) * one_minute
-        end_pts = (
-            (int(self._api.audio.view_end + one_minute) // one_minute)
-            * one_minute)
-
-        painter.setFont(QtGui.QFont(self.font().family(), 8))
-        text_height = painter.fontMetrics().capHeight()
-
-        for pts in range(start_pts, end_pts, one_second):
-            if pts % one_minute == 0:
-                gap = h - 1
-            else:
-                gap = 4
-
-            x = self._pts_to_x(pts)
-            painter.drawLine(x, 0, x, gap)
-            if pts % one_minute == 0:
-                text = '{:02}:{:02}'.format(pts // one_minute, 0)
-            elif pts % (10 * one_second) == 0:
-                text = '{:02}'.format((pts % one_minute) // one_second)
-            else:
-                text = ''
-            painter.drawText(
-                x + 2,
-                text_height + (h - text_height) / 2,
-                text)
-
-    def _pts_to_x(self, pts):
-        scale = self.width() / max(1, self._api.audio.view_size)
-        return (pts - self._api.audio.view_start) * scale
-
-
 class AudioPreviewWidget(BaseAudioWidget):
     def __init__(self, api, parent=None):
         super().__init__(api, parent)
-        self.setMinimumHeight(50)
+        self.setMinimumHeight(SLIDER_SIZE * 2.5)
         self._spectrum_provider = SpectrumProvider(self, self._api)
         self._spectrum_provider.finished.connect(self._on_spectrum_update)
         self._spectrum_cache = {}
@@ -138,18 +82,46 @@ class AudioPreviewWidget(BaseAudioWidget):
     def paintEvent(self, _event):
         painter = QtGui.QPainter()
         painter.begin(self)
-        self._draw_spectrogram(painter, _event)
-        painter.end()
 
-        painter = QtGui.QPainter()
-        painter.begin(self)
+        painter.save()
+        painter.setWindow(
+            0,
+            0,
+            self.width(),
+            self.height() - (SLIDER_SIZE - 1))
+        painter.setViewport(
+            0,
+            SLIDER_SIZE - 1,
+            self.width(),
+            self.height() - (SLIDER_SIZE - 1))
+        self._draw_spectrogram(painter, _event)
         self._draw_subtitle_rects(painter)
         self._draw_selection(painter)
         self._draw_frame(painter)
+        painter.restore()
+
+        painter.save()
+        painter.setWindow(0, 0, self.width(), SLIDER_SIZE)
+        painter.setViewport(0, 0, self.width(), SLIDER_SIZE)
+        self._draw_scale(painter)
+        self._draw_frame(painter)
+        painter.restore()
+
         self._draw_video_pos(painter)
+
         painter.end()
 
         self._need_repaint = False
+
+    def _draw_frame(self, painter):
+        painter.setPen(
+            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.drawRect(
+            0,
+            0,
+            painter.viewport().width() - 1,
+            painter.viewport().height() - 1)
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -217,8 +189,46 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._spectrum_cache[pts] = column
         self._need_repaint = True
 
+    def _draw_scale(self, painter):
+        h = painter.viewport().height()
+        one_second = 1000
+        one_minute = 60 * one_second
+
+        start_pts = int(self._api.audio.view_start // one_minute) * one_minute
+        end_pts = (
+            (int(self._api.audio.view_end + one_minute) // one_minute)
+            * one_minute)
+
+        painter.setPen(
+            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
+        painter.setFont(QtGui.QFont(self.font().family(), 8))
+        text_height = painter.fontMetrics().capHeight()
+
+        for pts in range(start_pts, end_pts, one_second):
+            if pts % one_minute == 0:
+                gap = h - 1
+            else:
+                gap = 4
+
+            x = self._pts_to_x(pts)
+            painter.drawLine(x, 0, x, gap)
+            if pts % one_minute == 0:
+                text = '{:02}:{:02}'.format(pts // one_minute, 0)
+            elif pts % (10 * one_second) == 0:
+                text = '{:02}'.format((pts % one_minute) // one_second)
+            else:
+                text = ''
+            painter.drawText(
+                x + 2,
+                text_height + (h - text_height) / 2,
+                text)
+
+    def _pts_to_x(self, pts):
+        scale = self.width() / max(1, self._api.audio.view_size)
+        return (pts - self._api.audio.view_start) * scale
+
     def _draw_spectrogram(self, painter, _event):
-        width = self.width()
+        width = painter.viewport().width()
         height = (1 << DERIVATION_SIZE) + 1
 
         pixels = np.zeros([width, height], dtype='byte')
@@ -227,7 +237,7 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         # since the task queue is a LIFO queue, in order to render the columns
         # left-to-right, they need to be iterated backwards (hence reversed()).
-        for x in reversed(range(self.width())):
+        for x in reversed(range(width)):
             pts = self._pts_from_x(x)
             pts = (pts // horizontal_res) * horizontal_res
             column = self._spectrum_cache.get(pts, NOT_CACHED)
@@ -247,11 +257,13 @@ class AudioPreviewWidget(BaseAudioWidget):
             pixels.strides[0],
             QtGui.QImage.Format_Indexed8)
         image.setColorTable(self._color_table)
-        painter.scale(1, self.height() / (height - 1))
+        painter.save()
+        painter.scale(1, painter.viewport().height() / (height - 1))
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
+        painter.restore()
 
     def _draw_subtitle_rects(self, painter):
-        h = self.height()
+        h = painter.viewport().height()
         color = get_color(self._api, 'spectrogram/subtitle')
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         painter.setFont(QtGui.QFont(self.font().family(), 10))
@@ -303,22 +315,28 @@ class AudioPreviewWidget(BaseAudioWidget):
         x2 = self._pts_to_x(self._api.audio.selection_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)
 
-    def _draw_frame(self, painter):
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.drawRect(0, 0, self.width() - 1, self.height() - 1)
-
     def _draw_video_pos(self, painter):
         if not self._api.video.current_pts:
             return
-        base_x = self._pts_to_x(self._api.video.current_pts)
-        width = 4
-        color = get_color(self._api, 'spectrogram/video-marker')
-        for dist in range(width):
-            x = base_x + 1 - dist
-            painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
-            painter.drawLine(x, 0, x, self.height() - 1)
+        x = self._pts_to_x(self._api.video.current_pts)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(get_color(self._api, 'spectrogram/video-marker'))
+
+        width = 7
+        polygon = QtGui.QPolygonF()
+        for x, y in [
+            (x - width / 2, 0),
+            (x + width / 2, 0),
+            (x + width / 2, SLIDER_SIZE),
+            (x + 1, SLIDER_SIZE + width / 2),
+            (x + 1, painter.viewport().height() - 1),
+            (x, painter.viewport().height() - 1),
+            (x, SLIDER_SIZE + width / 2),
+            (x - width / 2, SLIDER_SIZE),
+        ]:
+            polygon.append(QtCore.QPointF(x, y))
+
+        painter.drawPolygon(polygon)
 
     def _pts_to_x(self, pts):
         scale = self.width() / max(1, self._api.audio.view_size)
@@ -332,7 +350,7 @@ class AudioPreviewWidget(BaseAudioWidget):
 class AudioSliderWidget(BaseAudioWidget):
     def __init__(self, api, parent=None):
         super().__init__(api, parent)
-        self.setFixedHeight(20)
+        self.setFixedHeight(SLIDER_SIZE)
 
     def paintEvent(self, _event):
         painter = QtGui.QPainter()
@@ -398,14 +416,12 @@ class Audio(QtWidgets.QWidget):
         self._api = api
         self.slider = AudioSliderWidget(self._api, self)
         self.preview = AudioPreviewWidget(self._api, self)
-        self.scale = AudioScaleWidget(self._api, self)
 
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.scale)
         layout.addWidget(self.preview)
         layout.addWidget(self.slider)
 
