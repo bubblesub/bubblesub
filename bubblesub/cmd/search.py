@@ -397,7 +397,7 @@ class SearchDialog(QtWidgets.QDialog):
     @property
     def _search_regex(self):
         return _create_search_regex(
-            self._text, self._use_regexes, self._case_sensitive)
+            self._text, self._case_sensitive, self._use_regexes)
 
 
 class SearchCommand(CoreCommand):
