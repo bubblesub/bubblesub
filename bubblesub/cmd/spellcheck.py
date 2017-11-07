@@ -1,7 +1,7 @@
 import bubblesub.util
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
-from enchant import Dict
+import enchant
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -132,10 +132,17 @@ class EditSpellCheckCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self):
-        if not self.api.opt.general['spell_check']:
+        spell_check_lang = self.api.opt.general['spell_check']
+        if not spell_check_lang:
             bubblesub.ui.util.error('Spell check was disabled in config.')
+            return
 
-        dictionary = Dict(self.api.opt.general['spell_check'])
+        try:
+            dictionary = enchant.Dict(spell_check_lang)
+        except enchant.errors.DictNotFoundError:
+            bubblesub.ui.util.error(
+                f'Spell check language {spell_check_lang} was not found.')
+            return
 
         async def run(api, main_window):
             SpellCheckDialog(api, main_window, dictionary)

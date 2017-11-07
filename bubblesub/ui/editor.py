@@ -1,6 +1,6 @@
 import bubblesub.util
 import ass_tag_parser
-from enchant import Dict
+import enchant
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -10,10 +10,15 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
     def __init__(self, api, *args):
         super().__init__(*args)
 
-        self._dictionary = (
-            Dict(api.opt.general['spell_check'])
-            if api.opt.general['spell_check']
-            else None)
+        spell_check_lang = api.opt.general['spell_check']
+        try:
+            self._dictionary = (
+                enchant.Dict(spell_check_lang)
+                if spell_check_lang
+                else None)
+        except enchant.errors.DictNotFoundError:
+            self._dictionary = None
+            api.log.warn(f'dictionary {spell_check_lang} not installed.')
 
         self._fmt = QtGui.QTextCharFormat()
         self._fmt.setUnderlineColor(QtCore.Qt.red)
