@@ -82,6 +82,52 @@ class EditInsertBelowCommand(CoreCommand):
         self.api.subs.selected_indexes = [idx]
 
 
+class EditMoveUpCommand(CoreCommand):
+    name = 'edit/move-up'
+    menu_name = 'Move selected subtitles up'
+
+    @property
+    def is_enabled(self):
+        if not self.api.subs.selected_indexes:
+            return False
+        return self.api.subs.selected_indexes[0] > 0
+
+    async def run(self):
+        with self.api.undo.bulk():
+            indexes = []
+            for idx in self.api.subs.selected_indexes:
+                sub = self.api.subs.lines[idx]
+                self.api.subs.lines.insert_one(
+                    idx - 1,
+                    **{k: getattr(sub, k) for k in sub.prop.keys()})
+                self.api.subs.lines.remove(idx + 1, 1)
+                indexes.append(idx - 1)
+            self.api.subs.selected_indexes = indexes
+
+
+class EditMoveDownCommand(CoreCommand):
+    name = 'edit/move-down'
+    menu_name = 'Move selected subtitles down'
+
+    @property
+    def is_enabled(self):
+        if not self.api.subs.selected_indexes:
+            return False
+        return self.api.subs.selected_indexes[-1] < len(self.api.subs.lines) - 1
+
+    async def run(self):
+        with self.api.undo.bulk():
+            indexes = []
+            for idx in reversed(self.api.subs.selected_indexes):
+                sub = self.api.subs.lines[idx]
+                self.api.subs.lines.insert_one(
+                    idx + 2,
+                    **{k: getattr(sub, k) for k in sub.prop.keys()})
+                self.api.subs.lines.remove(idx, 1)
+                indexes.append(idx + 1)
+            self.api.subs.selected_indexes = indexes
+
+
 class EditDuplicateCommand(CoreCommand):
     name = 'edit/duplicate'
     menu_name = 'Duplicate selected subtitles'

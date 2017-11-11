@@ -236,6 +236,8 @@ _DEFAULT_TOP_MENU = [
         ['edit/insert-below'],
         ['edit/duplicate'],
         ['edit/delete'],
+        ['edit/move-up'],
+        ['edit/move-down'],
         None,
         ['edit/swap-text-and-notes'],
         ['edit/split-sub-at-video'],
