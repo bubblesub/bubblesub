@@ -20,22 +20,38 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 '''
 
 
-def _extract_note(text):
+class Meta:
+    def __init__(self, note=None, start=None, end=None):
+        self.__dict__.update(locals())
+
+
+def _extract_meta(text):
+    meta = Meta(note=None, start=None, end=None)
+
     match = re.search('{NOTE:(?P<note>[^}]*)}', text)
     if match:
         text = text[:match.start()] + text[match.end():]
-        note = bubblesub.util.unescape_ass_tag(match.group('note'))
-    else:
-        text = text
-        note = ''
-    return text, note
+        meta.note = bubblesub.util.unescape_ass_tag(match.group('note'))
+
+    match = re.search('{TIME:(?P<start>\d+),(?P<end>\d+)}', text)
+    if match:
+        text = text[:match.start()] + text[match.end():]
+        meta.start = int(match.group('start'))
+        meta.end = int(match.group('end'))
+
+    return text, meta
 
 
-def _pack_note(text, note):
+def _pack_meta(text, meta):
     text = text.replace('\n', '\\N')
-    if note:
+
+    if meta.start is not None or meta.end is not None:
+        text = '{TIME:%d,%d}' % (meta.start, meta.end) + text
+
+    if meta.note:
         text += '{NOTE:%s}' % (
-            bubblesub.util.escape_ass_tag(note.replace('\n', '\\N')))
+            bubblesub.util.escape_ass_tag(meta.note.replace('\n', '\\N')))
+
     return text
 
 
@@ -224,15 +240,15 @@ class Subtitle(bubblesub.util.ObservableObject):
 
     @staticmethod
     def from_ssa_event(subtitles, ssa_event):
-        text, note = _extract_note(ssa_event.text)
+        text, meta = _extract_meta(ssa_event.text)
         return Subtitle(
             subtitles,
-            start=ssa_event.start,
-            end=ssa_event.end,
+            start=ssa_event.start if meta.start is None else meta.start,
+            end=ssa_event.end if meta.end is None else meta.end,
             style=ssa_event.style,
             actor=ssa_event.name,
             text=text,
-            note=note,
+            note=meta.note or '',
             effect=ssa_event.effect,
             layer=ssa_event.layer,
             margins=(ssa_event.marginl, ssa_event.marginv, ssa_event.marginr),
@@ -243,7 +259,12 @@ class Subtitle(bubblesub.util.ObservableObject):
         self.ssa_event.end = self.end
         self.ssa_event.style = self.style
         self.ssa_event.name = self.actor
-        self.ssa_event.text = _pack_note(self.text, self.note)
+        self.ssa_event.text = _pack_meta(
+            self.text,
+            Meta(
+                note=self.note,
+                start=self.start,
+                end=self.end))
         self.ssa_event.effect = self.effect
         self.ssa_event.layer = self.layer
         self.ssa_event.marginl = self.margins[0]
