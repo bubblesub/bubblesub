@@ -1,3 +1,4 @@
+import bisect
 from bubblesub.api.cmd import CoreCommand
 
 
@@ -117,68 +118,108 @@ class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
 class AudioShiftSelectionStartCommand(CoreCommand):
     name = 'audio/shift-sel-start'
 
-    def __init__(self, api, ms):
+    def __init__(self, api, delta, frames=True):
         super().__init__(api)
-        self._ms = ms
+        self._delta = delta
+        self._frames = frames
 
     @property
     def menu_name(self):
-        return 'Shift selection start ({:+} ms)'.format(self._ms)
+        return 'Shift selection start ({:+} {})'.format(
+            self._delta, 'frames' if self._frames else 'ms')
 
     @property
     def is_enabled(self):
-        return self.api.audio.has_selection
+        return self.api.audio.has_selection and (
+            not self._frames or self.api.video.is_loaded)
 
     async def run(self):
-        self.api.audio.select(
-            min(
-                self.api.audio.selection_end,
-                self.api.audio.selection_start + self._ms),
-            self.api.audio.selection_end)
+        if self._frames:
+            idx = bisect.bisect_left(
+                self.api.video.timecodes, self.api.audio.selection_start)
+            idx += self._delta
+            idx = max(0, min(idx, len(self.api.video.timecodes) - 1))
+            self.api.audio.select(
+                self.api.video.timecodes[idx],
+                self.api.audio.selection_end)
+        else:
+            self.api.audio.select(
+                min(
+                    self.api.audio.selection_end,
+                    self.api.audio.selection_start + self._delta),
+                self.api.audio.selection_end)
 
 
 class AudioShiftSelectionEndCommand(CoreCommand):
     name = 'audio/shift-sel-end'
 
-    def __init__(self, api, ms):
+    def __init__(self, api, delta, frames=True):
         super().__init__(api)
-        self._ms = ms
+        self._delta = delta
+        self._frames = frames
 
     @property
     def menu_name(self):
-        return 'Shift selection end ({:+} ms)'.format(self._ms)
+        return 'Shift selection end ({:+} {})'.format(
+            self._delta, 'frames' if self._frames else 'ms')
 
     @property
     def is_enabled(self):
-        return self.api.audio.has_selection
+        return self.api.audio.has_selection and (
+            not self._frames or self.api.video.is_loaded)
 
     async def run(self):
-        self.api.audio.select(
-            self.api.audio.selection_start,
-            max(
+        if self._frames:
+            idx = bisect.bisect_left(
+                self.api.video.timecodes, self.api.audio.selection_end)
+            idx += self._delta
+            idx = max(0, min(idx, len(self.api.video.timecodes) - 1))
+            self.api.audio.select(
                 self.api.audio.selection_start,
-                self.api.audio.selection_end + self._ms))
+                self.api.video.timecodes[idx])
+        else:
+            self.api.audio.select(
+                self.api.audio.selection_start,
+                max(
+                    self.api.audio.selection_start,
+                    self.api.audio.selection_end + self._delta))
 
 
 class AudioShiftSelectionCommand(CoreCommand):
     name = 'audio/shift-sel'
 
-    def __init__(self, api, ms):
+    def __init__(self, api, delta, frames=True):
         super().__init__(api)
-        self._ms = ms
+        self._delta = delta
+        self._frames = frames
 
     @property
     def menu_name(self):
-        return 'Shift selection ({:+} ms)'.format(self._ms)
+        return 'Shift selection ({:+} {})'.format(
+            self._delta, 'frames' if self._frames else 'ms')
 
     @property
     def is_enabled(self):
-        return self.api.audio.has_selection
+        return self.api.audio.has_selection and (
+            not self._frames or self.api.video.is_loaded)
 
     async def run(self):
-        self.api.audio.select(
-            self.api.audio.selection_start + self._ms,
-            self.api.audio.selection_end + self._ms)
+        if self._frames:
+            idx1 = bisect.bisect_left(
+                self.api.video.timecodes, self.api.audio.selection_start)
+            idx2 = bisect.bisect_left(
+                self.api.video.timecodes, self.api.audio.selection_end)
+            idx1 += self._delta
+            idx2 += self._delta
+            idx1 = max(0, min(idx1, len(self.api.video.timecodes) - 1))
+            idx2 = max(0, min(idx2, len(self.api.video.timecodes) - 1))
+            self.api.audio.select(
+                self.api.video.timecodes[idx1],
+                self.api.video.timecodes[idx2])
+        else:
+            self.api.audio.select(
+                self.api.audio.selection_start + self._delta,
+                self.api.audio.selection_end + self._delta)
 
 
 class AudioCommitSelectionCommand(CoreCommand):
