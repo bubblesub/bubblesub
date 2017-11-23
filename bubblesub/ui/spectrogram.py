@@ -39,7 +39,7 @@ class SpectrumProviderContext(bubblesub.util.ProviderContext):
         elif sample_fmt not in (ffms.FFMS_FMT_FLT, ffms.FFMS_FMT_DBL):
             raise RuntimeError('Unknown sample format: {}'.format(sample_fmt))
 
-        self._input[:] = samples
+        self._input[0:len(samples)] = samples
         out = self._fftw()
 
         scale_factor = 9 / np.sqrt(1 * (1 << DERIVATION_SIZE))
