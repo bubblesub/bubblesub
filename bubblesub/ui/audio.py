@@ -107,6 +107,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._draw_frame(painter)
         painter.restore()
 
+        self._draw_keyframes(painter)
         self._draw_video_pos(painter)
 
         painter.end()
@@ -261,6 +262,15 @@ class AudioPreviewWidget(BaseAudioWidget):
         painter.scale(1, painter.viewport().height() / (height - 1))
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
+
+    def _draw_keyframes(self, painter):
+        h = painter.viewport().height()
+        color = get_color(self._api, 'spectrogram/keyframe')
+        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.DashLine))
+        for keyframe in self._api.video.keyframes:
+            timecode = self._api.video.timecodes[keyframe]
+            x = self._pts_to_x(timecode)
+            painter.drawLine(x, 0, x, h)
 
     def _draw_subtitle_rects(self, painter):
         h = painter.viewport().height()

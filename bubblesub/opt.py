@@ -65,6 +65,7 @@ _DEFAULT_GENERAL = {
             'ToolTipText':                     (255, 255, 255),
             'spectrogram/video-marker':        (0, 160, 0),
             'spectrogram/subtitle':            (42, 130, 218),
+            'spectrogram/keyframe':            (200, 100, 0),
             'spectrogram/focused-selection':   (0xFF, 0xA0, 0x00),
             'spectrogram/unfocused-selection': (0xA0, 0xA0, 0x60),
             'grid/comment':                    (53, 53, 53),
@@ -109,6 +110,7 @@ _DEFAULT_GENERAL = {
 
             'spectrogram/video-marker':        (0, 160, 0),
             'spectrogram/subtitle':            (42, 130, 218),
+            'spectrogram/keyframe':            (255, 128, 0),
             'spectrogram/focused-selection':   (0xFF, 0xA0, 0x00),
             'spectrogram/unfocused-selection': (0xA0, 0xA0, 0x60),
             'grid/comment':                    (239, 235, 231),
