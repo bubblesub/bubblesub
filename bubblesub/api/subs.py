@@ -43,8 +43,6 @@ def _extract_meta(text):
 
 
 def _pack_meta(text, meta):
-    text = text.replace('\n', '\\N')
-
     if meta.start is not None or meta.end is not None:
         text = '{TIME:%d,%d}' % (meta.start, meta.end) + text
 

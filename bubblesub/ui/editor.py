@@ -240,8 +240,10 @@ class Editor(QtWidgets.QWidget):
         subtitle.end = self.top_bar.end_time_edit.get_value()
         subtitle.style = self.bottom_bar.style_edit.lineEdit().text()
         subtitle.actor = self.bottom_bar.actor_edit.lineEdit().text()
-        subtitle.text = self.center.text_edit.toPlainText()
-        subtitle.note = self.center.note_edit.toPlainText()
+        subtitle.text = (
+            self.center.text_edit.toPlainText().replace('\n', r'\N'))
+        subtitle.note = (
+            self.center.note_edit.toPlainText().replace('\n', r'\N'))
         subtitle.effect = self.bottom_bar.effect_edit.text()
         subtitle.layer = self.top_bar.layer_edit.value()
         subtitle.margins = (
