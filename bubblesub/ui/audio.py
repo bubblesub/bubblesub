@@ -114,16 +114,6 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         self._need_repaint = False
 
-    def _draw_frame(self, painter):
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.drawRect(
-            0,
-            0,
-            painter.viewport().width() - 1,
-            painter.viewport().height() - 1)
-
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             self._drag_mode = DragMode.SelectionStart
@@ -190,6 +180,16 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._spectrum_cache[pts] = column
         self._need_repaint = True
 
+    def _draw_frame(self, painter):
+        painter.setPen(
+            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.drawRect(
+            0,
+            0,
+            painter.viewport().width() - 1,
+            painter.viewport().height() - 1)
+
     def _draw_scale(self, painter):
         h = painter.viewport().height()
         one_second = 1000
@@ -223,10 +223,6 @@ class AudioPreviewWidget(BaseAudioWidget):
                 x + 2,
                 text_height + (h - text_height) / 2,
                 text)
-
-    def _pts_to_x(self, pts):
-        scale = self.width() / max(1, self._api.audio.view_size)
-        return (pts - self._api.audio.view_start) * scale
 
     def _draw_spectrogram(self, painter, _event):
         width = painter.viewport().width()
