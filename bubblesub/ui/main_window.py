@@ -96,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def apply_palette(self, palette_name):
         palette_def = self._api.opt.general['palettes'][palette_name]
         palette = QtGui.QPalette()
-        for color_type, (red, green, blue) in palette_def.items():
+        for color_type, color_value in palette_def.items():
             if '+' in color_type:
                 group_name, role_name = color_type.split('+')
             else:
@@ -106,9 +106,9 @@ class MainWindow(QtWidgets.QMainWindow):
             target_role = getattr(QtGui.QPalette, role_name, None)
             if target_group is not None and target_role is not None:
                 palette.setColor(
-                    target_group, target_role, QtGui.QColor(red, green, blue))
+                    target_group, target_role, QtGui.QColor(*color_value))
             elif target_role is not None:
-                palette.setColor(target_role, QtGui.QColor(red, green, blue))
+                palette.setColor(target_role, QtGui.QColor(*color_value))
         self.setPalette(palette)
         self.update()
 

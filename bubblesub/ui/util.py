@@ -179,8 +179,8 @@ def setup_cmd_menu(api, parent, menu_def):
 def get_color(api, color_name):
     current_palette = api.opt.general['current_palette']
     palette_def = api.opt.general['palettes'][current_palette]
-    red, green, blue = palette_def[color_name]
-    return QtGui.QColor(red, green, blue)
+    color_value = palette_def[color_name]
+    return QtGui.QColor(*color_value)
 
 
 def load_dialog(parent, filter, directory=None):
