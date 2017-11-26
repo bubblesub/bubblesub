@@ -1,6 +1,7 @@
 import asyncio
 import time
 import sys
+import traceback
 import importlib.util
 import bubblesub.util
 from PyQt5 import QtCore
@@ -61,6 +62,7 @@ class CommandApi(QtCore.QObject):
                 await cmd.run()
             except Exception as ex:
                 self._api.log.info('cmd/{}: error: {}'.format(cmd.name, ex))
+                traceback.print_exc()
             end_time = time.time()
             self._api.log.info('cmd/{}: ran in {:.02f} s'.format(
                 cmd.name, end_time - start_time))
