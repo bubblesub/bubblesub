@@ -21,14 +21,17 @@ class TimecodesProviderContext(bubblesub.util.ProviderContext):
         path_hash = bubblesub.util.hash(path)
         cache_name = f'index-{path_hash}-video'
 
-        timecodes = bubblesub.util.load_cache(cache_name)
-        if not timecodes:
+        result = bubblesub.util.load_cache(cache_name)
+        if result:
+            timecodes, keyframes = result
+        else:
             video = ffms.VideoSource(str(path))
             timecodes = video.track.timecodes
-            bubblesub.util.save_cache(cache_name, timecodes)
+            keyframes = video.track.keyframes
+            bubblesub.util.save_cache(cache_name, (timecodes, keyframes))
 
         self._log_api.info('video/timecodes: loaded')
-        return path, timecodes
+        return path, timecodes, keyframes
 
 
 class TimecodesProvider(bubblesub.util.Provider):
@@ -53,6 +56,7 @@ class VideoApi(QtCore.QObject):
         atexit.register(lambda: os.unlink(self._tmp_subs_path))
 
         self._timecodes = []
+        self._keyframes = []
         self._path = None
         self._current_pts = 0
         self._max_pts = 0
@@ -113,6 +117,7 @@ class VideoApi(QtCore.QObject):
     def unload(self):
         self._path = None
         self._timecodes = []
+        self._keyframes = []
         self.timecodes_updated.emit()
         self.loaded.emit()
         self._reload_video()
@@ -123,6 +128,7 @@ class VideoApi(QtCore.QObject):
         if str(self._subs_api.remembered_video_path) != str(self._path):
             self._subs_api.remembered_video_path = self._path
         self._timecodes = []
+        self._keyframes = []
         self.timecodes_updated.emit()
         self._timecodes_provider.schedule_task(self._path)
         self._reload_video()
@@ -229,10 +235,15 @@ class VideoApi(QtCore.QObject):
     def timecodes(self):
         return self._timecodes
 
+    @property
+    def keyframes(self):
+        return self._keyframes
+
     def _got_timecodes(self, result):
-        path, timecodes = result
+        path, timecodes, keyframes = result
         if path == self.path:
             self._timecodes = timecodes
+            self._keyframes = keyframes
             self.timecodes_updated.emit()
 
     def _play(self, start, end):
