@@ -131,7 +131,7 @@ class AudioShiftSelectionStartCommand(CoreCommand):
     @property
     def is_enabled(self):
         return self.api.audio.has_selection and (
-            not self._frames or self.api.video.is_loaded)
+            not self._frames or self.api.video.timecodes)
 
     async def run(self):
         if self._frames:
@@ -166,7 +166,7 @@ class AudioShiftSelectionEndCommand(CoreCommand):
     @property
     def is_enabled(self):
         return self.api.audio.has_selection and (
-            not self._frames or self.api.video.is_loaded)
+            not self._frames or self.api.video.timecodes)
 
     async def run(self):
         if self._frames:
@@ -201,7 +201,7 @@ class AudioShiftSelectionCommand(CoreCommand):
     @property
     def is_enabled(self):
         return self.api.audio.has_selection and (
-            not self._frames or self.api.video.is_loaded)
+            not self._frames or self.api.video.timecodes)
 
     async def run(self):
         if self._frames:
