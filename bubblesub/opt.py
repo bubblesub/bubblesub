@@ -161,8 +161,8 @@ _DEFAULT_HOTKEYS = {
         ('Ctrl+B', 'audio/snap-sel-start-to-video'),
         ('Ctrl+N', 'audio/snap-sel-to-video'),
         ('Ctrl+M', 'audio/snap-sel-end-to-video'),
-        ('Ctrl+[', 'video/set-playback-speed', 0.5),
-        ('Ctrl+]', 'video/set-playback-speed', 1),
+        ('Ctrl+[', 'video/set-playback-speed', '{}/1.5'),
+        ('Ctrl+]', 'video/set-playback-speed', '{}*1.5'),
         ('F3', 'edit/search-repeat', 1),
         ('Shift+F3', 'edit/search-repeat', -1),
         ('Alt+A', 'view/focus-spectrogram'),
@@ -201,8 +201,8 @@ _DEFAULT_HOTKEYS = {
         ('B', 'audio/snap-sel-start-to-video'),
         ('N', 'audio/snap-sel-to-video'),
         ('M', 'audio/snap-sel-end-to-video'),
-        ('[', 'video/set-playback-speed', 0.5),
-        (']', 'video/set-playback-speed', 1),
+        ('[', 'video/set-playback-speed', '{}/1.5'),
+        (']', 'video/set-playback-speed', '{}*1.5'),
     ],
 }
 
@@ -294,8 +294,8 @@ _DEFAULT_TOP_MENU = [
         ['video/pause'],
         ['video/toggle-pause'],
         None,
-        ['video/set-playback-speed', 0.5],
-        ['video/set-playback-speed', 1],
+        ['video/set-playback-speed', '{}/1.5'],
+        ['video/set-playback-speed', '{}*1.5'],
     ]],
 
     ['&Timing', [

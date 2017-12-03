@@ -1,6 +1,7 @@
 import re
 import sys
 import time
+import fractions
 import pickle
 import queue
 import traceback
@@ -370,3 +371,29 @@ def spell_check_ass_line(dictionary, ass_text):
             text_start, _text_end = item['pos']
             for start, end in spell_check_plain_text(dictionary, item['text']):
                 yield (start + text_start, end + text_start)
+
+
+def eval_expr(expr):
+    import ast
+    import operator as op
+
+    op = {
+        ast.Add: op.add,
+        ast.Sub: op.sub,
+        ast.Mult: op.mul,
+        ast.Div: op.truediv,
+        ast.Pow: op.pow,
+        ast.BitXor: op.xor,
+        ast.USub: op.neg,
+    }
+
+    def eval_(node):
+        if isinstance(node, ast.Num):
+            return fractions.Fraction(node.n)
+        elif isinstance(node, ast.BinOp):
+            return op[type(node.op)](eval_(node.left), eval_(node.right))
+        elif isinstance(node, ast.UnaryOp):
+            return op[type(node.op)](eval_(node.operand))
+        raise TypeError(node)
+
+    return eval_(ast.parse(str(expr), mode='eval').body)

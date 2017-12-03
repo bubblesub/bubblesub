@@ -2,6 +2,7 @@ import os
 import locale
 import atexit
 import tempfile
+import fractions
 from pathlib import Path
 import ffms
 import mpv
@@ -58,6 +59,7 @@ class VideoApi(QtCore.QObject):
         self._timecodes = []
         self._keyframes = []
         self._path = None
+        self._playback_speed = fractions.Fraction(1.0)
         self._current_pts = 0
         self._max_pts = 0
         self._mpv_ready = False
@@ -203,11 +205,12 @@ class VideoApi(QtCore.QObject):
 
     @property
     def playback_speed(self):
-        return self._mpv.get_property('speed')
+        return self._playback_speed
 
     @playback_speed.setter
     def playback_speed(self, speed):
-        self._mpv.set_property('speed', speed)
+        self._playback_speed = speed
+        self._mpv.set_property('speed', float(self._playback_speed))
 
     @property
     def current_pts(self):

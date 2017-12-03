@@ -183,16 +183,18 @@ class VideoSeekWithGuiCommand(CoreCommand):
 class VideoSetPlaybackSpeed(CoreCommand):
     name = 'video/set-playback-speed'
 
-    def __init__(self, api, speed):
+    def __init__(self, api, expr):
         super().__init__(api)
-        self._speed = speed
+        self._expr = str(expr)
 
     @property
     def menu_name(self):
-        return 'Set playback speed to {}x'.format(self._speed)
+        return 'Set playback speed to {}'.format(
+            self._expr.format('current speed'))
 
     async def run(self):
-        self.api.video.playback_speed = self._speed
+        self.api.video.playback_speed = bubblesub.util.eval_expr(
+            self._expr.format(self.api.video.playback_speed))
 
 
 class VideoTogglePauseCommand(CoreCommand):
