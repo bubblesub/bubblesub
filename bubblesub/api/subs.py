@@ -304,7 +304,7 @@ class SubtitleList(bubblesub.util.ListModel):
 class SubtitlesApi(QtCore.QObject):
     loaded = QtCore.pyqtSignal()
     saved = QtCore.pyqtSignal()
-    selection_changed = QtCore.pyqtSignal(list)
+    selection_changed = QtCore.pyqtSignal(list, bool)
 
     def __init__(self):
         super().__init__()
@@ -360,9 +360,9 @@ class SubtitlesApi(QtCore.QObject):
     @selected_indexes.setter
     def selected_indexes(self, new_selection):
         new_selection = list(sorted(new_selection))
-        if new_selection != self._selected_indexes:
-            self._selected_indexes = new_selection
-            self.selection_changed.emit(new_selection)
+        changed = new_selection != self._selected_indexes
+        self._selected_indexes = new_selection
+        self.selection_changed.emit(new_selection, changed)
 
     def unload(self):
         self._path = None

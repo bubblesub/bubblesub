@@ -254,7 +254,7 @@ class Editor(QtWidgets.QWidget):
         subtitle.end_update()
         self._connect_api_signals()
 
-    def _on_grid_selection_change(self, rows):
+    def _on_grid_selection_change(self, rows, _changed):
         self._disconnect_ui_signals()
         if len(rows) == 1:
             self._fetch_selection(rows[0])

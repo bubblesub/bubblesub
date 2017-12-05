@@ -433,7 +433,8 @@ class Audio(QtWidgets.QWidget):
 
         api.subs.lines.items_inserted.connect(self._sync_selection)
         api.subs.lines.items_removed.connect(self._sync_selection)
-        api.subs.selection_changed.connect(lambda _: self._sync_selection())
+        api.subs.selection_changed.connect(
+            lambda _rows, _changed: self._sync_selection())
 
     def _sync_selection(self):
         if len(self._api.subs.selected_indexes) == 1:

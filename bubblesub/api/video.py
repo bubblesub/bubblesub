@@ -305,7 +305,7 @@ class VideoApi(QtCore.QObject):
             self._mpv.command('sub_reload')
             self._need_subs_refresh = False
 
-    def _on_grid_selection_change(self, rows):
+    def _on_grid_selection_change(self, rows, _changed):
         if len(rows) == 1:
             self.pause()
             self.seek(self._subs_api.lines[rows[0]].start)

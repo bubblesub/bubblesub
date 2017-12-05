@@ -58,7 +58,7 @@ class SubsGrid(QtWidgets.QTableView):
             self._api.subs.selection_changed.connect(
                 self._on_api_selection_change)
 
-    def _on_api_selection_change(self):
+    def _on_api_selection_change(self, _rows, _changed):
         if self._collect_rows() == self._api.subs.selected_indexes:
             return
 
