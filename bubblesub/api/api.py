@@ -8,14 +8,14 @@ import bubblesub.api.cmd
 
 
 class Api:
-    def __init__(self, opt):
+    def __init__(self, opt, args):
         super().__init__()
         self.opt = opt
         self.log = bubblesub.api.log.LogApi()
         self.gui = bubblesub.api.gui.GuiApi(self)
         self.subs = bubblesub.api.subs.SubtitlesApi()
         self.video = bubblesub.api.video.VideoApi(
-            self.subs, self.log, self.opt)
+            self.subs, self.log, self.opt, args)
         self.audio = bubblesub.api.audio.AudioApi(self.video, self.log)
         self.undo = bubblesub.api.undo.UndoApi(self.subs)
         self.cmd = bubblesub.api.cmd.CommandApi(self)

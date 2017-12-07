@@ -47,7 +47,7 @@ class VideoApi(QtCore.QObject):
     current_pts_changed = QtCore.pyqtSignal()
     max_pts_changed = QtCore.pyqtSignal()
 
-    def __init__(self, subs_api, log_api, opt_api):
+    def __init__(self, subs_api, log_api, opt_api, args):
         super().__init__()
         self._log_api = log_api
         self._subs_api = subs_api
@@ -93,7 +93,7 @@ class VideoApi(QtCore.QObject):
         self._mpv.set_option('ytdl', False)
         self._mpv.set_option('sub-auto', False)
         self._mpv.set_option('audio-file-auto', False)
-        self._mpv.set_option('vo', 'opengl-cb')
+        self._mpv.set_option('vo', 'null' if args.no_video else 'opengl-cb')
         self._mpv.set_option('pause', True)
         self._mpv.set_option('idle', True)
         self._mpv.set_option('sid', False)

@@ -8,6 +8,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='?')
     parser.add_argument('--no-config', action='store_true')
+    parser.add_argument('--no-video', action='store_true')
     return parser.parse_args()
 
 
@@ -22,7 +23,7 @@ def main():
     print('loading commands...')
     from bubblesub import cmd as _
 
-    api = Api(opt)
+    api = Api(opt, args)
 
     print('loading UI...')
     bubblesub.ui.run(api, args)
