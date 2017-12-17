@@ -293,17 +293,20 @@ class SearchDialog(QtWidgets.QDialog):
         return super().reject(*args)
 
     def action(self, sender):
-        self._save_opt()
-        if sender == self.replace_sel_btn:
-            self._replace_selection()
-        elif sender == self.replace_all_btn:
-            self._replace_all()
-        elif sender == self.find_prev_btn:
-            self._search(-1)
-        elif sender == self.find_next_btn:
-            self._search(1)
-        elif sender == self.count_btn:
-            self._count()
+        try:
+            self._save_opt()
+            if sender == self.replace_sel_btn:
+                self._replace_selection()
+            elif sender == self.replace_all_btn:
+                self._replace_all()
+            elif sender == self.find_prev_btn:
+                self._search(-1)
+            elif sender == self.find_next_btn:
+                self._search(1)
+            elif sender == self.count_btn:
+                self._count()
+        except Exception as ex:
+            self._api.log.error(str(ex))
 
     def _replace_selection(self):
         _replace_selection(self._main_window, self._target_text, self._mode)
