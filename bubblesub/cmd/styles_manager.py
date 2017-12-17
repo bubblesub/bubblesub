@@ -9,6 +9,7 @@ import bubblesub.ui.util
 import bubblesub.ui.mpv
 from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
 from bubblesub.api.cmd import CoreCommand
+from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
@@ -265,12 +266,21 @@ class StyleList(QtWidgets.QWidget):
 class FontGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent):
         super().__init__('Font', parent)
-        self.font_name_edit = QtWidgets.QLineEdit(self)
+        self.font_name_edit = QtWidgets.QComboBox(
+            self,
+            editable=False,
+            sizePolicy=QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Expanding,
+                QtWidgets.QSizePolicy.Preferred),
+            insertPolicy=QtWidgets.QComboBox.NoInsert)
         self.font_size_edit = QtWidgets.QSpinBox(self, minimum=0)
         self.bold_checkbox = QtWidgets.QCheckBox('Bold', self)
         self.italic_checkbox = QtWidgets.QCheckBox('Italic', self)
         self.underline_checkbox = QtWidgets.QCheckBox('Underline', self)
         self.strike_out_checkbox = QtWidgets.QCheckBox('Strike-out', self)
+
+        all_fonts = QtGui.QFontDatabase().families()
+        self.font_name_edit.addItems(all_fonts)
 
         layout = QtWidgets.QGridLayout(self)
         layout.setColumnStretch(0, 1)
@@ -516,7 +526,7 @@ class StyleEditor(QtWidgets.QWidget):
         for widget in [
             self.font_group_box.font_name_edit
         ]:
-            widget.textChanged.connect(self._submit)
+            widget.currentIndexChanged.connect(self._submit)
 
         for widget in [
             self.colors_group_box.primary_color_button,
