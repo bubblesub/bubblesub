@@ -159,9 +159,9 @@ class Style(bubblesub.util.ObservableObject):
 
 
 class StyleList(bubblesub.util.ListModel):
-    def insert_one(self, name, **kwargs):
+    def insert_one(self, name, index=None, **kwargs):
         style = Style(styles=self, name=name, **kwargs)
-        self.insert(len(self), [style])
+        self.insert(len(self) if index is None else index, [style])
         return style
 
     def get_by_name(self, name):

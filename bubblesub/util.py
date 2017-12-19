@@ -234,6 +234,11 @@ class ListModel(QtCore.QObject):
         self._data = self._data[:idx] + self._data[idx + count:]
         self.items_removed.emit(idx, count)
 
+    def move(self, idx, new_idx):
+        item = self._data[idx]
+        self.remove(idx, 1)
+        self.insert(new_idx, [item])
+
     def replace(self, values):
         old_size = len(self)
         new_size = len(values)

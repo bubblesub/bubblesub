@@ -174,15 +174,27 @@ class StyleList(QtWidgets.QWidget):
         self._remove_button = QtWidgets.QPushButton('Remove', self)
         self._remove_button.setEnabled(False)
         self._remove_button.clicked.connect(self._on_remove_button_click)
+        self._duplicate_button = QtWidgets.QPushButton('Duplicate', self)
+        self._duplicate_button.setEnabled(False)
+        self._duplicate_button.clicked.connect(self._on_duplicate_button_click)
+        self._move_up_button = QtWidgets.QPushButton('Move up', self)
+        self._move_up_button.setEnabled(False)
+        self._move_up_button.clicked.connect(self._on_move_up_button_click)
+        self._move_down_button = QtWidgets.QPushButton('Move down', self)
+        self._move_down_button.setEnabled(False)
+        self._move_down_button.clicked.connect(self._on_move_down_button_click)
         self._rename_button = QtWidgets.QPushButton('Rename', self)
         self._rename_button.setEnabled(False)
         self._rename_button.clicked.connect(self._on_rename_button_click)
 
         strip = QtWidgets.QWidget(self)
-        layout = QtWidgets.QHBoxLayout(strip, margin=0)
-        layout.addWidget(self._add_button)
-        layout.addWidget(self._remove_button)
-        layout.addWidget(self._rename_button)
+        layout = QtWidgets.QGridLayout(strip, margin=0)
+        layout.addWidget(self._add_button, 0, 0)
+        layout.addWidget(self._remove_button, 0, 1)
+        layout.addWidget(self._duplicate_button, 0, 2)
+        layout.addWidget(self._move_up_button, 1, 0)
+        layout.addWidget(self._move_down_button, 1, 1)
+        layout.addWidget(self._rename_button, 1, 2)
 
         layout = QtWidgets.QVBoxLayout(self, margin=0)
         layout.addWidget(self._styles_list_view)
@@ -206,6 +218,13 @@ class StyleList(QtWidgets.QWidget):
         anything_selected = len(event.indexes()) > 0
         self._remove_button.setEnabled(anything_selected)
         self._rename_button.setEnabled(anything_selected)
+        self._duplicate_button.setEnabled(anything_selected)
+        self._move_up_button.setEnabled(
+            anything_selected
+            and event.indexes()[0].row() > 0)
+        self._move_down_button.setEnabled(
+            anything_selected
+            and event.indexes()[0].row() < len(self._api.subs.styles) - 1)
 
     def _on_add_button_click(self, _event):
         style_name = self._prompt_for_unique_style_name()
@@ -250,6 +269,40 @@ class StyleList(QtWidgets.QWidget):
         style = self._selected_style
         self._styles_list_view.selectionModel().clear()
         self._api.subs.styles.remove(self._api.subs.styles.index(style), 1)
+
+    def _on_duplicate_button_click(self, _event):
+        style = self._selected_style
+        idx = self._api.subs.styles.index(style)
+        self._api.subs.styles.insert_one(
+            name=style.name + ' (copy)',
+            index=idx + 1,
+            **{
+                k: getattr(style, k)
+                for k in style.prop.keys()
+                if k != 'name'
+            })
+        self._styles_list_view.selectionModel().select(
+            self._styles_list_view.model().index(idx + 1, 0),
+            QtCore.QItemSelectionModel.Clear |
+            QtCore.QItemSelectionModel.Select)
+
+    def _on_move_up_button_click(self, _event):
+        style = self._selected_style
+        idx = self._api.subs.styles.index(style)
+        self._api.subs.styles.move(idx, idx - 1)
+        self._styles_list_view.selectionModel().select(
+            self._styles_list_view.model().index(idx - 1, 0),
+            QtCore.QItemSelectionModel.Clear |
+            QtCore.QItemSelectionModel.Select)
+
+    def _on_move_down_button_click(self, _event):
+        style = self._selected_style
+        idx = self._api.subs.styles.index(style)
+        self._api.subs.styles.move(idx, idx + 1)
+        self._styles_list_view.selectionModel().select(
+            self._styles_list_view.model().index(idx + 1, 0),
+            QtCore.QItemSelectionModel.Clear |
+            QtCore.QItemSelectionModel.Select)
 
     def _on_rename_button_click(self, _event):
         style = self._selected_style
