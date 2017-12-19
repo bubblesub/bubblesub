@@ -137,8 +137,11 @@ class StylePreview(QtWidgets.QGroupBox):
 
     def _refresh_subs(self):
         if self._mpv_ready:
-            self._save_subs()
-            self._mpv.command('sub_reload')
+            try:
+                self._save_subs()
+                self._mpv.command('sub_reload')
+            except Exception as ex:
+                print(ex)
 
     def _on_selection_change(self, _value):
         self._refresh_subs()
@@ -150,7 +153,10 @@ class StylePreview(QtWidgets.QGroupBox):
         self._refresh_subs()
 
     def _on_slider_move(self, value):
-        self._mpv.command('seek', str(value / 1000), 'absolute+exact')
+        try:
+            self._mpv.command('seek', str(value / 1000), 'absolute+exact')
+        except Exception as ex:
+            print(ex)
 
 
 class StyleList(QtWidgets.QWidget):
