@@ -168,6 +168,7 @@ _DEFAULT_HOTKEYS = {
         ('Alt+A', 'view/focus-spectrogram'),
         ('Alt+S', 'view/focus-grid'),
         ('Alt+D', 'view/focus-text-editor'),
+        ('Alt+X', 'edit/split-sub-at-video'),
     ],
 
     'audio': [
