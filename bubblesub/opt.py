@@ -169,6 +169,7 @@ _DEFAULT_HOTKEYS = {
         ('Alt+S', 'view/focus-grid'),
         ('Alt+D', 'view/focus-text-editor'),
         ('Alt+X', 'edit/split-sub-at-video'),
+        ('Alt+J', 'edit/join-subs/concatenate'),
     ],
 
     'audio': [
