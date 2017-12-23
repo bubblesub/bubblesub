@@ -113,7 +113,9 @@ class EditMoveDownCommand(CoreCommand):
     def is_enabled(self):
         if not self.api.subs.selected_indexes:
             return False
-        return self.api.subs.selected_indexes[-1] < len(self.api.subs.lines) - 1
+        return (
+            self.api.subs.selected_indexes[-1]
+            < len(self.api.subs.lines) - 1)
 
     async def run(self):
         with self.api.undo.bulk():
@@ -214,11 +216,19 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return len(self.api.subs.selected_indexes) > 1
+        if len(self.api.subs.selected_indexes) > 1:
+            return True
+        if len(self.api.subs.selected_indexes) == 1:
+            return (
+                self.api.subs.selected_indexes[0] + 1
+                < len(self.api.subs.lines))
+        return False
 
     async def run(self):
         with self.api.undo.bulk():
             idx = self.api.subs.selected_indexes[0]
+            if len(self.api.subs.selected_indexes) == 1:
+                self.api.subs.selected_indexes = [idx, idx + 1]
             last_idx = self.api.subs.selected_indexes[-1]
             self.api.subs.lines[idx].end = self.api.subs.lines[last_idx].end
             for i in reversed(self.api.subs.selected_indexes[1:]):
@@ -232,11 +242,19 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return len(self.api.subs.selected_indexes) > 1
+        if len(self.api.subs.selected_indexes) > 1:
+            return True
+        if len(self.api.subs.selected_indexes) == 1:
+            return (
+                self.api.subs.selected_indexes[0] + 1
+                < len(self.api.subs.lines))
+        return False
 
     async def run(self):
         with self.api.undo.bulk():
             idx = self.api.subs.selected_indexes[0]
+            if len(self.api.subs.selected_indexes) == 1:
+                self.api.subs.selected_indexes = [idx, idx + 1]
             last_idx = self.api.subs.selected_indexes[-1]
 
             sub = self.api.subs.lines[idx]
