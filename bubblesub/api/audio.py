@@ -203,6 +203,8 @@ class AudioApi(QtCore.QObject):
                     (count, max(1, self.channel_count)))
             if start_frame + count > self.sample_count:
                 count = max(0, self.sample_count - start_frame)
+            if not count:
+                return np.zeros(0).reshape(0, max(1, self.channel_count))
             self._audio_source.init_buffer(count)
             return self._audio_source.get_audio(start_frame)
 
