@@ -170,6 +170,8 @@ _DEFAULT_HOTKEYS = {
         ('Alt+D', 'view/focus-text-editor'),
         ('Alt+X', 'edit/split-sub-at-video'),
         ('Alt+J', 'edit/join-subs/concatenate'),
+        ('Alt+Up', 'edit/move-up'),
+        ('Alt+Down', 'edit/move-down'),
     ],
 
     'audio': [
