@@ -46,6 +46,8 @@ class VideoApi(QtCore.QObject):
     timecodes_updated = QtCore.pyqtSignal()
     current_pts_changed = QtCore.pyqtSignal()
     max_pts_changed = QtCore.pyqtSignal()
+    volume_changed = QtCore.pyqtSignal()
+    playback_speed_changed = QtCore.pyqtSignal()
 
     def __init__(self, subs_api, log_api, opt_api, args):
         super().__init__()
@@ -212,6 +214,7 @@ class VideoApi(QtCore.QObject):
     def playback_speed(self, value):
         self._playback_speed = value
         self._mpv.set_property('speed', float(self._playback_speed))
+        self.playback_speed_changed.emit()
 
     @property
     def volume(self):
@@ -221,6 +224,7 @@ class VideoApi(QtCore.QObject):
     def volume(self, value):
         self._volume = value
         self._mpv.set_property('volume', float(self._volume))
+        self.volume_changed.emit()
 
     @property
     def current_pts(self):
