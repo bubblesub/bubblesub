@@ -60,6 +60,7 @@ class VideoApi(QtCore.QObject):
         self._keyframes = []
         self._path = None
         self._playback_speed = fractions.Fraction(1.0)
+        self._volume = fractions.Fraction(100.0)
         self._current_pts = 0
         self._max_pts = 0
         self._mpv_ready = False
@@ -208,9 +209,18 @@ class VideoApi(QtCore.QObject):
         return self._playback_speed
 
     @playback_speed.setter
-    def playback_speed(self, speed):
-        self._playback_speed = speed
+    def playback_speed(self, value):
+        self._playback_speed = value
         self._mpv.set_property('speed', float(self._playback_speed))
+
+    @property
+    def volume(self):
+        return self._volume
+
+    @volume.setter
+    def volume(self, value):
+        self._volume = value
+        self._mpv.set_property('volume', float(self._volume))
 
     @property
     def current_pts(self):

@@ -274,3 +274,19 @@ class VideoScreenshotCommand(CoreCommand):
         path = await self.api.gui.exec(run_dialog)
         if path:
             self.api.video.screenshot(path, self._include_subtitles)
+
+
+class VideoSetVolumeCommand(CoreCommand):
+    name = 'video/set-volume'
+
+    def __init__(self, api, expr):
+        super().__init__(api)
+        self._expr = str(expr)
+
+    @property
+    def menu_name(self):
+        return 'Set volume to {}'.format(self._expr.format('current volume'))
+
+    async def run(self):
+        self.api.video.volume = bubblesub.util.eval_expr(
+            self._expr.format(self.api.video.volume))
