@@ -66,6 +66,11 @@ class StatusBar(QtWidgets.QStatusBar):
                 self._api.video.current_pts / max(1, self._api.video.max_pts)))
 
     def _on_audio_selection_change(self):
+        def format_ms_delta(delta):
+            ret = bubblesub.util.ms_to_str(abs(delta))
+            ret = ('\u2212', '+')[delta >= 0] + ret
+            return ret
+
         if len(self._api.subs.selected_lines) != 1:
             return
         sub = self._api.subs.selected_lines[0]
@@ -73,7 +78,7 @@ class StatusBar(QtWidgets.QStatusBar):
         end_delta = self._api.audio.selection_end - sub.end
 
         self._audio_selection_label.setText(
-            'Audio selection: {:+.0f} ms / {:+.0f} ms (duration: {})'.format(
-                start_delta,
-                end_delta,
+            'Audio selection: {} / {} (duration: {})'.format(
+                format_ms_delta(start_delta),
+                format_ms_delta(end_delta),
                 bubblesub.util.ms_to_str(self._api.audio.selection_size)))
