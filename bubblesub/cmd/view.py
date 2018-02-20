@@ -27,6 +27,7 @@ class ViewFocusTextEditorCommand(CoreCommand):
     async def run(self):
         async def run(_api, main_window):
             main_window.editor.center.text_edit.setFocus()
+            main_window.editor.center.text_edit.selectAll()
 
         await self.api.gui.exec(run)
 
@@ -38,6 +39,7 @@ class ViewFocusNoteEditorCommand(CoreCommand):
     async def run(self):
         async def run(_api, main_window):
             main_window.editor.center.note_edit.setFocus()
+            main_window.editor.center.note_edit.selectAll()
 
         await self.api.gui.exec(run)
 
