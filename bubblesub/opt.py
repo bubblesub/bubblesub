@@ -168,6 +168,7 @@ _DEFAULT_HOTKEYS = {
         ('Alt+A', 'view/focus-spectrogram'),
         ('Alt+S', 'view/focus-grid'),
         ('Alt+D', 'view/focus-text-editor'),
+        ('Alt+Shift+D', 'view/focus-note-editor'),
         ('Alt+X', 'edit/split-sub-at-video'),
         ('Alt+J', 'edit/join-subs/concatenate'),
         ('Alt+Up', 'edit/move-up'),
