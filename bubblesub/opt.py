@@ -208,6 +208,8 @@ _DEFAULT_HOTKEYS = {
         ('M', 'audio/snap-sel-end-to-video'),
         ('[', 'video/set-playback-speed', '{}/1.5'),
         (']', 'video/set-playback-speed', '{}*1.5'),
+        ('Alt+Left', 'audio/snap-sel-start-to-prev-sub'),
+        ('Alt+Right', 'audio/snap-sel-end-to-next-sub'),
     ],
 }
 
