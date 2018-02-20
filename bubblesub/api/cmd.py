@@ -61,7 +61,7 @@ class CommandApi(QtCore.QObject):
             try:
                 await cmd.run()
             except Exception as ex:
-                self._api.log.info('cmd/{}: error: {}'.format(cmd.name, ex))
+                self._api.log.error('cmd/{}: {}'.format(cmd.name, ex))
                 traceback.print_exc()
             end_time = time.time()
             self._api.log.info('cmd/{}: ran in {:.02f} s'.format(
