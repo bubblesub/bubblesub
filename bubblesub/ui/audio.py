@@ -206,12 +206,15 @@ class AudioPreviewWidget(BaseAudioWidget):
         text_height = painter.fontMetrics().capHeight()
 
         for pts in range(start_pts, end_pts, one_second):
+            x = self._pts_to_x(pts)
+            if x < 0 or x >= self.width():
+                continue
+
             if pts % one_minute == 0:
                 gap = h - 1
             else:
                 gap = 4
 
-            x = self._pts_to_x(pts)
             painter.drawLine(x, 0, x, gap)
             if pts % one_minute == 0:
                 text = '{:02}:{:02}'.format(pts // one_minute, 0)
