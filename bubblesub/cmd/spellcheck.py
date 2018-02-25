@@ -80,9 +80,9 @@ class SpellCheckDialog(QtWidgets.QDialog):
         self._next()
 
     def _next(self):
-        idx, start, end = self._iter_to_next_mispelt_match()
+        idx, start, end, word = self._iter_to_next_mispelt_match()
         if idx is not None:
-            self._focus_match(idx, start, end)
+            self._focus_match(idx, start, end, word)
             return True
         bubblesub.ui.util.notice('No more results.')
         self.reject()
@@ -92,19 +92,18 @@ class SpellCheckDialog(QtWidgets.QDialog):
         cursor = self._main_window.editor.center.text_edit.textCursor()
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]
-            for start, end in bubblesub.util.spell_check_ass_line(
-                    self._dictionary, line.text):
+            for start, end, word in bubblesub.util.spell_check_ass_line(
+                    self._dictionary, line.text.replace('\\N', '\n')):
                 if len(self._api.subs.selected_indexes) > 1 \
                 or line.id > self._api.subs.selected_indexes[0] \
                 or start > cursor.selectionStart() \
                 or cursor.selectionStart() == cursor.selectionEnd():
-                    return line.id, start, end
+                    return line.id, start, end, word
             self._lines_to_spellcheck.pop(0)
-        return None, None, None
+        return None, None, None, None
 
-    def _focus_match(self, idx, start, end):
+    def _focus_match(self, idx, start, end, mispelt_word):
         self._api.subs.selected_indexes = [idx]
-        mispelt_word = self._api.subs.lines[idx].text[start:end]
 
         cursor = self._main_window.editor.center.text_edit.textCursor()
         cursor.setPosition(start)

@@ -355,15 +355,13 @@ def getsize(top_obj):
     return inner(top_obj)
 
 
-def spell_check_plain_text(dictionary, text):
-    text = regex.sub(
+def iter_words_ass_line(ass_text):
+    ass_text = regex.sub(
         r'\\[Nnh]',
-        '  ',  # two spaces so that matches mantain position in text
-        text)
-
-    for match in regex.finditer(r'\p{L}[\p{L}\p{P}]*\p{L}|\p{L}', text):
-        if not dictionary.check(match.group(0)):
-            yield (match.start(), match.end())
+        '  ',  # two spaces to preserve match positions
+        ass_text)
+    return regex.finditer(
+        r'[\p{L}\p{S}\p{N}][\p{L}\p{S}\p{N}\p{P}]*\p{L}|\p{L}', ass_text)
 
 
 def spell_check_ass_line(dictionary, ass_text):
@@ -372,10 +370,17 @@ def spell_check_ass_line(dictionary, ass_text):
     except ass_tag_parser.ParsingError:
         return
     for item in ass_struct:
-        if item['type'] == 'text':
-            text_start, _text_end = item['pos']
-            for start, end in spell_check_plain_text(dictionary, item['text']):
-                yield (start + text_start, end + text_start)
+        if item['type'] != 'text':
+            continue
+
+        text_start, _text_end = item['pos']
+        for match in iter_words_ass_line(item['text']):
+            word = match.group(0)
+            if not dictionary.check(word):
+                yield (
+                    text_start + match.start(),
+                    text_start + match.end(),
+                    word)
 
 
 def eval_expr(expr):

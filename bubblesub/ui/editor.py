@@ -29,7 +29,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
         if not self._dictionary:
             return
 
-        for start, end in bubblesub.util.spell_check_ass_line(
+        for start, end, _match in bubblesub.util.spell_check_ass_line(
                 self._dictionary, text):
             self.setFormat(start, end - start, self._fmt)
 
