@@ -25,9 +25,9 @@ def _create_search_regex(text, case_sensitive, use_regexes):
 
 def _get_subject_text_by_mode(sub, mode):
     if mode == SearchMode.Text:
-        return sub.text
+        return sub.text.replace('\\N', '\n')
     elif mode == SearchMode.Note:
-        return sub.note
+        return sub.note.replace('\\N', '\n')
     elif mode == SearchMode.Actor:
         return sub.actor
     elif mode == SearchMode.Style:
@@ -38,9 +38,9 @@ def _get_subject_text_by_mode(sub, mode):
 
 def _set_subject_text_by_mode(sub, mode, value):
     if mode == SearchMode.Text:
-        sub.text = value
+        sub.text = value.replace('\n', '\\N')
     elif mode == SearchMode.Note:
-        sub.note = value
+        sub.note = value.replace('\n', '\\N')
     elif mode == SearchMode.Actor:
         sub.actor = value
     elif mode == SearchMode.Style:
