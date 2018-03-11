@@ -25,9 +25,9 @@ class StatusBar(QtWidgets.QStatusBar):
         self.addPermanentWidget(self._audio_selection_label)
 
         api.subs.selection_changed.connect(self._on_subs_selection_change)
-        api.audio.selection_changed.connect(self._on_audio_selection_change)
-        api.video.current_pts_changed.connect(
-            self._on_video_current_pts_change)
+        api.media.current_pts_changed.connect(self._on_current_pts_change)
+        api.media.audio.selection_changed.connect(
+            self._on_audio_selection_change)
 
     def _on_subs_selection_change(self):
         count = len(self._api.subs.selected_indexes)
@@ -59,11 +59,11 @@ class StatusBar(QtWidgets.QStatusBar):
                     count,
                     count / total))
 
-    def _on_video_current_pts_change(self):
+    def _on_current_pts_change(self):
         self._video_frame_label.setText(
             'Video frame: {} ({:.1%})'.format(
-                bubblesub.util.ms_to_str(self._api.video.current_pts),
-                self._api.video.current_pts / max(1, self._api.video.max_pts)))
+                bubblesub.util.ms_to_str(self._api.media.current_pts),
+                self._api.media.current_pts / max(1, self._api.media.max_pts)))
 
     def _on_audio_selection_change(self):
         def format_ms_delta(delta):
@@ -74,11 +74,12 @@ class StatusBar(QtWidgets.QStatusBar):
         if len(self._api.subs.selected_lines) != 1:
             return
         sub = self._api.subs.selected_lines[0]
-        start_delta = self._api.audio.selection_start - sub.start
-        end_delta = self._api.audio.selection_end - sub.end
+        start_delta = self._api.media.audio.selection_start - sub.start
+        end_delta = self._api.media.audio.selection_end - sub.end
 
         self._audio_selection_label.setText(
             'Audio selection: {} / {} (duration: {})'.format(
                 format_ms_delta(start_delta),
                 format_ms_delta(end_delta),
-                bubblesub.util.ms_to_str(self._api.audio.selection_size)))
+                bubblesub.util.ms_to_str(
+                    self._api.media.audio.selection_size)))

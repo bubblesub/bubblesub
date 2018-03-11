@@ -28,11 +28,15 @@ class BaseAudioWidget(QtWidgets.QWidget):
         def update(*_):
             self.update()
 
-        api.audio.selection_changed.connect(update)
-        api.audio.view_changed.connect(update)
+        api.media.audio.selection_changed.connect(update)
+        api.media.audio.view_changed.connect(update)
         api.subs.lines.items_inserted.connect(update)
         api.subs.lines.items_removed.connect(update)
         api.subs.lines.item_changed.connect(update)
+
+    @property
+    def _audio(self):
+        return self._api.media.audio
 
     def wheelEvent(self, event):
         if event.modifiers() & QtCore.Qt.ControlModifier:
@@ -42,14 +46,14 @@ class BaseAudioWidget(QtWidgets.QWidget):
             self._scrolled(event.angleDelta().y())
 
     def _zoomed(self, delta, mouse_x):
-        cur_factor = self._api.audio.view_size / self._api.audio.size
+        cur_factor = self._audio.view_size / self._audio.size
         new_factor = cur_factor * (1.1 if delta < 0 else 0.9)
-        self._api.audio.zoom_view(new_factor, mouse_x)
+        self._audio.zoom_view(new_factor, mouse_x)
 
     def _scrolled(self, delta):
         distance = 1 if delta < 0 else -1
-        distance *= self._api.audio.view_size * 0.05
-        self._api.audio.move_view(distance)
+        distance *= self._audio.view_size * 0.05
+        self._audio.move_view(distance)
 
 
 class AudioPreviewWidget(BaseAudioWidget):
@@ -71,10 +75,10 @@ class AudioPreviewWidget(BaseAudioWidget):
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
-        api.video.current_pts_changed.connect(
+        api.media.current_pts_changed.connect(
             self._on_video_current_pts_change)
-        api.video.loaded.connect(self._on_video_load)
-        api.audio.view_changed.connect(self._on_audio_view_change)
+        api.media.loaded.connect(self._on_video_load)
+        api.media.audio.view_changed.connect(self._on_audio_view_change)
 
     def changeEvent(self, _event):
         self._generate_color_table()
@@ -135,17 +139,17 @@ class AudioPreviewWidget(BaseAudioWidget):
     def mouseMoveEvent(self, event):
         pts = self._pts_from_x(event.x())
         if self._drag_mode == DragMode.SelectionStart:
-            if self._api.audio.has_selection:
-                self._api.audio.select(
-                    min(self._api.audio.selection_end, pts),
-                    self._api.audio.selection_end)
+            if self._audio.has_selection:
+                self._audio.select(
+                    min(self._audio.selection_end, pts),
+                    self._audio.selection_end)
         elif self._drag_mode == DragMode.SelectionEnd:
-            if self._api.audio.has_selection:
-                self._api.audio.select(
-                    self._api.audio.selection_start,
-                    max(self._api.audio.selection_start, pts))
+            if self._audio.has_selection:
+                self._audio.select(
+                    self._audio.selection_start,
+                    max(self._audio.selection_start, pts))
         elif self._drag_mode == DragMode.VideoPosition:
-            self._api.video.seek(pts)
+            self._api.media.seek(pts)
 
     def _generate_color_table(self):
         self._color_table = [
@@ -195,9 +199,9 @@ class AudioPreviewWidget(BaseAudioWidget):
         one_second = 1000
         one_minute = 60 * one_second
 
-        start_pts = int(self._api.audio.view_start // one_minute) * one_minute
+        start_pts = int(self._audio.view_start // one_minute) * one_minute
         end_pts = (
-            (int(self._api.audio.view_end + one_minute) // one_minute)
+            (int(self._audio.view_end + one_minute) // one_minute)
             * one_minute)
 
         painter.setPen(
@@ -266,8 +270,8 @@ class AudioPreviewWidget(BaseAudioWidget):
         h = painter.viewport().height()
         color = get_color(self._api, 'spectrogram/keyframe')
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.DashLine))
-        for keyframe in self._api.video.keyframes:
-            timecode = self._api.video.timecodes[keyframe]
+        for keyframe in self._api.media.video.keyframes:
+            timecode = self._api.media.video.timecodes[keyframe]
             x = self._pts_to_x(timecode)
             painter.drawLine(x, 0, x, h)
 
@@ -309,7 +313,7 @@ class AudioPreviewWidget(BaseAudioWidget):
                 label_text)
 
     def _draw_selection(self, painter):
-        if not self._api.audio.has_selection:
+        if not self._audio.has_selection:
             return
         h = self.height()
         color = get_color(
@@ -320,14 +324,14 @@ class AudioPreviewWidget(BaseAudioWidget):
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         color.setAlpha(0x40)
         painter.setBrush(QtGui.QBrush(color))
-        x1 = self._pts_to_x(self._api.audio.selection_start)
-        x2 = self._pts_to_x(self._api.audio.selection_end)
+        x1 = self._pts_to_x(self._audio.selection_start)
+        x2 = self._pts_to_x(self._audio.selection_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_video_pos(self, painter):
-        if not self._api.video.current_pts:
+        if not self._api.media.current_pts:
             return
-        x = self._pts_to_x(self._api.video.current_pts)
+        x = self._pts_to_x(self._api.media.current_pts)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(get_color(self._api, 'spectrogram/video-marker'))
 
@@ -348,12 +352,12 @@ class AudioPreviewWidget(BaseAudioWidget):
         painter.drawPolygon(polygon)
 
     def _pts_to_x(self, pts):
-        scale = self.width() / max(1, self._api.audio.view_size)
-        return math.floor((pts - self._api.audio.view_start) * scale)
+        scale = self.width() / max(1, self._audio.view_size)
+        return math.floor((pts - self._audio.view_start) * scale)
 
     def _pts_from_x(self, x):
-        scale = self._api.audio.view_size / self.width()
-        return x * scale + self._api.audio.view_start
+        scale = self._audio.view_size / self.width()
+        return x * scale + self._audio.view_start
 
 
 class AudioSliderWidget(BaseAudioWidget):
@@ -377,10 +381,10 @@ class AudioSliderWidget(BaseAudioWidget):
         self.setCursor(QtCore.Qt.ArrowCursor)
 
     def mouseMoveEvent(self, event):
-        old_center = self._api.audio.view_start + self._api.audio.view_size / 2
+        old_center = self._audio.view_start + self._audio.view_size / 2
         new_center = self._pts_from_x(event.x())
         distance = new_center - old_center
-        self._api.audio.move_view(distance)
+        self._audio.move_view(distance)
 
     def _draw_subtitle_rects(self, painter):
         h = self.height()
@@ -398,8 +402,8 @@ class AudioSliderWidget(BaseAudioWidget):
         brush = QtGui.QBrush(self.palette().highlight())
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(brush)
-        x1 = self._pts_to_x(self._api.audio.view_start)
-        x2 = self._pts_to_x(self._api.audio.view_end)
+        x1 = self._pts_to_x(self._audio.view_start)
+        x2 = self._pts_to_x(self._audio.view_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_frame(self, painter):
@@ -411,12 +415,12 @@ class AudioSliderWidget(BaseAudioWidget):
         painter.drawLine(0, h - 1, w - 1, h - 1)
 
     def _pts_to_x(self, pts):
-        scale = self.width() / max(1, self._api.audio.size)
-        return (pts - self._api.audio.min) * scale
+        scale = self.width() / max(1, self._audio.size)
+        return (pts - self._audio.min) * scale
 
     def _pts_from_x(self, x):
-        scale = self._api.audio.size / self.width()
-        return x * scale + self._api.audio.min
+        scale = self._audio.size / self.width()
+        return x * scale + self._audio.min
 
 
 class Audio(QtWidgets.QWidget):
@@ -442,7 +446,7 @@ class Audio(QtWidgets.QWidget):
     def _sync_selection(self):
         if len(self._api.subs.selected_indexes) == 1:
             sub = self._api.subs.selected_lines[0]
-            self._api.audio.view(sub.start - 10000, sub.end + 10000)
-            self._api.audio.select(sub.start, sub.end)
+            self._api.media.audio.view(sub.start - 10000, sub.end + 10000)
+            self._api.media.audio.select(sub.start, sub.end)
         else:
-            self._api.audio.unselect()
+            self._api.media.audio.unselect()

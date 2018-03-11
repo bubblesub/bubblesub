@@ -25,7 +25,7 @@ def run(api, args):
         except Exception as ex:
             api.log.error(str(ex))
 
-    api.video.start()
+    api.media.start()
     main_window.show()
 
     if args.file:

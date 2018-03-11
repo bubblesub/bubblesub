@@ -5,7 +5,7 @@ from bubblesub.ui.mpv import MpvWidget
 
 class VideoPreview(MpvWidget):
     def __init__(self, api, parent=None):
-        super().__init__(api.video.get_opengl_context(), parent)
+        super().__init__(api.media.video.get_opengl_context(), parent)
 
     def sizeHint(self):
         return QtCore.QSize(400, 300)
@@ -39,17 +39,17 @@ class Video(QtWidgets.QWidget):
     def _connect_signals(self):
         self._volume_slider.valueChanged.connect(
             self._on_volume_slider_value_change)
-        self._api.video.volume_changed.connect(self._on_video_volume_change)
+        self._api.media.volume_changed.connect(self._on_video_volume_change)
 
     def _disconnect_signals(self):
         self._volume_slider.valueChanged.disconnect(
             self._on_volume_slider_value_change)
-        self._api.video.volume_changed.disconnect(self._on_video_volume_change)
+        self._api.media.volume_changed.disconnect(self._on_video_volume_change)
 
     def _on_video_volume_change(self):
         self._disconnect_signals()
-        self._volume_slider.setValue(float(self._api.video.volume))
+        self._volume_slider.setValue(float(self._api.media.volume))
         self._connect_signals()
 
     def _on_volume_slider_value_change(self):
-        self._api.video.volume = self._volume_slider.value()
+        self._api.media.volume = self._volume_slider.value()

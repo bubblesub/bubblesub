@@ -11,11 +11,11 @@ class VideoPlayCurrentLineCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded and self.api.subs.has_selection
+        return self.api.media.is_loaded and self.api.subs.has_selection
 
     async def run(self):
         sub = self.api.subs.selected_lines[0]
-        self.api.video.play(sub.start, sub.end)
+        self.api.media.play(sub.start, sub.end)
 
 
 class VideoPlayAroundSelectionCommand(CoreCommand):
@@ -32,12 +32,13 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded and self.api.audio.has_selection
+        return self.api.media.is_loaded \
+            and self.api.media.audio.has_selection
 
     async def run(self):
-        self.api.video.play(
-            self.api.audio.selection_start + self._delta_start,
-            self.api.audio.selection_end + self._delta_end)
+        self.api.media.play(
+            self.api.media.audio.selection_start + self._delta_start,
+            self.api.media.audio.selection_end + self._delta_end)
 
 
 class VideoPlayAroundSelectionStartCommand(CoreCommand):
@@ -61,12 +62,13 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded and self.api.audio.has_selection
+        return self.api.media.is_loaded \
+            and self.api.media.audio.has_selection
 
     async def run(self):
-        self.api.video.play(
-            self.api.audio.selection_start + self._delta_start,
-            self.api.audio.selection_start + self._delta_end)
+        self.api.media.play(
+            self.api.media.audio.selection_start + self._delta_start,
+            self.api.media.audio.selection_start + self._delta_end)
 
 
 class VideoPlayAroundSelectionEndCommand(CoreCommand):
@@ -90,12 +92,13 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded and self.api.audio.has_selection
+        return self.api.media.is_loaded \
+            and self.api.media.audio.has_selection
 
     async def run(self):
-        self.api.video.play(
-            self.api.audio.selection_end + self._delta_start,
-            self.api.audio.selection_end + self._delta_end)
+        self.api.media.play(
+            self.api.media.audio.selection_end + self._delta_start,
+            self.api.media.audio.selection_end + self._delta_end)
 
 
 class VideoStepFrameCommand(CoreCommand):
@@ -114,19 +117,22 @@ class VideoStepFrameCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded
+        return self.api.media.is_loaded
 
     async def run(self):
         if self._delta == 1:
-            self.api.video.step_frame_forward()
+            self.api.media.step_frame_forward()
         elif self._delta == -1:
-            self.api.video.step_frame_backward()
+            self.api.media.step_frame_backward()
         else:
-            current_pts = self.api.video.current_pts
-            idx = bisect.bisect_left(self.api.video.timecodes, current_pts)
-            if idx + self._delta not in range(len(self.api.video.timecodes)):
+            current_pts = self.api.media.current_pts
+            idx = bisect.bisect_left(
+                self.api.media.video.timecodes, current_pts)
+            if idx + self._delta not in range(
+                    len(self.api.media.video.timecodes)):
                 return
-            self.api.video.seek(self.api.video.timecodes[idx + self._delta])
+            self.api.media.seek(
+                self.api.media.video.timecodes[idx + self._delta])
 
 
 class VideoStepMillisecondsCommand(CoreCommand):
@@ -145,11 +151,11 @@ class VideoStepMillisecondsCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded
+        return self.api.media.is_loaded
 
     async def run(self):
-        self.api.video.seek(
-            self.api.video.current_pts + self._delta, self._precise)
+        self.api.media.seek(
+            self.api.media.current_pts + self._delta, self._precise)
 
 
 class VideoSeekWithGuiCommand(CoreCommand):
@@ -158,7 +164,7 @@ class VideoSeekWithGuiCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded
+        return self.api.media.is_loaded
 
     async def run(self):
         async def _run_dialog(_api, main_window, **kwargs):
@@ -169,15 +175,16 @@ class VideoSeekWithGuiCommand(CoreCommand):
             absolute_label='Time to jump to:',
             relative_label='Time to jump by:',
             relative_checked=False,
-            value=self.api.video.current_pts)
+            value=self.api.media.current_pts)
 
         if ret:
             value, is_relative = ret
 
             if is_relative:
-                self.api.video.seek(self.api.video.current_pts + value)
+                self.api.media.seek(
+                    self.api.media.current_pts + value)
             else:
-                self.api.video.seek(value)
+                self.api.media.seek(value)
 
 
 class VideoSetPlaybackSpeed(CoreCommand):
@@ -193,8 +200,8 @@ class VideoSetPlaybackSpeed(CoreCommand):
             self._expr.format('current speed'))
 
     async def run(self):
-        self.api.video.playback_speed = bubblesub.util.eval_expr(
-            self._expr.format(self.api.video.playback_speed))
+        self.api.media.playback_speed = bubblesub.util.eval_expr(
+            self._expr.format(self.api.media.playback_speed))
 
 
 class VideoTogglePauseCommand(CoreCommand):
@@ -203,13 +210,13 @@ class VideoTogglePauseCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded
+        return self.api.media.is_loaded
 
     async def run(self):
-        if self.api.video.is_paused:
-            self.api.video.unpause()
+        if self.api.media.is_paused:
+            self.api.media.unpause()
         else:
-            self.api.video.pause()
+            self.api.media.pause()
 
 
 class VideoUnpauseCommand(CoreCommand):
@@ -218,12 +225,12 @@ class VideoUnpauseCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded
+        return self.api.media.is_loaded
 
     async def run(self):
-        if not self.api.video.is_paused:
+        if not self.api.media.is_paused:
             return
-        self.api.video.unpause()
+        self.api.media.unpause()
 
 
 class VideoPauseCommand(CoreCommand):
@@ -232,12 +239,12 @@ class VideoPauseCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded
+        return self.api.media.is_loaded
 
     async def run(self):
-        if self.api.video.is_paused:
+        if self.api.media.is_paused:
             return
-        self.api.video.pause()
+        self.api.media.pause()
 
 
 class VideoScreenshotCommand(CoreCommand):
@@ -249,7 +256,7 @@ class VideoScreenshotCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.video.is_loaded
+        return self.api.media.is_loaded
 
     @property
     def menu_name(self):
@@ -259,8 +266,8 @@ class VideoScreenshotCommand(CoreCommand):
     async def run(self):
         async def run_dialog(api, main_window):
             file_name = 'shot-{}-{}.png'.format(
-                os.path.basename(api.video.path),
-                bubblesub.util.ms_to_str(api.video.current_pts))
+                os.path.basename(api.media.path),
+                bubblesub.util.ms_to_str(api.media.current_pts))
 
             file_name = file_name.replace(':', '.')
             file_name = file_name.replace(' ', '_')
@@ -273,7 +280,7 @@ class VideoScreenshotCommand(CoreCommand):
 
         path = await self.api.gui.exec(run_dialog)
         if path:
-            self.api.video.screenshot(path, self._include_subtitles)
+            self.api.media.video.screenshot(path, self._include_subtitles)
 
 
 class VideoSetVolumeCommand(CoreCommand):
@@ -288,5 +295,5 @@ class VideoSetVolumeCommand(CoreCommand):
         return 'Set volume to {}'.format(self._expr.format('current volume'))
 
     async def run(self):
-        self.api.video.volume = bubblesub.util.eval_expr(
-            self._expr.format(self.api.video.volume))
+        self.api.media.volume = bubblesub.util.eval_expr(
+            self._expr.format(self.api.media.volume))

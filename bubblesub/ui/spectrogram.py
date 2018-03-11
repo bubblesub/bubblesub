@@ -22,14 +22,14 @@ class SpectrumProviderContext(bubblesub.util.ProviderContext):
     def work(self, task):
         pts = task
 
-        audio_frame = int(pts * self._api.audio.sample_rate / 1000.0)
+        audio_frame = int(pts * self._api.media.audio.sample_rate / 1000.0)
         first_sample = (
             audio_frame >> DERIVATION_DISTANCE) << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
-        samples = self._api.audio.get_samples(first_sample, sample_count)
+        samples = self._api.media.audio.get_samples(first_sample, sample_count)
         samples = np.mean(samples, axis=1)
-        sample_fmt = self._api.audio.sample_format
+        sample_fmt = self._api.media.audio.sample_format
         if sample_fmt is None:
             return pts, np.zeros((1 << DERIVATION_SIZE) + 1)
         elif sample_fmt == ffms.FFMS_FMT_S16:

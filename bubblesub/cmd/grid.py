@@ -242,7 +242,8 @@ class SaveAudioSampleCommand(CoreCommand):
 
     @property
     def is_enabled(self):
-        return self.api.subs.has_selection and self.api.audio.has_audio_source
+        return self.api.subs.has_selection \
+            and self.api.media.audio.has_audio_source
 
     async def run(self):
         async def run_dialog(_api, main_window):
@@ -253,4 +254,4 @@ class SaveAudioSampleCommand(CoreCommand):
         if path:
             start_pts = self.api.subs.selected_lines[0].start
             end_pts = self.api.subs.selected_lines[-1].end
-            self.api.audio.save_wav(path, start_pts, end_pts)
+            self.api.media.audio.save_wav(path, start_pts, end_pts)

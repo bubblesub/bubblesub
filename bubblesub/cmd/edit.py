@@ -198,7 +198,7 @@ class EditSplitSubAtVideoCommand(CoreCommand):
         with self.api.undo.bulk():
             idx = self.api.subs.selected_indexes[0]
             sub = self.api.subs.lines[idx]
-            split_pos = self.api.video.current_pts
+            split_pos = self.api.media.current_pts
             if split_pos < sub.start or split_pos > sub.end:
                 return
             self.api.gui.begin_update()
@@ -318,7 +318,7 @@ class EditSnapSubsStartToVideoCommand(CoreCommand):
     async def run(self):
         with self.api.undo.bulk():
             for sub in self.api.subs.selected_lines:
-                sub.start = self.api.video.current_pts
+                sub.start = self.api.media.current_pts
 
 
 class EditSnapSubsEndToVideoCommand(CoreCommand):
@@ -332,7 +332,7 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
     async def run(self):
         with self.api.undo.bulk():
             for sub in self.api.subs.selected_lines:
-                sub.end = self.api.video.current_pts
+                sub.end = self.api.media.current_pts
 
 
 class EditSnapSubsToVideoCommand(CoreCommand):
@@ -346,9 +346,9 @@ class EditSnapSubsToVideoCommand(CoreCommand):
     async def run(self):
         with self.api.undo.bulk():
             for sub in self.api.subs.selected_lines:
-                sub.start = self.api.video.current_pts
+                sub.start = self.api.media.current_pts
                 sub.end = (
-                    self.api.video.current_pts
+                    self.api.media.current_pts
                     + self.api.opt.general['subs']['default_duration'])
 
 

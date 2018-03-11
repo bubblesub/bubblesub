@@ -1,7 +1,6 @@
 import bubblesub.api.log
 import bubblesub.api.gui
-import bubblesub.api.audio
-import bubblesub.api.video
+import bubblesub.api.media
 import bubblesub.api.subs
 import bubblesub.api.undo
 import bubblesub.api.cmd
@@ -14,8 +13,7 @@ class Api:
         self.log = bubblesub.api.log.LogApi()
         self.gui = bubblesub.api.gui.GuiApi(self)
         self.subs = bubblesub.api.subs.SubtitlesApi()
-        self.video = bubblesub.api.video.VideoApi(
-            self.subs, self.log, self.opt, args)
-        self.audio = bubblesub.api.audio.AudioApi(self.video, self.log)
+        self.media = bubblesub.api.media.MediaApi(
+            self.subs, self.log, opt, args)
         self.undo = bubblesub.api.undo.UndoApi(self.subs)
         self.cmd = bubblesub.api.cmd.CommandApi(self)

@@ -62,7 +62,7 @@ class FileLoadVideo(CoreCommand):
         if not path:
             self.info('loading video cancelled.')
         else:
-            self.api.video.load(path)
+            self.api.media.load(path)
             self.info('loading {}'.format(path))
 
 

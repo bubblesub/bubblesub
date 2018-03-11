@@ -30,7 +30,7 @@ class StylePreview(QtWidgets.QGroupBox):
             self,
             orientation=QtCore.Qt.Horizontal,
             minimum=0,
-            maximum=api.video.max_pts)
+            maximum=api.media.max_pts)
 
         self._text_box = QtWidgets.QPlainTextEdit(
             self,
@@ -82,7 +82,7 @@ class StylePreview(QtWidgets.QGroupBox):
         self._fake_subs_list = bubblesub.api.subs.SubtitleList()
         self._save_subs()
 
-        self._mpv.command('loadfile', str(api.video.path))
+        self._mpv.command('loadfile', str(api.media.path))
         self._mpv_ready = False
 
         self._slider.valueChanged.connect(self._on_slider_move)
@@ -107,7 +107,7 @@ class StylePreview(QtWidgets.QGroupBox):
         self._mpv_ready = True
         self._mpv.set_property('pause', True)
         self._mpv.command('sub_add', self._tmp_subs_path)
-        self._slider.setValue(self._api.video.current_pts)
+        self._slider.setValue(self._api.media.current_pts)
 
     def _save_subs(self):
         if self._selection_model.selectedIndexes():
@@ -126,7 +126,7 @@ class StylePreview(QtWidgets.QGroupBox):
         self._fake_subs_list.insert_one(
             0,
             start=0,
-            end=self._api.video.max_pts,
+            end=self._api.media.max_pts,
             style='Default',
             text=self._text_box.toPlainText())
         self._fake_subs_list.put_to_ass(self._ass_source)
@@ -630,7 +630,7 @@ class StylesManagerDialog(QtWidgets.QDialog):
 
         self._style_list = StyleList(api, model, selection_model, self)
         self._style_editor = StyleEditor(model, selection_model, self)
-        if api.video.path:
+        if api.media.path:
             self._preview_box = StylePreview(api, selection_model, self)
         else:
             self._preview_box = None

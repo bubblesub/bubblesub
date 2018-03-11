@@ -56,7 +56,7 @@ class AudioApi(QtCore.QObject):
     selection_changed = QtCore.pyqtSignal()
     parsed = QtCore.pyqtSignal()
 
-    def __init__(self, video_api, log_api):
+    def __init__(self, media_api, log_api):
         super().__init__()
         self._min = 0
         self._max = 0
@@ -66,9 +66,9 @@ class AudioApi(QtCore.QObject):
         self._selection_end = None
 
         self._log_api = log_api
-        self._video_api = video_api
-        self._video_api.parsed.connect(self._on_video_parse)
-        self._video_api.max_pts_changed.connect(self._on_max_pts_change)
+        self._media_api = media_api
+        self._media_api.parsed.connect(self._on_video_parse)
+        self._media_api.max_pts_changed.connect(self._on_max_pts_change)
         self._audio_source = None
         self._audio_source_provider = AudioSourceProvider(self, self._log_api)
         self._audio_source_provider.finished.connect(self._got_audio_source)
@@ -224,12 +224,12 @@ class AudioApi(QtCore.QObject):
         self._max = 0
         self.zoom_view(1, 0.5)  # emits view_changed
         self._audio_source = _LOADING
-        if self._video_api.path:
-            self._audio_source_provider.schedule_task(self._video_api.path)
+        if self._media_api.path:
+            self._audio_source_provider.schedule_task(self._media_api.path)
 
     def _on_max_pts_change(self):
         self._min = 0
-        self._max = self._video_api.max_pts
+        self._max = self._media_api.max_pts
         self.zoom_view(1, 0.5)  # emits view_changed
 
     def _got_audio_source(self, result):
