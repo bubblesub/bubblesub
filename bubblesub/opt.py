@@ -1,5 +1,7 @@
-from pathlib import Path
 import json
+
+from pathlib import Path
+
 import xdg
 
 

@@ -1,7 +1,7 @@
 import ffms
-import mpv
-import bubblesub.util
 from PyQt5 import QtCore
+
+import bubblesub.util
 
 
 class TimecodesProviderContext(bubblesub.util.ProviderContext):
@@ -13,7 +13,7 @@ class TimecodesProviderContext(bubblesub.util.ProviderContext):
         path = task
         self._log_api.info('video/timecodes: loading... ({})'.format(path))
 
-        path_hash = bubblesub.util.hash(path)
+        path_hash = bubblesub.util.hash_digest(path)
         cache_name = f'index-{path_hash}-video'
 
         result = bubblesub.util.load_cache(cache_name)

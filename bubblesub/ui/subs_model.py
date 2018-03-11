@@ -1,8 +1,10 @@
 import enum
-import bubblesub.util
-import bubblesub.ui.util
+
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+
+import bubblesub.util
+import bubblesub.ui.util
 
 
 class SubsModelColumn(enum.Enum):
@@ -119,7 +121,7 @@ class SubsModel(QtCore.QAbstractTableModel):
                 return bubblesub.ui.util.get_color(self._api, 'grid/comment')
 
             if column_type != SubsModelColumn.CharactersPerSecond:
-                return
+                return QtCore.QVariant()
 
             data = self._cache[row_number][_CACHE_CPS_BK]
             if not data:

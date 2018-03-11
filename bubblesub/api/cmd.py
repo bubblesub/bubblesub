@@ -3,8 +3,10 @@ import time
 import sys
 import traceback
 import importlib.util
-import bubblesub.util
+
 from PyQt5 import QtCore
+
+import bubblesub.util
 
 
 class BaseCommand:

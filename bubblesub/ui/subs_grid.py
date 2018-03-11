@@ -1,7 +1,8 @@
-import bubblesub.ui.util
-from bubblesub.ui.subs_model import SubsModel, SubsModelColumn
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+
+import bubblesub.ui.util
+from bubblesub.ui.subs_model import SubsModel, SubsModelColumn
 
 
 class SubsGrid(QtWidgets.QTableView):

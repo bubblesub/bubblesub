@@ -1,10 +1,12 @@
 import re
 import enum
-import bubblesub.ui.util
-from bubblesub.api.cmd import CoreCommand
+
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+
+import bubblesub.ui.util
+from bubblesub.api.cmd import CoreCommand
 
 
 MAX_HISTORY_ENTRIES = 25
@@ -32,8 +34,7 @@ def _get_subject_text_by_mode(sub, mode):
         return sub.actor
     elif mode == SearchMode.Style:
         return sub.style
-    else:
-        assert False, 'Invalid mode'
+    raise RuntimeError('Invalid search mode')
 
 
 def _set_subject_text_by_mode(sub, mode, value):
@@ -45,8 +46,7 @@ def _set_subject_text_by_mode(sub, mode, value):
         sub.actor = value
     elif mode == SearchMode.Style:
         sub.style = value
-    else:
-        assert False, 'Invalid mode'
+    raise RuntimeError('Invalid search mode')
 
 
 def _get_subject_widget_by_mode(main_window, mode):
@@ -58,6 +58,7 @@ def _get_subject_widget_by_mode(main_window, mode):
         return main_window.editor.bottom_bar.actor_edit.lineEdit()
     elif mode == SearchMode.Style:
         return main_window.editor.bottom_bar.style_edit.lineEdit()
+    raise RuntimeError('Invalid search mode')
 
 
 def _select_text_on_widget(widget, selection_start, selection_end):
@@ -69,7 +70,7 @@ def _select_text_on_widget(widget, selection_start, selection_end):
     elif isinstance(widget, QtWidgets.QLineEdit):
         widget.setSelection(selection_start, selection_end - selection_start)
     else:
-        assert False, 'Unknown widget type'
+        raise RuntimeError('Unknown search widget type')
     widget.setFocus()
 
 
@@ -81,8 +82,7 @@ def _get_selection_from_widget(widget):
         return (
             widget.selectionStart(),
             widget.selectionStart() + len(widget.selectedText()))
-    else:
-        assert False, 'Unknown widget type'
+    raise RuntimeError('Unknown search widget type')
 
 
 def _get_widget_text(widget):
@@ -90,8 +90,7 @@ def _get_widget_text(widget):
         return widget.toPlainText()
     elif isinstance(widget, QtWidgets.QLineEdit):
         return widget.text()
-    else:
-        assert False, 'Unknown widget type'
+    raise RuntimeError('Unknown search widget type')
 
 
 def _set_widget_text(widget, text):
@@ -99,8 +98,7 @@ def _set_widget_text(widget, text):
         widget.document().setPlainText(text)
     elif isinstance(widget, QtWidgets.QLineEdit):
         widget.setText(text)
-    else:
-        assert False, 'Unknown widget type'
+    raise RuntimeError('Unknown search widget type')
 
 
 def _narrow_match(matches, idx, selected_idx, direction, subject_widget):
@@ -110,18 +108,22 @@ def _narrow_match(matches, idx, selected_idx, direction, subject_widget):
         if selection_end == selection_start:
             if direction > 0:
                 return matches[0]
+            return None
         elif direction > 0:
             for match in matches:
                 if match.end() > selection_end:
                     return match
+            return None
         elif direction < 0:
             for match in reversed(matches):
                 if match.start() < selection_start:
                     return match
+            return None
     elif direction > 0:
         return matches[0]
     elif direction < 0:
         return matches[-1]
+    raise RuntimeError('Bad search direction')
 
 
 def _search(api, main_window, regex, mode, direction):

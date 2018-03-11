@@ -1,8 +1,10 @@
 import functools
-import bubblesub.util
+
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+
+import bubblesub.util
 
 
 def error(msg):
@@ -183,22 +185,22 @@ def get_color(api, color_name):
     return QtGui.QColor(*color_value)
 
 
-def load_dialog(parent, filter, directory=None):
+def load_dialog(parent, file_filter, directory=None):
     path, _ = QtWidgets.QFileDialog.getOpenFileName(
         parent,
         directory=directory or QtCore.QDir.homePath(),
-        filter=filter)
+        filter=file_filter)
     return path
 
 
-def save_dialog(parent, filter, directory=None, file_name=None):
+def save_dialog(parent, file_filter, directory=None, file_name=None):
     directory = directory or QtCore.QDir.homePath()
     if file_name:
         directory += '/' + file_name
     path, _ = QtWidgets.QFileDialog.getSaveFileName(
         parent,
         directory=directory,
-        filter=filter)
+        filter=file_filter)
     return path
 
 

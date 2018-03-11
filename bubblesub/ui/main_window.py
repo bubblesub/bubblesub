@@ -1,8 +1,10 @@
 import functools
 import base64
+
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+
 import bubblesub.ui.editor
 import bubblesub.ui.subs_grid
 import bubblesub.ui.util

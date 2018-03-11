@@ -6,14 +6,17 @@ import pickle
 import queue
 import traceback
 import hashlib
+
+from numbers import Number
+from pathlib import Path
+from collections import Set, Mapping, deque
+
+import xdg
 import regex
 import ass_tag_parser
-from numbers import Number
-from collections import Set, Mapping, deque
-from pathlib import Path
-from PyQt5 import QtCore
-import xdg
 import pysubs2.time
+
+from PyQt5 import QtCore
 
 
 class classproperty(property):
@@ -77,8 +80,8 @@ def get_cache_file_path(cache_name):
     return Path(xdg.XDG_CACHE_HOME) / 'bubblesub' / (cache_name + '.dat')
 
 
-def hash(path):
-    return hashlib.md5(str(path).encode('utf-8')).hexdigest()
+def hash_digest(subject):
+    return hashlib.md5(str(subject).encode('utf-8')).hexdigest()
 
 
 def load_cache(cache_name):
@@ -385,25 +388,25 @@ def spell_check_ass_line(dictionary, ass_text):
 
 def eval_expr(expr):
     import ast
-    import operator as op
+    import operator
 
-    op = {
-        ast.Add: op.add,
-        ast.Sub: op.sub,
-        ast.Mult: op.mul,
-        ast.Div: op.truediv,
-        ast.Pow: op.pow,
-        ast.BitXor: op.xor,
-        ast.USub: op.neg,
+    op_map = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.BitXor: operator.xor,
+        ast.USub: operator.neg,
     }
 
     def eval_(node):
         if isinstance(node, ast.Num):
             return fractions.Fraction(node.n)
         elif isinstance(node, ast.BinOp):
-            return op[type(node.op)](eval_(node.left), eval_(node.right))
+            return op_map[type(node.op)](eval_(node.left), eval_(node.right))
         elif isinstance(node, ast.UnaryOp):
-            return op[type(node.op)](eval_(node.operand))
+            return op_map[type(node.op)](eval_(node.operand))
         raise TypeError(node)
 
     return eval_(ast.parse(str(expr), mode='eval').body)

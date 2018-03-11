@@ -46,5 +46,6 @@ ignored-modules=
     PyQt5.QtGui,
     PyQt5.QtCore,
     PyQt5.QtWidgets,
-    bubblesub.mpv,
     numpy
+
+extension-pkg-whitelist=mpv

@@ -1,10 +1,12 @@
 import asyncio
 import sys
-import bubblesub.ui.main_window
-import bubblesub.ui.util
+
 import quamash
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+
+import bubblesub.ui.main_window
+import bubblesub.ui.util
 
 
 def run(api, args):

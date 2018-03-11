@@ -1,10 +1,11 @@
-import bubblesub.util
-import bubblesub.ui.util
-from bubblesub.api.cmd import CoreCommand
 import enchant
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+
+import bubblesub.util
+import bubblesub.ui.util
+from bubblesub.api.cmd import CoreCommand
 
 
 class SpellCheckDialog(QtWidgets.QDialog):
@@ -95,9 +96,9 @@ class SpellCheckDialog(QtWidgets.QDialog):
             for start, end, word in bubblesub.util.spell_check_ass_line(
                     self._dictionary, line.text.replace('\\N', '\n')):
                 if len(self._api.subs.selected_indexes) > 1 \
-                or line.id > self._api.subs.selected_indexes[0] \
-                or start > cursor.selectionStart() \
-                or cursor.selectionStart() == cursor.selectionEnd():
+                        or line.id > self._api.subs.selected_indexes[0] \
+                        or start > cursor.selectionStart() \
+                        or cursor.selectionStart() == cursor.selectionEnd():
                     return line.id, start, end, word
             self._lines_to_spellcheck.pop(0)
         return None, None, None, None

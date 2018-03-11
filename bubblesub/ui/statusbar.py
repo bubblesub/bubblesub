@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets
+
 import bubblesub.util
 
 

@@ -1,9 +1,10 @@
-import bubblesub.util
-import ass_tag_parser
 import enchant
+
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+
+import bubblesub.util
 
 
 class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):

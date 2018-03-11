@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+
 import bubblesub.opt
 import bubblesub.ui
 

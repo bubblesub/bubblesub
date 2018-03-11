@@ -1,7 +1,9 @@
 import json
+
+from PyQt5 import QtWidgets
+
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
-from PyQt5 import QtWidgets
 
 
 class GridJumpToLineCommand(CoreCommand):

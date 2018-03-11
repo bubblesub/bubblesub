@@ -1,4 +1,5 @@
 import enum
+
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
@@ -98,7 +99,7 @@ class StylesModel(QtCore.QAbstractTableModel):
                 return int(style.margin_vertical)
             elif column_idx == StylesModelColumn.Alignment:
                 return style.alignment
-            assert False
+            raise RuntimeError('Invalid column')
 
         return QtCore.QVariant()
 

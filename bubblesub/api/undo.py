@@ -1,8 +1,10 @@
 import enum
 import pickle
+
+from PyQt5 import QtCore
+
 import bubblesub.api.subs
 import bubblesub.util
-from PyQt5 import QtCore
 
 
 class UndoOperation(enum.Enum):

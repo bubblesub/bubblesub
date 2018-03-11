@@ -1,5 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
+
 from bubblesub.ui.mpv import MpvWidget
 
 

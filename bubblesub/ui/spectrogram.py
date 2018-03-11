@@ -1,7 +1,8 @@
 import ffms
-import bubblesub.util
-import numpy as np
 import pyfftw
+import numpy as np
+
+import bubblesub.util
 
 
 DERIVATION_SIZE = 10

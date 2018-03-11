@@ -1,9 +1,11 @@
 import math
 import enum
+
 import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+
 from bubblesub.ui.util import blend_colors, get_color
 from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
 

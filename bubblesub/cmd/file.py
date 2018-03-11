@@ -2,8 +2,8 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
 
 
-VIDEO_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'
-SUBS_FILTER = 'Advanced Substation Alpha (*.ass)'
+VIDEO_FILE_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'
+SUBS_FILE_FILTER = 'Advanced Substation Alpha (*.ass)'
 
 
 def _get_dialog_dir(api):
@@ -12,14 +12,14 @@ def _get_dialog_dir(api):
     return None
 
 
-async def _get_save_file_name(api, main_window, filter):
+async def _get_save_file_name(api, main_window, file_filter):
     return bubblesub.ui.util.save_dialog(
-        main_window, filter, directory=_get_dialog_dir(api))
+        main_window, file_filter, directory=_get_dialog_dir(api))
 
 
-async def _get_load_file_name(api, main_window, filter):
+async def _get_load_file_name(api, main_window, file_filter):
     return bubblesub.ui.util.load_dialog(
-        main_window, filter, directory=_get_dialog_dir(api))
+        main_window, file_filter, directory=_get_dialog_dir(api))
 
 
 def _ask_about_unsaved_changes(api):
@@ -45,7 +45,8 @@ class FileOpenCommand(CoreCommand):
 
     async def run(self):
         if _ask_about_unsaved_changes(self.api):
-            path = await self.api.gui.exec(_get_load_file_name, SUBS_FILTER)
+            path = await self.api.gui.exec(
+                _get_load_file_name, SUBS_FILE_FILTER)
             if not path:
                 self.info('opening cancelled.')
             else:
@@ -58,7 +59,7 @@ class FileLoadVideo(CoreCommand):
     menu_name = 'Load video'
 
     async def run(self):
-        path = await self.api.gui.exec(_get_load_file_name, VIDEO_FILTER)
+        path = await self.api.gui.exec(_get_load_file_name, VIDEO_FILE_FILTER)
         if not path:
             self.info('loading video cancelled.')
         else:
@@ -73,7 +74,8 @@ class FileSaveCommand(CoreCommand):
     async def run(self):
         path = self.api.subs.path
         if not path:
-            path = await self.api.gui.exec(_get_save_file_name, SUBS_FILTER)
+            path = await self.api.gui.exec(
+                _get_save_file_name, SUBS_FILE_FILTER)
             if not path:
                 self.info('saving cancelled.')
                 return
@@ -86,7 +88,8 @@ class FileSaveAsCommand(CoreCommand):
     menu_name = 'Save as'
 
     async def run(self):
-        path = await self.api.gui.exec(_get_save_file_name, SUBS_FILTER)
+        path = await self.api.gui.exec(
+            _get_save_file_name, SUBS_FILE_FILTER)
         if not path:
             self.info('saving cancelled.')
         else:

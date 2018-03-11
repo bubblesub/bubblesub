@@ -2,16 +2,18 @@ import os
 import locale
 import tempfile
 import atexit
-import pysubs2
+
 import mpv
+import pysubs2
+from PyQt5 import QtGui
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets
+
 import bubblesub.util
 import bubblesub.ui.util
 import bubblesub.ui.mpv
 from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
 from bubblesub.api.cmd import CoreCommand
-from PyQt5 import QtGui
-from PyQt5 import QtCore
-from PyQt5 import QtWidgets
 
 
 class StylePreview(QtWidgets.QGroupBox):

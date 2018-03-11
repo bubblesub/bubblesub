@@ -1,10 +1,12 @@
 import time
 import threading
-import bubblesub.util
+
 import ffms
 import scipy.io.wavfile
 import numpy as np
 from PyQt5 import QtCore
+
+import bubblesub.util
 
 
 _LOADING = object()
@@ -20,7 +22,7 @@ class AudioSourceProviderContext(bubblesub.util.ProviderContext):
         path = task
         self._log_api.info('audio/sampler: loading... ({})'.format(path))
 
-        path_hash = bubblesub.util.hash(path)
+        path_hash = bubblesub.util.hash_digest(path)
         cache_name = f'index-{path_hash}-audio'
         cache_path = bubblesub.util.get_cache_file_path(cache_name)
 
