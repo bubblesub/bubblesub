@@ -46,7 +46,8 @@ def _set_subject_text_by_mode(sub, mode, value):
         sub.actor = value
     elif mode == SearchMode.Style:
         sub.style = value
-    raise RuntimeError('Invalid search mode')
+    else:
+        raise RuntimeError('Invalid search mode')
 
 
 def _get_subject_widget_by_mode(main_window, mode):
