@@ -1,4 +1,6 @@
+import abc
 import asyncio
+import inspect
 import time
 import sys
 import traceback
@@ -9,15 +11,17 @@ from PyQt5 import QtCore
 import bubblesub.util
 
 
-class BaseCommand:
+class BaseCommand(abc.ABC):
     def __init__(self, api, *_args):
         self.api = api
 
     @bubblesub.util.classproperty
+    @abc.abstractproperty
     def name(cls):
         raise NotImplementedError('Command has no name')
 
     @property
+    @abc.abstractproperty
     def menu_name(self):
         raise NotImplementedError('Command has no menu name')
 
@@ -25,6 +29,7 @@ class BaseCommand:
     def is_enabled(self):
         return True
 
+    @abc.abstractmethod
     def run(self):
         raise NotImplementedError('Command has no implementation')
 
@@ -101,9 +106,13 @@ class CommandApi(QtCore.QObject):
 
 class CoreCommand(BaseCommand):
     def __init_subclass__(cls):
-        CommandApi.core_registry[cls.name] = cls
+        if not inspect.isabstract(cls):
+            print('registering', cls, 'as', cls.name)
+            CommandApi.core_registry[cls.name] = cls
 
 
 class PluginCommand(BaseCommand):
     def __init_subclass__(cls):
-        CommandApi.plugin_registry[cls.name] = cls
+        if not inspect.isabstract(cls):
+            print('registering', cls, 'as', cls.name)
+            CommandApi.plugin_registry[cls.name] = cls
