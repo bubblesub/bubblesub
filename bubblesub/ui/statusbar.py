@@ -13,9 +13,9 @@ class StatusBar(QtWidgets.QStatusBar):
         self.setSizeGripEnabled(False)
 
         for label in [
-            self._subs_label,
-            self._video_frame_label,
-            self._audio_selection_label
+                self._subs_label,
+                self._video_frame_label,
+                self._audio_selection_label
         ]:
             label.setFrameStyle(
                 QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)

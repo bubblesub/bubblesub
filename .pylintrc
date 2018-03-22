@@ -1,9 +1,7 @@
-[master]
-ignore=mpv.py
-
 [basic]
 good-names=
     ex,_,w,h,i,j,x,y,x1,x2,y1,y2,
+    classproperty,
     headerData,
     columnCount,
     rowCount,
@@ -13,10 +11,17 @@ good-names=
     mouseReleaseEvent,
     paintEvent,
     wheelEvent,
-    closeEvent
+    changeEvent,
+    closeEvent,
+    highlightBlock,
+    keyboardSearch,
+    setData,
+    initializeGL,
+    paintGL,
+    sizeHint
 
 [variables]
-dummy-variables-rgx=_|dummy
+dummy-variables-rgx=^_
 
 [format]
 max-line-length=79
@@ -26,9 +31,6 @@ reports=no
 disable=
     # this is not java
     missing-docstring,
-
-    # broken
-    bad-continuation,
 
     # I'm not a baby
     duplicate-code,
@@ -48,4 +50,4 @@ ignored-modules=
     PyQt5.QtWidgets,
     numpy
 
-extension-pkg-whitelist=mpv
+extension-pkg-whitelist=mpv,PyQt5.QtOpenGL

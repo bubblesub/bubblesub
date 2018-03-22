@@ -585,38 +585,38 @@ class StyleEditor(QtWidgets.QWidget):
     def _connect_signals(self):
         self.mapper.setSubmitPolicy(QtWidgets.QDataWidgetMapper.ManualSubmit)
         for widget in [
-            self.font_group_box.font_name_edit
+                self.font_group_box.font_name_edit
         ]:
             widget.currentIndexChanged.connect(self._submit)
 
         for widget in [
-            self.colors_group_box.primary_color_button,
-            self.colors_group_box.secondary_color_button,
-            self.colors_group_box.back_color_button,
-            self.colors_group_box.outline_color_button,
-            self.alignment_group_box,
+                self.colors_group_box.primary_color_button,
+                self.colors_group_box.secondary_color_button,
+                self.colors_group_box.back_color_button,
+                self.colors_group_box.outline_color_button,
+                self.alignment_group_box,
         ]:
             widget.changed.connect(self._submit)
 
         for widget in [
-            self.font_group_box.font_size_edit,
-            self.outline_group_box.shadow_width_edit,
-            self.outline_group_box.outline_width_edit,
-            self.misc_group_box.scale_x_edit,
-            self.misc_group_box.scale_y_edit,
-            self.misc_group_box.angle_edit,
-            self.misc_group_box.spacing_edit,
-            self.margins_group_box.margin_left_edit,
-            self.margins_group_box.margin_right_edit,
-            self.margins_group_box.margin_vertical_edit,
+                self.font_group_box.font_size_edit,
+                self.outline_group_box.shadow_width_edit,
+                self.outline_group_box.outline_width_edit,
+                self.misc_group_box.scale_x_edit,
+                self.misc_group_box.scale_y_edit,
+                self.misc_group_box.angle_edit,
+                self.misc_group_box.spacing_edit,
+                self.margins_group_box.margin_left_edit,
+                self.margins_group_box.margin_right_edit,
+                self.margins_group_box.margin_vertical_edit,
         ]:
             widget.valueChanged.connect(self._submit)
 
         for widget in [
-            self.font_group_box.bold_checkbox,
-            self.font_group_box.italic_checkbox,
-            self.font_group_box.underline_checkbox,
-            self.font_group_box.strike_out_checkbox,
+                self.font_group_box.bold_checkbox,
+                self.font_group_box.italic_checkbox,
+                self.font_group_box.underline_checkbox,
+                self.font_group_box.strike_out_checkbox,
         ]:
             widget.toggled.connect(self._submit)
 

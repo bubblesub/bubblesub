@@ -441,5 +441,5 @@ class Options:
                     target[key] = value
                 else:
                     self._ensure_defaults(target[key], value)
-        elif type(target) != type(source):
+        elif not isinstance(target, type(source)):
             raise RuntimeError(f'Expected {type(source)}')

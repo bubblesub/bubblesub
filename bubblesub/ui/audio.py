@@ -340,14 +340,14 @@ class AudioPreviewWidget(BaseAudioWidget):
         width = 7
         polygon = QtGui.QPolygonF()
         for x, y in [
-            (x - width / 2, 0),
-            (x + width / 2, 0),
-            (x + width / 2, SLIDER_SIZE),
-            (x + 1, SLIDER_SIZE + width / 2),
-            (x + 1, painter.viewport().height() - 1),
-            (x, painter.viewport().height() - 1),
-            (x, SLIDER_SIZE + width / 2),
-            (x - width / 2, SLIDER_SIZE),
+                (x - width / 2, 0),
+                (x + width / 2, 0),
+                (x + width / 2, SLIDER_SIZE),
+                (x + 1, SLIDER_SIZE + width / 2),
+                (x + 1, painter.viewport().height() - 1),
+                (x, painter.viewport().height() - 1),
+                (x, SLIDER_SIZE + width / 2),
+                (x - width / 2, SLIDER_SIZE),
         ]:
             polygon.append(QtCore.QPointF(x, y))
 

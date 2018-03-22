@@ -20,11 +20,12 @@ from PyQt5 import QtCore
 
 
 class classproperty(property):
-    def __init__(self, f):
-        self.f = f
+    def __init__(self, func):
+        super().__init__()
+        self.func = func
 
     def __get__(self, cls, owner):
-        return self.f(owner)
+        return self.func(owner)
 
 
 def escape_ass_tag(text):

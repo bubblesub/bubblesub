@@ -1,18 +1,17 @@
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtOpenGL import QGLContext
-from PyQt5.QtWidgets import QOpenGLWidget
+from PyQt5 import QtOpenGL
 
 
 def get_proc_address(proc):
-    glctx = QGLContext.currentContext()
+    glctx = QtOpenGL.QGLContext.currentContext()
     if glctx is None:
         return None
     addr = glctx.getProcAddress(str(proc, 'utf-8'))
     return addr.__int__()
 
 
-class MpvWidget(QOpenGLWidget):
+class MpvWidget(QtWidgets.QOpenGLWidget):
     _schedule_update = QtCore.pyqtSignal()
 
     def __init__(self, opengl_context, parent=None):
