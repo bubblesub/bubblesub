@@ -138,6 +138,8 @@ class MainWindow(QtWidgets.QMainWindow):
             bubblesub.ui.util.get_color(self._api, color_name))
         cursor.setCharFormat(fmt)
         cursor.insertText(text + '\n')
+        self.console.verticalScrollBar().setValue(
+            self.console.verticalScrollBar().maximum())
 
     def _setup_menu(self):
         return bubblesub.ui.util.setup_cmd_menu(
