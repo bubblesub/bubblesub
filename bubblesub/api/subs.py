@@ -35,7 +35,7 @@ def _extract_meta(text):
         text = text[:match.start()] + text[match.end():]
         meta.note = bubblesub.util.unescape_ass_tag(match.group('note'))
 
-    match = re.search(r'{TIME:(?P<start>\d+),(?P<end>\d+)}', text)
+    match = re.search(r'{TIME:(?P<start>-?\d+),(?P<end>-?\d+)}', text)
     if match:
         text = text[:match.start()] + text[match.end():]
         meta.start = int(match.group('start'))
