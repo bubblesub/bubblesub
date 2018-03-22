@@ -71,6 +71,10 @@ _DEFAULT_GENERAL = {
             'spectrogram/focused-selection':   (0xFF, 0xA0, 0x00),
             'spectrogram/unfocused-selection': (0xA0, 0xA0, 0x60),
             'grid/comment':                    (53, 53, 53),
+            'console/error':                   (255, 0, 0),
+            'console/warning':                 (200, 100, 0),
+            'console/info':                    (0, 0, 0),
+            'console/debug':                   (0, 100, 200),
         },
 
         'light': {
@@ -116,6 +120,11 @@ _DEFAULT_GENERAL = {
             'spectrogram/focused-selection':   (0xFF, 0xA0, 0x00),
             'spectrogram/unfocused-selection': (0xA0, 0xA0, 0x60),
             'grid/comment':                    (239, 235, 231),
+
+            'console/error':                   (255, 0, 0),
+            'console/warning':                 (200, 100, 0),
+            'console/info':                    (0, 0, 0),
+            'console/debug':                   (0, 100, 200),
         },
     },
 }

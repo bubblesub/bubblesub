@@ -11,6 +11,7 @@ import bubblesub.ui.util
 import bubblesub.ui.audio
 import bubblesub.ui.video
 import bubblesub.ui.statusbar
+from bubblesub.api.log import LogLevel
 
 
 def _load_splitter_state(widget, data):
@@ -38,9 +39,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
         self.editor = bubblesub.ui.editor.Editor(api, self)
-        self.console = QtWidgets.QPlainTextEdit(self, readOnly=True)
         self.subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
         self.status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
+
+        self.console = QtWidgets.QTextEdit(self, readOnly=True)
+        self.console.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+        self.console.setFont(
+            QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont))
 
         self.editor_splitter = QtWidgets.QSplitter(self)
         self.editor_splitter.setOrientation(QtCore.Qt.Vertical)
@@ -115,11 +120,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update()
 
     def _on_log(self, level, text):
-        line = '[{}] {}\n'.format(level.name.lower(), text)
-        print(line, end='')
-        if level.name.lower() != 'debug':
-            self.console.moveCursor(QtGui.QTextCursor.End)
-            self.console.insertPlainText(line)
+        print(f'[{level.name.lower()[0]}] {text}\n', end='')
+        if level == LogLevel.Debug:
+            return
+
+        color_name = {
+            LogLevel.Error: 'console/error',
+            LogLevel.Warning: 'console/warning',
+            LogLevel.Info: 'console/info',
+            LogLevel.Debug: 'console/debug',
+        }[level]
+
+        self.console.moveCursor(QtGui.QTextCursor.End)
+        cursor = QtGui.QTextCursor(self.console.textCursor())
+        fmt = QtGui.QTextCharFormat()
+        fmt.setForeground(
+            bubblesub.ui.util.get_color(self._api, color_name))
+        cursor.setCharFormat(fmt)
+        cursor.insertText(text + '\n')
 
     def _setup_menu(self):
         return bubblesub.ui.util.setup_cmd_menu(
