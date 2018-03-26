@@ -408,7 +408,7 @@ class SearchDialog(QtWidgets.QDialog):
 
 class SearchCommand(CoreCommand):
     name = 'edit/search'
-    menu_name = 'Search...'
+    menu_name = '&Search...'
 
     async def run(self):
         async def run(api, main_window):
@@ -419,7 +419,7 @@ class SearchCommand(CoreCommand):
 
 class SearchAndReplaceCommand(CoreCommand):
     name = 'edit/search-and-replace'
-    menu_name = 'Search and replace...'
+    menu_name = '&Search and replace...'
 
     async def run(self):
         async def run(api, main_window):
@@ -437,7 +437,7 @@ class SearchRepeatCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Search %s' % ['previous', 'next'][self._direction > 0]
+        return '&Search %s' % ['previous', 'next'][self._direction > 0]
 
     @property
     def is_enabled(self):

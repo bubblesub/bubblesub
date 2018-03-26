@@ -648,7 +648,7 @@ class StylesManagerDialog(QtWidgets.QDialog):
 
 class StylesManagerCommand(CoreCommand):
     name = 'edit/manage-styles'
-    menu_name = 'Manage styles...'
+    menu_name = '&Manage styles...'
 
     @property
     def is_enabled(self):

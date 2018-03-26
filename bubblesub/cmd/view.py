@@ -10,7 +10,7 @@ class ViewSetPaletteCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Switch to {} color scheme'.format(self._palette_name)
+        return '&Switch to {} color scheme'.format(self._palette_name)
 
     async def run(self):
         async def run(api, main_window):
@@ -22,7 +22,7 @@ class ViewSetPaletteCommand(CoreCommand):
 
 class ViewFocusTextEditorCommand(CoreCommand):
     name = 'view/focus-text-editor'
-    menu_name = 'Focus text editor'
+    menu_name = '&Focus text editor'
 
     async def run(self):
         async def run(_api, main_window):
@@ -34,7 +34,7 @@ class ViewFocusTextEditorCommand(CoreCommand):
 
 class ViewFocusNoteEditorCommand(CoreCommand):
     name = 'view/focus-note-editor'
-    menu_name = 'Focus note editor'
+    menu_name = '&Focus note editor'
 
     async def run(self):
         async def run(_api, main_window):
@@ -46,7 +46,7 @@ class ViewFocusNoteEditorCommand(CoreCommand):
 
 class ViewFocusGridCommand(CoreCommand):
     name = 'view/focus-grid'
-    menu_name = 'Focus subtitles grid'
+    menu_name = '&Focus subtitles grid'
 
     async def run(self):
         async def run(_api, main_window):
@@ -57,7 +57,7 @@ class ViewFocusGridCommand(CoreCommand):
 
 class ViewFocusSpectrogramCommand(CoreCommand):
     name = 'view/focus-spectrogram'
-    menu_name = 'Focus spectrogram'
+    menu_name = '&Focus spectrogram'
 
     async def run(self):
         async def run(_api, main_window):

@@ -4,7 +4,7 @@ from bubblesub.api.cmd import CoreCommand
 
 class EditUndoCommand(CoreCommand):
     name = 'edit/undo'
-    menu_name = 'Undo'
+    menu_name = '&Undo'
 
     @property
     def is_enabled(self):
@@ -16,7 +16,7 @@ class EditUndoCommand(CoreCommand):
 
 class EditRedoCommand(CoreCommand):
     name = 'edit/redo'
-    menu_name = 'Redo'
+    menu_name = '&Redo'
 
     @property
     def is_enabled(self):
@@ -28,7 +28,7 @@ class EditRedoCommand(CoreCommand):
 
 class EditInsertAboveCommand(CoreCommand):
     name = 'edit/insert-above'
-    menu_name = 'Insert subtitle (above)'
+    menu_name = '&Insert subtitle (above)'
 
     async def run(self):
         if not self.api.subs.selected_indexes:
@@ -58,7 +58,7 @@ class EditInsertAboveCommand(CoreCommand):
 
 class EditInsertBelowCommand(CoreCommand):
     name = 'edit/insert-below'
-    menu_name = 'Insert subtitle (below)'
+    menu_name = '&Insert subtitle (below)'
 
     async def run(self):
         if not self.api.subs.selected_indexes:
@@ -84,7 +84,7 @@ class EditInsertBelowCommand(CoreCommand):
 
 class EditMoveUpCommand(CoreCommand):
     name = 'edit/move-up'
-    menu_name = 'Move selected subtitles up'
+    menu_name = '&Move selected subtitles up'
 
     @property
     def is_enabled(self):
@@ -107,7 +107,7 @@ class EditMoveUpCommand(CoreCommand):
 
 class EditMoveDownCommand(CoreCommand):
     name = 'edit/move-down'
-    menu_name = 'Move selected subtitles down'
+    menu_name = '&Move selected subtitles down'
 
     @property
     def is_enabled(self):
@@ -132,7 +132,7 @@ class EditMoveDownCommand(CoreCommand):
 
 class EditDuplicateCommand(CoreCommand):
     name = 'edit/duplicate'
-    menu_name = 'Duplicate selected subtitles'
+    menu_name = '&Duplicate selected subtitles'
 
     @property
     def is_enabled(self):
@@ -157,7 +157,7 @@ class EditDuplicateCommand(CoreCommand):
 
 class EditDeleteCommand(CoreCommand):
     name = 'edit/delete'
-    menu_name = 'Delete selected subtitles'
+    menu_name = '&Delete selected subtitles'
 
     @property
     def is_enabled(self):
@@ -172,7 +172,7 @@ class EditDeleteCommand(CoreCommand):
 
 class EditSwapTextAndNotesCommand(CoreCommand):
     name = 'edit/swap-text-and-notes'
-    menu_name = 'Swap notes with subtitle text'
+    menu_name = '&Swap notes with subtitle text'
 
     @property
     def is_enabled(self):
@@ -188,7 +188,7 @@ class EditSwapTextAndNotesCommand(CoreCommand):
 
 class EditSplitSubAtVideoCommand(CoreCommand):
     name = 'edit/split-sub-at-video'
-    menu_name = 'Split selected subtitle at video frame'
+    menu_name = '&Split selected subtitle at video frame'
 
     @property
     def is_enabled(self):
@@ -212,7 +212,7 @@ class EditSplitSubAtVideoCommand(CoreCommand):
 
 class EditJoinSubsKeepFirstCommand(CoreCommand):
     name = 'edit/join-subs/keep-first'
-    menu_name = 'Join subtitles (keep first)'
+    menu_name = '&Join subtitles (keep first)'
 
     @property
     def is_enabled(self):
@@ -238,7 +238,7 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
 
 class EditJoinSubsConcatenateCommand(CoreCommand):
     name = 'edit/join-subs/concatenate'
-    menu_name = 'Join subtitles (concatenate)'
+    menu_name = '&Join subtitles (concatenate)'
 
     @property
     def is_enabled(self):
@@ -277,7 +277,7 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
 
 class EditShiftSubsWithGuiCommand(CoreCommand):
     name = 'edit/shift-subs-with-gui'
-    menu_name = 'Shift times...'
+    menu_name = '&Shift times...'
 
     @property
     def is_enabled(self):
@@ -309,7 +309,7 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
 
 class EditSnapSubsStartToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-start-to-video'
-    menu_name = 'Snap subtitles start to video'
+    menu_name = '&Snap subtitles start to video'
 
     @property
     def is_enabled(self):
@@ -323,7 +323,7 @@ class EditSnapSubsStartToVideoCommand(CoreCommand):
 
 class EditSnapSubsEndToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-end-to-video'
-    menu_name = 'Snap subtitles end to video'
+    menu_name = '&Snap subtitles end to video'
 
     @property
     def is_enabled(self):
@@ -337,7 +337,7 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
 
 class EditSnapSubsToVideoCommand(CoreCommand):
     name = 'edit/snap-subs-to-video'
-    menu_name = 'Snap subtitles to video'
+    menu_name = '&Snap subtitles to video'
 
     @property
     def is_enabled(self):
@@ -354,7 +354,7 @@ class EditSnapSubsToVideoCommand(CoreCommand):
 
 class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
     name = 'edit/snap-subs-start-to-prev-sub'
-    menu_name = 'Snap subtitles start to previous subtitle'
+    menu_name = '&Snap subtitles start to previous subtitle'
 
     @property
     def is_enabled(self):
@@ -371,7 +371,7 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
 
 class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
     name = 'edit/snap-subs-end-to-next-sub'
-    menu_name = 'Snap subtitles end to next subtitle'
+    menu_name = '&Snap subtitles end to next subtitle'
 
     @property
     def is_enabled(self):
@@ -395,7 +395,7 @@ class EditShiftSubsStartCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Shift subtitles start ({:+})'.format(self._ms)
+        return '&Shift subtitles start ({:+})'.format(self._ms)
 
     @property
     def is_enabled(self):
@@ -416,7 +416,7 @@ class EditShiftSubsEndCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Shift subtitles end ({:+})'.format(self._ms)
+        return '&Shift subtitles end ({:+})'.format(self._ms)
 
     @property
     def is_enabled(self):
@@ -437,7 +437,7 @@ class EditShiftSubsCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Shift subtitles end ({:+})'.format(self._ms)
+        return '&Shift subtitles end ({:+})'.format(self._ms)
 
     @property
     def is_enabled(self):

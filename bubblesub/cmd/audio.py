@@ -7,7 +7,7 @@ class AudioScrollCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Scroll waveform %s' % ['backward', 'forward'][self._delta > 0]
+        return '&Scroll waveform %s' % ['backward', 'forward'][self._delta > 0]
 
     def __init__(self, api, delta):
         super().__init__(api)
@@ -23,7 +23,7 @@ class AudioZoomCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Zoom waveform %s' % ['in', 'out'][self._delta > 1]
+        return '&Zoom waveform %s' % ['in', 'out'][self._delta > 1]
 
     def __init__(self, api, delta):
         super().__init__(api)
@@ -38,7 +38,7 @@ class AudioZoomCommand(CoreCommand):
 
 class AudioSnapSelectionStartToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-start-to-video'
-    menu_name = 'Snap selection start to video'
+    menu_name = '&Snap selection start to video'
 
     @property
     def is_enabled(self):
@@ -53,7 +53,7 @@ class AudioSnapSelectionStartToVideoCommand(CoreCommand):
 
 class AudioSnapSelectionEndToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-end-to-video'
-    menu_name = 'Snap selection end to video'
+    menu_name = '&Snap selection end to video'
 
     @property
     def is_enabled(self):
@@ -68,7 +68,7 @@ class AudioSnapSelectionEndToVideoCommand(CoreCommand):
 
 class AudioRealignSelectionToVideoCommand(CoreCommand):
     name = 'audio/snap-sel-to-video'
-    menu_name = 'Snap selection to video'
+    menu_name = '&Snap selection to video'
 
     @property
     def is_enabled(self):
@@ -84,7 +84,7 @@ class AudioRealignSelectionToVideoCommand(CoreCommand):
 
 class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
     name = 'audio/snap-sel-start-to-prev-sub'
-    menu_name = 'Snap selection start to previous subtitle'
+    menu_name = '&Snap selection start to previous subtitle'
 
     @property
     def is_enabled(self):
@@ -102,7 +102,7 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
 
 class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
     name = 'audio/snap-sel-end-to-next-sub'
-    menu_name = 'Snap selection start to next subtitle'
+    menu_name = '&Snap selection start to next subtitle'
 
     @property
     def is_enabled(self):
@@ -128,7 +128,7 @@ class AudioShiftSelectionStartCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Shift selection start ({:+} {})'.format(
+        return '&Shift selection start ({:+} {})'.format(
             self._delta, 'frames' if self._frames else 'ms')
 
     @property
@@ -164,7 +164,7 @@ class AudioShiftSelectionEndCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Shift selection end ({:+} {})'.format(
+        return '&Shift selection end ({:+} {})'.format(
             self._delta, 'frames' if self._frames else 'ms')
 
     @property
@@ -200,7 +200,7 @@ class AudioShiftSelectionCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Shift selection ({:+} {})'.format(
+        return '&Shift selection ({:+} {})'.format(
             self._delta, 'frames' if self._frames else 'ms')
 
     @property
@@ -231,7 +231,7 @@ class AudioShiftSelectionCommand(CoreCommand):
 
 class AudioCommitSelectionCommand(CoreCommand):
     name = 'audio/commit-sel'
-    menu_name = 'Commit selection to subtitle'
+    menu_name = '&Commit selection to subtitle'
 
     @property
     def is_enabled(self):

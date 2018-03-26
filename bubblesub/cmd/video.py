@@ -8,7 +8,7 @@ from bubblesub.api.cmd import CoreCommand
 
 class VideoPlayCurrentLineCommand(CoreCommand):
     name = 'video/play-current-line'
-    menu_name = 'Play current line'
+    menu_name = '&Play current line'
 
     @property
     def is_enabled(self):
@@ -29,7 +29,7 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Play selection'
+        return '&Play selection'
 
     @property
     def is_enabled(self):
@@ -53,12 +53,12 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
     @property
     def menu_name(self):
         if self._delta_start < 0 and self._delta_end == 0:
-            return 'Play {} ms before selection start'.format(
+            return 'Play {} ms &before selection start'.format(
                 abs(self._delta_start))
         if self._delta_start == 0 and self._delta_end > 0:
-            return 'Play {} ms after selection start'.format(
+            return 'Play {} ms &after selection start'.format(
                 self._delta_end)
-        return 'Play {:+} ms / {:+} ms around selection start'.format(
+        return '&Play {:+} ms / {:+} ms around selection start'.format(
             self._delta_start, self._delta_end)
 
     @property
@@ -83,12 +83,12 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
     @property
     def menu_name(self):
         if self._delta_start < 0 and self._delta_end == 0:
-            return 'Play {} ms before selection end'.format(
+            return 'Play {} ms &before selection end'.format(
                 abs(self._delta_start))
         if self._delta_start == 0 and self._delta_end > 0:
-            return 'Play {} ms after selection end'.format(
+            return 'Play {} ms &after selection end'.format(
                 self._delta_end)
-        return 'Play {:+} ms / {:+} ms around selection end'.format(
+        return '&Play {:+} ms / {:+} ms around selection end'.format(
             self._delta_start, self._delta_end)
 
     @property
@@ -111,7 +111,7 @@ class VideoStepFrameCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Step {} frame{} {}'.format(
+        return 'Step {} &frame{} {}'.format(
             abs(self._delta),
             's' if abs(self._delta) > 1 else '',
             ['backward', 'forward'][self._delta > 0])
@@ -146,7 +146,7 @@ class VideoStepMillisecondsCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Seek {} by {} ms'.format(
+        return '&Seek {} by {} ms'.format(
             ['backward', 'forward'][self._delta > 0],
             abs(self._delta))
 
@@ -161,7 +161,7 @@ class VideoStepMillisecondsCommand(CoreCommand):
 
 class VideoSeekWithGuiCommand(CoreCommand):
     name = 'video/seek-with-gui'
-    menu_name = 'Seek to...'
+    menu_name = '&Seek to...'
 
     @property
     def is_enabled(self):
@@ -197,7 +197,7 @@ class VideoSetPlaybackSpeed(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Set playback speed to {}'.format(
+        return '&Set playback speed to {}'.format(
             self._expr.format('current speed'))
 
     async def run(self):
@@ -207,7 +207,7 @@ class VideoSetPlaybackSpeed(CoreCommand):
 
 class VideoTogglePauseCommand(CoreCommand):
     name = 'video/toggle-pause'
-    menu_name = 'Toggle pause'
+    menu_name = '&Toggle pause'
 
     @property
     def is_enabled(self):
@@ -222,7 +222,7 @@ class VideoTogglePauseCommand(CoreCommand):
 
 class VideoUnpauseCommand(CoreCommand):
     name = 'video/unpause'
-    menu_name = 'Play until end of the file'
+    menu_name = '&Play until end of the file'
 
     @property
     def is_enabled(self):
@@ -236,7 +236,7 @@ class VideoUnpauseCommand(CoreCommand):
 
 class VideoPauseCommand(CoreCommand):
     name = 'video/pause'
-    menu_name = 'Pause playback'
+    menu_name = '&Pause playback'
 
     @property
     def is_enabled(self):
@@ -261,7 +261,7 @@ class VideoScreenshotCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Save screenshot ({} subtitles)'.format(
+        return '&Save screenshot ({} subtitles)'.format(
             'with' if self._include_subtitles else 'without')
 
     async def run(self):
@@ -293,7 +293,7 @@ class VideoSetVolumeCommand(CoreCommand):
 
     @property
     def menu_name(self):
-        return 'Set volume to {}'.format(self._expr.format('current volume'))
+        return '&Set volume to {}'.format(self._expr.format('current volume'))
 
     async def run(self):
         self.api.media.volume = bubblesub.util.eval_expr(

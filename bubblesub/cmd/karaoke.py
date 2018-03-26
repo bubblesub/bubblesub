@@ -5,7 +5,7 @@ from bubblesub.api.cmd import CoreCommand
 
 class EditKaraokeSplitCommand(CoreCommand):
     name = 'edit/karaoke-split'
-    menu_name = 'Split subtitles as karaoke'
+    menu_name = '&Split subtitles as karaoke'
 
     @property
     def is_enabled(self):
@@ -61,7 +61,7 @@ class EditKaraokeSplitCommand(CoreCommand):
 
 class EditKaraokeJoinCommand(CoreCommand):
     name = 'edit/karaoke-join'
-    menu_name = 'Join subtitles (as karaoke)'
+    menu_name = '&Join subtitles (as karaoke)'
 
     @property
     def is_enabled(self):
@@ -82,7 +82,7 @@ class EditKaraokeJoinCommand(CoreCommand):
 
 class EditTransformationJoinCommand(CoreCommand):
     name = 'edit/transformation-join'
-    menu_name = 'Join subtitles (as transformation)'
+    menu_name = '&Join subtitles (as transformation)'
 
     @property
     def is_enabled(self):

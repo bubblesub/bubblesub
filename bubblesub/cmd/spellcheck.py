@@ -125,7 +125,7 @@ class SpellCheckDialog(QtWidgets.QDialog):
 
 class EditSpellCheckCommand(CoreCommand):
     name = 'edit/spell-check'
-    menu_name = 'Spell check...'
+    menu_name = '&Spell check...'
 
     @property
     def is_enabled(self):
