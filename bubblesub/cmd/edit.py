@@ -1,6 +1,8 @@
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
 
+from PyQt5 import QtWidgets
+
 
 class EditUndoCommand(CoreCommand):
     name = 'edit/undo'
@@ -128,6 +130,43 @@ class EditMoveDownCommand(CoreCommand):
                 self.api.subs.lines.remove(idx, 1)
                 indexes.append(idx + 1)
             self.api.subs.selected_indexes = indexes
+
+
+class EditMoveToCommand(CoreCommand):
+    name = 'edit/move-to'
+    menu_name = '&Move selected subtitles to...'
+
+    @property
+    def is_enabled(self):
+        return len(self.api.subs.selected_indexes) > 0
+
+    async def run(self):
+        async def run_dialog(api, main_window):
+            dialog = QtWidgets.QInputDialog(main_window)
+            dialog.setLabelText('Line number to move selected subtitles to:')
+            dialog.setIntMinimum(1)
+            dialog.setIntMaximum(len(api.subs.lines))
+            if api.subs.has_selection:
+                dialog.setIntValue(api.subs.selected_indexes[0] + 1)
+            dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+            if dialog.exec_():
+                return dialog.intValue() - 1
+            return None
+
+        base_idx = await self.api.gui.exec(run_dialog)
+        if base_idx is None:
+            return
+
+        with self.api.undo.bulk():
+            buffer = []
+            for idx in reversed(self.api.subs.selected_indexes):
+                sub = self.api.subs.lines[idx]
+                buffer.append(
+                    {k: getattr(sub, k) for k in sub.prop.keys()})
+                self.api.subs.lines.remove(idx, 1)
+            buffer.reverse()
+            for i, sub in enumerate(buffer):
+                self.api.subs.lines.insert_one(base_idx + i, **sub)
 
 
 class EditDuplicateCommand(CoreCommand):

@@ -258,6 +258,7 @@ _DEFAULT_TOP_MENU = [
         ['edit/delete'],
         ['edit/move-up'],
         ['edit/move-down'],
+        ['edit/move-to'],
         None,
         ['edit/swap-text-and-notes'],
         ['edit/split-sub-at-video'],
