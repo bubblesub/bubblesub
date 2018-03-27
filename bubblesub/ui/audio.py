@@ -225,13 +225,17 @@ class AudioPreviewWidget(BaseAudioWidget):
             if pts % one_minute == 0:
                 text = '{:02}:{:02}'.format(pts // one_minute, 0)
             elif pts % (10 * one_second) == 0:
-                text = '{:02}'.format((pts % one_minute) // one_second)
+                long_text = '{:02}:{:02}'.format(
+                    pts // one_minute, (pts % one_minute) // one_second)
+                long_text_width = painter.fontMetrics().width(long_text)
+                next_label_x = self._pts_to_x(pts + 10 * one_second)
+                if long_text_width < next_label_x - x:
+                    text = long_text
+                else:
+                    text = '{:02}'.format((pts % one_minute) // one_second)
             else:
-                text = ''
-            painter.drawText(
-                x + 2,
-                text_height + (h - text_height) / 2,
-                text)
+                continue
+            painter.drawText(x + 2, text_height + (h - text_height) / 2, text)
 
     def _draw_spectrogram(self, painter, _event):
         width = painter.viewport().width()
