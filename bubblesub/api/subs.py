@@ -5,6 +5,7 @@ import pysubs2
 from PyQt5 import QtCore
 
 import bubblesub.ass
+import bubblesub.model
 import bubblesub.util
 
 
@@ -65,9 +66,9 @@ def _ssa_color_to_tuple(color):
     return (color.r, color.g, color.b, color.a)
 
 
-class Style(bubblesub.util.ObservableObject):
+class Style(bubblesub.model.ObservableObject):
     prop = {
-        'name': bubblesub.util.ObservableObject.REQUIRED,
+        'name': bubblesub.model.ObservableObject.REQUIRED,
         'font_name': 'Arial',
         'font_size': 20,
         'primary_color': (255, 255, 255, 0),
@@ -161,7 +162,7 @@ class Style(bubblesub.util.ObservableObject):
         self._styles.item_changed.emit(self._old_name)
 
 
-class StyleList(bubblesub.util.ListModel):
+class StyleList(bubblesub.model.ListModel):
     def insert_one(self, name, index=None, **kwargs):
         style = Style(styles=self, name=name, **kwargs)
         self.insert(len(self) if index is None else index, [style])
@@ -186,10 +187,10 @@ class StyleList(bubblesub.util.ListModel):
             ass_source.styles[style.name] = style.ssa_style
 
 
-class Subtitle(bubblesub.util.ObservableObject):
+class Subtitle(bubblesub.model.ObservableObject):
     prop = {
-        'start': bubblesub.util.ObservableObject.REQUIRED,
-        'end': bubblesub.util.ObservableObject.REQUIRED,
+        'start': bubblesub.model.ObservableObject.REQUIRED,
+        'end': bubblesub.model.ObservableObject.REQUIRED,
         'style': 'Default',
         'actor': '',
         'text': '',
@@ -285,7 +286,7 @@ class Subtitle(bubblesub.util.ObservableObject):
             self._subtitles.item_changed.emit(id_)
 
 
-class SubtitleList(bubblesub.util.ListModel):
+class SubtitleList(bubblesub.model.ListModel):
     def insert_one(self, idx, **kwargs):
         subtitle = Subtitle(self, **kwargs)
         self.insert(idx, [subtitle])

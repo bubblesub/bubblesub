@@ -8,14 +8,14 @@ import importlib.util
 
 from PyQt5 import QtCore
 
-import bubblesub.util
+import bubblesub.model
 
 
 class BaseCommand(abc.ABC):
     def __init__(self, api, *_args):
         self.api = api
 
-    @bubblesub.util.classproperty
+    @bubblesub.model.classproperty
     @abc.abstractproperty
     def name(cls):
         raise NotImplementedError('Command has no name')
