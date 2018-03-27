@@ -7,6 +7,7 @@ import numpy as np
 from PyQt5 import QtCore
 
 import bubblesub.util
+import bubblesub.cache
 
 
 _LOADING = object()
@@ -24,7 +25,7 @@ class AudioSourceProviderContext(bubblesub.util.ProviderContext):
 
         path_hash = bubblesub.util.hash_digest(path)
         cache_name = f'index-{path_hash}-audio'
-        cache_path = bubblesub.util.get_cache_file_path(cache_name)
+        cache_path = bubblesub.cache.get_cache_file_path(cache_name)
 
         index = None
         if cache_path.exists():

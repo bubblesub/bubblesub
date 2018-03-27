@@ -2,6 +2,7 @@ import ffms
 from PyQt5 import QtCore
 
 import bubblesub.util
+import bubblesub.cache
 
 
 class TimecodesProviderContext(bubblesub.util.ProviderContext):
@@ -16,14 +17,14 @@ class TimecodesProviderContext(bubblesub.util.ProviderContext):
         path_hash = bubblesub.util.hash_digest(path)
         cache_name = f'index-{path_hash}-video'
 
-        result = bubblesub.util.load_cache(cache_name)
+        result = bubblesub.cache.load_cache(cache_name)
         if result:
             timecodes, keyframes = result
         else:
             video = ffms.VideoSource(str(path))
             timecodes = video.track.timecodes
             keyframes = video.track.keyframes
-            bubblesub.util.save_cache(cache_name, (timecodes, keyframes))
+            bubblesub.cache.save_cache(cache_name, (timecodes, keyframes))
 
         self._log_api.info('video/timecodes: loaded')
         return path, timecodes, keyframes

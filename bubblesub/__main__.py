@@ -3,7 +3,7 @@ import argparse
 
 import bubblesub.opt
 import bubblesub.ui
-import bubblesub.util
+import bubblesub.cache
 
 
 def parse_args():
@@ -21,7 +21,7 @@ def main():
     opt = bubblesub.opt.Options()
 
     if args.wipe_cache:
-        bubblesub.util.wipe_cache()
+        bubblesub.cache.wipe_cache()
 
     print('loading API...')
     from bubblesub.api import Api

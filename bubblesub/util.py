@@ -2,24 +2,18 @@ import re
 import sys
 import time
 import fractions
-import pickle
 import queue
 import traceback
 import hashlib
 
 from numbers import Number
-from pathlib import Path
 from collections import Set, Mapping, deque
 
-import xdg
 import regex
 import ass_tag_parser
 import pysubs2.time
 
 from PyQt5 import QtCore
-
-
-CACHE_SUFFIX = '.dat'
 
 
 class classproperty(property):
@@ -83,37 +77,8 @@ def str_to_ms(text):
     raise ValueError('Invalid time')
 
 
-def get_cache_dir():
-    return Path(xdg.XDG_CACHE_HOME) / 'bubblesub'
-
-
-def get_cache_file_path(cache_name):
-    return get_cache_dir() / (cache_name + CACHE_SUFFIX)
-
-
 def hash_digest(subject):
     return hashlib.md5(str(subject).encode('utf-8')).hexdigest()
-
-
-def load_cache(cache_name):
-    cache_path = get_cache_file_path(cache_name)
-    if cache_path.exists():
-        with cache_path.open(mode='rb') as handle:
-            return pickle.load(handle)
-    return None
-
-
-def save_cache(cache_name, data):
-    cache_path = get_cache_file_path(cache_name)
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    with cache_path.open(mode='wb') as handle:
-        pickle.dump(data, handle)
-
-
-def wipe_cache():
-    for path in get_cache_dir().iterdir():
-        if path.suffix == CACHE_SUFFIX:
-            path.unlink()
 
 
 class Benchmark:
