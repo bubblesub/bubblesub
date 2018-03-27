@@ -22,7 +22,7 @@ def ass_to_plaintext(text, mask=False):
     return (
         regex.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}' if mask else '', text)
         .replace('\\h', ' ')
-        .replace('\\N', ' '))
+        .replace('\\N', '\N{SYMBOL FOR NEWLINE}'))
 
 
 def character_count(text):

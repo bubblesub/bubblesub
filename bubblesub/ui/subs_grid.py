@@ -1,8 +1,83 @@
+import re
+
+from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
+from bubblesub.ui.util import get_color
 from bubblesub.ui.subs_model import SubsModel, SubsModelColumn
+
+
+# ????
+MAGIC_MARGIN1 = 3
+MAGIC_MARGIN2 = 1
+MAGIC_MARGIN3 = 2
+
+
+class AssSyntaxHighlight(QtGui.QSyntaxHighlighter):
+    def __init__(self, api, *args):
+        super().__init__(*args)
+        self._api = api
+        self._style_map = {}
+        self.update_style_map()
+
+    def update_style_map(self):
+        ass_fmt = QtGui.QTextCharFormat()
+        ass_fmt.setForeground(get_color(self._api, 'grid/ass-mark'))
+
+        nonprinting_fmt = QtGui.QTextCharFormat()
+        # nonprinting_fmt.setFontWeight(QtGui.QFont.Bold)
+        nonprinting_fmt.setBackground(
+            get_color(self._api, 'grid/non-printing-mark'))
+
+        self._style_map = {
+            '\N{FULLWIDTH ASTERISK}': ass_fmt,
+            '\N{SYMBOL FOR NEWLINE}': nonprinting_fmt,
+        }
+
+    def highlightBlock(self, text):
+        for regex, fmt in self._style_map.items():
+            for match in re.finditer(regex, text):
+                self.setFormat(match.start(), match.end() - match.start(), fmt)
+
+
+class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, api, parent=None):
+        super().__init__(parent)
+        self._doc = QtGui.QTextDocument(self)
+        self._doc.setDocumentMargin(0)  # ?
+        self.syntax_highlight = AssSyntaxHighlight(api, self._doc)
+
+    def paint(self, painter, option, index):
+        if option.state & QtWidgets.QStyle.State_Selected:
+            super().paint(painter, option, index)
+            return
+
+        item = QtWidgets.QStyleOptionViewItem(option)
+        self.initStyleOption(item, index)
+        self._doc.setPlainText(item.text)
+        item.text = ''
+
+        style = option.widget.style()
+        style.drawControl(QtWidgets.QStyle.CE_ItemViewItem, item, painter)
+
+        ctx = QtGui.QAbstractTextDocumentLayout.PaintContext()
+        ctx.palette.setColor(
+            QtGui.QPalette.Text, option.palette.color(QtGui.QPalette.Text))
+
+        text_rect = style.subElementRect(
+            QtWidgets.QStyle.SE_ItemViewItemText, option)
+        doc_height = self._doc.documentLayout().documentSize().height()
+        vertical_offset = (text_rect.height() - doc_height) // 2
+
+        painter.save()
+        painter.translate(text_rect.topLeft())
+        painter.setClipRect(text_rect.translated(-text_rect.topLeft()))
+        painter.translate(0, vertical_offset)
+        painter.translate(MAGIC_MARGIN1, MAGIC_MARGIN2)
+        self._doc.documentLayout().draw(painter, ctx)
+        painter.restore()
 
 
 class SubsGrid(QtWidgets.QTableView):
@@ -13,10 +88,12 @@ class SubsGrid(QtWidgets.QTableView):
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
         self.verticalHeader().setDefaultSectionSize(
-            self.fontMetrics().height() + 2)
+            self.fontMetrics().height() + MAGIC_MARGIN3)
 
+        self._subs_grid_delegate = SubsGridDelegate(self._api, self)
         for i, column_type in enumerate(self.model().column_order):
             if column_type in (SubsModelColumn.Text, SubsModelColumn.Note):
+                self.setItemDelegateForColumn(i, self._subs_grid_delegate)
                 self.horizontalHeader().setSectionResizeMode(
                     i, QtWidgets.QHeaderView.Stretch)
 
@@ -36,6 +113,7 @@ class SubsGrid(QtWidgets.QTableView):
 
     def changeEvent(self, _event):
         self.model().reset_cache()
+        self._subs_grid_delegate.syntax_highlight.update_style_map()
 
     def _open_menu(self, position):
         self.menu.exec_(self.viewport().mapToGlobal(position))
