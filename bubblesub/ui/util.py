@@ -178,6 +178,7 @@ def setup_cmd_menu(api, parent, menu_def):
     return action_map
 
 
+@functools.lru_cache(maxsize=None)
 def get_color(api, color_name):
     current_palette = api.opt.general['current_palette']
     palette_def = api.opt.general['palettes'][current_palette]

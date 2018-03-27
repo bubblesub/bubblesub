@@ -279,53 +279,65 @@ class AudioPreviewWidget(BaseAudioWidget):
 
     def _draw_subtitle_rects(self, painter):
         h = painter.viewport().height()
-        color = get_color(self._api, 'spectrogram/subtitle')
-        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
-        painter.setFont(QtGui.QFont(self.font().family(), 10))
         label_height = painter.fontMetrics().capHeight()
-        for i, line in enumerate(
-                sorted(self._api.subs.lines, key=lambda line: line.start)):
+
+        painter.setFont(QtGui.QFont(self.font().family(), 10))
+
+        for i, line in enumerate(self._api.subs.lines):
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
             if x2 < 0 or x1 >= self.width():
                 continue
 
-            painter.setBrush(QtGui.QBrush(
-                color,
-                QtCore.Qt.FDiagPattern if i & 1 else QtCore.Qt.BDiagPattern))
-            painter.drawRect(x1, 0, x2 - x1, h - 1)
+            is_selected = i in self._api.subs.selected_indexes
+            color_key = 'selected' if is_selected else 'unselected'
 
             rect_width = x2 - x1
             label_text = str(line.number)
             label_margin = 4
             label_width = painter.fontMetrics().width(label_text)
-            if rect_width < 2 * label_margin + label_width:
-                continue
+            is_label_visible = rect_width >= 2 * label_margin + label_width
 
-            painter.setBrush(QtGui.QBrush(self.palette().window()))
-            painter.drawRect(
-                x1,
-                0,
-                label_margin * 2 + label_width,
-                label_margin * 2 + label_height)
+            painter.setPen(QtGui.QPen(
+                get_color(self._api, f'spectrogram/{color_key}-sub-line'),
+                1,
+                QtCore.Qt.SolidLine))
 
-            painter.drawText(
-                x1 + label_margin,
-                label_height + label_margin,
-                label_text)
+            if is_label_visible or is_selected:
+                painter.setBrush(QtGui.QBrush(
+                    get_color(self._api, f'spectrogram/{color_key}-sub-line')
+                    if is_selected else
+                    self.palette().window()))
+                painter.drawRect(
+                    x1,
+                    0,
+                    min(x2 - x1, label_margin * 2 + label_width),
+                    label_margin * 2 + label_height)
+
+            painter.setBrush(QtGui.QBrush(get_color(
+                self._api, f'spectrogram/{color_key}-sub-fill')))
+            painter.drawRect(x1, 0, x2 - x1, h - 1)
+
+            if is_label_visible:
+                painter.setPen(QtGui.QPen(
+                    get_color(self._api, f'spectrogram/{color_key}-sub-text'),
+                    1,
+                    QtCore.Qt.SolidLine))
+                painter.drawText(
+                    x1 + label_margin, label_height + label_margin, label_text)
 
     def _draw_selection(self, painter):
         if not self._audio.has_selection:
             return
         h = self.height()
-        color = get_color(
-            self._api,
-            'spectrogram/focused-selection'
+        color_key = (
+            'spectrogram/focused-sel'
             if self.parent().hasFocus() else
-            'spectrogram/unfocused-selection')
-        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
-        color.setAlpha(0x40)
-        painter.setBrush(QtGui.QBrush(color))
+            'spectrogram/unfocused-sel')
+        painter.setPen(QtGui.QPen(
+            get_color(self._api, f'{color_key}-line'), 1, QtCore.Qt.SolidLine))
+        painter.setBrush(QtGui.QBrush(
+            get_color(self._api, f'{color_key}-fill')))
         x1 = self._pts_to_x(self._audio.selection_start)
         x2 = self._pts_to_x(self._audio.selection_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)

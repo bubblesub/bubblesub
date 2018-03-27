@@ -90,6 +90,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid.setFocus()
         self._restore_splitters()
 
+    def changeEvent(self, _event):
+        bubblesub.ui.util.get_color.cache_clear()
+
     def closeEvent(self, event):
         self._store_splitters()
         if self._api.undo.needs_save and not bubblesub.ui.util.ask(
