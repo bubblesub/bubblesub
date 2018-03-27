@@ -80,7 +80,7 @@ _DEFAULT_GENERAL = {
             'grid/comment':                    (53, 53, 53),
             'console/error':                   (255, 0, 0),
             'console/warning':                 (200, 100, 0),
-            'console/info':                    (0, 0, 0),
+            'console/info':                    (255, 255, 255),
             'console/debug':                   (0, 100, 200),
         },
 
