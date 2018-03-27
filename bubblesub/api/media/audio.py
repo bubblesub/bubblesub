@@ -6,15 +6,16 @@ import scipy.io.wavfile
 import numpy as np
 from PyQt5 import QtCore
 
-import bubblesub.util
 import bubblesub.cache
+import bubblesub.provider
+import bubblesub.util
 
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
 
 
-class AudioSourceProviderContext(bubblesub.util.ProviderContext):
+class AudioSourceProviderContext(bubblesub.provider.ProviderContext):
     def __init__(self, log_api):
         super().__init__()
         self._log_api = log_api
@@ -49,7 +50,7 @@ class AudioSourceProviderContext(bubblesub.util.ProviderContext):
         return audio_source
 
 
-class AudioSourceProvider(bubblesub.util.Provider):
+class AudioSourceProvider(bubblesub.provider.Provider):
     def __init__(self, parent, log_api):
         super().__init__(parent, AudioSourceProviderContext(log_api))
 

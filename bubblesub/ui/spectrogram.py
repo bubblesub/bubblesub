@@ -2,14 +2,14 @@ import ffms
 import pyfftw
 import numpy as np
 
-import bubblesub.util
+import bubblesub.provider
 
 
 DERIVATION_SIZE = 10
 DERIVATION_DISTANCE = 6
 
 
-class SpectrumProviderContext(bubblesub.util.ProviderContext):
+class SpectrumProviderContext(bubblesub.provider.ProviderContext):
     def __init__(self, api):
         super().__init__()
         self._api = api
@@ -57,6 +57,6 @@ class SpectrumProviderContext(bubblesub.util.ProviderContext):
         return pts, out
 
 
-class SpectrumProvider(bubblesub.util.Provider):
+class SpectrumProvider(bubblesub.provider.Provider):
     def __init__(self, parent, api):
         super().__init__(parent, SpectrumProviderContext(api))

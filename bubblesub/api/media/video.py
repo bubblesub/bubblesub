@@ -1,11 +1,12 @@
 import ffms
 from PyQt5 import QtCore
 
-import bubblesub.util
 import bubblesub.cache
+import bubblesub.provider
+import bubblesub.util
 
 
-class TimecodesProviderContext(bubblesub.util.ProviderContext):
+class TimecodesProviderContext(bubblesub.provider.ProviderContext):
     def __init__(self, log_api):
         super().__init__()
         self._log_api = log_api
@@ -30,7 +31,7 @@ class TimecodesProviderContext(bubblesub.util.ProviderContext):
         return path, timecodes, keyframes
 
 
-class TimecodesProvider(bubblesub.util.Provider):
+class TimecodesProvider(bubblesub.provider.Provider):
     def __init__(self, parent, log_api):
         super().__init__(parent, TimecodesProviderContext(log_api))
 
