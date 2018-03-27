@@ -389,22 +389,20 @@ class SubtitlesApi(QtCore.QObject):
 
         self.selected_indexes = []
 
-        with bubblesub.util.Benchmark('loading subs'):
-            self.lines.load_from_ass(self._ass_source)
-            self.styles.load_from_ass(self._ass_source)
+        self.lines.load_from_ass(self._ass_source)
+        self.styles.load_from_ass(self._ass_source)
         self.loaded.emit()
 
     def save_ass(self, path, remember_path=False):
-        with bubblesub.util.Benchmark('saving subs'):
-            assert path
-            path = Path(path)
-            self.lines.put_to_ass(self._ass_source)
-            self.styles.put_to_ass(self._ass_source)
-            if remember_path:
-                self._path = path
-            self._ass_source.save(path, header_notice=NOTICE)
-            if remember_path:
-                self.saved.emit()
+        assert path
+        path = Path(path)
+        self.lines.put_to_ass(self._ass_source)
+        self.styles.put_to_ass(self._ass_source)
+        if remember_path:
+            self._path = path
+        self._ass_source.save(path, header_notice=NOTICE)
+        if remember_path:
+            self.saved.emit()
 
     def _on_items_about_to_be_removed(self, idx, count):
         new_indexes = list(sorted(self.selected_indexes))
