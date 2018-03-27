@@ -4,6 +4,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
+import bubblesub.ass
 import bubblesub.util
 
 
@@ -30,7 +31,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
         if not self._dictionary:
             return
 
-        for start, end, _match in bubblesub.util.spell_check_ass_line(
+        for start, end, _match in bubblesub.ass.spell_check_ass_line(
                 self._dictionary, text):
             self.setFormat(start, end - start, self._fmt)
 

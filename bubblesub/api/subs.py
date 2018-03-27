@@ -4,6 +4,7 @@ from pathlib import Path
 import pysubs2
 from PyQt5 import QtCore
 
+import bubblesub.ass
 import bubblesub.util
 
 
@@ -33,7 +34,7 @@ def _extract_meta(text):
     match = re.search(r'{NOTE:(?P<note>[^}]*)}', text)
     if match:
         text = text[:match.start()] + text[match.end():]
-        meta.note = bubblesub.util.unescape_ass_tag(match.group('note'))
+        meta.note = bubblesub.ass.unescape_ass_tag(match.group('note'))
 
     match = re.search(r'{TIME:(?P<start>-?\d+),(?P<end>-?\d+)}', text)
     if match:
@@ -50,7 +51,7 @@ def _pack_meta(text, meta):
 
     if meta.note:
         text += '{NOTE:%s}' % (
-            bubblesub.util.escape_ass_tag(meta.note.replace('\n', '\\N')))
+            bubblesub.ass.escape_ass_tag(meta.note.replace('\n', '\\N')))
 
     return text
 

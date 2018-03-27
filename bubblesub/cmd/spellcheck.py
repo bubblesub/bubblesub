@@ -3,6 +3,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
+import bubblesub.ass
 import bubblesub.util
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
@@ -93,7 +94,7 @@ class SpellCheckDialog(QtWidgets.QDialog):
         cursor = self._main_window.editor.center.text_edit.textCursor()
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]
-            for start, end, word in bubblesub.util.spell_check_ass_line(
+            for start, end, word in bubblesub.ass.spell_check_ass_line(
                     self._dictionary, line.text.replace('\\N', '\n')):
                 if len(self._api.subs.selected_indexes) > 1 \
                         or line.id > self._api.subs.selected_indexes[0] \
