@@ -1,4 +1,3 @@
-import os
 import locale
 import atexit
 import tempfile
@@ -28,8 +27,8 @@ class MediaApi(QtCore.QObject):
         self._subs_api = subs_api
         self._opt_api = opt_api
 
-        _, self._tmp_subs_path = tempfile.mkstemp(suffix='.ass')
-        atexit.register(lambda: os.unlink(self._tmp_subs_path))
+        self._tmp_subs_path = Path(tempfile.mkstemp(suffix='.ass')[1])
+        atexit.register(self._tmp_subs_path.unlink)
 
         self._path = None
         self._playback_speed = fractions.Fraction(1.0)

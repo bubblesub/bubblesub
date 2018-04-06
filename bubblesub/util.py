@@ -2,12 +2,29 @@ import re
 import time
 import fractions
 import hashlib
+import typing as T
 
-import pysubs2.time
+
+MAX_REPRESENTABLE_TIME = 3599990
+
+
+def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
+    if milliseconds < 0:
+        milliseconds = 0
+    if milliseconds > MAX_REPRESENTABLE_TIME:
+        milliseconds = MAX_REPRESENTABLE_TIME
+
+    milliseconds = int(round(milliseconds))
+    hours, milliseconds = divmod(milliseconds, 3600000)
+    minutes, milliseconds = divmod(milliseconds, 60000)
+    seconds, milliseconds = divmod(milliseconds, 1000)
+    return hours, minutes, seconds, milliseconds
 
 
 def ms_to_str(milliseconds):
-    return pysubs2.time.ms_to_str(milliseconds, fractions=True)
+    sgn = '-' if milliseconds < 0 else ''
+    hours, minutes, seconds, milliseconds = ms_to_times(abs(milliseconds))
+    return f'{sgn}{hours:01d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}'
 
 
 def str_to_ms(text):

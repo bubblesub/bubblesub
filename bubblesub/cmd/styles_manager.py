@@ -1,17 +1,15 @@
-import os
 import locale
 import tempfile
 import atexit
+from pathlib import Path
 
 import mpv
-import pysubs2
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
-import bubblesub.util
+import bubblesub.ass.file
 import bubblesub.ui.util
-import bubblesub.ui.mpv
 from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
 from bubblesub.api.cmd import CoreCommand
 
@@ -77,11 +75,9 @@ class StylePreview(QtWidgets.QGroupBox):
         layout.addWidget(self._slider)
         layout.addWidget(self._text_box)
 
-        _, self._tmp_subs_path = tempfile.mkstemp(suffix='.ass')
-        atexit.register(lambda: os.unlink(self._tmp_subs_path))
-        self._ass_source = pysubs2.SSAFile()
-        self._fake_styles_list = bubblesub.api.subs.StyleList()
-        self._fake_subs_list = bubblesub.api.subs.SubtitleList()
+        self._tmp_subs_path = Path(tempfile.mkstemp(suffix='.ass')[1])
+        atexit.register(self._tmp_subs_path.unlink)
+        self._ass_file = bubblesub.ass.file.AssFile()
         self._save_subs()
 
         self._mpv.command('loadfile', str(api.media.path))
@@ -108,34 +104,32 @@ class StylePreview(QtWidgets.QGroupBox):
     def _mpv_loaded(self):
         self._mpv_ready = True
         self._mpv.set_property('pause', True)
-        self._mpv.command('sub_add', self._tmp_subs_path)
+        self._mpv.command('sub_add', str(self._tmp_subs_path))
         self._slider.setValue(self._api.media.current_pts)
 
     def _save_subs(self):
         if self._selection_model.selectedIndexes():
             row = self._selection_model.selectedIndexes()[0].row()
             style = self._api.subs.styles[row]
-            self._fake_styles_list.remove(0, len(self._fake_styles_list))
-            self._fake_styles_list.insert_one(
+            self._ass_file.styles.clear()
+            self._ass_file.styles.insert_one(
                 name='Default', **{
                     k: getattr(style, k)
                     for k in style.prop.keys()
                     if k != 'name'
                 })
-        self._fake_styles_list.put_to_ass(self._ass_source)
 
-        self._fake_subs_list.remove(0, len(self._fake_subs_list))
-        self._fake_subs_list.insert_one(
+        self._ass_file.events.clear()
+        self._ass_file.events.insert_one(
             0,
             start=0,
             end=self._api.media.max_pts,
             style='Default',
             text=self._text_box.toPlainText())
-        self._fake_subs_list.put_to_ass(self._ass_source)
 
-        self._ass_source.info = self._api.subs.info
-        self._ass_source.save(
-            self._tmp_subs_path, header_notice=bubblesub.api.subs.NOTICE)
+        self._ass_file.info = self._api.subs.info
+        with self._tmp_subs_path.open('w') as handle:
+            self._ass_file.write_ass(handle)
 
     def _refresh_subs(self):
         if self._mpv_ready:

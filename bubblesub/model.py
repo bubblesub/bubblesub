@@ -129,6 +129,9 @@ class ListModel(QtCore.QObject):
         self._data = self._data[:idx] + self._data[idx + count:]
         self.items_removed.emit(idx, count)
 
+    def clear(self):
+        self.remove(0, len(self))
+
     def move(self, idx, new_idx):
         item = self._data[idx]
         self.remove(idx, 1)

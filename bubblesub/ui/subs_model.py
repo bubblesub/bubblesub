@@ -3,7 +3,7 @@ import enum
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
-import bubblesub.ass
+import bubblesub.ass.util
 import bubblesub.util
 import bubblesub.ui.util
 
@@ -97,14 +97,16 @@ class SubsModel(QtCore.QAbstractTableModel):
                     SubsModelColumn.Actor:
                         subtitle.actor,
                     SubsModelColumn.Text:
-                        bubblesub.ass.ass_to_plaintext(subtitle.text, True),
+                        bubblesub.ass.util.ass_to_plaintext(
+                            subtitle.text, True),
                     SubsModelColumn.Note:
-                        bubblesub.ass.ass_to_plaintext(subtitle.note, True),
+                        bubblesub.ass.util.ass_to_plaintext(
+                            subtitle.note, True),
                     SubsModelColumn.Duration:
                         '{:.1f}'.format(subtitle.duration / 1000.0),
                     SubsModelColumn.CharactersPerSecond: (
                         '{:.1f}'.format(
-                            bubblesub.ass.character_count(subtitle.text) /
+                            bubblesub.ass.util.character_count(subtitle.text) /
                             max(1, subtitle.duration / 1000.0))
                         if subtitle.duration > 0
                         else '-')
@@ -127,7 +129,7 @@ class SubsModel(QtCore.QAbstractTableModel):
             data = self._cache[row_number][_CACHE_CPS_BK]
             if not data:
                 ratio = (
-                    bubblesub.ass.character_count(subtitle.text) /
+                    bubblesub.ass.util.character_count(subtitle.text) /
                     max(1, subtitle.duration / 1000.0))
                 ratio -= self._character_limit
                 ratio = max(0, ratio)

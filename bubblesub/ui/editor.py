@@ -4,7 +4,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-import bubblesub.ass
+import bubblesub.ass.util
 import bubblesub.util
 
 
@@ -31,7 +31,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
         if not self._dictionary:
             return
 
-        for start, end, _match in bubblesub.ass.spell_check_ass_line(
+        for start, end, _match in bubblesub.ass.util.spell_check_ass_line(
                 self._dictionary, text):
             self.setFormat(start, end - start, self._fmt)
 
@@ -189,9 +189,9 @@ class Editor(QtWidgets.QWidget):
         self.bottom_bar.effect_edit.setText(subtitle.effect)
         self.top_bar.layer_edit.setValue(subtitle.layer)
         self.bottom_bar.comment_checkbox.setChecked(subtitle.is_comment)
-        self.top_bar.margin_l_edit.setValue(subtitle.margins[0])
-        self.top_bar.margin_v_edit.setValue(subtitle.margins[1])
-        self.top_bar.margin_r_edit.setValue(subtitle.margins[2])
+        self.top_bar.margin_l_edit.setValue(subtitle.margin_left)
+        self.top_bar.margin_v_edit.setValue(subtitle.margin_vertical)
+        self.top_bar.margin_r_edit.setValue(subtitle.margin_right)
 
         self.bottom_bar.actor_edit.clear()
         self.bottom_bar.actor_edit.addItems(
@@ -248,10 +248,9 @@ class Editor(QtWidgets.QWidget):
             self.center.note_edit.toPlainText().replace('\n', r'\N'))
         subtitle.effect = self.bottom_bar.effect_edit.text()
         subtitle.layer = self.top_bar.layer_edit.value()
-        subtitle.margins = (
-            self.top_bar.margin_l_edit.value(),
-            self.top_bar.margin_v_edit.value(),
-            self.top_bar.margin_r_edit.value())
+        subtitle.margin_left = self.top_bar.margin_l_edit.value()
+        subtitle.margin_vertical = self.top_bar.margin_v_edit.value()
+        subtitle.margin_right = self.top_bar.margin_r_edit.value()
         subtitle.is_comment = self.bottom_bar.comment_checkbox.isChecked()
         subtitle.end_update()
         self._connect_api_signals()

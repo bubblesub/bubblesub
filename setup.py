@@ -19,7 +19,6 @@ setup(
         'ffms',
         'numpy',
         'scipy',
-        'pysubs2',
         'pyfftw',
         'PyQT5',
         'quamash',

@@ -4,6 +4,8 @@ import pickle
 from PyQt5 import QtCore
 
 import bubblesub.api.subs
+import bubblesub.ass.event
+import bubblesub.ass.style
 import bubblesub.util
 
 
@@ -245,7 +247,7 @@ class UndoApi(QtCore.QObject):
 
     def _deserialize_lines(self, lines):
         return [
-            bubblesub.api.subs.Subtitle(self._subs_api.lines, **item)
+            bubblesub.ass.event.Event(self._subs_api.lines, **item)
             for item in pickle.loads(lines)
         ]
 
@@ -257,6 +259,6 @@ class UndoApi(QtCore.QObject):
 
     def _deserialize_styles(self, styles):
         return [
-            bubblesub.api.subs.Style(self._subs_api.styles, **item)
+            bubblesub.ass.style.Style(self._subs_api.styles, **item)
             for item in pickle.loads(styles)
         ]
