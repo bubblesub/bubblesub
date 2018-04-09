@@ -199,10 +199,10 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
                 self.error('Invalid time format: {}'.format(line))
                 return
 
-        with self.api.undo.bulk():
-            for i, line in enumerate(self.api.subs.selected_lines):
-                line.start = times[i][0]
-                line.end = times[i][1]
+        for i, line in enumerate(self.api.subs.selected_lines):
+            line.start = times[i][0]
+            line.end = times[i][1]
+        self.api.undo.mark_undo()
 
 
 class GridCopyToClipboardCommand(CoreCommand):
@@ -228,10 +228,10 @@ class PasteFromClipboardBelowCommand(CoreCommand):
             self.error('Clipboard is empty, aborting.')
             return
         idx = self.api.subs.selected_indexes[-1] + 1
-        with self.api.undo.bulk():
-            items = _unpickle(text)
-            self.api.subs.lines.insert(idx, items)
+        items = _unpickle(text)
+        self.api.subs.lines.insert(idx, items)
         self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
+        self.api.undo.mark_undo()
 
 
 class PasteFromClipboardAboveCommand(CoreCommand):
@@ -244,10 +244,10 @@ class PasteFromClipboardAboveCommand(CoreCommand):
             self.error('Clipboard is empty, aborting.')
             return
         idx = self.api.subs.selected_indexes[0]
-        with self.api.undo.bulk():
-            items = _unpickle(text.encode)
-            self.api.subs.lines.insert(idx, items)
+        items = _unpickle(text.encode)
+        self.api.subs.lines.insert(idx, items)
         self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
+        self.api.undo.mark_undo()
 
 
 class SaveAudioSampleCommand(CoreCommand):

@@ -15,29 +15,30 @@ class EditKaraokeSplitCommand(CoreCommand):
             and '\\k' in self.api.subs.selected_lines[0].text)
 
     async def run(self):
-        with self.api.undo.bulk():
-            idx = self.api.subs.selected_indexes[0]
-            sub = self.api.subs.lines[idx]
-            start = sub.start
-            end = sub.end
-            syllables = self._get_syllables(sub.text)
+        idx = self.api.subs.selected_indexes[0]
+        sub = self.api.subs.lines[idx]
+        start = sub.start
+        end = sub.end
+        syllables = self._get_syllables(sub.text)
 
-            self.api.gui.begin_update()
-            self.api.subs.lines.remove(idx, 1)
+        self.api.gui.begin_update()
+        self.api.subs.lines.remove(idx, 1)
 
-            new_subs = []
-            for syllable in syllables:
-                sub_copy = copy(sub)
-                sub_copy.text = syllable['text']
-                sub_copy.start = start
-                sub_copy.end = min(end, start + syllable['duration'] * 10)
-                start = sub_copy.end
-                new_subs.append(sub_copy)
+        new_subs = []
+        for syllable in syllables:
+            sub_copy = copy(sub)
+            sub_copy.text = syllable['text']
+            sub_copy.start = start
+            sub_copy.end = min(end, start + syllable['duration'] * 10)
+            start = sub_copy.end
+            new_subs.append(sub_copy)
 
-            self.api.subs.lines.insert(idx, new_subs)
-            self.api.subs.selected_indexes = list(
-                range(idx, idx + len(syllables)))
-            self.api.gui.end_update()
+        self.api.subs.lines.insert(idx, new_subs)
+        self.api.subs.selected_indexes = list(
+            range(idx, idx + len(syllables)))
+        self.api.gui.end_update()
+
+        self.api.undo.mark_undo()
 
     def _get_syllables(self, text):
         match = re.split('({[^{}]*})', text)
@@ -71,16 +72,16 @@ class EditKaraokeJoinCommand(CoreCommand):
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self):
-        with self.api.undo.bulk():
-            subs = self.api.subs.selected_lines
-            for idx in reversed(self.api.subs.selected_indexes[1:]):
-                self.api.subs.lines.remove(idx, 1)
-            text = ''
-            for sub in subs:
-                text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
-            subs[0].text = text
-            subs[0].end = subs[-1].end
-            self.api.subs.selected_indexes = [subs[0].index]
+        subs = self.api.subs.selected_lines
+        for idx in reversed(self.api.subs.selected_indexes[1:]):
+            self.api.subs.lines.remove(idx, 1)
+        text = ''
+        for sub in subs:
+            text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
+        subs[0].text = text
+        subs[0].end = subs[-1].end
+        self.api.subs.selected_indexes = [subs[0].index]
+        self.api.undo.mark_undo()
 
 
 class EditTransformationJoinCommand(CoreCommand):
@@ -92,21 +93,21 @@ class EditTransformationJoinCommand(CoreCommand):
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self):
-        with self.api.undo.bulk():
-            subs = self.api.subs.selected_lines
-            for idx in reversed(self.api.subs.selected_indexes[1:]):
-                self.api.subs.lines.remove(idx, 1)
-            text = ''
-            note = ''
-            pos = 0
-            for i, sub in enumerate(subs):
-                pos += sub.duration
-                text += sub.text
-                note += sub.note
-                if i != len(subs) - 1:
-                    text += (
-                        '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos))
-            subs[0].text = text
-            subs[0].note = note
-            subs[0].end = subs[-1].end
-            self.api.subs.selected_indexes = [subs[0].index]
+        subs = self.api.subs.selected_lines
+        for idx in reversed(self.api.subs.selected_indexes[1:]):
+            self.api.subs.lines.remove(idx, 1)
+        text = ''
+        note = ''
+        pos = 0
+        for i, sub in enumerate(subs):
+            pos += sub.duration
+            text += sub.text
+            note += sub.note
+            if i != len(subs) - 1:
+                text += (
+                    '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos))
+        subs[0].text = text
+        subs[0].note = note
+        subs[0].end = subs[-1].end
+        self.api.subs.selected_indexes = [subs[0].index]
+        self.api.undo.mark_undo()

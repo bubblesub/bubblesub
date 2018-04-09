@@ -253,6 +253,7 @@ class Editor(QtWidgets.QWidget):
         subtitle.margin_right = self.top_bar.margin_r_edit.value()
         subtitle.is_comment = self.bottom_bar.comment_checkbox.isChecked()
         subtitle.end_update()
+        self._api.undo.mark_undo()
         self._connect_api_signals()
 
     def _on_grid_selection_change(self, rows, _changed):

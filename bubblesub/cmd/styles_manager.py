@@ -263,6 +263,7 @@ class StyleList(QtWidgets.QWidget):
         style = self._selected_style
         self._styles_list_view.selectionModel().clear()
         self._api.subs.styles.remove(self._api.subs.styles.index(style), 1)
+        self._api.undo.mark_undo()
 
     def _on_duplicate_button_click(self, _event):
         style = self._selected_style
@@ -274,6 +275,7 @@ class StyleList(QtWidgets.QWidget):
             self._styles_list_view.model().index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear |
             QtCore.QItemSelectionModel.Select)
+        self._api.undo.mark_undo()
 
     def _on_move_up_button_click(self, _event):
         style = self._selected_style
@@ -283,6 +285,7 @@ class StyleList(QtWidgets.QWidget):
             self._styles_list_view.model().index(idx - 1, 0),
             QtCore.QItemSelectionModel.Clear |
             QtCore.QItemSelectionModel.Select)
+        self._api.undo.mark_undo()
 
     def _on_move_down_button_click(self, _event):
         style = self._selected_style
@@ -292,6 +295,7 @@ class StyleList(QtWidgets.QWidget):
             self._styles_list_view.model().index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear |
             QtCore.QItemSelectionModel.Select)
+        self._api.undo.mark_undo()
 
     def _on_rename_button_click(self, _event):
         style = self._selected_style
@@ -300,15 +304,15 @@ class StyleList(QtWidgets.QWidget):
         if not new_name:
             return
 
-        with self._api.undo.bulk():
-            style.name = new_name
-            for line in self._api.subs.lines:
-                if line.style == old_name:
-                    line.style = new_name
-            self._styles_list_view.selectionModel().select(
-                self._styles_list_view.model().index(
-                    self._api.subs.styles.index(style), 0),
-                QtCore.QItemSelectionModel.Select)
+        style.name = new_name
+        for line in self._api.subs.lines:
+            if line.style == old_name:
+                line.style = new_name
+        self._styles_list_view.selectionModel().select(
+            self._styles_list_view.model().index(
+                self._api.subs.styles.index(style), 0),
+            QtCore.QItemSelectionModel.Select)
+        self._api.undo.mark_undo()
 
 
 class FontGroupBox(QtWidgets.QGroupBox):
@@ -644,5 +648,6 @@ class StylesManagerCommand(CoreCommand):
     async def run(self):
         async def run(api, main_window):
             StylesManagerDialog(api, main_window).exec_()
+            self.api.undo.mark_undo()
 
         await self.api.gui.exec(run)

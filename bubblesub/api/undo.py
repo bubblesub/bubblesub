@@ -1,252 +1,99 @@
-import enum
 import gzip
 import pickle
 
-from PyQt5 import QtCore
+
+class UndoState:
+    def __init__(self, lines=None, styles=None, selected_indexes=None):
+        self.lines = lines or []
+        self.styles = styles or []
+        self.selected_indexes = selected_indexes or []
 
 
-class UndoOperation(enum.Enum):
-    Reset = 0
-    SubtitleChange = 1
-    SubtitlesInsertion = 2
-    SubtitlesRemoval = 3
-    StyleChange = 4
-    StylesInsertion = 5
-    StylesRemoval = 6
+def _pickle(data):
+    return gzip.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
 
 
-class UndoBulk:
-    def __init__(self, undo_api):
-        self._undo_api = undo_api
-
-    def __enter__(self):
-        self._undo_api.start_bulk()
-
-    def __exit__(self, _type, _value, _traceback):
-        self._undo_api.end_bulk()
+def _unpickle(data):
+    return pickle.loads(gzip.decompress(data))
 
 
-class UndoApi(QtCore.QObject):
+class UndoApi:
     def __init__(self, subs_api):
         super().__init__()
         self._subs_api = subs_api
-        self._connect_signals()
         self._undo_stack = []
         self._undo_stack_pos = -1
         self._undo_stack_pos_when_saved = -1
         self._subs_api.loaded.connect(self._on_subtitles_load)
         self._subs_api.saved.connect(self._on_subtitles_save)
-        self._tmp_state = None
+        self._ignore = False
+        self._tmp_state = self._make_state()
 
     @property
-    def needs_save(self):
+    def needs_save(self) -> bool:
         return self._undo_stack_pos_when_saved != self._undo_stack_pos
 
     @property
-    def has_undo(self):
+    def has_undo(self) -> bool:
         return self._undo_stack_pos - 1 >= 0
 
     @property
-    def has_redo(self):
+    def has_redo(self) -> bool:
         return self._undo_stack_pos + 1 < len(self._undo_stack)
 
-    def bulk(self):
-        return UndoBulk(self)
+    def mark_undo(self) -> None:
+        if self._ignore:
+            return
+        self._trim_undo_stack_and_append(self._tmp_state, self._make_state())
+        self._tmp_state = self._make_state()
 
-    def start_bulk(self):
-        self._disconnect_signals()
-        self._tmp_state = (
-            self._serialize_lines(0, len(self._subs_api.lines)),
-            self._serialize_styles(0, len(self._subs_api.styles)))
-
-    def end_bulk(self):
-        self._trim_undo_stack_and_append(
-            UndoOperation.Reset,
-            self._tmp_state[0],
-            self._serialize_lines(0, len(self._subs_api.lines)),
-            self._tmp_state[1],
-            self._serialize_styles(0, len(self._subs_api.styles)))
-        self._connect_signals()
-
-    def undo(self):
+    def undo(self) -> None:
         if not self.has_undo:
             raise RuntimeError('No more undo.')
-        self._disconnect_signals()
 
-        op_type, *op_args = self._undo_stack[self._undo_stack_pos]
+        self._ignore = True
+        old_state, _new_state = self._undo_stack[self._undo_stack_pos]
         self._undo_stack_pos -= 1
+        self._apply_state(old_state)
+        self._ignore = False
 
-        if op_type == UndoOperation.Reset:
-            old_lines, _new_lines, old_styles, _new_styles = op_args
-            self._subs_api.lines.replace(self._deserialize_lines(old_lines))
-            self._subs_api.styles.replace(self._deserialize_styles(old_styles))
-        elif op_type == UndoOperation.SubtitleChange:
-            idx, old_lines, _new_lines = op_args
-            self._subs_api.lines[idx] = self._deserialize_lines(old_lines)[0]
-        elif op_type == UndoOperation.SubtitlesInsertion:
-            idx, count, lines = op_args
-            self._subs_api.lines.remove(idx, count)
-        elif op_type == UndoOperation.SubtitlesRemoval:
-            idx, count, lines = op_args
-            self._subs_api.lines.insert(idx, self._deserialize_lines(lines))
-        elif op_type == UndoOperation.StyleChange:
-            idx, old_styles, _new_styles = op_args
-            self._subs_api.styles[idx] = (
-                self._deserialize_styles(old_styles)[0])
-        elif op_type == UndoOperation.StylesInsertion:
-            idx, count, styles = op_args
-            self._subs_api.styles.remove(idx, count)
-        elif op_type == UndoOperation.StylesRemoval:
-            idx, count, styles = op_args
-            self._subs_api.styles.insert(idx, self._deserialize_styles(styles))
-
-        self._connect_signals()
-
-    def redo(self):
+    def redo(self) -> None:
         if not self.has_redo:
             raise RuntimeError('No more redo.')
-        self._disconnect_signals()
 
+        self._ignore = True
         self._undo_stack_pos += 1
-        op_type, *op_args = self._undo_stack[self._undo_stack_pos]
+        _old_state, new_state = self._undo_stack[self._undo_stack_pos]
+        self._apply_state(new_state)
+        self._ignore = False
 
-        if op_type == UndoOperation.Reset:
-            _old_lines, new_lines, _old_styles, new_styles = op_args
-            self._subs_api.lines.replace(self._deserialize_lines(new_lines))
-            self._subs_api.styles.replace(self._deserialize_styles(new_styles))
-        elif op_type == UndoOperation.SubtitleChange:
-            idx, _old_lines, new_lines = op_args
-            self._subs_api.lines[idx] = self._deserialize_lines(new_lines)[0]
-        elif op_type == UndoOperation.SubtitlesInsertion:
-            idx, count, lines = op_args
-            self._subs_api.lines.insert(idx, self._deserialize_lines(lines))
-        elif op_type == UndoOperation.SubtitlesRemoval:
-            idx, count, lines = op_args
-            self._subs_api.lines.remove(idx, count)
-        elif op_type == UndoOperation.StyleChange:
-            idx, _old_styles, new_styles = op_args
-            self._subs_api.styles[idx] = (
-                self._deserialize_styles(new_styles)[0])
-        elif op_type == UndoOperation.StylesInsertion:
-            idx, count, styles = op_args
-            self._subs_api.styles.insert(idx, self._deserialize_styles(styles))
-        elif op_type == UndoOperation.StylesRemoval:
-            idx, count, styles = op_args
-            self._subs_api.styles.remove(idx, count)
-
-        self._connect_signals()
-
-    def _trim_undo_stack(self):
+    def _trim_undo_stack(self) -> None:
         self._undo_stack = self._undo_stack[:self._undo_stack_pos + 1]
         self._undo_stack_pos = len(self._undo_stack) - 1
 
-    def _trim_undo_stack_and_append(self, op_type, *op_args):
+    def _trim_undo_stack_and_append(
+            self, old_state: UndoState, new_state: UndoState) -> None:
         self._trim_undo_stack()
-        self._undo_stack.append((op_type, *op_args))
+        self._undo_stack.append((old_state, new_state))
         self._undo_stack_pos = len(self._undo_stack) - 1
 
-    def _connect_signals(self):
-        self._subs_api.lines.items_inserted.connect(self._on_subtitles_insert)
-        self._subs_api.lines.item_changed.connect(self._on_subtitle_change)
-        self._subs_api.lines.item_about_to_change.connect(
-            self._on_subtitle_about_to_change)
-        self._subs_api.lines.items_about_to_be_removed.connect(
-            self._on_subtitles_remove)
-        self._subs_api.styles.items_inserted.connect(self._on_styles_insert)
-        self._subs_api.styles.item_changed.connect(self._on_style_change)
-        self._subs_api.styles.item_about_to_change.connect(
-            self._on_style_about_to_change)
-        self._subs_api.styles.items_about_to_be_removed.connect(
-            self._on_styles_remove)
-
-    def _disconnect_signals(self):
-        self._subs_api.lines.items_inserted.disconnect(
-            self._on_subtitles_insert)
-        self._subs_api.lines.item_changed.disconnect(self._on_subtitle_change)
-        self._subs_api.lines.item_about_to_change.disconnect(
-            self._on_subtitle_about_to_change)
-        self._subs_api.lines.items_about_to_be_removed.disconnect(
-            self._on_subtitles_remove)
-        self._subs_api.styles.items_inserted.disconnect(self._on_styles_insert)
-        self._subs_api.styles.item_changed.disconnect(self._on_style_change)
-        self._subs_api.styles.item_about_to_change.disconnect(
-            self._on_style_about_to_change)
-        self._subs_api.styles.items_about_to_be_removed.disconnect(
-            self._on_styles_remove)
-
-    def _on_subtitles_load(self):
-        self._undo_stack = [(
-            UndoOperation.Reset,
-            self._serialize_lines(0, len(self._subs_api.lines)),
-            [],
-            self._serialize_styles(0, len(self._subs_api.styles)),
-            [])]
+    def _on_subtitles_load(self) -> None:
+        self._undo_stack = [(None, None)]
         self._undo_stack_pos = 0
         self._undo_stack_pos_when_saved = 0
+        self._tmp_state = self._make_state()
 
-    def _on_subtitles_save(self):
+    def _on_subtitles_save(self) -> None:
         self._undo_stack_pos_when_saved = self._undo_stack_pos
 
-    def _on_subtitle_about_to_change(self, idx):
-        self._tmp_state = self._serialize_lines(idx, 1)
+    def _make_state(self) -> UndoState:
+        return UndoState(
+            lines=_pickle(self._subs_api.lines),
+            styles=_pickle(self._subs_api.styles),
+            selected_indexes=self._subs_api.selected_indexes)
 
-    def _on_subtitle_change(self, idx):
-        self._trim_undo_stack_and_append(
-            UndoOperation.SubtitleChange,
-            idx,
-            self._tmp_state,
-            self._serialize_lines(idx, 1))
-
-    def _on_subtitles_insert(self, idx, count):
-        self._trim_undo_stack_and_append(
-            UndoOperation.SubtitlesInsertion,
-            idx,
-            count,
-            self._serialize_lines(idx, count))
-
-    def _on_subtitles_remove(self, idx, count):
-        self._trim_undo_stack_and_append(
-            UndoOperation.SubtitlesRemoval,
-            idx,
-            count,
-            self._serialize_lines(idx, count))
-
-    def _on_style_about_to_change(self, idx):
-        self._tmp_state = self._serialize_styles(idx, 1)
-
-    def _on_style_change(self, idx):
-        self._trim_undo_stack_and_append(
-            UndoOperation.StyleChange,
-            idx,
-            self._tmp_state,
-            self._serialize_styles(idx, 1))
-
-    def _on_styles_insert(self, idx, count):
-        self._trim_undo_stack_and_append(
-            UndoOperation.StylesInsertion,
-            idx,
-            count,
-            self._serialize_styles(idx, count))
-
-    def _on_styles_remove(self, idx, count):
-        self._trim_undo_stack_and_append(
-            UndoOperation.StylesRemoval,
-            idx,
-            count,
-            self._serialize_styles(idx, count))
-
-    def _serialize_lines(self, idx, count):
-        return gzip.compress(pickle.dumps(
-            self._subs_api.lines[idx:idx+count],
-            protocol=pickle.HIGHEST_PROTOCOL))
-
-    def _deserialize_lines(self, data):
-        return pickle.loads(gzip.decompress(data))
-
-    def _serialize_styles(self, idx, count):
-        return gzip.compress(pickle.dumps(
-            self._subs_api.styles[idx:idx+count],
-            protocol=pickle.HIGHEST_PROTOCOL))
-
-    def _deserialize_styles(self, data):
-        return pickle.loads(gzip.decompress(data))
+    def _apply_state(self, state: UndoState) -> None:
+        self._subs_api.lines.replace(_unpickle(state.lines))
+        self._subs_api.styles.replace(_unpickle(state.styles))
+        self._subs_api.selected_indexes = state.selected_indexes
+        self._tmp_state = state
