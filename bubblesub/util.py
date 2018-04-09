@@ -2,6 +2,7 @@ import re
 import time
 import fractions
 import hashlib
+import itertools
 import typing as T
 
 
@@ -109,3 +110,12 @@ def eval_expr(expr):
         raise TypeError(node)
 
     return eval_(ast.parse(str(expr), mode='eval').body)
+
+
+def make_ranges(indexes: T.Iterable[int]) -> T.Tuple[int, int]:
+    for _, elems in itertools.groupby(
+            enumerate(indexes), lambda item: item[1] - item[0]):
+        elems = list(elems)
+        start_idx = elems[0][1]
+        end_idx = elems[-1][1]
+        yield (start_idx, end_idx + 1 - start_idx)

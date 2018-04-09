@@ -99,11 +99,16 @@ class EditMoveUpCommand(CoreCommand):
     async def run(self):
         with self.api.undo.bulk():
             indexes = []
-            for idx in self.api.subs.selected_indexes:
+            for start_idx, count in bubblesub.util.make_ranges(
+                    self.api.subs.selected_indexes):
                 self.api.subs.lines.insert(
-                    idx - 1, [copy(self.api.subs.lines[idx])])
-                self.api.subs.lines.remove(idx + 1, 1)
-                indexes.append(idx - 1)
+                    start_idx - 1,
+                    [
+                        copy(self.api.subs.lines[idx])
+                        for idx in range(start_idx, start_idx + count)
+                    ])
+                self.api.subs.lines.remove(start_idx + count, count)
+                indexes += [start_idx + i - 1 for i in range(count)]
             self.api.subs.selected_indexes = indexes
 
 
@@ -122,11 +127,16 @@ class EditMoveDownCommand(CoreCommand):
     async def run(self):
         with self.api.undo.bulk():
             indexes = []
-            for idx in reversed(self.api.subs.selected_indexes):
+            for start_idx, count in reversed(list(bubblesub.util.make_ranges(
+                    self.api.subs.selected_indexes))):
                 self.api.subs.lines.insert(
-                    idx + 2, [copy(self.api.subs.lines[idx])])
-                self.api.subs.lines.remove(idx, 1)
-                indexes.append(idx + 1)
+                    start_idx + count + 1,
+                    [
+                        copy(self.api.subs.lines[idx])
+                        for idx in range(start_idx, start_idx + count)
+                    ])
+                self.api.subs.lines.remove(start_idx, count)
+                indexes += [start_idx + i + 1 for i in range(count)]
             self.api.subs.selected_indexes = indexes
 
 
@@ -156,12 +166,16 @@ class EditMoveToCommand(CoreCommand):
             return
 
         with self.api.undo.bulk():
-            buffer = []
-            for idx in reversed(self.api.subs.selected_indexes):
-                buffer.append(copy(self.api.subs.lines[idx]))
-                self.api.subs.lines.remove(idx, 1)
-            buffer.reverse()
-            self.api.subs.lines.insert(base_idx, buffer)
+            sub_copies = []
+            for start_idx, count in reversed(list(bubblesub.util.make_ranges(
+                    self.api.subs.selected_indexes))):
+                sub_copies += list(reversed([
+                    copy(self.api.subs.lines[idx])
+                    for idx in range(start_idx, start_idx + count)
+                ]))
+                self.api.subs.lines.remove(start_idx, count)
+            sub_copies.reverse()
+            self.api.subs.lines.insert(base_idx, sub_copies)
 
 
 class EditDuplicateCommand(CoreCommand):
