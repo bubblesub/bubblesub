@@ -212,8 +212,9 @@ class EditDeleteCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self):
-        for idx in reversed(self.api.subs.selected_indexes):
-            self.api.subs.lines.remove(idx, 1)
+        for start_idx, count in reversed(list(bubblesub.util.make_ranges(
+                self.api.subs.selected_indexes))):
+            self.api.subs.lines.remove(start_idx, count)
         self.api.subs.selected_indexes = []
         self.api.undo.mark_undo()
 
