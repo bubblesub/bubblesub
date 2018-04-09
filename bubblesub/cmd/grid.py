@@ -1,9 +1,25 @@
-import json
+import pickle
+import base64
+import gzip
 
 from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
+
+
+def _pickle(subs):
+    return (
+        base64.b64encode(
+            gzip.compress(
+                pickle.dumps(subs, protocol=pickle.HIGHEST_PROTOCOL)
+            )
+        ).decode()
+    )
+
+
+def _unpickle(text):
+    return pickle.loads(gzip.decompress(base64.b64decode(text.encode())))
 
 
 class GridJumpToLineCommand(CoreCommand):
@@ -198,10 +214,8 @@ class GridCopyToClipboardCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self):
-        QtWidgets.QApplication.clipboard().setText(json.dumps([
-            {k: getattr(item, k) for k in item.prop.keys()}
-            for item in self.api.subs.selected_lines
-        ]))
+        QtWidgets.QApplication.clipboard().setText(
+            _pickle(self.api.subs.selected_lines))
 
 
 class PasteFromClipboardBelowCommand(CoreCommand):
@@ -215,9 +229,8 @@ class PasteFromClipboardBelowCommand(CoreCommand):
             return
         idx = self.api.subs.selected_indexes[-1] + 1
         with self.api.undo.bulk():
-            items = json.loads(text)
-            for i, item in enumerate(items):
-                self.api.subs.lines.insert_one(idx + i, **item)
+            items = _unpickle(text)
+            self.api.subs.lines.insert(idx, items)
         self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
@@ -232,9 +245,8 @@ class PasteFromClipboardAboveCommand(CoreCommand):
             return
         idx = self.api.subs.selected_indexes[0]
         with self.api.undo.bulk():
-            items = json.loads(text)
-            for item in reversed(items):
-                self.api.subs.lines.insert_one(idx, **item)
+            items = _unpickle(text.encode)
+            self.api.subs.lines.insert(idx, items)
         self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 

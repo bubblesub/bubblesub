@@ -1,4 +1,5 @@
 import re
+from copy import copy
 
 from bubblesub.api.cmd import CoreCommand
 
@@ -21,19 +22,21 @@ class EditKaraokeSplitCommand(CoreCommand):
             end = sub.end
             syllables = self._get_syllables(sub.text)
 
-            new_selection = []
             self.api.gui.begin_update()
             self.api.subs.lines.remove(idx, 1)
-            for i, syllable in enumerate(syllables):
-                sub_def = {k: getattr(sub, k) for k in sub.prop.keys()}
-                sub_def['text'] = syllable['text']
-                sub_def['start'] = start
-                sub_def['end'] = min(end, start + syllable['duration'] * 10)
-                start = sub_def['end']
 
-                self.api.subs.lines.insert_one(idx + i, **sub_def)
-                new_selection.append(idx + i)
-            self.api.subs.selected_indexes = new_selection
+            new_subs = []
+            for syllable in syllables:
+                sub_copy = copy(sub)
+                sub_copy.text = syllable['text']
+                sub_copy.start = start
+                sub_copy.end = min(end, start + syllable['duration'] * 10)
+                start = sub_copy.end
+                new_subs.append(sub_copy)
+
+            self.api.subs.lines.insert(idx, new_subs)
+            self.api.subs.selected_indexes = list(
+                range(idx, idx + len(syllables)))
             self.api.gui.end_update()
 
     def _get_syllables(self, text):
@@ -77,7 +80,7 @@ class EditKaraokeJoinCommand(CoreCommand):
                 text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
             subs[0].text = text
             subs[0].end = subs[-1].end
-            self.api.subs.selected_indexes = [subs[0].id]
+            self.api.subs.selected_indexes = [subs[0].index]
 
 
 class EditTransformationJoinCommand(CoreCommand):
@@ -106,4 +109,4 @@ class EditTransformationJoinCommand(CoreCommand):
             subs[0].text = text
             subs[0].note = note
             subs[0].end = subs[-1].end
-            self.api.subs.selected_indexes = [subs[0].id]
+            self.api.subs.selected_indexes = [subs[0].index]

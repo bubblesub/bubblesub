@@ -1,3 +1,5 @@
+from copy import copy
+
 from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
@@ -98,10 +100,8 @@ class EditMoveUpCommand(CoreCommand):
         with self.api.undo.bulk():
             indexes = []
             for idx in self.api.subs.selected_indexes:
-                sub = self.api.subs.lines[idx]
-                self.api.subs.lines.insert_one(
-                    idx - 1,
-                    **{k: getattr(sub, k) for k in sub.prop.keys()})
+                self.api.subs.lines.insert(
+                    idx - 1, [copy(self.api.subs.lines[idx])])
                 self.api.subs.lines.remove(idx + 1, 1)
                 indexes.append(idx - 1)
             self.api.subs.selected_indexes = indexes
@@ -123,10 +123,8 @@ class EditMoveDownCommand(CoreCommand):
         with self.api.undo.bulk():
             indexes = []
             for idx in reversed(self.api.subs.selected_indexes):
-                sub = self.api.subs.lines[idx]
-                self.api.subs.lines.insert_one(
-                    idx + 2,
-                    **{k: getattr(sub, k) for k in sub.prop.keys()})
+                self.api.subs.lines.insert(
+                    idx + 2, [copy(self.api.subs.lines[idx])])
                 self.api.subs.lines.remove(idx, 1)
                 indexes.append(idx + 1)
             self.api.subs.selected_indexes = indexes
@@ -160,13 +158,10 @@ class EditMoveToCommand(CoreCommand):
         with self.api.undo.bulk():
             buffer = []
             for idx in reversed(self.api.subs.selected_indexes):
-                sub = self.api.subs.lines[idx]
-                buffer.append(
-                    {k: getattr(sub, k) for k in sub.prop.keys()})
+                buffer.append(copy(self.api.subs.lines[idx]))
                 self.api.subs.lines.remove(idx, 1)
             buffer.reverse()
-            for i, sub in enumerate(buffer):
-                self.api.subs.lines.insert_one(base_idx + i, **sub)
+            self.api.subs.lines.insert(base_idx, buffer)
 
 
 class EditDuplicateCommand(CoreCommand):
@@ -182,10 +177,8 @@ class EditDuplicateCommand(CoreCommand):
         with self.api.undo.bulk():
             new_selection = []
             for idx in reversed(self.api.subs.selected_indexes):
-                sub = self.api.subs.lines[idx]
-                self.api.subs.lines.insert_one(
-                    idx + 1,
-                    **{k: getattr(sub, k) for k in sub.prop.keys()})
+                self.api.subs.lines.insert(
+                    idx + 1, [copy(self.api.subs.lines[idx])])
                 new_selection.append(
                     idx
                     + len(self.api.subs.selected_indexes)
@@ -241,8 +234,7 @@ class EditSplitSubAtVideoCommand(CoreCommand):
             if split_pos < sub.start or split_pos > sub.end:
                 return
             self.api.gui.begin_update()
-            self.api.subs.lines.insert_one(
-                idx + 1, **{k: getattr(sub, k) for k in sub.prop.keys()})
+            self.api.subs.lines.insert(idx + 1, [copy(sub)])
             self.api.subs.lines[idx].end = split_pos
             self.api.subs.lines[idx + 1].start = split_pos
             self.api.subs.selected_indexes = [idx, idx + 1]

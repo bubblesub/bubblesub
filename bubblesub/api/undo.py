@@ -1,12 +1,8 @@
 import enum
+import gzip
 import pickle
 
 from PyQt5 import QtCore
-
-import bubblesub.api.subs
-import bubblesub.ass.event
-import bubblesub.ass.style
-import bubblesub.util
 
 
 class UndoOperation(enum.Enum):
@@ -240,25 +236,17 @@ class UndoApi(QtCore.QObject):
             self._serialize_styles(idx, count))
 
     def _serialize_lines(self, idx, count):
-        return pickle.dumps([
-            {k: getattr(item, k) for k in item.prop.keys()}
-            for item in self._subs_api.lines[idx:idx+count]
-        ])
+        return gzip.compress(pickle.dumps(
+            self._subs_api.lines[idx:idx+count],
+            protocol=pickle.HIGHEST_PROTOCOL))
 
-    def _deserialize_lines(self, lines):
-        return [
-            bubblesub.ass.event.Event(self._subs_api.lines, **item)
-            for item in pickle.loads(lines)
-        ]
+    def _deserialize_lines(self, data):
+        return pickle.loads(gzip.decompress(data))
 
     def _serialize_styles(self, idx, count):
-        return pickle.dumps([
-            {k: getattr(item, k) for k in item.prop.keys()}
-            for item in self._subs_api.styles[idx:idx+count]
-        ])
+        return gzip.compress(pickle.dumps(
+            self._subs_api.styles[idx:idx+count],
+            protocol=pickle.HIGHEST_PROTOCOL))
 
-    def _deserialize_styles(self, styles):
-        return [
-            bubblesub.ass.style.Style(self._subs_api.styles, **item)
-            for item in pickle.loads(styles)
-        ]
+    def _deserialize_styles(self, data):
+        return pickle.loads(gzip.decompress(data))

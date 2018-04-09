@@ -8,6 +8,20 @@ import typing as T
 MAX_REPRESENTABLE_TIME = 3599990
 
 
+class RefDict:
+    def __init__(self):
+        self._map = {}
+
+    def __getitem__(self, key):
+        return self._map[key]
+
+    def __setitem__(self, key, data):
+        self._map[key] = data
+
+
+ref_dict = RefDict()
+
+
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
     if milliseconds < 0:
         milliseconds = 0

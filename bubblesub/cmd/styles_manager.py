@@ -1,6 +1,7 @@
 import locale
 import tempfile
 import atexit
+from copy import copy
 from pathlib import Path
 
 import mpv
@@ -111,13 +112,10 @@ class StylePreview(QtWidgets.QGroupBox):
         if self._selection_model.selectedIndexes():
             row = self._selection_model.selectedIndexes()[0].row()
             style = self._api.subs.styles[row]
+            style_copy = copy(style)
+            style_copy.name = 'Default'
             self._ass_file.styles.clear()
-            self._ass_file.styles.insert_one(
-                name='Default', **{
-                    k: getattr(style, k)
-                    for k in style.prop.keys()
-                    if k != 'name'
-                })
+            self._ass_file.styles.insert(0, [style_copy])
 
         self._ass_file.events.clear()
         self._ass_file.events.insert_one(
@@ -269,14 +267,9 @@ class StyleList(QtWidgets.QWidget):
     def _on_duplicate_button_click(self, _event):
         style = self._selected_style
         idx = self._api.subs.styles.index(style)
-        self._api.subs.styles.insert_one(
-            name=style.name + ' (copy)',
-            index=idx + 1,
-            **{
-                k: getattr(style, k)
-                for k in style.prop.keys()
-                if k != 'name'
-            })
+        style_copy = copy(style)
+        style_copy.name += ' (copy)'
+        self._api.subs.styles.insert(idx + 1, [style_copy])
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear |

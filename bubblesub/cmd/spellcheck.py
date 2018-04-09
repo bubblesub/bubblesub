@@ -97,10 +97,10 @@ class SpellCheckDialog(QtWidgets.QDialog):
             for start, end, word in bubblesub.ass.util.spell_check_ass_line(
                     self._dictionary, line.text.replace('\\N', '\n')):
                 if len(self._api.subs.selected_indexes) > 1 \
-                        or line.id > self._api.subs.selected_indexes[0] \
+                        or line.index > self._api.subs.selected_indexes[0] \
                         or start > cursor.selectionStart() \
                         or cursor.selectionStart() == cursor.selectionEnd():
-                    return line.id, start, end, word
+                    return line.index, start, end, word
             self._lines_to_spellcheck.pop(0)
         return None, None, None, None
 
