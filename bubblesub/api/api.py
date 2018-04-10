@@ -1,14 +1,20 @@
+import argparse
+
 import bubblesub.api.log
 import bubblesub.api.gui
 import bubblesub.api.media
 import bubblesub.api.subs
 import bubblesub.api.undo
 import bubblesub.api.cmd
+import bubblesub.opt
 
 
 class Api:
-    def __init__(self, opt, args):
-        super().__init__()
+    def __init__(
+            self,
+            opt: bubblesub.opt.Options,
+            args: argparse.Namespace,
+    ) -> None:
         self.opt = opt
         self.log = bubblesub.api.log.LogApi()
         self.gui = bubblesub.api.gui.GuiApi(self)

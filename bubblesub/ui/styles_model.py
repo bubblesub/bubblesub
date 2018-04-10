@@ -1,15 +1,19 @@
 import enum
+import typing as T
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
+import bubblesub.api
+from bubblesub.ass.style import Color
 
-def _serialize_color(value):
-    return QtGui.QColor(*value)
+
+def _serialize_color(color: Color) -> QtGui.QColor:
+    return QtGui.QColor(color. red, color.green, color.blue, color.alpha)
 
 
-def _deserialize_color(color):
-    return (color.red(), color.green(), color.blue(), color.alpha())
+def _deserialize_color(color: QtGui.QColor) -> Color:
+    return Color(color.red(), color.green(), color.blue(), color.alpha())
 
 
 class StylesModelColumn(enum.IntEnum):
@@ -37,7 +41,12 @@ class StylesModelColumn(enum.IntEnum):
 
 
 class StylesModel(QtCore.QAbstractTableModel):
-    def __init__(self, api, *args, **kwargs):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            *args: T.Any,
+            **kwargs: T.Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self._styles = api.subs.styles
@@ -45,13 +54,23 @@ class StylesModel(QtCore.QAbstractTableModel):
         self._styles.items_inserted.connect(self._proxy_items_inserted)
         self._styles.items_removed.connect(self._proxy_items_removed)
 
-    def rowCount(self, _parent=QtCore.QModelIndex()):
+    def rowCount(
+            self,
+            _parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+    ) -> int:
         return len(self._styles)
 
-    def columnCount(self, _parent=QtCore.QModelIndex()):
+    def columnCount(
+            self,
+            _parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+    ) -> int:
         return len(StylesModelColumn)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(
+            self,
+            index: QtCore.QModelIndex,
+            role: int = QtCore.Qt.DisplayRole,
+    ) -> T.Any:
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             row_idx = index.row()
             column_idx = index.column()
@@ -103,7 +122,12 @@ class StylesModel(QtCore.QAbstractTableModel):
 
         return QtCore.QVariant()
 
-    def setData(self, index, value, role=QtCore.Qt.DisplayRole):
+    def setData(
+            self,
+            index: QtCore.QModelIndex,
+            value: T.Any,
+            role: int = QtCore.Qt.DisplayRole,
+    ) -> bool:
         if role == QtCore.Qt.EditRole:
             row_idx = index.row()
             column_idx = index.column()
@@ -158,24 +182,29 @@ class StylesModel(QtCore.QAbstractTableModel):
             return True
         return False
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex) -> int:
         if index.column() == StylesModelColumn.Name:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-        return (
+            return T.cast(
+                int,
+                QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable,
+            )
+        return T.cast(
+            int,
             QtCore.Qt.ItemIsEnabled |
             QtCore.Qt.ItemIsSelectable |
-            QtCore.Qt.ItemIsEditable)
+            QtCore.Qt.ItemIsEditable,
+        )
 
-    def _proxy_data_changed(self, idx):
+    def _proxy_data_changed(self, idx: int) -> None:
         self.dataChanged.emit(
             self.index(idx, 0),
             self.index(idx, self.columnCount() - 1),
             [QtCore.Qt.DisplayRole | QtCore.Qt.BackgroundRole])
 
-    def _proxy_items_inserted(self, idx, count):
+    def _proxy_items_inserted(self, idx: int, count: int) -> None:
         if count:
             self.rowsInserted.emit(QtCore.QModelIndex(), idx, idx + count - 1)
 
-    def _proxy_items_removed(self, idx, count):
+    def _proxy_items_removed(self, idx: int, count: int) -> None:
         if count:
             self.rowsRemoved.emit(QtCore.QModelIndex(), idx, idx + count - 1)

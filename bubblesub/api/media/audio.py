@@ -1,5 +1,7 @@
 import time
 import threading
+import typing as T
+from pathlib import Path
 
 import ffms
 import scipy.io.wavfile
@@ -9,18 +11,21 @@ from PyQt5 import QtCore
 import bubblesub.cache
 import bubblesub.provider
 import bubblesub.util
+import bubblesub.api.media.media
+import bubblesub.api.log
 
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
 
 
-class AudioSourceProviderContext(bubblesub.provider.ProviderContext):
-    def __init__(self, log_api):
+class AudioSourceProviderContext(
+        bubblesub.provider.ProviderContext[Path, ffms.AudioSource]):
+    def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
         super().__init__()
         self._log_api = log_api
 
-    def work(self, task):
+    def work(self, task: Path) -> ffms.AudioSource:
         path = task
         self._log_api.info('audio/sampler: loading... ({})'.format(path))
 
@@ -51,7 +56,11 @@ class AudioSourceProviderContext(bubblesub.provider.ProviderContext):
 
 
 class AudioSourceProvider(bubblesub.provider.Provider):
-    def __init__(self, parent, log_api):
+    def __init__(
+            self,
+            parent: QtCore.QObject,
+            log_api: 'bubblesub.api.log.LogApi',
+    ) -> None:
         super().__init__(parent, AudioSourceProviderContext(log_api))
 
 
@@ -60,86 +69,89 @@ class AudioApi(QtCore.QObject):
     selection_changed = QtCore.pyqtSignal()
     parsed = QtCore.pyqtSignal()
 
-    def __init__(self, media_api, log_api):
+    def __init__(
+            self,
+            media_api: 'bubblesub.api.media.media.MediaApi',
+            log_api: 'bubblesub.api.log.LogApi',
+    ) -> None:
         super().__init__()
         self._min = 0
         self._max = 0
         self._view_start = 0
         self._view_end = 0
-        self._selection_start = None
-        self._selection_end = None
+        self._selection_start = 0
+        self._selection_end = 0
 
         self._log_api = log_api
         self._media_api = media_api
         self._media_api.parsed.connect(self._on_video_parse)
         self._media_api.max_pts_changed.connect(self._on_max_pts_change)
-        self._audio_source = None
+        self._audio_source: T.Union[None, ffms.AudioSource] = None
         self._audio_source_provider = AudioSourceProvider(self, self._log_api)
         self._audio_source_provider.finished.connect(self._got_audio_source)
 
     @property
-    def min(self):
+    def min(self) -> int:
         return self._min
 
     @property
-    def max(self):
+    def max(self) -> int:
         return self._max
 
     @property
-    def size(self):
+    def size(self) -> int:
         return self._max - self._min
 
     @property
-    def view_start(self):
+    def view_start(self) -> int:
         return self._view_start
 
     @property
-    def view_end(self):
+    def view_end(self) -> int:
         return self._view_end
 
     @property
-    def view_size(self):
+    def view_size(self) -> int:
         return self._view_end - self._view_start
 
     @property
-    def selection_start(self):
+    def selection_start(self) -> int:
         return self._selection_start
 
     @property
-    def selection_end(self):
+    def selection_end(self) -> int:
         return self._selection_end
 
     @property
-    def has_selection(self):
-        return not (
-            self._selection_start is None or self._selection_end is None)
+    def has_selection(self) -> bool:
+        return self._selection_start != 0 or self._selection_end != 0
 
     @property
-    def selection_size(self):
-        if not self.has_selection:
-            return 0
+    def selection_size(self) -> int:
         return self._selection_end - self._selection_start
 
     @property
-    def has_audio_source(self):
-        return self._audio_source and self._audio_source is not _LOADING
+    def has_audio_source(self) -> bool:
+        return (
+            self._audio_source is not None
+            and self._audio_source is not _LOADING)
 
     @property
-    def channel_count(self):
+    def channel_count(self) -> int:
         self._wait_for_audio_source()
         if not self._audio_source:
             return 0
-        return self._audio_source.properties.Channels
+        return T.cast(int, self._audio_source.properties.Channels)
 
     @property
-    def bits_per_sample(self):
+    def bits_per_sample(self) -> int:
         self._wait_for_audio_source()
         if not self._audio_source:
             return 0
-        return self._audio_source.properties.BitsPerSample
+        return T.cast(int, self._audio_source.properties.BitsPerSample)
 
     @property
-    def sample_rate(self):
+    def sample_rate(self) -> int:
         self._wait_for_audio_source()
         if not self._audio_source:
             return 0
@@ -149,48 +161,50 @@ class AudioApi(QtCore.QObject):
         # - FirstTime
         # - LastTime
         # - SampleFormat
-        return self._audio_source.properties.SampleRate
+        return T.cast(int, self._audio_source.properties.SampleRate)
 
     @property
-    def sample_format(self):
+    def sample_format(self) -> T.Optional[int]:
         self._wait_for_audio_source()
         if not self._audio_source:
             return None
-        return self._audio_source.properties.SampleFormat
+        return T.cast(
+            T.Optional[int],
+            self._audio_source.properties.SampleFormat)
 
     @property
-    def sample_count(self):
+    def sample_count(self) -> int:
         self._wait_for_audio_source()
         if not self._audio_source:
             return 0
-        return self._audio_source.properties.NumSamples
+        return T.cast(int, self._audio_source.properties.NumSamples)
 
-    def unselect(self):
-        self._selection_start = None
-        self._selection_end = None
+    def unselect(self) -> None:
+        self._selection_start = 0
+        self._selection_end = 0
         self.selection_changed.emit()
 
-    def select(self, start_pts, end_pts):
+    def select(self, start_pts: int, end_pts: int) -> None:
         self._selection_start = self._clip(start_pts)
         self._selection_end = self._clip(end_pts)
         self.selection_changed.emit()
 
-    def view(self, start_pts, end_pts):
+    def view(self, start_pts: int, end_pts: int) -> None:
         self._view_start = self._clip(start_pts)
         self._view_end = self._clip(end_pts)
         self.view_changed.emit()
 
-    def zoom_view(self, factor, origin):
+    def zoom_view(self, factor: float, origin: float) -> None:
         factor = max(0.001, min(1, factor))
         old_origin = self.view_start - self._min
         old_view_size = self.view_size * origin
         self._view_start = self.min
         self._view_end = self._clip(self.min + self.size * factor)
         new_view_size = self.view_size * origin
-        distance = old_origin - new_view_size + old_view_size
+        distance = int(old_origin - new_view_size + old_view_size)
         self.move_view(distance)  # emits view_changed
 
-    def move_view(self, distance):
+    def move_view(self, distance: int) -> None:
         view_size = self.view_size
         if self._view_start + distance < self.min:
             self.view(self.min, self.min + view_size)
@@ -199,7 +213,7 @@ class AudioApi(QtCore.QObject):
         else:
             self.view(self._view_start + distance, self._view_end + distance)
 
-    def get_samples(self, start_frame, count):
+    def get_samples(self, start_frame: int, count: int) -> np.array:
         with _SAMPLER_LOCK:
             self._wait_for_audio_source()
             if not self._audio_source:
@@ -212,7 +226,12 @@ class AudioApi(QtCore.QObject):
             self._audio_source.init_buffer(count)
             return self._audio_source.get_audio(start_frame)
 
-    def save_wav(self, path_or_handle, start_pts, end_pts):
+    def save_wav(
+            self,
+            path_or_handle: T.Union[Path, T.IO],
+            start_pts: int,
+            end_pts: int,
+    ) -> None:
         start_frame = int(start_pts * self.sample_rate / 1000)
         end_frame = int(end_pts * self.sample_rate / 1000)
         frame_count = end_frame - start_frame
@@ -223,7 +242,7 @@ class AudioApi(QtCore.QObject):
             samples = (samples * (1 << 31)).astype(np.int32)
         scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
 
-    def _on_video_parse(self):
+    def _on_video_parse(self) -> None:
         self._min = 0
         self._max = 0
         self.zoom_view(1, 0.5)  # emits view_changed
@@ -231,18 +250,18 @@ class AudioApi(QtCore.QObject):
         if self._media_api.path:
             self._audio_source_provider.schedule_task(self._media_api.path)
 
-    def _on_max_pts_change(self):
+    def _on_max_pts_change(self) -> None:
         self._min = 0
         self._max = self._media_api.max_pts
         self.zoom_view(1, 0.5)  # emits view_changed
 
-    def _got_audio_source(self, result):
+    def _got_audio_source(self, result: ffms.AudioSource) -> None:
         self._audio_source = result
         self.parsed.emit()
 
-    def _wait_for_audio_source(self):
+    def _wait_for_audio_source(self) -> None:
         while self._audio_source is _LOADING:
             time.sleep(0.01)
 
-    def _clip(self, value):
-        return max(min(self._max, value), self._min)
+    def _clip(self, value: T.Union[int, float]) -> int:
+        return max(min(self._max, int(value)), self._min)

@@ -1,10 +1,17 @@
+import typing as T
+
 from PyQt5 import QtWidgets
 
+import bubblesub.api
 import bubblesub.util
 
 
 class StatusBar(QtWidgets.QStatusBar):
-    def __init__(self, api, parent):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget,
+    ) -> None:
         super().__init__(parent)
         self._api = api
         self._subs_label = QtWidgets.QLabel(self)
@@ -30,7 +37,7 @@ class StatusBar(QtWidgets.QStatusBar):
         api.media.audio.selection_changed.connect(
             self._on_audio_selection_change)
 
-    def _on_subs_selection_change(self):
+    def _on_subs_selection_change(self) -> None:
         count = len(self._api.subs.selected_indexes)
         total = len(self._api.subs.lines)
 
@@ -41,10 +48,10 @@ class StatusBar(QtWidgets.QStatusBar):
             self._subs_label.setText(
                 f'Subtitles: {idx + 1}/{total} ({idx / total:.1%})')
         else:
-            def format_range(low, high):
+            def format_range(low: int, high: int) -> str:
                 return f'{low}..{high}' if low != high else str(low)
 
-            ranges = []
+            ranges: T.List[T.Tuple[int, int]] = []
             for idx in self._api.subs.selected_indexes:
                 if ranges and ranges[-1][1] == idx - 1:
                     ranges[-1] = (ranges[-1][0], idx)
@@ -60,14 +67,14 @@ class StatusBar(QtWidgets.QStatusBar):
                     count,
                     count / total))
 
-    def _on_current_pts_change(self):
+    def _on_current_pts_change(self) -> None:
         self._video_frame_label.setText(
             'Video frame: {} ({:.1%})'.format(
                 bubblesub.util.ms_to_str(self._api.media.current_pts),
                 self._api.media.current_pts / max(1, self._api.media.max_pts)))
 
-    def _on_audio_selection_change(self):
-        def format_ms_delta(delta):
+    def _on_audio_selection_change(self) -> None:
+        def format_ms_delta(delta: int) -> str:
             ret = bubblesub.util.ms_to_str(abs(delta))
             ret = ('\u2212', '+')[delta >= 0] + ret
             return ret

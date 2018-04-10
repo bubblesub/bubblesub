@@ -1,9 +1,11 @@
 import re
+import typing as T
 
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
+import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.ui.util import get_color
 from bubblesub.ui.subs_model import SubsModel, SubsModelColumn
@@ -16,13 +18,13 @@ MAGIC_MARGIN3 = 2
 
 
 class AssSyntaxHighlight(QtGui.QSyntaxHighlighter):
-    def __init__(self, api, *args):
+    def __init__(self, api: bubblesub.api.Api, *args: T.Any) -> None:
         super().__init__(*args)
         self._api = api
-        self._style_map = {}
+        self._style_map: T.Dict[str, QtGui.QTextCharFormat] = {}
         self.update_style_map()
 
-    def update_style_map(self):
+    def update_style_map(self) -> None:
         ass_fmt = QtGui.QTextCharFormat()
         ass_fmt.setForeground(get_color(self._api, 'grid/ass-mark'))
 
@@ -36,20 +38,29 @@ class AssSyntaxHighlight(QtGui.QSyntaxHighlighter):
             '\N{SYMBOL FOR NEWLINE}': nonprinting_fmt,
         }
 
-    def highlightBlock(self, text):
+    def highlightBlock(self, text: str) -> None:
         for regex, fmt in self._style_map.items():
             for match in re.finditer(regex, text):
                 self.setFormat(match.start(), match.end() - match.start(), fmt)
 
 
 class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, api, parent=None):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(parent)
         self._doc = QtGui.QTextDocument(self)
         self._doc.setDocumentMargin(0)  # ?
         self.syntax_highlight = AssSyntaxHighlight(api, self._doc)
 
-    def paint(self, painter, option, index):
+    def paint(
+            self,
+            painter: QtGui.QPainter,
+            option: QtWidgets.QStyleOptionViewItem,
+            index: QtCore.QModelIndex,
+    ) -> None:
         if option.state & QtWidgets.QStyle.State_Selected:
             super().paint(painter, option, index)
             return
@@ -81,7 +92,11 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class SubsGrid(QtWidgets.QTableView):
-    def __init__(self, api, parent=None):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(parent)
         self._api = api
         self.setModel(SubsModel(api, self))
@@ -108,28 +123,32 @@ class SubsGrid(QtWidgets.QTableView):
         bubblesub.ui.util.setup_cmd_menu(
             self._api, self.menu, self._api.opt.context_menu)
 
-    def keyboardSearch(self, _text):
+    def keyboardSearch(self, _text: str) -> None:
         pass
 
-    def changeEvent(self, _event):
+    def changeEvent(self, _event: QtCore.QEvent) -> None:
         self.model().reset_cache()
         self._subs_grid_delegate.syntax_highlight.update_style_map()
 
-    def _open_menu(self, position):
+    def _open_menu(self, position: QtCore.QPoint) -> None:
         self.menu.exec_(self.viewport().mapToGlobal(position))
 
-    def _collect_rows(self):
+    def _collect_rows(self) -> T.List[int]:
         rows = set()
         for index in self.selectionModel().selectedIndexes():
             rows.add(index.row())
         return list(rows)
 
-    def _on_subs_load(self):
+    def _on_subs_load(self) -> None:
         self.scrollTo(
             self.model().index(0, 0),
             self.EnsureVisible | self.PositionAtTop)
 
-    def _widget_selection_changed(self, _selected, _deselected):
+    def _widget_selection_changed(
+            self,
+            _selected: T.List[int],
+            _deselected: T.List[int],
+    ) -> None:
         if self._collect_rows() != self._api.subs.selected_indexes:
             self._api.subs.selection_changed.disconnect(
                 self._on_api_selection_change)
@@ -137,7 +156,11 @@ class SubsGrid(QtWidgets.QTableView):
             self._api.subs.selection_changed.connect(
                 self._on_api_selection_change)
 
-    def _on_api_selection_change(self, _rows, _changed):
+    def _on_api_selection_change(
+            self,
+            _rows: T.List[int],
+            _changed: bool,
+    ) -> None:
         if self._collect_rows() == self._api.subs.selected_indexes:
             return
 

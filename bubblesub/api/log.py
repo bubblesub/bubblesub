@@ -13,17 +13,17 @@ class LogLevel(enum.Enum):
 class LogApi(QtCore.QObject):
     logged = QtCore.pyqtSignal(object, str)
 
-    def debug(self, *args, **kwargs):
-        self.log(LogLevel.Debug, *args, **kwargs)
+    def debug(self, text: str) -> None:
+        self.log(LogLevel.Debug, text)
 
-    def info(self, *args, **kwargs):
-        self.log(LogLevel.Info, *args, **kwargs)
+    def info(self, text: str) -> None:
+        self.log(LogLevel.Info, text)
 
-    def warn(self, *args, **kwargs):
-        self.log(LogLevel.Warning, *args, **kwargs)
+    def warn(self, text: str) -> None:
+        self.log(LogLevel.Warning, text)
 
-    def error(self, *args, **kwargs):
-        self.log(LogLevel.Error, *args, **kwargs)
+    def error(self, text: str) -> None:
+        self.log(LogLevel.Error, text)
 
-    def log(self, level, text):
+    def log(self, level: LogLevel, text: str) -> None:
         self.logged.emit(level, text)

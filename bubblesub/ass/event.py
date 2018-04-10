@@ -1,3 +1,5 @@
+import typing as T
+
 import bubblesub.ass
 import bubblesub.model
 import bubblesub.util
@@ -19,7 +21,7 @@ class Event(bubblesub.model.ObservableObject):
             margin_vertical: int = 0,
             is_comment: bool = False,
     ) -> None:
-        self.event_list = None
+        self.event_list: T.Optional['EventList'] = None
 
         self.start = start
         self.end = end
@@ -34,93 +36,99 @@ class Event(bubblesub.model.ObservableObject):
         self.margin_vertical = margin_vertical
         self.is_comment = is_comment
 
-    def set_event_list(self, events):
+    def set_event_list(self, events: 'EventList') -> None:
         self.event_list = events
 
     @property
-    def text(self):
+    def text(self) -> str:
         return self._text
 
     @text.setter
-    def text(self, value):
+    def text(self, value: str) -> None:
         self._text = value.replace('\n', '\\N')
 
     @property
-    def note(self):
+    def note(self) -> str:
         return self._note
 
     @note.setter
-    def note(self, value):
+    def note(self, value: str) -> None:
         self._note = value.replace('\n', '\\N')
 
     @property
-    def duration(self):
+    def duration(self) -> int:
         return self.end - self.start
 
     @property
-    def index(self):
+    def index(self) -> T.Optional[int]:
         # XXX: meh
         if self.event_list is not None:
             return self.event_list.index(self)
         return None
 
     @property
-    def number(self):
+    def number(self) -> T.Optional[int]:
         index = self.index
         if index is None:
             return None
         return index + 1
 
     @property
-    def prev(self):
+    def prev(self) -> T.Optional['Event']:
         index = self.index
         if index is None:
             return None
+        assert self.event_list is not None
         return self.event_list.get(index - 1, None)
 
     @property
-    def next(self):
+    def next(self) -> T.Optional['Event']:
         index = self.index
         if index is None:
             return None
+        assert self.event_list is not None
         return self.event_list.get(index + 1, None)
 
-    def _before_change(self):
+    def _before_change(self) -> None:
         index = self.index
         if index is not None and self.event_list is not None:
             self.event_list.item_about_to_change.emit(index)
 
-    def _after_change(self):
+    def _after_change(self) -> None:
         index = self.index
         if index is not None and self.event_list is not None:
             self.event_list.item_changed.emit(index)
 
-    def __getstate__(self):
+    def __getstate__(self) -> T.Any:
         ret = self.__dict__.copy()
         key = id(ret['event_list'])
         bubblesub.util.ref_dict[key] = ret['event_list']
         ret['event_list'] = key
         return ret
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: T.Any) -> None:
         state['event_list'] = bubblesub.util.ref_dict[state['event_list']]
         self.__dict__ = state
 
-    def __copy__(self):
+    def __copy__(self) -> 'Event':
         ret = type(self)(start=self.start, end=self.end)
         ret.__dict__.update(self.__dict__)
         ret.__dict__['event_list'] = None
         return ret
 
 
-class EventList(bubblesub.model.ObservableList):
-    def insert_one(self, idx=None, **kwargs):
+class EventList(bubblesub.model.ObservableList[Event]):
+    def insert_one(
+            self,
+            idx: T.Optional[int] = None,
+            **kwargs: T.Any,
+    ) -> Event:
         subtitle = Event(**kwargs)
         self.insert(len(self) if idx is None else idx, [subtitle])
         return subtitle
 
-    def insert(self, idx, items):
+    def insert(self, idx: int, items: T.List[Event]) -> None:
         for item in items:
             assert item.event_list is None, 'Event belongs to another list'
             item.event_list = self
-        return super().insert(idx, items)
+        super().insert(idx, items)

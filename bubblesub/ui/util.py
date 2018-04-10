@@ -1,67 +1,76 @@
 import functools
+import typing as T
+from pathlib import Path
 
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
+import bubblesub.api
 import bubblesub.util
 
 
-def error(msg):
+def error(msg: str) -> None:
     box = QtWidgets.QMessageBox()
     box.setIcon(QtWidgets.QMessageBox.Critical)
     box.setText(msg)
     box.exec_()
 
 
-def notice(msg):
+def notice(msg: str) -> None:
     box = QtWidgets.QMessageBox()
     box.setIcon(QtWidgets.QMessageBox.Information)
     box.setText(msg)
     box.exec_()
 
 
-def ask(msg):
+def ask(msg: str) -> bool:
     box = QtWidgets.QMessageBox()
     box.setText(msg)
     box.setIcon(QtWidgets.QMessageBox.Question)
     box.addButton('Yes', QtWidgets.QMessageBox.YesRole)
     box.addButton('No', QtWidgets.QMessageBox.NoRole)
-    return box.exec_() == 0
+    return T.cast(int, box.exec_()) == 0
 
 
-def blend_colors(color1, color2, ratio):
+def blend_colors(
+        color1: QtGui.QColor,
+        color2: QtGui.QColor,
+        ratio: float,
+) -> int:
     return QtGui.qRgb(
-        color1.red() * (1 - ratio) + color2.red() * ratio,
-        color1.green() * (1 - ratio) + color2.green() * ratio,
-        color1.blue() * (1 - ratio) + color2.blue() * ratio)
+        int(color1.red() * (1 - ratio) + color2.red() * ratio),
+        int(color1.green() * (1 - ratio) + color2.green() * ratio),
+        int(color1.blue() * (1 - ratio) + color2.blue() * ratio),
+    )
 
 
 class ColorPicker(QtWidgets.QWidget):
     changed = QtCore.pyqtSignal()
 
-    def __init__(self, parent):
+    def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._label = QtWidgets.QLabel(self)
         self._button = QtWidgets.QPushButton('Change', self)
         self._button.clicked.connect(self._on_button_click)
-        layout = QtWidgets.QHBoxLayout(self, margin=0)
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._label)
         layout.addWidget(self._button)
         self._color = QtGui.QColor(0, 0, 0, 0)
         self.set_color(self._color)
 
-    def _on_button_click(self, _event):
+    def _on_button_click(self, _event: QtGui.QMouseEvent) -> None:
         dialog = QtWidgets.QColorDialog(self)
         dialog.setCurrentColor(self._color)
         dialog.setOption(dialog.ShowAlphaChannel, True)
         if dialog.exec_():
             self.set_color(dialog.selectedColor())
 
-    def get_color(self):
+    def get_color(self) -> QtGui.QColor:
         return self._color
 
-    def set_color(self, color):
+    def set_color(self, color: QtGui.QColor) -> None:
         style = '''QLabel:enabled {{
             background-color: #{:02x}{:02x}{:02x};
             opacity: {};
@@ -76,12 +85,16 @@ class ColorPicker(QtWidgets.QWidget):
 
 
 class TimeEdit(QtWidgets.QLineEdit):
-    def __init__(self, parent=None, allow_negative=False):
+    def __init__(
+            self,
+            parent: QtWidgets.QWidget = None,
+            allow_negative: bool = False,
+    ) -> None:
         super().__init__(parent)
         self._allow_negative = False
         self.set_allow_negative(allow_negative)
 
-    def set_allow_negative(self, allow):
+    def set_allow_negative(self, allow: bool) -> None:
         self._allow_negative = allow
         if allow:
             self.setInputMask('X9:99:99.999')
@@ -93,14 +106,14 @@ class TimeEdit(QtWidgets.QLineEdit):
             self.setInputMask('9:99:99.999')
         self.reset_text()
 
-    def reset_text(self):
+    def reset_text(self) -> None:
         if self._allow_negative:
             self.setText('+0:00:00.000')
         else:
             self.setText('0:00:00.000')
         self.setCursorPosition(0)
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         super().keyPressEvent(event)
 
         if not event.key() in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Down):
@@ -115,10 +128,10 @@ class TimeEdit(QtWidgets.QLineEdit):
 
         self.set_value(value)
 
-    def get_value(self):
+    def get_value(self) -> int:
         return bubblesub.util.str_to_ms(self.text())
 
-    def set_value(self, time):
+    def set_value(self, time: int) -> None:
         text = bubblesub.util.ms_to_str(time)
         if self._allow_negative and time >= 0:
             text = '+' + text
@@ -127,14 +140,14 @@ class TimeEdit(QtWidgets.QLineEdit):
         self.setCursorPosition(0)
 
 
-def _window_from_menu(menu):
+def _window_from_menu(menu: QtWidgets.QMenu) -> QtWidgets.QWidget:
     window = menu
     while window.parent() is not None:
         window = window.parent()
     return window
 
 
-def _on_menu_about_to_show(menu):
+def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
     window = _window_from_menu(menu)
     window.setProperty('focused-widget', window.focusWidget())
     for action in menu.actions():
@@ -142,7 +155,7 @@ def _on_menu_about_to_show(menu):
             action.setEnabled(action.cmd.is_enabled)
 
 
-def _on_menu_about_to_hide(menu):
+def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
     window = _window_from_menu(menu)
     focused_widget = window.property('focused-widget')
     if focused_widget:
@@ -150,14 +163,24 @@ def _on_menu_about_to_hide(menu):
 
 
 class _CommandAction(QtWidgets.QAction):
-    def __init__(self, api, cmd_name, cmd_args, parent):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            cmd_name: str,
+            cmd_args: T.Any,
+            parent: QtWidgets.QWidget,
+    ) -> None:
         super().__init__(parent)
         self.cmd = api.cmd.get(cmd_name, cmd_args)
         self.triggered.connect(lambda: api.cmd.run(self.cmd))
 
 
-def setup_cmd_menu(api, parent, menu_def):
-    action_map = {}
+def setup_cmd_menu(
+        api: bubblesub.api.Api,
+        parent: QtWidgets.QWidget,
+        menu_def: T.List[T.Any],
+) -> T.Any:
+    action_map: T.Any = {}
     if hasattr(parent, 'aboutToShow'):
         parent.aboutToShow.connect(
             functools.partial(_on_menu_about_to_show, parent))
@@ -179,45 +202,62 @@ def setup_cmd_menu(api, parent, menu_def):
 
 
 @functools.lru_cache(maxsize=None)
-def get_color(api, color_name):
+def get_color(api: bubblesub.api.Api, color_name: str) -> QtGui.QColor:
     current_palette = api.opt.general['current_palette']
     palette_def = api.opt.general['palettes'][current_palette]
     color_value = palette_def[color_name]
     return QtGui.QColor(*color_value)
 
 
-def load_dialog(parent, file_filter, directory=None):
+def load_dialog(
+        parent: QtWidgets.QWidget,
+        file_filter: str,
+        directory: T.Optional[Path] = None,
+) -> T.Optional[Path]:
     path, _ = QtWidgets.QFileDialog.getOpenFileName(
         parent,
-        directory=directory or QtCore.QDir.homePath(),
+        directory=(
+            T.cast(str, QtCore.QDir.homePath())
+            if directory is None else
+            str(directory)
+        ),
         filter=file_filter)
-    return path
+    return None if path is None else Path(path)
 
 
-def save_dialog(parent, file_filter, directory=None, file_name=None):
-    directory = directory or QtCore.QDir.homePath()
+def save_dialog(
+        parent: QtWidgets.QWidget,
+        file_filter: str,
+        directory: T.Optional[Path] = None,
+        file_name: T.Optional[str] = None
+) -> T.Optional[Path]:
+    directory = (
+        T.cast(str, QtCore.QDir.homePath())
+        if directory is None else
+        str(directory)
+    )
     if file_name:
         directory += '/' + file_name
     path, _ = QtWidgets.QFileDialog.getSaveFileName(
         parent,
         directory=directory,
         filter=file_filter)
-    return path
+    return Path(path)
 
 
 def time_jump_dialog(
-        parent,
-        value=0,
-        relative_label='Time:',
-        absolute_label='Time:',
-        relative_checked=True,
-        show_radio=True):
+        parent: QtWidgets.QWidget,
+        value: int = 0,
+        relative_label: str = 'Time:',
+        absolute_label: str = 'Time:',
+        relative_checked: bool = True,
+        show_radio: bool = True) -> T.Optional[T.Tuple[int, bool]]:
     class TimeJumpDialog(QtWidgets.QDialog):
-        def __init__(self, parent=None):
+        def __init__(self, parent: QtWidgets.QWidget = None) -> None:
             super().__init__(parent)
 
             self._label = QtWidgets.QLabel('', self)
-            self._time_edit = bubblesub.ui.util.TimeEdit(self)
+            self._time_edit = TimeEdit(self)
             self._radio_rel = QtWidgets.QRadioButton('Relative', self)
             self._radio_abs = QtWidgets.QRadioButton('Absolute', self)
             if relative_checked:
@@ -247,7 +287,7 @@ def time_jump_dialog(
             self._on_radio_click()
             self._time_edit.set_value(value)
 
-        def _on_radio_click(self):
+        def _on_radio_click(self) -> None:
             is_relative = self._radio_rel.isChecked()
             if is_relative:
                 self._label.setText(relative_label)
@@ -255,7 +295,7 @@ def time_jump_dialog(
                 self._label.setText(absolute_label)
             self._time_edit.set_allow_negative(is_relative)
 
-        def value(self):
+        def value(self) -> T.Tuple[int, bool]:
             return (
                 self._time_edit.get_value(),
                 self._radio_rel.isChecked())

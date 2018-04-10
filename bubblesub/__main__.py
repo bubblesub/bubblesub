@@ -6,7 +6,7 @@ import bubblesub.ui
 import bubblesub.cache
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='?')
     parser.add_argument('--no-config', action='store_true')
@@ -15,7 +15,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     args = parse_args()
 
     opt = bubblesub.opt.Options()

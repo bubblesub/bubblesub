@@ -1,15 +1,17 @@
-import enchant
+import typing as T
 
+import enchant
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
+import bubblesub.api
 import bubblesub.ass.util
-import bubblesub.util
+import bubblesub.ui.util
 
 
 class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
-    def __init__(self, api, *args):
+    def __init__(self, api: bubblesub.api.Api, *args: T.Any) -> None:
         super().__init__(*args)
 
         spell_check_lang = api.opt.general['spell_check']
@@ -27,7 +29,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
         self._fmt.setUnderlineStyle(QtGui.QTextCharFormat.SpellCheckUnderline)
         self._fmt.setFontUnderline(True)
 
-    def highlightBlock(self, text):
+    def highlightBlock(self, text: str) -> None:
         if not self._dictionary:
             return
 
@@ -37,7 +39,14 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
 
 
 class TextEdit(QtWidgets.QPlainTextEdit):
-    def __init__(self, api, name, parent, *args, **kwargs):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            name: str,
+            parent: QtWidgets.QWidget,
+            *args: T.Any,
+            **kwargs: T.Any,
+    ) -> None:
         super().__init__(parent, *args, **kwargs)
         self._name = name
         self._api = api
@@ -50,7 +59,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
         except KeyError:
             pass
 
-    def wheelEvent(self, event):
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.modifiers() & QtCore.Qt.ControlModifier:
             distance = 1 if event.angleDelta().y() > 0 else -1
             new_size = self.font().pointSize() + distance
@@ -64,27 +73,32 @@ class TextEdit(QtWidgets.QPlainTextEdit):
 
 
 class TopBar(QtWidgets.QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
 
         self.start_time_edit = bubblesub.ui.util.TimeEdit(self)
         self.end_time_edit = bubblesub.ui.util.TimeEdit(self)
         self.duration_edit = bubblesub.ui.util.TimeEdit(self)
 
-        self.margins_widget = QtWidgets.QWidget(self)
-        self.margin_l_edit = QtWidgets.QSpinBox(
-            self.margins_widget, minimum=0, maximum=999)
-        self.margin_v_edit = QtWidgets.QSpinBox(
-            self.margins_widget, minimum=0, maximum=999)
-        self.margin_r_edit = QtWidgets.QSpinBox(
-            self.margins_widget, minimum=0, maximum=999)
-        layout = QtWidgets.QHBoxLayout(self.margins_widget, spacing=0)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.margin_l_edit)
-        layout.addWidget(self.margin_v_edit)
-        layout.addWidget(self.margin_r_edit)
+        margins_widget = QtWidgets.QWidget(self)
+        self.margin_l_edit = QtWidgets.QSpinBox(margins_widget)
+        self.margin_l_edit.setMinimum(0)
+        self.margin_l_edit.setMaximum(999)
+        self.margin_v_edit = QtWidgets.QSpinBox(margins_widget)
+        self.margin_v_edit.setMinimum(0)
+        self.margin_v_edit.setMaximum(999)
+        self.margin_r_edit = QtWidgets.QSpinBox(margins_widget)
+        self.margin_r_edit.setMinimum(0)
+        self.margin_r_edit.setMaximum(999)
+        margins_layout = QtWidgets.QHBoxLayout(margins_widget)
+        margins_layout.setSpacing(0)
+        margins_layout.setContentsMargins(0, 0, 0, 0)
+        margins_layout.addWidget(self.margin_l_edit)
+        margins_layout.addWidget(self.margin_v_edit)
+        margins_layout.addWidget(self.margin_r_edit)
 
-        self.layer_edit = QtWidgets.QSpinBox(self, minimum=0)
+        self.layer_edit = QtWidgets.QSpinBox(self)
+        self.layer_edit.setMinimum(0)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(12)
@@ -97,13 +111,17 @@ class TopBar(QtWidgets.QWidget):
         layout.addWidget(self.duration_edit)
         layout.addStretch()
         layout.addWidget(QtWidgets.QLabel('Margins:', self))
-        layout.addWidget(self.margins_widget)
+        layout.addWidget(margins_widget)
         layout.addWidget(QtWidgets.QLabel('Layer:', self))
         layout.addWidget(self.layer_edit)
 
 
 class CenterBar(QtWidgets.QWidget):
-    def __init__(self, api, parent=None):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(parent)
 
         self.text_edit = TextEdit(
@@ -114,8 +132,9 @@ class CenterBar(QtWidgets.QWidget):
             tabChangesFocus=True,
             placeholderText='Notes')
 
-        self.text_edit.highlighter = \
+        self.text_edit.highlighter = (
             SpellCheckHighlighter(api, self.text_edit.document())
+        )
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(4)
@@ -125,23 +144,27 @@ class CenterBar(QtWidgets.QWidget):
 
 
 class BottomBar(QtWidgets.QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
 
-        self.style_edit = QtWidgets.QComboBox(
-            self,
-            editable=True,
-            sizePolicy=QtWidgets.QSizePolicy(
+        self.style_edit = QtWidgets.QComboBox(self)
+        self.style_edit.setEditable(True)
+        self.style_edit.setSizePolicy(
+            QtWidgets.QSizePolicy(
                 QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Preferred),
-            insertPolicy=QtWidgets.QComboBox.NoInsert)
-        self.actor_edit = QtWidgets.QComboBox(
-            self,
-            editable=True,
-            sizePolicy=QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Preferred,
+            ),
+        )
+        self.style_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
+        self.actor_edit = QtWidgets.QComboBox(self)
+        self.actor_edit.setEditable(True)
+        self.actor_edit.setSizePolicy(
+            QtWidgets.QSizePolicy(
                 QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Preferred),
-            insertPolicy=QtWidgets.QComboBox.NoInsert)
+                QtWidgets.QSizePolicy.Preferred,
+            ),
+        )
+        self.actor_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
         self.effect_edit = QtWidgets.QLineEdit(self)
         self.comment_checkbox = QtWidgets.QCheckBox('Comment', self)
 
@@ -159,10 +182,14 @@ class BottomBar(QtWidgets.QWidget):
 
 
 class Editor(QtWidgets.QWidget):
-    def __init__(self, api, parent=None):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(parent)
 
-        self._index = None
+        self._index: T.Optional[int] = None
         self._api = api
 
         self.top_bar = TopBar(self)
@@ -180,7 +207,7 @@ class Editor(QtWidgets.QWidget):
         self._connect_api_signals()
         self._connect_ui_signals()
 
-    def _fetch_selection(self, index):
+    def _fetch_selection(self, index: int) -> None:
         self._index = index
         subtitle = self._api.subs.lines[index]
         self.top_bar.start_time_edit.set_value(subtitle.start)
@@ -195,12 +222,12 @@ class Editor(QtWidgets.QWidget):
 
         self.bottom_bar.actor_edit.clear()
         self.bottom_bar.actor_edit.addItems(
-            sorted(list(set(sub.actor for sub in self._api.subs.lines))))
+            sorted(list(set(sub.actor for sub in self._api.subs.lines.items))))
         self.bottom_bar.actor_edit.lineEdit().setText(subtitle.actor)
 
         self.bottom_bar.style_edit.clear()
         self.bottom_bar.style_edit.addItems(
-            sorted(list(set(sub.style for sub in self._api.subs.lines))))
+            sorted(list(set(sub.style for sub in self._api.subs.lines.items))))
         self.bottom_bar.style_edit.lineEdit().setText(subtitle.style)
 
         self.center.text_edit.document().setPlainText(
@@ -209,12 +236,12 @@ class Editor(QtWidgets.QWidget):
             self._convert_newlines(subtitle.note))
         self.setEnabled(True)
 
-    def _convert_newlines(self, text):
+    def _convert_newlines(self, text: str) -> str:
         if self._api.opt.general['convert_newlines']:
             return text.replace('\\N', '\n')
         return text
 
-    def _clear_selection(self):
+    def _clear_selection(self) -> None:
         self._index = None
         self.top_bar.start_time_edit.reset_text()
         self.top_bar.end_time_edit.reset_text()
@@ -231,9 +258,10 @@ class Editor(QtWidgets.QWidget):
         self.center.note_edit.document().setPlainText('')
         self.setEnabled(False)
 
-    def _push_selection(self):
+    def _push_selection(self) -> None:
         if not self.isEnabled():
             return
+        assert self._index is not None
 
         self._disconnect_api_signals()
         subtitle = self._api.subs.lines[self._index]
@@ -253,10 +281,14 @@ class Editor(QtWidgets.QWidget):
         subtitle.margin_right = self.top_bar.margin_r_edit.value()
         subtitle.is_comment = self.bottom_bar.comment_checkbox.isChecked()
         subtitle.end_update()
-        self._api.undo.mark_undo()
+        self._api.undo.capture()
         self._connect_api_signals()
 
-    def _on_grid_selection_change(self, rows, _changed):
+    def _on_grid_selection_change(
+            self,
+            rows: T.List[int],
+            _changed: bool,
+    ) -> None:
         self._disconnect_ui_signals()
         if len(rows) == 1:
             self._fetch_selection(rows[0])
@@ -264,25 +296,25 @@ class Editor(QtWidgets.QWidget):
             self._clear_selection()
         self._connect_ui_signals()
 
-    def _on_items_insert(self, idx, count):
-        if self._index in range(idx, idx + count):
+    def _on_items_insert(self, idx: int, count: int) -> None:
+        if self._index is not None and self._index in range(idx, idx + count):
             self._disconnect_ui_signals()
             self._fetch_selection(self._index)
             self._connect_ui_signals()
 
-    def _on_items_remove(self, idx, count):
-        if self._index in range(idx, idx + count):
+    def _on_items_remove(self, idx: int, count: int) -> None:
+        if self._index is not None and self._index in range(idx, idx + count):
             self._disconnect_ui_signals()
             self._clear_selection()
             self._connect_ui_signals()
 
-    def _on_item_change(self, idx):
+    def _on_item_change(self, idx: int) -> None:
         if idx == self._index or idx is None:
             self._disconnect_ui_signals()
             self._fetch_selection(self._index)
             self._connect_ui_signals()
 
-    def _on_time_end_edit(self):
+    def _on_time_end_edit(self) -> None:
         self._disconnect_ui_signals()
         start = self.top_bar.start_time_edit.get_value()
         end = self.top_bar.end_time_edit.get_value()
@@ -291,7 +323,7 @@ class Editor(QtWidgets.QWidget):
         self._push_selection()
         self._connect_ui_signals()
 
-    def _on_duration_edit(self):
+    def _on_duration_edit(self) -> None:
         self._disconnect_ui_signals()
         start = self.top_bar.start_time_edit.get_value()
         duration = self.top_bar.duration_edit.get_value()
@@ -300,17 +332,17 @@ class Editor(QtWidgets.QWidget):
         self._push_selection()
         self._connect_ui_signals()
 
-    def _on_generic_edit(self):
+    def _on_generic_edit(self) -> None:
         self._push_selection()
 
-    def _connect_api_signals(self):
+    def _connect_api_signals(self) -> None:
         self._api.subs.lines.items_inserted.connect(self._on_items_insert)
         self._api.subs.lines.items_removed.connect(self._on_items_remove)
         self._api.subs.lines.item_changed.connect(self._on_item_change)
         self._api.subs.selection_changed.connect(
             self._on_grid_selection_change)
 
-    def _disconnect_api_signals(self):
+    def _disconnect_api_signals(self) -> None:
         self._api.subs.lines.items_inserted.disconnect(self._on_items_insert)
         self._api.subs.lines.items_removed.disconnect(self._on_items_remove)
         self._api.subs.lines.item_changed.disconnect(self._on_item_change)
@@ -319,7 +351,7 @@ class Editor(QtWidgets.QWidget):
 
     # TODO: get rid of this crap
 
-    def _connect_ui_signals(self):
+    def _connect_ui_signals(self) -> None:
         self.top_bar.start_time_edit.textEdited.connect(self._on_generic_edit)
         self.top_bar.end_time_edit.textEdited.connect(self._on_time_end_edit)
         self.top_bar.duration_edit.textEdited.connect(self._on_duration_edit)
@@ -337,7 +369,7 @@ class Editor(QtWidgets.QWidget):
         self.bottom_bar.comment_checkbox.stateChanged.connect(
             self._on_generic_edit)
 
-    def _disconnect_ui_signals(self):
+    def _disconnect_ui_signals(self) -> None:
         self.top_bar.start_time_edit.textEdited.disconnect(
             self._on_generic_edit)
         self.top_bar.end_time_edit.textEdited.disconnect(

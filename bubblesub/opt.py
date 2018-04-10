@@ -1,4 +1,5 @@
 import json
+import typing as T
 
 from pathlib import Path
 
@@ -393,22 +394,22 @@ _DEFAULT_CONTEXT_MENU = [
 
 
 class Serializer:
-    def __init__(self, location):
+    def __init__(self, location: Path) -> None:
         self._location = location
 
     @property
-    def _hotkeys_path(self):
+    def _hotkeys_path(self) -> Path:
         return self._location / 'hotkey.json'
 
     @property
-    def _menu_path(self):
+    def _menu_path(self) -> Path:
         return self._location / 'menu.json'
 
     @property
-    def _general_path(self):
+    def _general_path(self) -> Path:
         return self._location / 'general.json'
 
-    def load(self):
+    def load(self) -> T.Tuple[T.Any, T.Any, T.Any]:
         hotkeys = None
         menu = None
         general = None
@@ -420,7 +421,7 @@ class Serializer:
             general = json.loads(self._general_path.read_text())
         return hotkeys, menu, general
 
-    def write(self, hotkeys, menu, general):
+    def write(self, hotkeys: T.Any, menu: T.Any, general: T.Any) -> None:
         self._location.mkdir(parents=True, exist_ok=True)
         self._hotkeys_path.write_text(json.dumps(hotkeys, indent=4))
         self._menu_path.write_text(json.dumps(menu, indent=4))
@@ -430,14 +431,14 @@ class Serializer:
 class Options:
     DEFAULT_PATH = Path(xdg.XDG_CONFIG_HOME) / 'bubblesub'
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.general = _DEFAULT_GENERAL
         self.hotkeys = _DEFAULT_HOTKEYS
         self.main_menu = _DEFAULT_TOP_MENU
         self.context_menu = _DEFAULT_CONTEXT_MENU
-        self.location = None
+        self.location: T.Optional[Path] = None
 
-    def load(self, location):
+    def load(self, location: Path) -> None:
         self.location = location
         serializer = Serializer(location)
         hotkeys, menu, general = serializer.load()
@@ -450,14 +451,18 @@ class Options:
             self.general = general
         self._ensure_defaults(self.general, _DEFAULT_GENERAL)
 
-    def save(self, location):
+    def save(self, location: Path) -> None:
         serializer = Serializer(location)
         serializer.write(
             self.hotkeys,
             {'main': self.main_menu, 'context': self.context_menu},
             self.general)
 
-    def _ensure_defaults(self, target, source):
+    def _ensure_defaults(
+            self,
+            target: T.Dict[str, T.Any],
+            source: T.Dict[str, T.Any],
+    ) -> None:
         if isinstance(source, (list, tuple)):
             if not isinstance(target, list) and not isinstance(target, tuple):
                 raise RuntimeError('Expected list')

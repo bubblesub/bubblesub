@@ -10,13 +10,13 @@ MAX_REPRESENTABLE_TIME = 3599990
 
 
 class RefDict:
-    def __init__(self):
-        self._map = {}
+    def __init__(self) -> None:
+        self._map: T.Dict[int, T.Any] = {}
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: int) -> T.Any:
         return self._map[key]
 
-    def __setitem__(self, key, data):
+    def __setitem__(self, key: int, data: T.Any) -> None:
         self._map[key] = data
 
 
@@ -36,13 +36,13 @@ def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
     return hours, minutes, seconds, milliseconds
 
 
-def ms_to_str(milliseconds):
+def ms_to_str(milliseconds: int) -> str:
     sgn = '-' if milliseconds < 0 else ''
     hours, minutes, seconds, milliseconds = ms_to_times(abs(milliseconds))
     return f'{sgn}{hours:01d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}'
 
 
-def str_to_ms(text):
+def str_to_ms(text: str) -> int:
     result = re.match('''
         ^(?P<sign>[+-])?
         (?:(?P<hour>\\d+):)?
@@ -63,30 +63,30 @@ def str_to_ms(text):
     raise ValueError('Invalid time')
 
 
-def hash_digest(subject):
+def hash_digest(subject: T.Any) -> str:
     return hashlib.md5(str(subject).encode('utf-8')).hexdigest()
 
 
 class Benchmark:
-    def __init__(self, msg):
+    def __init__(self, msg: str) -> None:
         self._msg = msg
         self._time = time.time()
 
-    def __enter__(self):
+    def __enter__(self) -> 'Benchmark':
         self._time = time.time()
         print('{}: started'.format(self._msg))
         return self
 
-    def __exit__(self, *args, **kwargs):
+    def __exit__(self, *args: T.Any, **kwargs: T.Any) -> None:
         print('{}: ended {:.02f} s'.format(
             self._msg, time.time() - self._time))
 
-    def mark(self, msg):
+    def mark(self, msg: str) -> None:
         print('{}: {:.02f} s'.format(msg, time.time() - self._time))
         self._time = time.time()
 
 
-def eval_expr(expr):
+def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
     import ast
     import operator
 
@@ -100,7 +100,9 @@ def eval_expr(expr):
         ast.USub: operator.neg,
     }
 
-    def eval_(node):
+    def eval_(
+            node: T.List[ast.stmt],
+    ) -> T.Union[int, float, fractions.Fraction]:
         if isinstance(node, ast.Num):
             return fractions.Fraction(node.n)
         elif isinstance(node, ast.BinOp):
@@ -112,10 +114,10 @@ def eval_expr(expr):
     return eval_(ast.parse(str(expr), mode='eval').body)
 
 
-def make_ranges(indexes: T.Iterable[int]) -> T.Tuple[int, int]:
-    for _, elems in itertools.groupby(
+def make_ranges(indexes: T.Iterable[int]) -> T.Iterable[T.Tuple[int, int]]:
+    for _, group in itertools.groupby(
             enumerate(indexes), lambda item: item[1] - item[0]):
-        elems = list(elems)
+        elems = list(group)
         start_idx = elems[0][1]
         end_idx = elems[-1][1]
         yield (start_idx, end_idx + 1 - start_idx)

@@ -1,8 +1,10 @@
+import typing as T
 from copy import copy
 
 from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
+from bubblesub.ass.event import Event
 from bubblesub.api.cmd import CoreCommand
 
 
@@ -11,10 +13,10 @@ class EditUndoCommand(CoreCommand):
     menu_name = '&Undo'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.undo.has_undo
 
-    async def run(self):
+    async def run(self) -> None:
         self.api.undo.undo()
 
 
@@ -23,10 +25,10 @@ class EditRedoCommand(CoreCommand):
     menu_name = '&Redo'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.undo.has_redo
 
-    async def run(self):
+    async def run(self) -> None:
         self.api.undo.redo()
 
 
@@ -34,7 +36,7 @@ class EditInsertAboveCommand(CoreCommand):
     name = 'edit/insert-above'
     menu_name = '&Insert subtitle (above)'
 
-    async def run(self):
+    async def run(self) -> None:
         if not self.api.subs.selected_indexes:
             idx = 0
             prev_sub = None
@@ -58,14 +60,14 @@ class EditInsertAboveCommand(CoreCommand):
         self.api.subs.lines.insert_one(
             idx, start=start, end=end, style='Default')
         self.api.subs.selected_indexes = [idx]
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditInsertBelowCommand(CoreCommand):
     name = 'edit/insert-below'
     menu_name = '&Insert subtitle (below)'
 
-    async def run(self):
+    async def run(self) -> None:
         if not self.api.subs.selected_indexes:
             idx = 0
             cur_sub = None
@@ -85,7 +87,7 @@ class EditInsertBelowCommand(CoreCommand):
         self.api.subs.lines.insert_one(
             idx, start=start, end=end, style='Default')
         self.api.subs.selected_indexes = [idx]
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditMoveUpCommand(CoreCommand):
@@ -93,13 +95,13 @@ class EditMoveUpCommand(CoreCommand):
     menu_name = '&Move selected subtitles up'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         if not self.api.subs.selected_indexes:
             return False
         return self.api.subs.selected_indexes[0] > 0
 
-    async def run(self):
-        indexes = []
+    async def run(self) -> None:
+        indexes: T.List[int] = []
         for start_idx, count in bubblesub.util.make_ranges(
                 self.api.subs.selected_indexes):
             self.api.subs.lines.insert(
@@ -111,7 +113,7 @@ class EditMoveUpCommand(CoreCommand):
             self.api.subs.lines.remove(start_idx + count, count)
             indexes += [start_idx + i - 1 for i in range(count)]
         self.api.subs.selected_indexes = indexes
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditMoveDownCommand(CoreCommand):
@@ -119,15 +121,15 @@ class EditMoveDownCommand(CoreCommand):
     menu_name = '&Move selected subtitles down'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         if not self.api.subs.selected_indexes:
             return False
         return (
             self.api.subs.selected_indexes[-1]
             < len(self.api.subs.lines) - 1)
 
-    async def run(self):
-        indexes = []
+    async def run(self) -> None:
+        indexes: T.List[int] = []
         for start_idx, count in reversed(list(bubblesub.util.make_ranges(
                 self.api.subs.selected_indexes))):
             self.api.subs.lines.insert(
@@ -139,7 +141,7 @@ class EditMoveDownCommand(CoreCommand):
             self.api.subs.lines.remove(start_idx, count)
             indexes += [start_idx + i + 1 for i in range(count)]
         self.api.subs.selected_indexes = indexes
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditMoveToCommand(CoreCommand):
@@ -147,11 +149,14 @@ class EditMoveToCommand(CoreCommand):
     menu_name = '&Move selected subtitles to...'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return len(self.api.subs.selected_indexes) > 0
 
-    async def run(self):
-        async def run_dialog(api, main_window):
+    async def run(self) -> None:
+        async def run_dialog(
+                api: bubblesub.api.Api,
+                main_window: QtWidgets.QMainWindow,
+        ) -> T.Optional[int]:
             dialog = QtWidgets.QInputDialog(main_window)
             dialog.setLabelText('Line number to move selected subtitles to:')
             dialog.setIntMinimum(1)
@@ -160,14 +165,14 @@ class EditMoveToCommand(CoreCommand):
                 dialog.setIntValue(api.subs.selected_indexes[0] + 1)
             dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
             if dialog.exec_():
-                return dialog.intValue() - 1
+                return T.cast(int, dialog.intValue()) - 1
             return None
 
         base_idx = await self.api.gui.exec(run_dialog)
         if base_idx is None:
             return
 
-        sub_copies = []
+        sub_copies: T.List[Event] = []
         for start_idx, count in reversed(list(bubblesub.util.make_ranges(
                 self.api.subs.selected_indexes))):
             sub_copies += list(reversed([
@@ -177,7 +182,7 @@ class EditMoveToCommand(CoreCommand):
             self.api.subs.lines.remove(start_idx, count)
         sub_copies.reverse()
         self.api.subs.lines.insert(base_idx, sub_copies)
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditDuplicateCommand(CoreCommand):
@@ -185,12 +190,12 @@ class EditDuplicateCommand(CoreCommand):
     menu_name = '&Duplicate selected subtitles'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         self.api.gui.begin_update()
-        new_selection = []
+        new_selection: T.List[int] = []
         for idx in reversed(self.api.subs.selected_indexes):
             self.api.subs.lines.insert(
                 idx + 1, [copy(self.api.subs.lines[idx])])
@@ -200,7 +205,7 @@ class EditDuplicateCommand(CoreCommand):
                 - len(new_selection))
         self.api.subs.selected_indexes = new_selection
         self.api.gui.end_update()
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditDeleteCommand(CoreCommand):
@@ -208,15 +213,15 @@ class EditDeleteCommand(CoreCommand):
     menu_name = '&Delete selected subtitles'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for start_idx, count in reversed(list(bubblesub.util.make_ranges(
                 self.api.subs.selected_indexes))):
             self.api.subs.lines.remove(start_idx, count)
         self.api.subs.selected_indexes = []
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditSwapTextAndNotesCommand(CoreCommand):
@@ -224,15 +229,15 @@ class EditSwapTextAndNotesCommand(CoreCommand):
     menu_name = '&Swap notes with subtitle text'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for sub in self.api.subs.selected_lines:
             sub.begin_update()
             sub.text, sub.note = sub.note, sub.text
             sub.end_update()
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditSplitSubAtVideoCommand(CoreCommand):
@@ -240,10 +245,10 @@ class EditSplitSubAtVideoCommand(CoreCommand):
     menu_name = '&Split selected subtitle at video frame'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return len(self.api.subs.selected_indexes) == 1
 
-    async def run(self):
+    async def run(self) -> None:
         idx = self.api.subs.selected_indexes[0]
         sub = self.api.subs.lines[idx]
         split_pos = self.api.media.current_pts
@@ -255,7 +260,7 @@ class EditSplitSubAtVideoCommand(CoreCommand):
         self.api.subs.lines[idx + 1].start = split_pos
         self.api.subs.selected_indexes = [idx, idx + 1]
         self.api.gui.end_update()
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditJoinSubsKeepFirstCommand(CoreCommand):
@@ -263,7 +268,7 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
     menu_name = '&Join subtitles (keep first)'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         if len(self.api.subs.selected_indexes) > 1:
             return True
         if len(self.api.subs.selected_indexes) == 1:
@@ -272,7 +277,7 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
                 < len(self.api.subs.lines))
         return False
 
-    async def run(self):
+    async def run(self) -> None:
         idx = self.api.subs.selected_indexes[0]
         if len(self.api.subs.selected_indexes) == 1:
             self.api.subs.selected_indexes = [idx, idx + 1]
@@ -281,7 +286,7 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
         for i in reversed(self.api.subs.selected_indexes[1:]):
             self.api.subs.lines.remove(i, 1)
         self.api.subs.selected_indexes = [idx]
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditJoinSubsConcatenateCommand(CoreCommand):
@@ -289,7 +294,7 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
     menu_name = '&Join subtitles (concatenate)'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         if len(self.api.subs.selected_indexes) > 1:
             return True
         if len(self.api.subs.selected_indexes) == 1:
@@ -298,7 +303,7 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
                 < len(self.api.subs.lines))
         return False
 
-    async def run(self):
+    async def run(self) -> None:
         idx = self.api.subs.selected_indexes[0]
         if len(self.api.subs.selected_indexes) == 1:
             self.api.subs.selected_indexes = [idx, idx + 1]
@@ -320,7 +325,7 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
         sub.end_update()
 
         self.api.subs.selected_indexes = [idx]
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditShiftSubsWithGuiCommand(CoreCommand):
@@ -328,11 +333,15 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
     menu_name = '&Shift times...'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
-        async def _run_dialog(_api, main_window, **kwargs):
+    async def run(self) -> None:
+        async def _run_dialog(
+                _api: bubblesub.api.Api,
+                main_window: QtWidgets.QMainWindow,
+                **kwargs: T.Any,
+        ) -> T.Optional[T.Tuple[int, bool]]:
             return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
 
         ret = await self.api.gui.exec(
@@ -341,7 +350,7 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
             relative_label='Time to add:',
             relative_checked=True)
 
-        if ret:
+        if ret is not None:
             delta, is_relative = ret
 
             if not is_relative:
@@ -352,7 +361,7 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
                 sub.start += delta
                 sub.end += delta
                 sub.end_update()
-            self.api.undo.mark_undo()
+            self.api.undo.capture()
 
 
 class EditSnapSubsStartToVideoCommand(CoreCommand):
@@ -360,13 +369,13 @@ class EditSnapSubsStartToVideoCommand(CoreCommand):
     menu_name = '&Snap subtitles start to video'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for sub in self.api.subs.selected_lines:
             sub.start = self.api.media.current_pts
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditSnapSubsEndToVideoCommand(CoreCommand):
@@ -374,13 +383,13 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
     menu_name = '&Snap subtitles end to video'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for sub in self.api.subs.selected_lines:
             sub.end = self.api.media.current_pts
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditSnapSubsToVideoCommand(CoreCommand):
@@ -388,16 +397,16 @@ class EditSnapSubsToVideoCommand(CoreCommand):
     menu_name = '&Snap subtitles to video'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for sub in self.api.subs.selected_lines:
             sub.start = self.api.media.current_pts
             sub.end = (
                 self.api.media.current_pts
                 + self.api.opt.general['subs']['default_duration'])
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
@@ -405,16 +414,20 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
     menu_name = '&Snap subtitles start to previous subtitle'
 
     @property
-    def is_enabled(self):
-        if not self.api.subs.has_selection:
-            return False
-        return self.api.subs.selected_lines[0].prev is not None
+    def is_enabled(self) -> bool:
+        return self._prev_sub is not None
 
-    async def run(self):
-        prev_sub = self.api.subs.selected_lines[0].prev
+    @property
+    def _prev_sub(self) -> T.Optional[Event]:
+        if not self.api.subs.has_selection:
+            return None
+        return self.api.subs.selected_lines[0].prev
+
+    async def run(self) -> None:
+        assert self._prev_sub is not None
         for sub in self.api.subs.selected_lines:
-            sub.start = prev_sub.end
-        self.api.undo.mark_undo()
+            sub.start = self._prev_sub.end
+        self.api.undo.capture()
 
 
 class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
@@ -422,77 +435,81 @@ class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
     menu_name = '&Snap subtitles end to next subtitle'
 
     @property
-    def is_enabled(self):
-        if not self.api.subs.has_selection:
-            return False
-        return self.api.subs.selected_lines[-1].next is not None
+    def is_enabled(self) -> bool:
+        return self._next_sub is not None
 
-    async def run(self):
-        next_sub = self.api.subs.selected_lines[-1].next
+    @property
+    def _next_sub(self) -> T.Optional[Event]:
+        if not self.api.subs.has_selection:
+            return None
+        return self.api.subs.selected_lines[-1].next
+
+    async def run(self) -> None:
+        assert self._next_sub is not None
         for sub in self.api.subs.selected_lines:
-            sub.end = next_sub.start
-        self.api.undo.mark_undo()
+            sub.end = self._next_sub.start
+        self.api.undo.capture()
 
 
 class EditShiftSubsStartCommand(CoreCommand):
     name = 'edit/shift-subs-start'
 
-    def __init__(self, api, ms):
+    def __init__(self, api: bubblesub.api.Api, ms: int) -> None:
         super().__init__(api)
         self._ms = ms
 
     @property
-    def menu_name(self):
+    def menu_name(self) -> str:
         return '&Shift subtitles start ({:+})'.format(self._ms)
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for sub in self.api.subs.selected_lines:
             sub.start = max(0, sub.start + self._ms)
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditShiftSubsEndCommand(CoreCommand):
     name = 'edit/shift-subs-end'
 
-    def __init__(self, api, ms):
+    def __init__(self, api: bubblesub.api.Api, ms: int) -> None:
         super().__init__(api)
         self._ms = ms
 
     @property
-    def menu_name(self):
+    def menu_name(self) -> str:
         return '&Shift subtitles end ({:+})'.format(self._ms)
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for sub in self.api.subs.selected_lines:
             sub.end = max(0, sub.end + self._ms)
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class EditShiftSubsCommand(CoreCommand):
     name = 'edit/shift-subs'
 
-    def __init__(self, api, ms):
+    def __init__(self, api: bubblesub.api.Api, ms: int) -> None:
         super().__init__(api)
         self._ms = ms
 
     @property
-    def menu_name(self):
+    def menu_name(self) -> str:
         return '&Shift subtitles end ({:+})'.format(self._ms)
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for sub in self.api.subs.selected_lines:
             sub.start = max(0, sub.start + self._ms)
             sub.end = max(0, sub.end + self._ms)
-        self.api.undo.mark_undo()
+        self.api.undo.capture()

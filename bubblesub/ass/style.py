@@ -1,3 +1,4 @@
+import typing as T
 from collections import namedtuple
 
 import bubblesub.ass
@@ -22,21 +23,21 @@ class Style(bubblesub.model.ObservableObject):
             italic: bool = False,
             underline: bool = False,
             strike_out: bool = False,
-            scale_x: int = 100,
-            scale_y: int = 100,
-            spacing: int = 0,
-            angle: int = 0,
+            scale_x: float = 100.0,
+            scale_y: float = 100.0,
+            spacing: float = 0.0,
+            angle: float = 0.0,
             border_style: int = 1,
-            outline: int = 3,
-            shadow: int = 0,
+            outline: float = 3.0,
+            shadow: float = 0.0,
             alignment: int = 2,
             margin_left: int = 20,
             margin_right: int = 20,
             margin_vertical: int = 20,
             encoding: int = 1,
     ) -> None:
-        self._old_name = None
-        self.style_list = None
+        self._old_name: T.Optional[str] = None
+        self.style_list: T.Optional['StyleList'] = None
 
         self.name = name
         self.font_name = font_name
@@ -62,47 +63,52 @@ class Style(bubblesub.model.ObservableObject):
         self.margin_vertical = margin_vertical
         self.encoding = encoding
 
-    def _before_change(self):
+    def _before_change(self) -> None:
         self._old_name = self.name
         if self.style_list is not None:
             self.style_list.item_about_to_change.emit(self.name)
 
-    def _after_change(self):
+    def _after_change(self) -> None:
         if self.style_list is not None:
             self.style_list.item_changed.emit(self._old_name)
 
-    def __getstate__(self):
+    def __getstate__(self) -> T.Any:
         ret = self.__dict__.copy()
         key = id(ret['style_list'])
         bubblesub.util.ref_dict[key] = ret['style_list']
         ret['style_list'] = key
         return ret
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: T.Any) -> None:
         state['style_list'] = bubblesub.util.ref_dict[state['style_list']]
         self.__dict__ = state
 
-    def __copy__(self):
+    def __copy__(self) -> 'Style':
         ret = type(self)(name=self.name)
         ret.__dict__.update(self.__dict__)
         ret.__dict__['style_list'] = None
         return ret
 
 
-class StyleList(bubblesub.model.ObservableList):
-    def insert_one(self, name, index=None, **kwargs):
+class StyleList(bubblesub.model.ObservableList[Style]):
+    def insert_one(
+            self,
+            name: str,
+            index: T.Optional[int] = None,
+            **kwargs: T.Any,
+    ) -> Style:
         style = Style(name=name, **kwargs)
         self.insert(len(self) if index is None else index, [style])
         return style
 
-    def insert(self, idx, items):
+    def insert(self, idx: int, items: T.List[Style]) -> None:
         for item in items:
             assert item.style_list is None, 'Style belongs to another list'
             item.style_list = self
-        return super().insert(idx, items)
+        super().insert(idx, items)
 
-    def get_by_name(self, name):
-        for style in self:
+    def get_by_name(self, name: str) -> T.Optional[Style]:
+        for style in self.items:
             if style.name == name:
                 return style
         return None

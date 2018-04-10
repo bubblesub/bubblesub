@@ -1,4 +1,5 @@
 import re
+import typing as T
 from collections import OrderedDict
 
 from bubblesub.util import ms_to_times
@@ -26,7 +27,13 @@ def _ass_rgba_to_color(text: str) -> Color:
 
 
 class EventMeta:
-    def __init__(self, text, note, start, end) -> None:
+    def __init__(
+            self,
+            text: str,
+            note: str,
+            start: T.Optional[int],
+            end: T.Optional[int],
+    ) -> None:
         self.text = text
         self.note = note
         self.start = start
@@ -53,7 +60,7 @@ def _unpack_event_meta(text: str) -> EventMeta:
 def _pack_event_meta(meta: EventMeta) -> str:
     text = meta.text
 
-    if meta.start is not None or meta.end is not None:
+    if meta.start is not None and meta.end is not None:
         text = '{TIME:%d,%d}' % (meta.start, meta.end) + text
 
     if meta.note:
@@ -64,9 +71,15 @@ def _pack_event_meta(meta: EventMeta) -> str:
 
 
 def timestamp_to_ms(text: str) -> int:
-    groups = TIMESTAMP_RE.match(text).groups()
-    hours, minutes, seconds, frac = map(int, groups)
-    milliseconds = frac * 10 ** (3 - len(groups[-1]))
+    match = TIMESTAMP_RE.match(text)
+    assert match is not None
+
+    hours = int(match.group(1))
+    minutes = int(match.group(2))
+    seconds = int(match.group(3))
+    frac = match.group(4)
+
+    milliseconds: int = int(frac) * 10 ** (3 - len(frac))
     milliseconds += seconds * 1000
     milliseconds += minutes * 60000
     milliseconds += hours * 3600000
@@ -79,14 +92,14 @@ def ms_to_timestamp(milliseconds: int) -> str:
 
 
 class AssFile:
-    def __init__(self):
+    def __init__(self) -> None:
         self.styles = StyleList()
         self.styles.insert_one(name='Default')
         self.events = EventList()
-        self.meta = OrderedDict()
-        self.info = OrderedDict()
+        self.meta: T.Dict[str, str] = OrderedDict()
+        self.info: T.Dict[str, str] = OrderedDict()
 
-    def write_ass(self, handle):
+    def write_ass(self, handle: T.IO) -> None:
         print("[Script Info]", file=handle)
         for line in NOTICE.splitlines(False):
             print(";", line, file=handle)
@@ -108,7 +121,7 @@ class AssFile:
             'Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, '
             'BorderStyle, Outline, Shadow, Alignment, '
             'MarginL, MarginR, MarginV, Encoding', file=handle)
-        for style in self.styles:
+        for style in self.styles.items:
             print('Style: ' + ','.join([
                 style.name,
                 style.font_name,
@@ -140,7 +153,7 @@ class AssFile:
             'Format: Layer, Start, End, Style, Name, '
             'MarginL, MarginR, MarginV, Effect, Text',
             file=handle)
-        for event in self.events:
+        for event in self.events.items:
             meta = EventMeta(event.text, event.note, event.start, event.end)
             text = _pack_event_meta(meta)
             event_type = 'Comment' if event.is_comment else 'Dialogue'
@@ -157,7 +170,7 @@ class AssFile:
                 text,
             ]), file=handle)
 
-    def load_ass(self, handle):
+    def load_ass(self, handle: T.IO) -> None:
         self.events.clear()
         self.styles.clear()
         self.meta.clear()
@@ -166,7 +179,7 @@ class AssFile:
         inside_info_section = False
         inside_meta_section = False
 
-        field_names = {}
+        field_names: T.List[str] = []
 
         for i, line in enumerate(handle):
             line = line.strip()

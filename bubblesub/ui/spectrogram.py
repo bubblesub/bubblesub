@@ -1,16 +1,22 @@
+import typing as T
+
 import ffms
 import pyfftw
 import numpy as np
+from PyQt5 import QtCore
 
+import bubblesub.api
 import bubblesub.provider
 
 
 DERIVATION_SIZE = 10
 DERIVATION_DISTANCE = 6
+TSpectrumProviderResult = T.Tuple[int, T.List[int]]
 
 
-class SpectrumProviderContext(bubblesub.provider.ProviderContext):
-    def __init__(self, api):
+class SpectrumProviderContext(
+        bubblesub.provider.ProviderContext[int, TSpectrumProviderResult]):
+    def __init__(self, api: bubblesub.api.Api) -> None:
         super().__init__()
         self._api = api
         self._input = pyfftw.empty_aligned(
@@ -20,7 +26,7 @@ class SpectrumProviderContext(bubblesub.provider.ProviderContext):
         self._fftw = pyfftw.FFTW(
             self._input, self._output, flags=('FFTW_MEASURE',))
 
-    def work(self, task):
+    def work(self, task: int) -> TSpectrumProviderResult:
         pts = task
 
         audio_frame = int(pts * self._api.media.audio.sample_rate / 1000.0)
@@ -32,7 +38,7 @@ class SpectrumProviderContext(bubblesub.provider.ProviderContext):
         samples = np.mean(samples, axis=1)
         sample_fmt = self._api.media.audio.sample_format
         if sample_fmt is None:
-            return pts, np.zeros((1 << DERIVATION_SIZE) + 1)
+            return (pts, np.zeros((1 << DERIVATION_SIZE) + 1))
         elif sample_fmt == ffms.FFMS_FMT_S16:
             samples /= 32768.
         elif sample_fmt == ffms.FFMS_FMT_S32:
@@ -54,9 +60,13 @@ class SpectrumProviderContext(bubblesub.provider.ProviderContext):
         out = np.clip(out, 0, 255)
         out = np.flip(out, axis=0)
         out = out.astype(dtype=np.uint8)
-        return pts, out
+        return (pts, out)
 
 
-class SpectrumProvider(bubblesub.provider.Provider):
-    def __init__(self, parent, api):
+class SpectrumProvider(bubblesub.provider.Provider[SpectrumProviderContext]):
+    def __init__(
+            self,
+            parent: QtCore.QObject,
+            api: bubblesub.api.Api,
+    ) -> None:
         super().__init__(parent, SpectrumProviderContext(api))

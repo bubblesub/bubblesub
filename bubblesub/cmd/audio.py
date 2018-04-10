@@ -1,4 +1,8 @@
 import bisect
+import typing as T
+
+import bubblesub.api
+from bubblesub.ass.event import Event
 from bubblesub.api.cmd import CoreCommand
 
 
@@ -6,15 +10,15 @@ class AudioScrollCommand(CoreCommand):
     name = 'audio/scroll'
 
     @property
-    def menu_name(self):
+    def menu_name(self) -> str:
         return '&Scroll waveform %s' % ['backward', 'forward'][self._delta > 0]
 
-    def __init__(self, api, delta):
+    def __init__(self, api: bubblesub.api.Api, delta: int) -> None:
         super().__init__(api)
         self._delta = delta
 
-    async def run(self):
-        distance = self._delta * self.api.media.audio.view_size * 0.05
+    async def run(self) -> None:
+        distance = int(self._delta * self.api.media.audio.view_size * 0.05)
         self.api.media.audio.move_view(distance)
 
 
@@ -22,14 +26,14 @@ class AudioZoomCommand(CoreCommand):
     name = 'audio/zoom'
 
     @property
-    def menu_name(self):
+    def menu_name(self) -> str:
         return '&Zoom waveform %s' % ['in', 'out'][self._delta > 1]
 
-    def __init__(self, api, delta):
+    def __init__(self, api: bubblesub.api.Api, delta: int) -> None:
         super().__init__(api)
         self._delta = delta
 
-    async def run(self):
+    async def run(self) -> None:
         mouse_x = 0.5
         cur_factor = self.api.media.audio.view_size / self.api.media.audio.size
         new_factor = cur_factor * self._delta
@@ -41,11 +45,11 @@ class AudioSnapSelectionStartToVideoCommand(CoreCommand):
     menu_name = '&Snap selection start to video'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.media.audio.has_selection \
             and self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         self.api.media.audio.select(
             self.api.media.current_pts,
             self.api.media.audio.selection_end)
@@ -56,11 +60,11 @@ class AudioSnapSelectionEndToVideoCommand(CoreCommand):
     menu_name = '&Snap selection end to video'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.media.audio.has_selection \
             and self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         self.api.media.audio.select(
             self.api.media.audio.selection_start,
             self.api.media.current_pts)
@@ -71,11 +75,11 @@ class AudioRealignSelectionToVideoCommand(CoreCommand):
     menu_name = '&Snap selection to video'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.media.audio.has_selection \
             and self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         self.api.media.audio.select(
             self.api.media.current_pts,
             self.api.media.current_pts
@@ -87,16 +91,21 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
     menu_name = '&Snap selection start to previous subtitle'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         if not self.api.media.audio.has_selection:
             return False
-        if not self.api.subs.has_selection:
-            return False
-        return self.api.subs.selected_lines[0].prev is not None
+        return self._prev_sub is not None
 
-    async def run(self):
+    @property
+    def _prev_sub(self) -> T.Optional[Event]:
+        if not self.api.subs.has_selection:
+            return None
+        return self.api.subs.selected_lines[0].prev
+
+    async def run(self) -> None:
+        assert self._prev_sub is not None
         self.api.media.audio.select(
-            self.api.subs.selected_lines[0].prev.end,
+            self._prev_sub.end,
             self.api.media.audio.selection_end)
 
 
@@ -105,38 +114,48 @@ class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
     menu_name = '&Snap selection start to next subtitle'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         if not self.api.media.audio.has_selection:
             return False
-        if not self.api.subs.has_selection:
-            return False
-        return self.api.subs.selected_lines[-1].next is not None
+        return self._next_sub is not None
 
-    async def run(self):
+    @property
+    def _next_sub(self) -> T.Optional[Event]:
+        if not self.api.subs.has_selection:
+            return None
+        return self.api.subs.selected_lines[-1].next
+
+    async def run(self) -> None:
+        assert self._next_sub is not None
         self.api.media.audio.select(
             self.api.media.audio.selection_start,
-            self.api.subs.selected_lines[-1].next.start)
+            self._next_sub.start)
 
 
 class AudioShiftSelectionStartCommand(CoreCommand):
     name = 'audio/shift-sel-start'
 
-    def __init__(self, api, delta, frames=True):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            delta: int,
+            frames: bool = True,
+    ) -> None:
         super().__init__(api)
         self._delta = delta
         self._frames = frames
 
     @property
-    def menu_name(self):
+    def menu_name(self) -> str:
         return '&Shift selection start ({:+} {})'.format(
             self._delta, 'frames' if self._frames else 'ms')
 
     @property
-    def is_enabled(self):
-        return self.api.media.audio.has_selection and (
+    def is_enabled(self) -> bool:
+        return self.api.media.audio.has_selection and bool(
             not self._frames or self.api.media.video.timecodes)
 
-    async def run(self):
+    async def run(self) -> None:
         if self._frames:
             idx = bisect.bisect_left(
                 self.api.media.video.timecodes,
@@ -157,22 +176,27 @@ class AudioShiftSelectionStartCommand(CoreCommand):
 class AudioShiftSelectionEndCommand(CoreCommand):
     name = 'audio/shift-sel-end'
 
-    def __init__(self, api, delta, frames=True):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            delta: int,
+            frames: bool = True,
+    ) -> None:
         super().__init__(api)
         self._delta = delta
         self._frames = frames
 
     @property
-    def menu_name(self):
+    def menu_name(self) -> str:
         return '&Shift selection end ({:+} {})'.format(
             self._delta, 'frames' if self._frames else 'ms')
 
     @property
-    def is_enabled(self):
-        return self.api.media.audio.has_selection and (
+    def is_enabled(self) -> bool:
+        return self.api.media.audio.has_selection and bool(
             not self._frames or self.api.media.video.timecodes)
 
-    async def run(self):
+    async def run(self) -> None:
         if self._frames:
             idx = bisect.bisect_left(
                 self.api.media.video.timecodes,
@@ -193,22 +217,27 @@ class AudioShiftSelectionEndCommand(CoreCommand):
 class AudioShiftSelectionCommand(CoreCommand):
     name = 'audio/shift-sel'
 
-    def __init__(self, api, delta, frames=True):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            delta: int,
+            frames: bool = True,
+    ) -> None:
         super().__init__(api)
         self._delta = delta
         self._frames = frames
 
     @property
-    def menu_name(self):
+    def menu_name(self) -> str:
         return '&Shift selection ({:+} {})'.format(
             self._delta, 'frames' if self._frames else 'ms')
 
     @property
-    def is_enabled(self):
-        return self.api.media.audio.has_selection and (
+    def is_enabled(self) -> bool:
+        return self.api.media.audio.has_selection and bool(
             not self._frames or self.api.media.video.timecodes)
 
-    async def run(self):
+    async def run(self) -> None:
         if self._frames:
             idx1 = bisect.bisect_left(
                 self.api.media.video.timecodes,
@@ -234,14 +263,14 @@ class AudioCommitSelectionCommand(CoreCommand):
     menu_name = '&Commit selection to subtitle'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection \
             and self.api.media.audio.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         for sub in self.api.subs.selected_lines:
             sub.begin_update()
             sub.start = self.api.media.audio.selection_start
             sub.end = self.api.media.audio.selection_end
             sub.end_update()
-        self.api.undo.mark_undo()
+        self.api.undo.capture()

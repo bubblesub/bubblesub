@@ -1,24 +1,25 @@
 import pickle
 import base64
 import gzip
+import typing as T
+from pathlib import Path
 
 from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
+from bubblesub.ass.event import Event
 from bubblesub.api.cmd import CoreCommand
 
 
-def _pickle(subs):
+def _pickle(data: T.Any) -> str:
     return (
         base64.b64encode(
-            gzip.compress(
-                pickle.dumps(subs, protocol=pickle.HIGHEST_PROTOCOL)
-            )
+            gzip.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
         ).decode()
     )
 
 
-def _unpickle(text):
+def _unpickle(text: str) -> T.Any:
     return pickle.loads(gzip.decompress(base64.b64decode(text.encode())))
 
 
@@ -27,11 +28,14 @@ class GridJumpToLineCommand(CoreCommand):
     menu_name = 'Jump to line by number...'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return len(self.api.subs.lines) > 0
 
-    async def run(self):
-        async def run_dialog(api, main_window):
+    async def run(self) -> None:
+        async def run_dialog(
+                api: bubblesub.api.Api,
+                main_window: QtWidgets.QMainWindow,
+        ) -> T.Optional[int]:
             dialog = QtWidgets.QInputDialog(main_window)
             dialog.setLabelText('Line number to jump to:')
             dialog.setIntMinimum(1)
@@ -40,7 +44,7 @@ class GridJumpToLineCommand(CoreCommand):
                 dialog.setIntValue(api.subs.selected_indexes[0] + 1)
             dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
             if dialog.exec_():
-                return dialog.intValue()
+                return T.cast(int, dialog.intValue())
             return None
 
         value = await self.api.gui.exec(run_dialog)
@@ -53,11 +57,15 @@ class GridJumpToTimeCommand(CoreCommand):
     menu_name = 'Jump to line by time...'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return len(self.api.subs.lines) > 0
 
-    async def run(self):
-        async def _run_dialog(_api, main_window, **kwargs):
+    async def run(self) -> None:
+        async def _run_dialog(
+                _api: bubblesub.api.Api,
+                main_window: QtWidgets.QMainWindow,
+                **kwargs: T.Any,
+        ) -> T.Optional[T.Tuple[int, bool]]:
             return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
 
         ret = await self.api.gui.exec(
@@ -70,11 +78,11 @@ class GridJumpToTimeCommand(CoreCommand):
             relative_checked=False,
             show_radio=False)
 
-        if ret:
+        if ret is not None:
             target_pts, _is_relative = ret
             best_distance = None
             best_idx = None
-            for i, sub in enumerate(self.api.subs.lines):
+            for i, sub in enumerate(self.api.subs.lines.items):
                 center = (sub.start + sub.end) / 2
                 distance = abs(target_pts - center)
                 if best_distance is None or distance < best_distance:
@@ -89,10 +97,10 @@ class GridSelectPrevSubtitleCommand(CoreCommand):
     menu_name = 'Select previous subtitle'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return len(self.api.subs.lines) > 0
 
-    async def run(self):
+    async def run(self) -> None:
         if not self.api.subs.selected_indexes:
             self.api.subs.selected_indexes = [len(self.api.subs.lines) - 1, 0]
         else:
@@ -105,10 +113,10 @@ class GridSelectNextSubtitleCommand(CoreCommand):
     menu_name = 'Select next subtitle'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return len(self.api.subs.lines) > 0
 
-    async def run(self):
+    async def run(self) -> None:
         if not self.api.subs.selected_indexes:
             self.api.subs.selected_indexes = [0]
         else:
@@ -123,10 +131,10 @@ class GridSelectAllCommand(CoreCommand):
     menu_name = 'Select all subtitles'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return len(self.api.subs.lines) > 0
 
-    async def run(self):
+    async def run(self) -> None:
         self.api.subs.selected_indexes = list(range(len(self.api.subs.lines)))
 
 
@@ -134,7 +142,7 @@ class GridSelectNothingCommand(CoreCommand):
     name = 'grid/select-nothing'
     menu_name = 'Clear subtitle selection'
 
-    async def run(self):
+    async def run(self) -> None:
         self.api.subs.selected_indexes = []
 
 
@@ -143,10 +151,10 @@ class GridCopyTextToClipboardCommand(CoreCommand):
     menu_name = 'Copy selected subtitles text to clipboard'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             line.text for line in self.api.subs.selected_lines))
 
@@ -156,10 +164,10 @@ class GridCopyTimesToClipboardCommand(CoreCommand):
     menu_name = 'Copy selected subtitles times to clipboard'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             '{} - {}'.format(
                 bubblesub.util.ms_to_str(line.start),
@@ -172,10 +180,10 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
     menu_name = 'Paste times to selected subtitles from clipboard'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
             self.error('Clipboard is empty, aborting.')
@@ -188,21 +196,22 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
                 .format(len(self.api.subs.selected_lines), len(lines)))
             return
 
-        times = []
+        times: T.List[T.Tuple[int, int]] = []
         for line in lines:
             try:
                 start, end = line.strip().split(' - ')
-                start = bubblesub.util.str_to_ms(start)
-                end = bubblesub.util.str_to_ms(end)
-                times.append((start, end))
+                times.append((
+                    bubblesub.util.str_to_ms(start),
+                    bubblesub.util.str_to_ms(end),
+                ))
             except Exception:
                 self.error('Invalid time format: {}'.format(line))
                 return
 
-        for i, line in enumerate(self.api.subs.selected_lines):
-            line.start = times[i][0]
-            line.end = times[i][1]
-        self.api.undo.mark_undo()
+        for i, sub in enumerate(self.api.subs.selected_lines):
+            sub.start = times[i][0]
+            sub.end = times[i][1]
+        self.api.undo.capture()
 
 
 class GridCopyToClipboardCommand(CoreCommand):
@@ -210,10 +219,10 @@ class GridCopyToClipboardCommand(CoreCommand):
     menu_name = 'Copy selected subtitles to clipboard'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection
 
-    async def run(self):
+    async def run(self) -> None:
         QtWidgets.QApplication.clipboard().setText(
             _pickle(self.api.subs.selected_lines))
 
@@ -222,32 +231,32 @@ class PasteFromClipboardBelowCommand(CoreCommand):
     name = 'grid/paste-from-clipboard-below'
     menu_name = 'Paste subtitles from clipboard (below)'
 
-    async def run(self):
+    async def run(self) -> None:
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
             self.error('Clipboard is empty, aborting.')
             return
         idx = self.api.subs.selected_indexes[-1] + 1
-        items = _unpickle(text)
+        items = T.cast(T.List[Event], _unpickle(text))
         self.api.subs.lines.insert(idx, items)
         self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class PasteFromClipboardAboveCommand(CoreCommand):
     name = 'grid/paste-from-clipboard-above'
     menu_name = 'Paste subtitles from clipboard (above)'
 
-    async def run(self):
+    async def run(self) -> None:
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
             self.error('Clipboard is empty, aborting.')
             return
         idx = self.api.subs.selected_indexes[0]
-        items = _unpickle(text.encode)
+        items = T.cast(T.List[Event], _unpickle(text))
         self.api.subs.lines.insert(idx, items)
         self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
-        self.api.undo.mark_undo()
+        self.api.undo.capture()
 
 
 class SaveAudioSampleCommand(CoreCommand):
@@ -255,17 +264,20 @@ class SaveAudioSampleCommand(CoreCommand):
     menu_name = 'Create audio sample...'
 
     @property
-    def is_enabled(self):
+    def is_enabled(self) -> bool:
         return self.api.subs.has_selection \
             and self.api.media.audio.has_audio_source
 
-    async def run(self):
-        async def run_dialog(_api, main_window):
+    async def run(self) -> None:
+        async def run_dialog(
+                _api: bubblesub.api.Api,
+                main_window: QtWidgets.QMainWindow,
+        ) -> T.Optional[Path]:
             return bubblesub.ui.util.save_dialog(
                 main_window, 'Waveform Audio File (*.wav)')
 
         path = await self.api.gui.exec(run_dialog)
-        if path:
+        if path is not None:
             start_pts = self.api.subs.selected_lines[0].start
             end_pts = self.api.subs.selected_lines[-1].end
             self.api.media.audio.save_wav(path, start_pts, end_pts)

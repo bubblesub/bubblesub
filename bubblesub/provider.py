@@ -2,18 +2,24 @@ import sys
 import time
 import queue
 import traceback
+import typing as T
 
 from PyQt5 import QtCore
 
 
-class ProviderContext:
-    def start_work(self):
+TTask = T.TypeVar('TTask')
+TResult = T.TypeVar('TResult')
+TProvider = T.TypeVar('TProvider')
+
+
+class ProviderContext(T.Generic[TTask, TResult]):
+    def start_work(self) -> None:
         pass
 
-    def end_work(self):
+    def end_work(self) -> None:
         pass
 
-    def work(self, task):
+    def work(self, task: TTask) -> TResult:
         raise NotImplementedError('Not implemented')
 
 
@@ -21,21 +27,28 @@ class ProviderThread(QtCore.QThread):
     finished = QtCore.pyqtSignal(object)
 
     # executed in main thread
-    def __init__(self, queue_, context):
+    def __init__(
+            self,
+            queue_: queue.LifoQueue,
+            context: ProviderContext,
+    ) -> None:
         super().__init__()
-        self._queue = queue_
+        self._queue: queue.LifoQueue = queue_
         self._context = context
         self._running = False
 
-    def start(self):
+    def start(
+            self,
+            priority: QtCore.QThread.Priority = QtCore.QThread.NormalPriority,
+    ) -> None:
         self._running = True
-        super().start()
+        super().start(priority)
 
-    def stop(self):
+    def stop(self) -> None:
         self._running = False
 
     # executed in child thread
-    def run(self):
+    def run(self) -> None:
         self._context.start_work()
         work = self._context.work
         while self._running:
@@ -54,21 +67,32 @@ class ProviderThread(QtCore.QThread):
         self._context.end_work()
 
 
-class Provider(QtCore.QObject):
+class ProviderSignals(QtCore.QObject):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent, context):
+
+class Provider(T.Generic[TProvider]):
+    def __init__(
+            self,
+            parent: QtCore.QObject,
+            context: ProviderContext,
+    ) -> None:
         super().__init__()
-        self._queue = queue.LifoQueue()
+        self._signals = ProviderSignals()
+        self._queue: queue.LifoQueue = queue.LifoQueue()
         self.worker = ProviderThread(self._queue, context)
         self.worker.setParent(parent)
         self.worker.finished.connect(self._on_work_finish)
         self.worker.start()
 
-    def __del__(self):
+    @property
+    def finished(self) -> QtCore.pyqtSignal:
+        return self._signals.finished
+
+    def __del__(self) -> None:
         self.worker.stop()
 
-    def clear_tasks(self):
+    def clear_tasks(self) -> None:
         while not self._queue.empty():
             try:
                 self._queue.get(False)
@@ -76,8 +100,8 @@ class Provider(QtCore.QObject):
                 continue
             self._queue.task_done()
 
-    def schedule_task(self, task_data):
+    def schedule_task(self, task_data: TTask) -> None:
         self._queue.put(task_data)
 
-    def _on_work_finish(self, result):
+    def _on_work_finish(self, result: TResult) -> None:
         self.finished.emit(result)

@@ -1,4 +1,5 @@
 import enum
+import typing as T
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -35,7 +36,12 @@ _HEADERS = {
 
 
 class SubsModel(QtCore.QAbstractTableModel):
-    def __init__(self, api, *args, **kwargs):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            *args: T.Any,
+            **kwargs: T.Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._api = api
 
@@ -48,19 +54,30 @@ class SubsModel(QtCore.QAbstractTableModel):
         self._subtitles.item_changed.connect(self._proxy_data_changed)
         self._subtitles.items_inserted.connect(self._proxy_items_inserted)
         self._subtitles.items_removed.connect(self._proxy_items_removed)
-        self._cache = []
+        self._cache: T.List[T.List[T.Any]] = []
         self.reset_cache()
 
         self._character_limit = (
             api.opt.general['subs']['max_characters_per_second'])
 
-    def rowCount(self, _parent=QtCore.QModelIndex()):
+    def rowCount(
+            self,
+            _parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+    ) -> int:
         return len(self._subtitles)
 
-    def columnCount(self, _parent=QtCore.QModelIndex()):
+    def columnCount(
+            self,
+            _parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+    ) -> int:
         return len(self.column_order)
 
-    def headerData(self, idx, orientation, role=QtCore.Qt.DisplayRole):
+    def headerData(
+            self,
+            idx: int,
+            orientation: int,
+            role: int = QtCore.Qt.DisplayRole,
+    ) -> T.Any:
         if orientation == QtCore.Qt.Vertical:
             if role == QtCore.Qt.DisplayRole:
                 return idx + 1
@@ -78,7 +95,11 @@ class SubsModel(QtCore.QAbstractTableModel):
 
         return QtCore.QVariant()
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(
+            self,
+            index: QtCore.QModelIndex,
+            role: int = QtCore.Qt.DisplayRole,
+    ) -> T.Any:
         if role == QtCore.Qt.DisplayRole:
             row_number = index.row()
             column_number = index.column()
@@ -152,16 +173,18 @@ class SubsModel(QtCore.QAbstractTableModel):
 
         return QtCore.QVariant()
 
-    def flags(self, _index):
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+    def flags(self, _index: QtCore.QModelIndex) -> int:
+        return T.cast(
+            int,
+            QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
 
-    def reset_cache(self, idx=None):
+    def reset_cache(self, idx: T.Optional[int] = None) -> None:
         if idx:
             self._cache[idx] = [None, None]
         else:
             self._cache = [[None, None] for i in range(len(self._subtitles))]
 
-    def _proxy_data_changed(self, idx):
+    def _proxy_data_changed(self, idx: int) -> None:
         self.reset_cache(idx)
 
         # XXX: this causes qt to call .data() for EVERY VISIBLE CELL. really.
@@ -175,12 +198,12 @@ class SubsModel(QtCore.QAbstractTableModel):
                 self.index(idx, i),
                 [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole])
 
-    def _proxy_items_inserted(self, idx, count):
+    def _proxy_items_inserted(self, idx: int, count: int) -> None:
         self.reset_cache()
         if count:
             self.rowsInserted.emit(QtCore.QModelIndex(), idx, idx + count - 1)
 
-    def _proxy_items_removed(self, idx, count):
+    def _proxy_items_removed(self, idx: int, count: int) -> None:
         self.reset_cache()
         if count:
             self.rowsRemoved.emit(QtCore.QModelIndex(), idx, idx + count - 1)
