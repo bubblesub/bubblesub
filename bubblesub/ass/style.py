@@ -5,7 +5,6 @@ import bubblesub.ass
 import bubblesub.model
 import bubblesub.util
 
-
 Color = namedtuple('Color', ['red', 'green', 'blue', 'alpha'])
 
 

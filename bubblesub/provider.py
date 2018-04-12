@@ -1,11 +1,10 @@
+import queue
 import sys
 import time
-import queue
 import traceback
 import typing as T
 
 from PyQt5 import QtCore
-
 
 TTask = T.TypeVar('TTask')
 TResult = T.TypeVar('TResult')

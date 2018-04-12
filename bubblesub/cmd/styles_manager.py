@@ -1,21 +1,21 @@
-import locale
-import tempfile
 import atexit
+import locale
+import mpv
+import tempfile
 import typing as T
 from copy import copy
 from pathlib import Path
 
-import mpv
-from PyQt5 import QtGui
 from PyQt5 import QtCore
+from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ass.file
 import bubblesub.ass.style
 import bubblesub.ui.util
-from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
 from bubblesub.api.cmd import CoreCommand
+from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
 
 
 class StylePreview(QtWidgets.QGroupBox):

@@ -4,8 +4,8 @@ from copy import copy
 from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
-from bubblesub.ass.event import Event
 from bubblesub.api.cmd import CoreCommand
+from bubblesub.ass.event import Event
 
 
 class EditUndoCommand(CoreCommand):

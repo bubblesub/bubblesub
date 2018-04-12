@@ -1,14 +1,14 @@
-import pickle
 import base64
 import gzip
+import pickle
 import typing as T
 from pathlib import Path
 
 from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
-from bubblesub.ass.event import Event
 from bubblesub.api.cmd import CoreCommand
+from bubblesub.ass.event import Event
 
 
 def _pickle(data: T.Any) -> str:

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import argparse
 
+import bubblesub.cache
 import bubblesub.opt
 import bubblesub.ui
-import bubblesub.cache
 
 
 def parse_args() -> argparse.Namespace:

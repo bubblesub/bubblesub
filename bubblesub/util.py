@@ -1,10 +1,9 @@
-import re
-import time
 import fractions
 import hashlib
 import itertools
+import re
+import time
 import typing as T
-
 
 MAX_REPRESENTABLE_TIME = 3599990
 

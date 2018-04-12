@@ -4,8 +4,8 @@ from pathlib import Path
 from PyQt5 import QtCore
 
 import bubblesub.ass.event
-import bubblesub.ass.style
 import bubblesub.ass.file
+import bubblesub.ass.style
 import bubblesub.model
 import bubblesub.util
 

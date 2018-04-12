@@ -7,7 +7,6 @@ import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
 
-
 VIDEO_FILE_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'
 SUBS_FILE_FILTER = 'Advanced Substation Alpha (*.ass)'
 

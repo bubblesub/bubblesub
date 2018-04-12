@@ -1,5 +1,5 @@
-import re
 import bisect
+import re
 import typing as T
 from pathlib import Path
 

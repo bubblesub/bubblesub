@@ -1,11 +1,11 @@
 import argparse
 
-import bubblesub.api.log
+import bubblesub.api.cmd
 import bubblesub.api.gui
+import bubblesub.api.log
 import bubblesub.api.media
 import bubblesub.api.subs
 import bubblesub.api.undo
-import bubblesub.api.cmd
 import bubblesub.opt
 
 

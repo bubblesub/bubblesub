@@ -5,8 +5,8 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 import bubblesub.ass.util
-import bubblesub.util
 import bubblesub.ui.util
+import bubblesub.util
 
 
 class SubsModelColumn(enum.Enum):

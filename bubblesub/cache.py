@@ -5,7 +5,6 @@ from pathlib import Path
 
 import xdg
 
-
 CACHE_SUFFIX = '.dat'
 
 

@@ -5,10 +5,10 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-import bubblesub.ass.util
 import bubblesub.api
-import bubblesub.util
+import bubblesub.ass.util
 import bubblesub.ui.util
+import bubblesub.util
 from bubblesub.api.cmd import CoreCommand
 
 

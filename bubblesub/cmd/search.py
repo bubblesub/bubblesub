@@ -1,16 +1,15 @@
-import re
 import enum
+import re
 import typing as T
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-import bubblesub.ass.event
 import bubblesub.api
+import bubblesub.ass.event
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
-
 
 MAX_HISTORY_ENTRIES = 25
 

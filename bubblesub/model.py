@@ -2,7 +2,6 @@ import typing as T
 
 from PyQt5 import QtCore
 
-
 TItem = T.TypeVar('TItem')
 
 

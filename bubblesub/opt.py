@@ -5,7 +5,6 @@ from pathlib import Path
 
 import xdg
 
-
 _DEFAULT_GENERAL = {
     'spell_check': 'en_US',
     'convert_newlines': True,

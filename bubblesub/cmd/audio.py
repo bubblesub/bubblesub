@@ -2,8 +2,8 @@ import bisect
 import typing as T
 
 import bubblesub.api
-from bubblesub.ass.event import Event
 from bubblesub.api.cmd import CoreCommand
+from bubblesub.ass.event import Event
 
 
 class AudioScrollCommand(CoreCommand):

@@ -1,5 +1,5 @@
-import functools
 import base64
+import functools
 import typing as T
 
 from PyQt5 import QtCore
@@ -7,12 +7,12 @@ from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 import bubblesub.api
+import bubblesub.ui.audio
 import bubblesub.ui.editor
+import bubblesub.ui.statusbar
 import bubblesub.ui.subs_grid
 import bubblesub.ui.util
-import bubblesub.ui.audio
 import bubblesub.ui.video
-import bubblesub.ui.statusbar
 from bubblesub.api.log import LogLevel
 
 

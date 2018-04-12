@@ -1,15 +1,14 @@
 import re
 import typing as T
 
-from PyQt5 import QtGui
 from PyQt5 import QtCore
+from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
-from bubblesub.ui.util import get_color
 from bubblesub.ui.subs_model import SubsModel, SubsModelColumn
-
+from bubblesub.ui.util import get_color
 
 # ????
 MAGIC_MARGIN1 = 3

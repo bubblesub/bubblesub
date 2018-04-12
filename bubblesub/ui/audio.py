@@ -1,17 +1,16 @@
-import math
 import enum
+import math
 import typing as T
 
 import numpy as np
-from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.api.media.audio
-from bubblesub.ui.util import blend_colors, get_color
 from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
-
+from bubblesub.ui.util import blend_colors, get_color
 
 NOT_CACHED = object()
 CACHING = object()
