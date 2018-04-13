@@ -9,7 +9,7 @@ class VideoPreview(MpvWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(api.media.video.get_opengl_context(), parent)
 
@@ -21,7 +21,7 @@ class Video(QtWidgets.QWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
 
@@ -48,12 +48,14 @@ class Video(QtWidgets.QWidget):
 
     def _connect_signals(self) -> None:
         self._volume_slider.valueChanged.connect(
-            self._on_volume_slider_value_change)
+            self._on_volume_slider_value_change
+        )
         self._api.media.volume_changed.connect(self._on_video_volume_change)
 
     def _disconnect_signals(self) -> None:
         self._volume_slider.valueChanged.disconnect(
-            self._on_volume_slider_value_change)
+            self._on_volume_slider_value_change
+        )
         self._api.media.volume_changed.disconnect(self._on_video_volume_change)
 
     def _on_video_volume_change(self) -> None:

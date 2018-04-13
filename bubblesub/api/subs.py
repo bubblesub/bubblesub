@@ -22,7 +22,8 @@ class SubtitlesApi(QtCore.QObject):
         self._path: T.Optional[Path] = None
         self.ass_file = bubblesub.ass.file.AssFile()
         self.lines.items_about_to_be_removed.connect(
-            self._on_items_about_to_be_removed)
+            self._on_items_about_to_be_removed
+        )
 
     @property
     def lines(self) -> bubblesub.ass.event.EventList:
@@ -99,7 +100,8 @@ class SubtitlesApi(QtCore.QObject):
     def save_ass(
             self,
             path: T.Union[str, Path],
-            remember_path: bool = False) -> None:
+            remember_path: bool = False
+    ) -> None:
         assert path
         path = Path(path)
         if remember_path:

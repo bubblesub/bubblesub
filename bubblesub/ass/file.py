@@ -31,7 +31,7 @@ class EventMeta:
             text: str,
             note: str,
             start: T.Optional[int],
-            end: T.Optional[int],
+            end: T.Optional[int]
     ) -> None:
         self.text = text
         self.note = note
@@ -64,7 +64,8 @@ def _pack_event_meta(meta: EventMeta) -> str:
 
     if meta.note:
         text += '{NOTE:%s}' % (
-            escape_ass_tag(meta.note.replace('\n', '\\N')))
+            escape_ass_tag(meta.note.replace('\n', '\\N'))
+        )
 
     return text
 
@@ -229,7 +230,7 @@ class AssFile:
                     margin_left=int(field_dict['MarginL']),
                     margin_right=int(field_dict['MarginR']),
                     margin_vertical=int(field_dict['MarginV']),
-                    encoding=int(field_dict['Encoding']),
+                    encoding=int(field_dict['Encoding'])
                 )
 
             elif line.startswith('Dialogue:') or line.startswith('Comment:'):
@@ -251,7 +252,7 @@ class AssFile:
                     effect=field_dict['Effect'],
                     text=meta.text,
                     note=meta.note,
-                    is_comment=event_type == 'Comment',
+                    is_comment=event_type == 'Comment'
                 )
 
             elif line.startswith('Format:'):

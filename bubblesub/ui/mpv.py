@@ -20,7 +20,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
     def __init__(
             self,
             opengl_context: QtGui.QOpenGLContext,
-            parent: T.Optional[QtWidgets.QWidget] = None,
+            parent: T.Optional[QtWidgets.QWidget] = None
     ) -> None:
         super().__init__(parent)
         self._opengl = opengl_context
@@ -44,7 +44,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._opengl.draw(
                 self.defaultFramebufferObject(),
                 round(self.width() * self.devicePixelRatioF()),
-                round(-self.height() * self.devicePixelRatioF()))
+                round(-self.height() * self.devicePixelRatioF())
+            )
 
     @QtCore.pyqtSlot()
     def swapped(self) -> None:

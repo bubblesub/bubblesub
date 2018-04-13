@@ -33,7 +33,7 @@ class Style(bubblesub.model.ObservableObject):
             margin_left: int = 20,
             margin_right: int = 20,
             margin_vertical: int = 20,
-            encoding: int = 1,
+            encoding: int = 1
     ) -> None:
         self._old_name: T.Optional[str] = None
         self.style_list: T.Optional['StyleList'] = None
@@ -94,7 +94,7 @@ class StyleList(bubblesub.model.ObservableList[Style]):
             self,
             name: str,
             index: T.Optional[int] = None,
-            **kwargs: T.Any,
+            **kwargs: T.Any
     ) -> Style:
         style = Style(name=name, **kwargs)
         self.insert(len(self) if index is None else index, [style])

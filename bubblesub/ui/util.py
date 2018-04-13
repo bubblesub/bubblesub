@@ -36,12 +36,12 @@ def ask(msg: str) -> bool:
 def blend_colors(
         color1: QtGui.QColor,
         color2: QtGui.QColor,
-        ratio: float,
+        ratio: float
 ) -> int:
     return QtGui.qRgb(
         int(color1.red() * (1 - ratio) + color2.red() * ratio),
         int(color1.green() * (1 - ratio) + color2.green() * ratio),
-        int(color1.blue() * (1 - ratio) + color2.blue() * ratio),
+        int(color1.blue() * (1 - ratio) + color2.blue() * ratio)
     )
 
 
@@ -88,7 +88,7 @@ class TimeEdit(QtWidgets.QLineEdit):
     def __init__(
             self,
             parent: QtWidgets.QWidget = None,
-            allow_negative: bool = False,
+            allow_negative: bool = False
     ) -> None:
         super().__init__(parent)
         self._allow_negative = False
@@ -101,7 +101,9 @@ class TimeEdit(QtWidgets.QLineEdit):
             self.setValidator(
                 QtGui.QRegExpValidator(
                     QtCore.QRegExp(r'[+-]\d:\d\d:\d\d\.\d\d\d'),
-                    self.parent()))
+                    self.parent()
+                )
+            )
         else:
             self.setInputMask('9:99:99.999')
         self.reset_text()
@@ -168,7 +170,7 @@ class _CommandAction(QtWidgets.QAction):
             api: bubblesub.api.Api,
             cmd_name: str,
             cmd_args: T.Any,
-            parent: QtWidgets.QWidget,
+            parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.cmd = api.cmd.get(cmd_name, cmd_args)
@@ -178,14 +180,16 @@ class _CommandAction(QtWidgets.QAction):
 def setup_cmd_menu(
         api: bubblesub.api.Api,
         parent: QtWidgets.QWidget,
-        menu_def: T.List[T.Any],
+        menu_def: T.List[T.Any]
 ) -> T.Any:
     action_map: T.Any = {}
     if hasattr(parent, 'aboutToShow'):
         parent.aboutToShow.connect(
-            functools.partial(_on_menu_about_to_show, parent))
+            functools.partial(_on_menu_about_to_show, parent)
+        )
         parent.aboutToHide.connect(
-            functools.partial(_on_menu_about_to_hide, parent))
+            functools.partial(_on_menu_about_to_hide, parent)
+        )
     for item in menu_def:
         if item is None:
             parent.addSeparator()
@@ -212,7 +216,7 @@ def get_color(api: bubblesub.api.Api, color_name: str) -> QtGui.QColor:
 def load_dialog(
         parent: QtWidgets.QWidget,
         file_filter: str,
-        directory: T.Optional[Path] = None,
+        directory: T.Optional[Path] = None
 ) -> T.Optional[Path]:
     path, _ = QtWidgets.QFileDialog.getOpenFileName(
         parent,
@@ -221,7 +225,8 @@ def load_dialog(
             if directory is None else
             str(directory)
         ),
-        filter=file_filter)
+        filter=file_filter
+    )
     return None if path is None else Path(path)
 
 
@@ -241,7 +246,8 @@ def save_dialog(
     path, _ = QtWidgets.QFileDialog.getSaveFileName(
         parent,
         directory=directory,
-        filter=file_filter)
+        filter=file_filter
+    )
     return Path(path)
 
 
@@ -251,7 +257,8 @@ def time_jump_dialog(
         relative_label: str = 'Time:',
         absolute_label: str = 'Time:',
         relative_checked: bool = True,
-        show_radio: bool = True) -> T.Optional[T.Tuple[int, bool]]:
+        show_radio: bool = True
+) -> T.Optional[T.Tuple[int, bool]]:
     class TimeJumpDialog(QtWidgets.QDialog):
         def __init__(self, parent: QtWidgets.QWidget = None) -> None:
             super().__init__(parent)
@@ -298,7 +305,8 @@ def time_jump_dialog(
         def value(self) -> T.Tuple[int, bool]:
             return (
                 self._time_edit.get_value(),
-                self._radio_rel.isChecked())
+                self._radio_rel.isChecked()
+            )
 
     dialog = TimeJumpDialog(parent)
     if dialog.exec_():

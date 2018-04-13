@@ -10,7 +10,8 @@ def escape_ass_tag(text: str) -> str:
         text
         .replace('\\', r'\\')
         .replace('{', r'\[')
-        .replace('}', r'\]'))
+        .replace('}', r'\]')
+    )
 
 
 def unescape_ass_tag(text: str) -> str:
@@ -18,39 +19,43 @@ def unescape_ass_tag(text: str) -> str:
         text
         .replace(r'\\', '\\')
         .replace(r'\[', '{')
-        .replace(r'\]', '}'))
+        .replace(r'\]', '}')
+    )
 
 
 def ass_to_plaintext(text: str, mask: bool = False) -> str:
     return str(
         regex.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}' if mask else '', text)
         .replace('\\h', ' ')
-        .replace('\\N', '\N{SYMBOL FOR NEWLINE}'))
+        .replace('\\N', '\N{SYMBOL FOR NEWLINE}')
+    )
 
 
 def character_count(text: str) -> int:
     return len(
-        regex.sub(r'\W+', '', ass_to_plaintext(text), flags=regex.I | regex.U))
+        regex.sub(r'\W+', '', ass_to_plaintext(text), flags=regex.I | regex.U)
+    )
 
 
 def iter_words_ass_line(ass_text: str) -> T.Iterable[T.Match[str]]:
     ass_text = regex.sub(
         r'\\[Nnh]',
         '  ',  # two spaces to preserve match positions
-        ass_text)
+        ass_text
+    )
 
     return T.cast(
         T.Iterable[T.Match[str]],
         regex.finditer(
             r'[\p{L}\p{S}\p{N}][\p{L}\p{S}\p{N}\p{P}]*\p{L}|\p{L}',
-            ass_text,
-        ),
+            ass_text
+        )
     )
 
 
 def spell_check_ass_line(
         dictionary: enchant.Dict,
-        ass_text: str,
+        ass_text: str
 ) -> T.Iterable[T.Tuple[int, int, str]]:
     try:
         ass_struct = ass_tag_parser.parse_ass(ass_text)
@@ -67,4 +72,5 @@ def spell_check_ass_line(
                 yield (
                     text_start + match.start(),
                     text_start + match.end(),
-                    word)
+                    word
+                )

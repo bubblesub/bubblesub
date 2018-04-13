@@ -48,8 +48,9 @@ class EditInsertAboveCommand(CoreCommand):
 
         end = (
             cur_sub.start
-            if cur_sub
-            else self.api.opt.general['subs']['default_duration'])
+            if cur_sub else
+            self.api.opt.general['subs']['default_duration']
+        )
         start = end - self.api.opt.general['subs']['default_duration']
         if start < 0:
             start = 0
@@ -58,7 +59,8 @@ class EditInsertAboveCommand(CoreCommand):
         if start > end:
             start = end
         self.api.subs.lines.insert_one(
-            idx, start=start, end=end, style='Default')
+            idx, start=start, end=end, style='Default'
+        )
         self.api.subs.selected_indexes = [idx]
         self.api.undo.capture()
 
@@ -85,7 +87,8 @@ class EditInsertBelowCommand(CoreCommand):
         if end < start:
             end = start
         self.api.subs.lines.insert_one(
-            idx, start=start, end=end, style='Default')
+            idx, start=start, end=end, style='Default'
+        )
         self.api.subs.selected_indexes = [idx]
         self.api.undo.capture()
 
@@ -103,13 +106,15 @@ class EditMoveUpCommand(CoreCommand):
     async def run(self) -> None:
         indexes: T.List[int] = []
         for start_idx, count in bubblesub.util.make_ranges(
-                self.api.subs.selected_indexes):
+                self.api.subs.selected_indexes
+        ):
             self.api.subs.lines.insert(
                 start_idx - 1,
                 [
                     copy(self.api.subs.lines[idx])
                     for idx in range(start_idx, start_idx + count)
-                ])
+                ]
+            )
             self.api.subs.lines.remove(start_idx + count, count)
             indexes += [start_idx + i - 1 for i in range(count)]
         self.api.subs.selected_indexes = indexes
@@ -126,18 +131,23 @@ class EditMoveDownCommand(CoreCommand):
             return False
         return (
             self.api.subs.selected_indexes[-1]
-            < len(self.api.subs.lines) - 1)
+            < len(self.api.subs.lines) - 1
+        )
 
     async def run(self) -> None:
         indexes: T.List[int] = []
-        for start_idx, count in reversed(list(bubblesub.util.make_ranges(
-                self.api.subs.selected_indexes))):
+        for start_idx, count in reversed(
+                list(
+                    bubblesub.util.make_ranges(self.api.subs.selected_indexes)
+                )
+        ):
             self.api.subs.lines.insert(
                 start_idx + count + 1,
                 [
                     copy(self.api.subs.lines[idx])
                     for idx in range(start_idx, start_idx + count)
-                ])
+                ]
+            )
             self.api.subs.lines.remove(start_idx, count)
             indexes += [start_idx + i + 1 for i in range(count)]
         self.api.subs.selected_indexes = indexes
@@ -155,7 +165,7 @@ class EditMoveToCommand(CoreCommand):
     async def run(self) -> None:
         async def run_dialog(
                 api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> T.Optional[int]:
             dialog = QtWidgets.QInputDialog(main_window)
             dialog.setLabelText('Line number to move selected subtitles to:')
@@ -173,8 +183,11 @@ class EditMoveToCommand(CoreCommand):
             return
 
         sub_copies: T.List[Event] = []
-        for start_idx, count in reversed(list(bubblesub.util.make_ranges(
-                self.api.subs.selected_indexes))):
+        for start_idx, count in reversed(
+                list(
+                    bubblesub.util.make_ranges(self.api.subs.selected_indexes)
+                )
+        ):
             sub_copies += list(reversed([
                 copy(self.api.subs.lines[idx])
                 for idx in range(start_idx, start_idx + count)
@@ -198,11 +211,13 @@ class EditDuplicateCommand(CoreCommand):
         new_selection: T.List[int] = []
         for idx in reversed(self.api.subs.selected_indexes):
             self.api.subs.lines.insert(
-                idx + 1, [copy(self.api.subs.lines[idx])])
+                idx + 1, [copy(self.api.subs.lines[idx])]
+            )
             new_selection.append(
                 idx
                 + len(self.api.subs.selected_indexes)
-                - len(new_selection))
+                - len(new_selection)
+            )
         self.api.subs.selected_indexes = new_selection
         self.api.gui.end_update()
         self.api.undo.capture()
@@ -217,8 +232,11 @@ class EditDeleteCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for start_idx, count in reversed(list(bubblesub.util.make_ranges(
-                self.api.subs.selected_indexes))):
+        for start_idx, count in reversed(
+                list(
+                    bubblesub.util.make_ranges(self.api.subs.selected_indexes)
+                )
+        ):
             self.api.subs.lines.remove(start_idx, count)
         self.api.subs.selected_indexes = []
         self.api.undo.capture()
@@ -274,7 +292,8 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
         if len(self.api.subs.selected_indexes) == 1:
             return (
                 self.api.subs.selected_indexes[0] + 1
-                < len(self.api.subs.lines))
+                < len(self.api.subs.lines)
+            )
         return False
 
     async def run(self) -> None:
@@ -300,7 +319,8 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
         if len(self.api.subs.selected_indexes) == 1:
             return (
                 self.api.subs.selected_indexes[0] + 1
-                < len(self.api.subs.lines))
+                < len(self.api.subs.lines)
+            )
         return False
 
     async def run(self) -> None:
@@ -340,7 +360,7 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
         async def _run_dialog(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow,
-                **kwargs: T.Any,
+                **kwargs: T.Any
         ) -> T.Optional[T.Tuple[int, bool]]:
             return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
 
@@ -348,7 +368,8 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
             _run_dialog,
             absolute_label='Time to move to:',
             relative_label='Time to add:',
-            relative_checked=True)
+            relative_checked=True
+        )
 
         if ret is not None:
             delta, is_relative = ret
@@ -405,7 +426,8 @@ class EditSnapSubsToVideoCommand(CoreCommand):
             sub.start = self.api.media.current_pts
             sub.end = (
                 self.api.media.current_pts
-                + self.api.opt.general['subs']['default_duration'])
+                + self.api.opt.general['subs']['default_duration']
+            )
         self.api.undo.capture()
 
 

@@ -24,16 +24,17 @@ class SearchMode(enum.IntEnum):
 def _create_search_regex(
         text: str,
         case_sensitive: bool,
-        use_regexes: bool,
+        use_regexes: bool
 ) -> T.Pattern[str]:
     return re.compile(
         text if use_regexes else re.escape(text),
-        flags=(0 if case_sensitive else re.I))
+        flags=(0 if case_sensitive else re.I)
+    )
 
 
 def _get_subject_text_by_mode(
         sub: bubblesub.ass.event.Event,
-        mode: SearchMode,
+        mode: SearchMode
 ) -> str:
     if mode == SearchMode.Text:
         return sub.text.replace('\\N', '\n')
@@ -49,7 +50,7 @@ def _get_subject_text_by_mode(
 def _set_subject_text_by_mode(
         sub: bubblesub.ass.event.Event,
         mode: SearchMode,
-        value: str,
+        value: str
 ) -> None:
     if mode == SearchMode.Text:
         sub.text = value.replace('\n', '\\N')
@@ -65,7 +66,7 @@ def _set_subject_text_by_mode(
 
 def _get_subject_widget_by_mode(
         main_window: QtWidgets.QMainWindow,
-        mode: SearchMode,
+        mode: SearchMode
 ) -> QtWidgets.QWidget:
     if mode == SearchMode.Text:
         return main_window.editor.center.text_edit
@@ -81,7 +82,7 @@ def _get_subject_widget_by_mode(
 def _select_text_on_widget(
         widget: QtWidgets.QWidget,
         selection_start: int,
-        selection_end: int,
+        selection_end: int
 ) -> None:
     if isinstance(widget, QtWidgets.QPlainTextEdit):
         cursor = widget.textCursor()
@@ -128,7 +129,7 @@ def _narrow_match(
         idx: int,
         selected_idx: T.Optional[int],
         direction: int,
-        subject_widget: QtWidgets.QWidget,
+        subject_widget: QtWidgets.QWidget
 ) -> T.Optional[T.Match[str]]:
     if idx == selected_idx:
         selection_start, selection_end = (
@@ -160,7 +161,7 @@ def _search(
         main_window: QtWidgets.QMainWindow,
         regex: T.Pattern[str],
         mode: SearchMode,
-        direction: int,
+        direction: int
 ) -> bool:
     num_lines = len(api.subs.lines)
     if not api.subs.has_selection:
@@ -204,7 +205,7 @@ def _search(
 def _replace_selection(
         main_window: QtWidgets.QMainWindow,
         new_text: str,
-        mode: SearchMode,
+        mode: SearchMode
 ) -> None:
     subject_widget = _get_subject_widget_by_mode(main_window, mode)
     selection_start, selection_end = _get_selection_from_widget(subject_widget)
@@ -221,7 +222,7 @@ def _replace_all(
         api: bubblesub.api.Api,
         regex: T.Pattern[str],
         new_text: str,
-        mode: SearchMode,
+        mode: SearchMode
 ) -> int:
     count = 0
     for sub in api.subs.lines.items:
@@ -239,7 +240,7 @@ def _replace_all(
 def _count(
         api: bubblesub.api.Api,
         regex: T.Pattern[str],
-        mode: SearchMode,
+        mode: SearchMode
 ) -> int:
     count = 0
     for sub in api.subs.lines.items:
@@ -278,7 +279,7 @@ class SearchDialog(QtWidgets.QDialog):
             api: bubblesub.api.Api,
             main_window: QtWidgets.QMainWindow,
             show_replace_controls: bool,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._main_window = main_window
@@ -288,12 +289,10 @@ class SearchDialog(QtWidgets.QDialog):
         self.search_text_edit.setEditable(True)
         self.search_text_edit.setMaxCount(MAX_HISTORY_ENTRIES)
         self.search_text_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
-        self.search_text_edit.setSizePolicy(
-            QtWidgets.QSizePolicy(
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Preferred,
-            )
-        )
+        self.search_text_edit.setSizePolicy(QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Preferred
+        ))
         completer = self.search_text_edit.completer()
         completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
         self.search_text_edit.setCompleter(completer)
@@ -380,7 +379,7 @@ class SearchDialog(QtWidgets.QDialog):
             self._api,
             self._search_regex,
             self._target_text,
-            self._mode,
+            self._mode
         )
         bubblesub.ui.util.notice(
             f'Replaced {count} occurences.'
@@ -395,7 +394,7 @@ class SearchDialog(QtWidgets.QDialog):
             self._main_window,
             self._search_regex,
             self._mode,
-            direction,
+            direction
         )
         if not result:
             bubblesub.ui.util.notice('No occurences found.')
@@ -483,7 +482,7 @@ class SearchCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             SearchDialog(api, main_window, show_replace_controls=False).exec_()
 
@@ -497,7 +496,7 @@ class SearchAndReplaceCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             SearchDialog(api, main_window, show_replace_controls=True).exec_()
 
@@ -522,7 +521,7 @@ class SearchRepeatCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             opt = self.api.opt.general['search']
             result = _search(

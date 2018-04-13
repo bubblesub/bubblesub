@@ -19,7 +19,7 @@ class Event(bubblesub.model.ObservableObject):
             margin_left: int = 0,
             margin_right: int = 0,
             margin_vertical: int = 0,
-            is_comment: bool = False,
+            is_comment: bool = False
     ) -> None:
         self.event_list: T.Optional['EventList'] = None
 
@@ -121,7 +121,7 @@ class EventList(bubblesub.model.ObservableList[Event]):
     def insert_one(
             self,
             idx: T.Optional[int] = None,
-            **kwargs: T.Any,
+            **kwargs: T.Any
     ) -> Event:
         subtitle = Event(**kwargs)
         self.insert(len(self) if idx is None else idx, [subtitle])

@@ -17,7 +17,7 @@ class SpellCheckDialog(QtWidgets.QDialog):
             self,
             api: bubblesub.api.Api,
             main_window: QtWidgets.QMainWindow,
-            dictionary: enchant.Dict,
+            dictionary: enchant.Dict
     ) -> None:
         super().__init__(main_window)
         self._main_window = main_window
@@ -76,7 +76,8 @@ class SpellCheckDialog(QtWidgets.QDialog):
         text = (
             text[:edit.textCursor().selectionStart()] +
             self._replacement_text_edit.text() +
-            text[edit.textCursor().selectionEnd():])
+            text[edit.textCursor().selectionEnd():]
+        )
         edit.document().setPlainText(text)
         self._next()
 
@@ -108,7 +109,8 @@ class SpellCheckDialog(QtWidgets.QDialog):
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]
             for start, end, word in bubblesub.ass.util.spell_check_ass_line(
-                    self._dictionary, line.text.replace('\\N', '\n')):
+                    self._dictionary, line.text.replace('\\N', '\n')
+            ):
                 assert line.index is not None
                 if len(self._api.subs.selected_indexes) > 1 \
                         or line.index > self._api.subs.selected_indexes[0] \
@@ -123,7 +125,7 @@ class SpellCheckDialog(QtWidgets.QDialog):
             idx: int,
             start: int,
             end: int,
-            mispelt_word: str,
+            mispelt_word: str
     ) -> None:
         self._api.subs.selected_indexes = [idx]
 
@@ -162,12 +164,13 @@ class EditSpellCheckCommand(CoreCommand):
             dictionary = enchant.Dict(spell_check_lang)
         except enchant.errors.DictNotFoundError:
             bubblesub.ui.util.error(
-                f'Spell check language {spell_check_lang} was not found.')
+                f'Spell check language {spell_check_lang} was not found.'
+            )
             return
 
         async def run(
                 api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             SpellCheckDialog(api, main_window, dictionary)
 

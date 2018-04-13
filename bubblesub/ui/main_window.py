@@ -32,9 +32,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         api.gui.quit_requested.connect(self.close)
         api.gui.begin_update_requested.connect(
-            lambda: self.setUpdatesEnabled(False))
+            lambda: self.setUpdatesEnabled(False)
+        )
         api.gui.end_update_requested.connect(
-            lambda: self.setUpdatesEnabled(True))
+            lambda: self.setUpdatesEnabled(True)
+        )
         api.subs.loaded.connect(self._update_title)
         api.cmd.plugins_loaded.connect(self._setup_plugins_menu)
 
@@ -47,7 +49,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.console = QtWidgets.QTextEdit(self, readOnly=True)
         self.console.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
         self.console.setFont(
-            QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont))
+            QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
+        )
 
         self.editor_splitter = QtWidgets.QSplitter(self)
         self.editor_splitter.setOrientation(QtCore.Qt.Vertical)
@@ -99,7 +102,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._store_splitters()
         if self._api.undo.needs_save and not bubblesub.ui.util.ask(
                 'There are unsaved changes. '
-                'Are you sure you want to exit the program?'):
+                'Are you sure you want to exit the program?'
+        ):
             event.ignore()
         else:
             self.video.shutdown()
@@ -118,7 +122,8 @@ class MainWindow(QtWidgets.QMainWindow):
             target_role = getattr(QtGui.QPalette, role_name, None)
             if target_group is not None and target_role is not None:
                 palette.setColor(
-                    target_group, target_role, QtGui.QColor(*color_value))
+                    target_group, target_role, QtGui.QColor(*color_value)
+                )
             elif target_role is not None:
                 palette.setColor(target_role, QtGui.QColor(*color_value))
         self.setPalette(palette)
@@ -140,15 +145,18 @@ class MainWindow(QtWidgets.QMainWindow):
         cursor = QtGui.QTextCursor(self.console.textCursor())
         fmt = QtGui.QTextCharFormat()
         fmt.setForeground(
-            bubblesub.ui.util.get_color(self._api, color_name))
+            bubblesub.ui.util.get_color(self._api, color_name)
+        )
         cursor.setCharFormat(fmt)
         cursor.insertText(text + '\n')
         self.console.verticalScrollBar().setValue(
-            self.console.verticalScrollBar().maximum())
+            self.console.verticalScrollBar().maximum()
+        )
 
     def _setup_menu(self) -> T.Any:
         return bubblesub.ui.util.setup_cmd_menu(
-            self._api, self.menuBar(), self._api.opt.main_menu)
+            self._api, self.menuBar(), self._api.opt.main_menu
+        )
 
     def _setup_plugins_menu(self) -> None:
         plugins_menu_def: T.List[T.Any] = [
@@ -163,7 +171,8 @@ class MainWindow(QtWidgets.QMainWindow):
         plugins_menu = self.menuBar().addMenu('Pl&ugins')
         plugins_menu.setObjectName('plugins-menu')
         bubblesub.ui.util.setup_cmd_menu(
-            self._api, plugins_menu, plugins_menu_def)
+            self._api, plugins_menu, plugins_menu_def
+        )
 
     def _setup_hotkeys(self, action_map: T.Any) -> None:
         shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut] = {}
@@ -187,14 +196,18 @@ class MainWindow(QtWidgets.QMainWindow):
                     action.setText(
                         action.text()
                         + '\t'
-                        + QtGui.QKeySequence(keys).toString())
+                        + QtGui.QKeySequence(keys).toString()
+                    )
 
                 shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(keys), self)
                 shortcuts[(keys, context)] = shortcut
 
-                shortcut.activated.connect(functools.partial(
-                    self._api.cmd.run,
-                    self._api.cmd.get(cmd_name, cmd_args)))
+                shortcut.activated.connect(
+                    functools.partial(
+                        self._api.cmd.run,
+                        self._api.cmd.get(cmd_name, cmd_args)
+                    )
+                )
                 if context == 'audio':
                     shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
                     shortcut.setParent(self.audio)
@@ -204,7 +217,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     raise RuntimeError('Invalid shortcut context')
 
                 shortcut.activatedAmbiguously.connect(
-                    functools.partial(resolve_ambiguity, keys))
+                    functools.partial(resolve_ambiguity, keys)
+                )
 
     def _restore_splitters(self) -> None:
         splitter_cfg = self._api.opt.general.get('splitters', None)
@@ -227,4 +241,5 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(
             'bubblesub - {}'.format(self._api.subs.path)
             if self._api.subs.path else
-            'bubblesub')
+            'bubblesub'
+        )

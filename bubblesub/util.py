@@ -42,12 +42,17 @@ def ms_to_str(milliseconds: int) -> str:
 
 
 def str_to_ms(text: str) -> int:
-    result = re.match('''
+    result = re.match(
+        '''
         ^(?P<sign>[+-])?
         (?:(?P<hour>\\d+):)?
         (?P<minute>\\d\\d):
         (?P<second>\\d\\d)\\.
-        (?P<millisecond>\\d\\d\\d)$''', text.strip(), re.VERBOSE)
+        (?P<millisecond>\\d\\d\\d)$
+        '''.strip(),
+        text.strip(),
+        re.VERBOSE
+    )
 
     if result:
         sign = result.group('sign')
@@ -77,8 +82,8 @@ class Benchmark:
         return self
 
     def __exit__(self, *args: T.Any, **kwargs: T.Any) -> None:
-        print('{}: ended {:.02f} s'.format(
-            self._msg, time.time() - self._time))
+        difference = time.time() - self._time
+        print(f'{self._msg}: ended {difference:.02f} s')
 
     def mark(self, msg: str) -> None:
         print('{}: {:.02f} s'.format(msg, time.time() - self._time))
@@ -100,7 +105,7 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
     }
 
     def eval_(
-            node: T.List[ast.stmt],
+            node: T.List[ast.stmt]
     ) -> T.Union[int, float, fractions.Fraction]:
         if isinstance(node, ast.Num):
             return fractions.Fraction(node.n)
@@ -115,7 +120,9 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
 
 def make_ranges(indexes: T.Iterable[int]) -> T.Iterable[T.Tuple[int, int]]:
     for _, group in itertools.groupby(
-            enumerate(indexes), lambda item: item[1] - item[0]):
+            enumerate(indexes),
+            lambda item: item[1] - item[0]
+    ):
         elems = list(group)
         start_idx = elems[0][1]
         end_idx = elems[-1][1]

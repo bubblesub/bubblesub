@@ -29,7 +29,7 @@ class ProviderThread(QtCore.QThread):
     def __init__(
             self,
             queue_: queue.LifoQueue,
-            context: ProviderContext,
+            context: ProviderContext
     ) -> None:
         super().__init__()
         self._queue: queue.LifoQueue = queue_
@@ -38,7 +38,7 @@ class ProviderThread(QtCore.QThread):
 
     def start(
             self,
-            priority: QtCore.QThread.Priority = QtCore.QThread.NormalPriority,
+            priority: QtCore.QThread.Priority = QtCore.QThread.NormalPriority
     ) -> None:
         self._running = True
         super().start(priority)
@@ -74,7 +74,7 @@ class Provider(T.Generic[TProvider]):
     def __init__(
             self,
             parent: QtCore.QObject,
-            context: ProviderContext,
+            context: ProviderContext
     ) -> None:
         super().__init__()
         self._signals = ProviderSignals()

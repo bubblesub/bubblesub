@@ -12,7 +12,8 @@ class UndoState:
             self,
             lines: bubblesub.ass.event.EventList,
             styles: bubblesub.ass.style.StyleList,
-            selected_indexes: T.List[int]) -> None:
+            selected_indexes: T.List[int]
+    ) -> None:
         self._lines = _pickle(lines)
         self._styles = _pickle(styles)
         self.selected_indexes = selected_indexes
@@ -88,7 +89,8 @@ class UndoApi:
         self._stack_pos = len(self._stack) - 1
 
     def _trim_stack_and_push(
-            self, old_state: UndoState, new_state: UndoState) -> None:
+            self, old_state: UndoState, new_state: UndoState
+    ) -> None:
         self._trim_stack()
         self._stack.append((old_state, new_state))
         self._stack_pos = len(self._stack) - 1
@@ -107,7 +109,8 @@ class UndoApi:
         return UndoState(
             lines=self._subs_api.lines,
             styles=self._subs_api.styles,
-            selected_indexes=self._subs_api.selected_indexes)
+            selected_indexes=self._subs_api.selected_indexes
+        )
 
     def _apply_state(self, state: UndoState) -> None:
         self._subs_api.lines.replace(state.lines.items)

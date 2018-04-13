@@ -28,7 +28,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -49,7 +49,8 @@ class BaseAudioWidget(QtWidgets.QWidget):
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.modifiers() & QtCore.Qt.ControlModifier:
             self._zoomed(
-                event.angleDelta().y(), event.pos().x() / self.width())
+                event.angleDelta().y(), event.pos().x() / self.width()
+            )
         else:
             self._scrolled(event.angleDelta().y())
 
@@ -68,7 +69,7 @@ class AudioPreviewWidget(BaseAudioWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 2.5))
@@ -106,13 +107,13 @@ class AudioPreviewWidget(BaseAudioWidget):
             0,
             0,
             self.width(),
-            self.height() - (SLIDER_SIZE - 1),
+            self.height() - (SLIDER_SIZE - 1)
         )
         painter.setViewport(
             0,
             SLIDER_SIZE - 1,
             self.width(),
-            self.height() - (SLIDER_SIZE - 1),
+            self.height() - (SLIDER_SIZE - 1)
         )
         self._draw_spectrogram(painter)
         self._draw_subtitle_rects(painter)
@@ -158,12 +159,14 @@ class AudioPreviewWidget(BaseAudioWidget):
             if self._audio.has_selection:
                 self._audio.select(
                     min(self._audio.selection_end, pts),
-                    self._audio.selection_end)
+                    self._audio.selection_end
+                )
         elif self._drag_mode == DragMode.SelectionEnd:
             if self._audio.has_selection:
                 self._audio.select(
                     self._audio.selection_start,
-                    max(self._audio.selection_start, pts))
+                    max(self._audio.selection_start, pts)
+                )
         elif self._drag_mode == DragMode.VideoPosition:
             self._api.media.seek(pts)
 
@@ -172,7 +175,8 @@ class AudioPreviewWidget(BaseAudioWidget):
             blend_colors(
                 self.palette().window().color(),
                 self.palette().text().color(),
-                i / 255)
+                i / 255
+            )
             for i in range(256)]
 
     def _repaint_if_needed(self) -> None:
@@ -202,13 +206,15 @@ class AudioPreviewWidget(BaseAudioWidget):
 
     def _draw_frame(self, painter: QtGui.QPainter) -> None:
         painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
+            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
+        )
         painter.setBrush(QtCore.Qt.NoBrush)
         painter.drawRect(
             0,
             0,
             painter.viewport().width() - 1,
-            painter.viewport().height() - 1)
+            painter.viewport().height() - 1
+        )
 
     def _draw_scale(self, painter: QtGui.QPainter) -> None:
         h = painter.viewport().height()
@@ -218,10 +224,12 @@ class AudioPreviewWidget(BaseAudioWidget):
         start_pts = int(self._audio.view_start // one_minute) * one_minute
         end_pts = (
             (int(self._audio.view_end + one_minute) // one_minute)
-            * one_minute)
+            * one_minute
+        )
 
         painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
+            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
+        )
         painter.setFont(QtGui.QFont(self.font().family(), 8))
         text_height = painter.fontMetrics().capHeight()
 
@@ -240,7 +248,8 @@ class AudioPreviewWidget(BaseAudioWidget):
                 text = '{:02}:{:02}'.format(pts // one_minute, 0)
             elif pts % (10 * one_second) == 0:
                 long_text = '{:02}:{:02}'.format(
-                    pts // one_minute, (pts % one_minute) // one_second)
+                    pts // one_minute, (pts % one_minute) // one_second
+                )
                 long_text_width = painter.fontMetrics().width(long_text)
                 next_label_x = self._pts_to_x(pts + 10 * one_second)
                 if long_text_width < next_label_x - x:
@@ -257,7 +266,8 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         pixels = np.zeros([width, height], dtype='byte')
         horizontal_res = (
-            self._api.opt.general['audio']['spectrogram_resolution'])
+            self._api.opt.general['audio']['spectrogram_resolution']
+        )
 
         # since the task queue is a LIFO queue, in order to render the columns
         # left-to-right, they need to be iterated backwards (hence reversed()).
@@ -279,7 +289,8 @@ class AudioPreviewWidget(BaseAudioWidget):
             pixels.shape[1],
             pixels.shape[0],
             pixels.strides[0],
-            QtGui.QImage.Format_Indexed8)
+            QtGui.QImage.Format_Indexed8
+        )
         image.setColorTable(self._color_table)
         painter.save()
         painter.scale(1, painter.viewport().height() / (height - 1))
@@ -316,33 +327,49 @@ class AudioPreviewWidget(BaseAudioWidget):
             label_width = painter.fontMetrics().width(label_text)
             is_label_visible = rect_width >= 2 * label_margin + label_width
 
-            painter.setPen(QtGui.QPen(
-                get_color(self._api, f'spectrogram/{color_key}-sub-line'),
-                1,
-                QtCore.Qt.SolidLine))
+            painter.setPen(
+                QtGui.QPen(
+                    get_color(self._api, f'spectrogram/{color_key}-sub-line'),
+                    1,
+                    QtCore.Qt.SolidLine
+                )
+            )
 
             if is_label_visible or is_selected:
-                painter.setBrush(QtGui.QBrush(
-                    get_color(self._api, f'spectrogram/{color_key}-sub-line')
-                    if is_selected else
-                    self.palette().window()))
+                painter.setBrush(
+                    QtGui.QBrush(
+                        get_color(
+                            self._api, f'spectrogram/{color_key}-sub-line')
+                        if is_selected else
+                        self.palette().window()
+                    )
+                )
                 painter.drawRect(
                     x1,
                     0,
                     min(x2 - x1, label_margin * 2 + label_width),
-                    label_margin * 2 + label_height)
+                    label_margin * 2 + label_height
+                )
 
-            painter.setBrush(QtGui.QBrush(get_color(
-                self._api, f'spectrogram/{color_key}-sub-fill')))
+            painter.setBrush(
+                QtGui.QBrush(
+                    get_color(self._api, f'spectrogram/{color_key}-sub-fill')
+                )
+            )
             painter.drawRect(x1, 0, x2 - x1, h - 1)
 
             if is_label_visible:
-                painter.setPen(QtGui.QPen(
-                    get_color(self._api, f'spectrogram/{color_key}-sub-text'),
-                    1,
-                    QtCore.Qt.SolidLine))
+                painter.setPen(
+                    QtGui.QPen(
+                        get_color(
+                            self._api, f'spectrogram/{color_key}-sub-text'),
+                        1,
+                        QtCore.Qt.SolidLine
+                    )
+                )
                 painter.drawText(
-                    x1 + label_margin, label_height + label_margin, label_text)
+                    x1 + label_margin, label_height + label_margin, label_text
+                )
 
     def _draw_selection(self, painter: QtGui.QPainter) -> None:
         if not self._audio.has_selection:
@@ -351,11 +378,18 @@ class AudioPreviewWidget(BaseAudioWidget):
         color_key = (
             'spectrogram/focused-sel'
             if self.parent().hasFocus() else
-            'spectrogram/unfocused-sel')
-        painter.setPen(QtGui.QPen(
-            get_color(self._api, f'{color_key}-line'), 1, QtCore.Qt.SolidLine))
-        painter.setBrush(QtGui.QBrush(
-            get_color(self._api, f'{color_key}-fill')))
+            'spectrogram/unfocused-sel'
+        )
+        painter.setPen(
+            QtGui.QPen(
+                get_color(self._api, f'{color_key}-line'),
+                1,
+                QtCore.Qt.SolidLine
+            )
+        )
+        painter.setBrush(
+            QtGui.QBrush(get_color(self._api, f'{color_key}-fill'))
+        )
         x1 = self._pts_to_x(self._audio.selection_start)
         x2 = self._pts_to_x(self._audio.selection_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)
@@ -396,7 +430,7 @@ class AudioSliderWidget(BaseAudioWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
@@ -445,7 +479,8 @@ class AudioSliderWidget(BaseAudioWidget):
     def _draw_frame(self, painter: QtGui.QPainter) -> None:
         w, h = self.width(), self.height()
         painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine))
+            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
+        )
         painter.drawLine(0, 0, 0, h - 1)
         painter.drawLine(w - 1, 0, w - 1, h - 1)
         painter.drawLine(0, h - 1, w - 1, h - 1)
@@ -463,7 +498,7 @@ class Audio(QtWidgets.QWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -481,7 +516,8 @@ class Audio(QtWidgets.QWidget):
         api.subs.lines.items_inserted.connect(self._sync_selection)
         api.subs.lines.items_removed.connect(self._sync_selection)
         api.subs.selection_changed.connect(
-            lambda _rows, _changed: self._sync_selection())
+            lambda _rows, _changed: self._sync_selection()
+        )
 
     def _sync_selection(self) -> None:
         if len(self._api.subs.selected_indexes) == 1:

@@ -61,8 +61,7 @@ class CommandApi(QtCore.QObject):
 
     def run(self, cmd: BaseCommand) -> None:
         if not cmd.is_enabled:
-            self._api.log.info(
-                'cmd/{}: not available right now'.format(cmd.name))
+            self._api.log.info(f'cmd/{cmd.name}: not available right now')
             return
 
         async def run() -> None:
@@ -74,8 +73,8 @@ class CommandApi(QtCore.QObject):
                 self._api.log.error('cmd/{}: {}'.format(cmd.name, ex))
                 traceback.print_exc()
             end_time = time.time()
-            self._api.log.info('cmd/{}: ran in {:.02f} s'.format(
-                cmd.name, end_time - start_time))
+            took = end_time - start_time
+            self._api.log.info(f'cmd/{cmd.name}: ran in {took:.02f} s')
 
         asyncio.ensure_future(run())
 
@@ -97,7 +96,8 @@ class CommandApi(QtCore.QObject):
         if path.exists():
             for subpath in path.glob('*.py'):
                 spec = importlib.util.spec_from_file_location(
-                    'bubblesub.plugin', str(subpath))
+                    'bubblesub.plugin', str(subpath)
+                )
                 if spec is not None:
                     specs.append(spec)
         try:

@@ -18,7 +18,7 @@ class ViewSetPaletteCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             api.opt.general['current_palette'] = self._palette_name
             main_window.apply_palette(self._palette_name)
@@ -33,7 +33,7 @@ class ViewFocusTextEditorCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             main_window.editor.center.text_edit.setFocus()
             main_window.editor.center.text_edit.selectAll()
@@ -48,7 +48,7 @@ class ViewFocusNoteEditorCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             main_window.editor.center.note_edit.setFocus()
             main_window.editor.center.note_edit.selectAll()
@@ -63,7 +63,7 @@ class ViewFocusGridCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             main_window.subs_grid.setFocus()
 
@@ -77,7 +77,7 @@ class ViewFocusSpectrogramCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             main_window.audio.setFocus()
 

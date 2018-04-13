@@ -52,7 +52,8 @@ class AudioSnapSelectionStartToVideoCommand(CoreCommand):
     async def run(self) -> None:
         self.api.media.audio.select(
             self.api.media.current_pts,
-            self.api.media.audio.selection_end)
+            self.api.media.audio.selection_end
+        )
 
 
 class AudioSnapSelectionEndToVideoCommand(CoreCommand):
@@ -67,7 +68,8 @@ class AudioSnapSelectionEndToVideoCommand(CoreCommand):
     async def run(self) -> None:
         self.api.media.audio.select(
             self.api.media.audio.selection_start,
-            self.api.media.current_pts)
+            self.api.media.current_pts
+        )
 
 
 class AudioRealignSelectionToVideoCommand(CoreCommand):
@@ -83,7 +85,8 @@ class AudioRealignSelectionToVideoCommand(CoreCommand):
         self.api.media.audio.select(
             self.api.media.current_pts,
             self.api.media.current_pts
-            + self.api.opt.general['subs']['default_duration'])
+            + self.api.opt.general['subs']['default_duration']
+        )
 
 
 class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
@@ -106,7 +109,8 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
         assert self._prev_sub is not None
         self.api.media.audio.select(
             self._prev_sub.end,
-            self.api.media.audio.selection_end)
+            self.api.media.audio.selection_end
+        )
 
 
 class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
@@ -129,7 +133,8 @@ class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
         assert self._next_sub is not None
         self.api.media.audio.select(
             self.api.media.audio.selection_start,
-            self._next_sub.start)
+            self._next_sub.start
+        )
 
 
 class AudioShiftSelectionStartCommand(CoreCommand):
@@ -139,7 +144,7 @@ class AudioShiftSelectionStartCommand(CoreCommand):
             self,
             api: bubblesub.api.Api,
             delta: int,
-            frames: bool = True,
+            frames: bool = True
     ) -> None:
         super().__init__(api)
         self._delta = delta
@@ -148,29 +153,36 @@ class AudioShiftSelectionStartCommand(CoreCommand):
     @property
     def menu_name(self) -> str:
         return '&Shift selection start ({:+} {})'.format(
-            self._delta, 'frames' if self._frames else 'ms')
+            self._delta,
+            'frames' if self._frames else 'ms'
+        )
 
     @property
     def is_enabled(self) -> bool:
         return self.api.media.audio.has_selection and bool(
-            not self._frames or self.api.media.video.timecodes)
+            not self._frames or self.api.media.video.timecodes
+        )
 
     async def run(self) -> None:
         if self._frames:
             idx = bisect.bisect_left(
                 self.api.media.video.timecodes,
-                self.api.media.audio.selection_start)
+                self.api.media.audio.selection_start
+            )
             idx += self._delta
             idx = max(0, min(idx, len(self.api.media.video.timecodes) - 1))
             self.api.media.audio.select(
                 self.api.media.video.timecodes[idx],
-                self.api.media.audio.selection_end)
+                self.api.media.audio.selection_end
+            )
         else:
             self.api.media.audio.select(
                 min(
                     self.api.media.audio.selection_end,
-                    self.api.media.audio.selection_start + self._delta),
-                self.api.media.audio.selection_end)
+                    self.api.media.audio.selection_start + self._delta
+                ),
+                self.api.media.audio.selection_end
+            )
 
 
 class AudioShiftSelectionEndCommand(CoreCommand):
@@ -180,7 +192,7 @@ class AudioShiftSelectionEndCommand(CoreCommand):
             self,
             api: bubblesub.api.Api,
             delta: int,
-            frames: bool = True,
+            frames: bool = True
     ) -> None:
         super().__init__(api)
         self._delta = delta
@@ -189,29 +201,35 @@ class AudioShiftSelectionEndCommand(CoreCommand):
     @property
     def menu_name(self) -> str:
         return '&Shift selection end ({:+} {})'.format(
-            self._delta, 'frames' if self._frames else 'ms')
+            self._delta, 'frames' if self._frames else 'ms'
+        )
 
     @property
     def is_enabled(self) -> bool:
         return self.api.media.audio.has_selection and bool(
-            not self._frames or self.api.media.video.timecodes)
+            not self._frames or self.api.media.video.timecodes
+        )
 
     async def run(self) -> None:
         if self._frames:
             idx = bisect.bisect_left(
                 self.api.media.video.timecodes,
-                self.api.media.audio.selection_end)
+                self.api.media.audio.selection_end
+            )
             idx += self._delta
             idx = max(0, min(idx, len(self.api.media.video.timecodes) - 1))
             self.api.media.audio.select(
                 self.api.media.audio.selection_start,
-                self.api.media.video.timecodes[idx])
+                self.api.media.video.timecodes[idx]
+            )
         else:
             self.api.media.audio.select(
                 self.api.media.audio.selection_start,
                 max(
                     self.api.media.audio.selection_start,
-                    self.api.media.audio.selection_end + self._delta))
+                    self.api.media.audio.selection_end + self._delta
+                )
+            )
 
 
 class AudioShiftSelectionCommand(CoreCommand):
@@ -221,7 +239,7 @@ class AudioShiftSelectionCommand(CoreCommand):
             self,
             api: bubblesub.api.Api,
             delta: int,
-            frames: bool = True,
+            frames: bool = True
     ) -> None:
         super().__init__(api)
         self._delta = delta
@@ -230,32 +248,38 @@ class AudioShiftSelectionCommand(CoreCommand):
     @property
     def menu_name(self) -> str:
         return '&Shift selection ({:+} {})'.format(
-            self._delta, 'frames' if self._frames else 'ms')
+            self._delta, 'frames' if self._frames else 'ms'
+        )
 
     @property
     def is_enabled(self) -> bool:
         return self.api.media.audio.has_selection and bool(
-            not self._frames or self.api.media.video.timecodes)
+            not self._frames or self.api.media.video.timecodes
+        )
 
     async def run(self) -> None:
         if self._frames:
             idx1 = bisect.bisect_left(
                 self.api.media.video.timecodes,
-                self.api.media.audio.selection_start)
+                self.api.media.audio.selection_start
+            )
             idx2 = bisect.bisect_left(
                 self.api.media.video.timecodes,
-                self.api.media.audio.selection_end)
+                self.api.media.audio.selection_end
+            )
             idx1 += self._delta
             idx2 += self._delta
             idx1 = max(0, min(idx1, len(self.api.media.video.timecodes) - 1))
             idx2 = max(0, min(idx2, len(self.api.media.video.timecodes) - 1))
             self.api.media.audio.select(
                 self.api.media.video.timecodes[idx1],
-                self.api.media.video.timecodes[idx2])
+                self.api.media.video.timecodes[idx2]
+            )
         else:
             self.api.media.audio.select(
                 self.api.media.audio.selection_start + self._delta,
-                self.api.media.audio.selection_end + self._delta)
+                self.api.media.audio.selection_end + self._delta
+            )
 
 
 class AudioCommitSelectionCommand(CoreCommand):

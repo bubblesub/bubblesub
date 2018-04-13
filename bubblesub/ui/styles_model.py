@@ -45,7 +45,7 @@ class StylesModel(QtCore.QAbstractTableModel):
             self,
             api: bubblesub.api.Api,
             *args: T.Any,
-            **kwargs: T.Any,
+            **kwargs: T.Any
     ) -> None:
         super().__init__(*args, **kwargs)
 
@@ -56,20 +56,20 @@ class StylesModel(QtCore.QAbstractTableModel):
 
     def rowCount(
             self,
-            _parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+            _parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
         return len(self._styles)
 
     def columnCount(
             self,
-            _parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+            _parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
         return len(StylesModelColumn)
 
     def data(
             self,
             index: QtCore.QModelIndex,
-            role: int = QtCore.Qt.DisplayRole,
+            role: int = QtCore.Qt.DisplayRole
     ) -> T.Any:
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             row_idx = index.row()
@@ -126,7 +126,7 @@ class StylesModel(QtCore.QAbstractTableModel):
             self,
             index: QtCore.QModelIndex,
             value: T.Any,
-            role: int = QtCore.Qt.DisplayRole,
+            role: int = QtCore.Qt.DisplayRole
     ) -> bool:
         if role == QtCore.Qt.EditRole:
             row_idx = index.row()
@@ -186,20 +186,21 @@ class StylesModel(QtCore.QAbstractTableModel):
         if index.column() == StylesModelColumn.Name:
             return T.cast(
                 int,
-                QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable,
+                QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
             )
         return T.cast(
             int,
             QtCore.Qt.ItemIsEnabled |
             QtCore.Qt.ItemIsSelectable |
-            QtCore.Qt.ItemIsEditable,
+            QtCore.Qt.ItemIsEditable
         )
 
     def _proxy_data_changed(self, idx: int) -> None:
         self.dataChanged.emit(
             self.index(idx, 0),
             self.index(idx, self.columnCount() - 1),
-            [QtCore.Qt.DisplayRole | QtCore.Qt.BackgroundRole])
+            [QtCore.Qt.DisplayRole | QtCore.Qt.BackgroundRole]
+        )
 
     def _proxy_items_inserted(self, idx: int, count: int) -> None:
         if count:

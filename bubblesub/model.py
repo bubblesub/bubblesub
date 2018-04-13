@@ -129,7 +129,7 @@ class ObservableList(T.Generic[TItem]):
     def get(
             self,
             idx: int,
-            default: T.Optional[TItem] = None,
+            default: T.Optional[TItem] = None
     ) -> T.Optional[TItem]:
         if idx < 0 or idx >= len(self):
             return default

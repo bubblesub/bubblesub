@@ -20,7 +20,8 @@ _SAMPLER_LOCK = threading.Lock()
 
 
 class AudioSourceProviderContext(
-        bubblesub.provider.ProviderContext[Path, ffms.AudioSource]):
+        bubblesub.provider.ProviderContext[Path, ffms.AudioSource]
+):
     def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
         super().__init__()
         self._log_api = log_api
@@ -37,7 +38,9 @@ class AudioSourceProviderContext(
         if cache_path.exists():
             try:
                 index = ffms.Index.read(
-                    index_file=str(cache_path), source_file=str(path))
+                    index_file=str(cache_path),
+                    source_file=str(path)
+                )
                 if not index.belongs_to_file(str(path)):
                     index = None
             except ffms.Error:
@@ -49,7 +52,8 @@ class AudioSourceProviderContext(
             index.write(str(cache_path))
 
         track_number = index.get_first_indexed_track_of_type(
-            ffms.FFMS_TYPE_AUDIO)
+            ffms.FFMS_TYPE_AUDIO
+        )
         audio_source = ffms.AudioSource(str(path), track_number, index)
         self._log_api.info('audio/sampler: loaded')
         return audio_source
@@ -59,7 +63,7 @@ class AudioSourceProvider(bubblesub.provider.Provider):
     def __init__(
             self,
             parent: QtCore.QObject,
-            log_api: 'bubblesub.api.log.LogApi',
+            log_api: 'bubblesub.api.log.LogApi'
     ) -> None:
         super().__init__(parent, AudioSourceProviderContext(log_api))
 
@@ -72,7 +76,7 @@ class AudioApi(QtCore.QObject):
     def __init__(
             self,
             media_api: 'bubblesub.api.media.media.MediaApi',
-            log_api: 'bubblesub.api.log.LogApi',
+            log_api: 'bubblesub.api.log.LogApi'
     ) -> None:
         super().__init__()
         self._min = 0
@@ -134,7 +138,8 @@ class AudioApi(QtCore.QObject):
     def has_audio_source(self) -> bool:
         return (
             self._audio_source is not None
-            and self._audio_source is not _LOADING)
+            and self._audio_source is not _LOADING
+        )
 
     @property
     def channel_count(self) -> int:
@@ -170,7 +175,8 @@ class AudioApi(QtCore.QObject):
             return None
         return T.cast(
             T.Optional[int],
-            self._audio_source.properties.SampleFormat)
+            self._audio_source.properties.SampleFormat
+        )
 
     @property
     def sample_count(self) -> int:
@@ -218,7 +224,8 @@ class AudioApi(QtCore.QObject):
             self._wait_for_audio_source()
             if not self._audio_source:
                 return np.zeros(count).reshape(
-                    (count, max(1, self.channel_count)))
+                    (count, max(1, self.channel_count))
+                )
             if start_frame + count > self.sample_count:
                 count = max(0, self.sample_count - start_frame)
             if not count:
@@ -230,7 +237,7 @@ class AudioApi(QtCore.QObject):
             self,
             path_or_handle: T.Union[Path, T.IO],
             start_pts: int,
-            end_pts: int,
+            end_pts: int
     ) -> None:
         start_frame = int(start_pts * self.sample_rate / 1000)
         end_frame = int(end_pts * self.sample_rate / 1000)

@@ -30,7 +30,8 @@ class AssSyntaxHighlight(QtGui.QSyntaxHighlighter):
         nonprinting_fmt = QtGui.QTextCharFormat()
         # nonprinting_fmt.setFontWeight(QtGui.QFont.Bold)
         nonprinting_fmt.setBackground(
-            get_color(self._api, 'grid/non-printing-mark'))
+            get_color(self._api, 'grid/non-printing-mark')
+        )
 
         self._style_map = {
             '\N{FULLWIDTH ASTERISK}': ass_fmt,
@@ -47,7 +48,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._doc = QtGui.QTextDocument(self)
@@ -58,7 +59,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
             self,
             painter: QtGui.QPainter,
             option: QtWidgets.QStyleOptionViewItem,
-            index: QtCore.QModelIndex,
+            index: QtCore.QModelIndex
     ) -> None:
         if option.state & QtWidgets.QStyle.State_Selected:
             super().paint(painter, option, index)
@@ -74,10 +75,12 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
         ctx = QtGui.QAbstractTextDocumentLayout.PaintContext()
         ctx.palette.setColor(
-            QtGui.QPalette.Text, option.palette.color(QtGui.QPalette.Text))
+            QtGui.QPalette.Text, option.palette.color(QtGui.QPalette.Text)
+        )
 
         text_rect = style.subElementRect(
-            QtWidgets.QStyle.SE_ItemViewItemText, option)
+            QtWidgets.QStyle.SE_ItemViewItemText, option
+        )
         doc_height = self._doc.documentLayout().documentSize().height()
         vertical_offset = (text_rect.height() - doc_height) // 2
 
@@ -94,7 +97,7 @@ class SubsGrid(QtWidgets.QTableView):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None,
+            parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -102,25 +105,29 @@ class SubsGrid(QtWidgets.QTableView):
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
         self.verticalHeader().setDefaultSectionSize(
-            self.fontMetrics().height() + MAGIC_MARGIN3)
+            self.fontMetrics().height() + MAGIC_MARGIN3
+        )
 
         self._subs_grid_delegate = SubsGridDelegate(self._api, self)
         for i, column_type in enumerate(self.model().column_order):
             if column_type in (SubsModelColumn.Text, SubsModelColumn.Note):
                 self.setItemDelegateForColumn(i, self._subs_grid_delegate)
                 self.horizontalHeader().setSectionResizeMode(
-                    i, QtWidgets.QHeaderView.Stretch)
+                    i, QtWidgets.QHeaderView.Stretch
+                )
 
         api.subs.loaded.connect(self._on_subs_load)
         api.subs.selection_changed.connect(self._on_api_selection_change)
         self.selectionModel().selectionChanged.connect(
-            self._widget_selection_changed)
+            self._widget_selection_changed
+        )
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._open_menu)
         self.menu = QtWidgets.QMenu(self)
         bubblesub.ui.util.setup_cmd_menu(
-            self._api, self.menu, self._api.opt.context_menu)
+            self._api, self.menu, self._api.opt.context_menu
+        )
 
     def keyboardSearch(self, _text: str) -> None:
         pass
@@ -141,30 +148,34 @@ class SubsGrid(QtWidgets.QTableView):
     def _on_subs_load(self) -> None:
         self.scrollTo(
             self.model().index(0, 0),
-            self.EnsureVisible | self.PositionAtTop)
+            self.EnsureVisible | self.PositionAtTop
+        )
 
     def _widget_selection_changed(
             self,
             _selected: T.List[int],
-            _deselected: T.List[int],
+            _deselected: T.List[int]
     ) -> None:
         if self._collect_rows() != self._api.subs.selected_indexes:
             self._api.subs.selection_changed.disconnect(
-                self._on_api_selection_change)
+                self._on_api_selection_change
+            )
             self._api.subs.selected_indexes = self._collect_rows()
             self._api.subs.selection_changed.connect(
-                self._on_api_selection_change)
+                self._on_api_selection_change
+            )
 
     def _on_api_selection_change(
             self,
             _rows: T.List[int],
-            _changed: bool,
+            _changed: bool
     ) -> None:
         if self._collect_rows() == self._api.subs.selected_indexes:
             return
 
         self.selectionModel().selectionChanged.disconnect(
-            self._widget_selection_changed)
+            self._widget_selection_changed
+        )
 
         selection = QtCore.QItemSelection()
         for row in self._api.subs.selected_indexes:
@@ -183,7 +194,9 @@ class SubsGrid(QtWidgets.QTableView):
             selection,
             QtCore.QItemSelectionModel.Rows |
             QtCore.QItemSelectionModel.Current |
-            QtCore.QItemSelectionModel.Select)
+            QtCore.QItemSelectionModel.Select
+        )
 
         self.selectionModel().selectionChanged.connect(
-            self._widget_selection_changed)
+            self._widget_selection_changed
+        )

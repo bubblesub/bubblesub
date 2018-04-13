@@ -455,12 +455,13 @@ class Options:
         serializer.write(
             self.hotkeys,
             {'main': self.main_menu, 'context': self.context_menu},
-            self.general)
+            self.general
+        )
 
     def _ensure_defaults(
             self,
             target: T.Dict[str, T.Any],
-            source: T.Dict[str, T.Any],
+            source: T.Dict[str, T.Any]
     ) -> None:
         if isinstance(source, (list, tuple)):
             if not isinstance(target, list) and not isinstance(target, tuple):

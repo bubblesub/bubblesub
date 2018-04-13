@@ -19,7 +19,8 @@ class EditKaraokeSplitCommand(CoreCommand):
     def is_enabled(self) -> bool:
         return (
             len(self.api.subs.selected_indexes) == 1
-            and '\\k' in self.api.subs.selected_lines[0].text)
+            and '\\k' in self.api.subs.selected_lines[0].text
+        )
 
     async def run(self) -> None:
         idx = self.api.subs.selected_indexes[0]
@@ -41,8 +42,7 @@ class EditKaraokeSplitCommand(CoreCommand):
             new_subs.append(sub_copy)
 
         self.api.subs.lines.insert(idx, new_subs)
-        self.api.subs.selected_indexes = list(
-            range(idx, idx + len(syllables)))
+        self.api.subs.selected_indexes = list(range(idx, idx + len(syllables)))
         self.api.gui.end_update()
 
         self.api.undo.capture()
@@ -55,7 +55,7 @@ class EditKaraokeSplitCommand(CoreCommand):
                 if match:
                     syllables.append(Syllable(
                         text='',
-                        duration=int(match.group(1)),
+                        duration=int(match.group(1))
                     ))
                     # remove the leftover \k tag
                     group = group[:match.start()] + group[match.end():]
@@ -112,7 +112,8 @@ class EditTransformationJoinCommand(CoreCommand):
             note += sub.note
             if i != len(subs) - 1:
                 text += (
-                    '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos))
+                    '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos)
+                )
         subs[0].text = text
         subs[0].note = note
         subs[0].end = subs[-1].end

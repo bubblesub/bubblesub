@@ -23,19 +23,17 @@ class StylePreview(QtWidgets.QGroupBox):
             self,
             api: bubblesub.api.Api,
             selection_model: QtCore.QItemSelectionModel,
-            parent: QtWidgets.QWidget,
+            parent: QtWidgets.QWidget
     ) -> None:
         super().__init__('Preview', parent)
         self._api = api
         self._selection_model = selection_model
 
         self._preview_box = QtWidgets.QFrame(self)
-        self._preview_box.setSizePolicy(
-            QtWidgets.QSizePolicy(
-                QtWidgets.QSizePolicy.MinimumExpanding,
-                QtWidgets.QSizePolicy.MinimumExpanding,
-            )
-        )
+        self._preview_box.setSizePolicy(QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.MinimumExpanding,
+            QtWidgets.QSizePolicy.MinimumExpanding
+        ))
 
         self._slider = QtWidgets.QSlider(self)
         self._slider.setOrientation(QtCore.Qt.Horizontal)
@@ -43,16 +41,15 @@ class StylePreview(QtWidgets.QGroupBox):
         self._slider.setMaximum(api.media.max_pts)
 
         self._text_box = QtWidgets.QPlainTextEdit(self)
-        self._text_box.setSizePolicy(
-            QtWidgets.QSizePolicy(
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Maximum,
-            )
-        )
+        self._text_box.setSizePolicy(QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Maximum
+        ))
         self._text_box.setFixedHeight(100)
         if self._api.subs.selected_lines:
             self._text_box.document().setPlainText(
-                self._api.subs.selected_lines[0].text)
+                self._api.subs.selected_lines[0].text
+            )
 
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = mpv.Context()
@@ -135,7 +132,8 @@ class StylePreview(QtWidgets.QGroupBox):
             start=0,
             end=self._api.media.max_pts,
             style='Default',
-            text=self._text_box.toPlainText())
+            text=self._text_box.toPlainText()
+        )
 
         self._ass_file.info = self._api.subs.info
         with self._tmp_subs_path.open('w') as handle:
@@ -152,7 +150,7 @@ class StylePreview(QtWidgets.QGroupBox):
     def _on_selection_change(
             self,
             _selected: QtCore.QItemSelection,
-            _deselected: QtCore.QItemSelection,
+            _deselected: QtCore.QItemSelection
     ) -> None:
         self._refresh_subs()
 
@@ -175,7 +173,7 @@ class StyleList(QtWidgets.QWidget):
             api: bubblesub.api.Api,
             model: StylesModel,
             selection_model: QtCore.QItemSelectionModel,
-            parent: QtWidgets.QWidget,
+            parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -235,7 +233,7 @@ class StyleList(QtWidgets.QWidget):
     def _on_selection_change(
             self,
             selected: QtCore.QItemSelection,
-            _deselected: QtCore.QItemSelection,
+            _deselected: QtCore.QItemSelection
     ) -> None:
         anything_selected = len(selected.indexes()) > 0
         self._remove_button.setEnabled(anything_selected)
@@ -243,10 +241,12 @@ class StyleList(QtWidgets.QWidget):
         self._duplicate_button.setEnabled(anything_selected)
         self._move_up_button.setEnabled(
             anything_selected
-            and selected.indexes()[0].row() > 0)
+            and selected.indexes()[0].row() > 0
+        )
         self._move_down_button.setEnabled(
             anything_selected
-            and selected.indexes()[0].row() < len(self._api.subs.styles) - 1)
+            and selected.indexes()[0].row() < len(self._api.subs.styles) - 1
+        )
 
     def _on_add_button_click(self, _event: QtGui.QMouseEvent) -> None:
         style_name = self._prompt_for_unique_style_name()
@@ -260,11 +260,12 @@ class StyleList(QtWidgets.QWidget):
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx, 0),
             QtCore.QItemSelectionModel.Clear |
-            QtCore.QItemSelectionModel.Select)
+            QtCore.QItemSelectionModel.Select
+        )
 
     def _prompt_for_unique_style_name(
             self,
-            style_name: str = '',
+            style_name: str = ''
     ) -> T.Optional[str]:
         prompt_text = 'Name of the new style:'
         while True:
@@ -286,14 +287,16 @@ class StyleList(QtWidgets.QWidget):
 
             prompt_text = (
                 '"{}" already exists. Choose different name:'
-                .format(style_name))
+                .format(style_name)
+            )
 
     def _on_remove_button_click(self, _event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
         if not bubblesub.ui.util.ask(
-                f'Are you sure you want to remove style "{style.name}"?'):
+                f'Are you sure you want to remove style "{style.name}"?'
+        ):
             return
 
         idx = self._api.subs.styles.index(style)
@@ -316,7 +319,8 @@ class StyleList(QtWidgets.QWidget):
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear |
-            QtCore.QItemSelectionModel.Select)
+            QtCore.QItemSelectionModel.Select
+        )
         self._api.undo.capture()
 
     def _on_move_up_button_click(self, _event: QtGui.QMouseEvent) -> None:
@@ -330,7 +334,8 @@ class StyleList(QtWidgets.QWidget):
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx - 1, 0),
             QtCore.QItemSelectionModel.Clear |
-            QtCore.QItemSelectionModel.Select)
+            QtCore.QItemSelectionModel.Select
+        )
         self._api.undo.capture()
 
     def _on_move_down_button_click(self, _event: QtGui.QMouseEvent) -> None:
@@ -344,7 +349,8 @@ class StyleList(QtWidgets.QWidget):
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear |
-            QtCore.QItemSelectionModel.Select)
+            QtCore.QItemSelectionModel.Select
+        )
         self._api.undo.capture()
 
     def _on_rename_button_click(self, _event: QtGui.QMouseEvent) -> None:
@@ -366,7 +372,8 @@ class StyleList(QtWidgets.QWidget):
 
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx, 0),
-            QtCore.QItemSelectionModel.Select)
+            QtCore.QItemSelectionModel.Select
+        )
         self._api.undo.capture()
 
 
@@ -375,12 +382,10 @@ class FontGroupBox(QtWidgets.QGroupBox):
         super().__init__('Font', parent)
         self.font_name_edit = QtWidgets.QComboBox(self)
         self.font_name_edit.setEditable(False)
-        self.font_name_edit.setSizePolicy(
-            QtWidgets.QSizePolicy(
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Preferred,
-            ),
-        )
+        self.font_name_edit.setSizePolicy(QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Preferred
+        ))
         self.font_name_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
         self.font_size_edit = QtWidgets.QSpinBox(self)
         self.font_size_edit.setMinimum(0)
@@ -423,7 +428,9 @@ class AlignmentGroupBox(QtWidgets.QGroupBox):
                     '\N{NORTH WEST ARROW}',
                     '\N{UPWARDS ARROW}',
                     '\N{NORTH EAST ARROW}',
-                ][x - 1], self)
+                ][x - 1],
+                self
+            )
             for x in range(1, 10)
         }
         layout = QtWidgets.QGridLayout(self)
@@ -442,7 +449,8 @@ class AlignmentGroupBox(QtWidgets.QGroupBox):
 
         for radio_button in self.radio_buttons.values():
             radio_button.toggled.connect(
-                lambda _event: self.changed.emit())
+                lambda _event: self.changed.emit()
+            )
 
     def get_value(self) -> int:
         for idx, radio_button in self.radio_buttons.items():
@@ -555,7 +563,7 @@ class StyleEditor(QtWidgets.QWidget):
             self,
             model: StylesModel,
             selection_model: QtCore.QItemSelectionModel,
-            parent: QtWidgets.QWidget,
+            parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self._model = model
@@ -644,7 +652,7 @@ class StyleEditor(QtWidgets.QWidget):
     def _on_selection_change(
             self,
             selected: QtCore.QItemSelection,
-            _deselected: QtCore.QItemSelection,
+            _deselected: QtCore.QItemSelection
     ) -> None:
         if selected.indexes():
             self.setEnabled(True)
@@ -698,7 +706,7 @@ class StylesManagerDialog(QtWidgets.QDialog):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            main_window: QtWidgets.QMainWindow,
+            main_window: QtWidgets.QMainWindow
     ) -> None:
         super().__init__(main_window)
         model = StylesModel(api)
@@ -708,7 +716,8 @@ class StylesManagerDialog(QtWidgets.QDialog):
         self._style_editor = StyleEditor(model, selection_model, self)
         self._preview_box = (
             StylePreview(api, selection_model, self)
-            if api.media.path else None
+            if api.media.path else
+            None
         )
 
         self._style_editor.setEnabled(False)
@@ -731,7 +740,7 @@ class StylesManagerCommand(CoreCommand):
     async def run(self) -> None:
         async def run(
                 api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> None:
             StylesManagerDialog(api, main_window).exec_()
             self.api.undo.capture()

@@ -25,7 +25,7 @@ class GuiApi(QtCore.QObject):
             self,
             func: T.Callable[..., T.Awaitable[TResult]],
             *args: T.Any,
-            **kwargs: T.Any,
+            **kwargs: T.Any
     ) -> TResult:
         return await func(self._api, self._main_window, *args, **kwargs)
 

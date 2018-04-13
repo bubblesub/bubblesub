@@ -40,4 +40,5 @@ setup(
         'Topic :: Text Editors',
         'Topic :: Multimedia :: Sound/Audio',
         'Topic :: Multimedia :: Video',
-    ])
+    ]
+)

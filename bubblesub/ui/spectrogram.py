@@ -15,23 +15,28 @@ TSpectrumProviderResult = T.Tuple[int, T.List[int]]
 
 
 class SpectrumProviderContext(
-        bubblesub.provider.ProviderContext[int, TSpectrumProviderResult]):
+        bubblesub.provider.ProviderContext[int, TSpectrumProviderResult]
+):
     def __init__(self, api: bubblesub.api.Api) -> None:
         super().__init__()
         self._api = api
         self._input = pyfftw.empty_aligned(
-            2 << DERIVATION_SIZE, dtype=np.float32)
+            2 << DERIVATION_SIZE, dtype=np.float32
+        )
         self._output = pyfftw.empty_aligned(
-            (1 << DERIVATION_SIZE) + 1, dtype=np.complex64)
+            (1 << DERIVATION_SIZE) + 1, dtype=np.complex64
+        )
         self._fftw = pyfftw.FFTW(
-            self._input, self._output, flags=('FFTW_MEASURE',))
+            self._input, self._output, flags=('FFTW_MEASURE',)
+        )
 
     def work(self, task: int) -> TSpectrumProviderResult:
         pts = task
 
         audio_frame = int(pts * self._api.media.audio.sample_rate / 1000.0)
         first_sample = (
-            audio_frame >> DERIVATION_DISTANCE) << DERIVATION_DISTANCE
+            audio_frame >> DERIVATION_DISTANCE
+        ) << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
         samples = self._api.media.audio.get_samples(first_sample, sample_count)
@@ -54,7 +59,8 @@ class SpectrumProviderContext(
             np.sqrt(
                 np.real(out) * np.real(out)
                 + np.imag(out) * np.imag(out)
-            ) * scale_factor + 1)
+            ) * scale_factor + 1
+        )
 
         out *= 255
         out = np.clip(out, 0, 255)
@@ -67,6 +73,6 @@ class SpectrumProvider(bubblesub.provider.Provider[SpectrumProviderContext]):
     def __init__(
             self,
             parent: QtCore.QObject,
-            api: bubblesub.api.Api,
+            api: bubblesub.api.Api
     ) -> None:
         super().__init__(parent, SpectrumProviderContext(api))

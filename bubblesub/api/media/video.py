@@ -16,7 +16,7 @@ class TimecodesProviderResult:
             self,
             path: Path,
             timecodes: T.List[int],
-            keyframes: T.List[int],
+            keyframes: T.List[int]
     ) -> None:
         self.path = path
         self.timecodes = timecodes
@@ -54,7 +54,7 @@ class TimecodesProvider(bubblesub.provider.Provider[TimecodesProviderContext]):
     def __init__(
             self,
             parent: QtCore.QObject,
-            log_api: 'bubblesub.api.log.LogApi',
+            log_api: 'bubblesub.api.log.LogApi'
     ) -> None:
         super().__init__(parent, TimecodesProviderContext(log_api))
 
@@ -65,7 +65,7 @@ class VideoApi(QtCore.QObject):
     def __init__(
             self,
             media_api: 'bubblesub.api.media.media.MediaApi',
-            log_api: 'bubblesub.api.log.LogApi',
+            log_api: 'bubblesub.api.log.LogApi'
     ) -> None:
         super().__init__()
 
@@ -85,7 +85,8 @@ class VideoApi(QtCore.QObject):
         self._media_api._mpv.command(
             'screenshot-to-file',
             path,
-            'subtitles' if include_subtitles else 'video')
+            'subtitles' if include_subtitles else 'video'
+        )
 
     def align_pts_to_next_frame(self, pts: int) -> int:
         if self.timecodes:

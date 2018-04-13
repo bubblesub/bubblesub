@@ -20,19 +20,21 @@ def _get_dialog_dir(api: bubblesub.api.Api) -> T.Optional[Path]:
 async def _get_save_file_name(
         api: bubblesub.api.Api,
         main_window: QtWidgets.QMainWindow,
-        file_filter: str,
+        file_filter: str
 ) -> T.Optional[Path]:
     return bubblesub.ui.util.save_dialog(
-        main_window, file_filter, directory=_get_dialog_dir(api))
+        main_window, file_filter, directory=_get_dialog_dir(api)
+    )
 
 
 async def _get_load_file_name(
         api: bubblesub.api.Api,
         main_window: QtWidgets.QMainWindow,
-        file_filter: str,
+        file_filter: str
 ) -> T.Optional[Path]:
     return bubblesub.ui.util.load_dialog(
-        main_window, file_filter, directory=_get_dialog_dir(api))
+        main_window, file_filter, directory=_get_dialog_dir(api)
+    )
 
 
 def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
@@ -40,7 +42,8 @@ def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
         return True
     return bubblesub.ui.util.ask(
         'There are unsaved changes. '
-        'Are you sure you want to close the current file?')
+        'Are you sure you want to close the current file?'
+    )
 
 
 class FileNewCommand(CoreCommand):
@@ -59,7 +62,8 @@ class FileOpenCommand(CoreCommand):
     async def run(self) -> None:
         if _ask_about_unsaved_changes(self.api):
             path = await self.api.gui.exec(
-                _get_load_file_name, SUBS_FILE_FILTER)
+                _get_load_file_name, SUBS_FILE_FILTER
+            )
             if not path:
                 self.info('opening cancelled.')
             else:
@@ -88,7 +92,8 @@ class FileSaveCommand(CoreCommand):
         path = self.api.subs.path
         if not path:
             path = await self.api.gui.exec(
-                _get_save_file_name, SUBS_FILE_FILTER)
+                _get_save_file_name, SUBS_FILE_FILTER
+            )
             if not path:
                 self.info('saving cancelled.')
                 return
@@ -102,7 +107,8 @@ class FileSaveAsCommand(CoreCommand):
 
     async def run(self) -> None:
         path = await self.api.gui.exec(
-            _get_save_file_name, SUBS_FILE_FILTER)
+            _get_save_file_name, SUBS_FILE_FILTER
+        )
         if not path:
             self.info('saving cancelled.')
         else:

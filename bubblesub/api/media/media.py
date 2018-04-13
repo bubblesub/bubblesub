@@ -30,7 +30,8 @@ class MediaApi(QtCore.QObject):
             subs_api: SubtitlesApi,
             log_api: LogApi,
             opt_api: Options,
-            args: argparse.Namespace) -> None:
+            args: argparse.Namespace
+    ) -> None:
         super().__init__()
 
         self._log_api = log_api
@@ -56,7 +57,8 @@ class MediaApi(QtCore.QObject):
         self._subs_api.styles.items_removed.connect(self._on_subs_change)
         self._subs_api.styles.items_inserted.connect(self._on_subs_change)
         self._subs_api.selection_changed.connect(
-            self._on_grid_selection_change)
+            self._on_grid_selection_change
+        )
 
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = mpv.Context()
@@ -121,7 +123,8 @@ class MediaApi(QtCore.QObject):
             self._mpv.command(
                 'seek',
                 bubblesub.util.ms_to_str(pts),
-                'absolute+exact' if precise else 'absolute')
+                'absolute+exact' if precise else 'absolute'
+            )
 
     def step_frame_forward(self) -> None:
         if not self._mpv_ready:
@@ -246,7 +249,7 @@ class MediaApi(QtCore.QObject):
     def _on_grid_selection_change(
             self,
             rows: T.List[int],
-            _changed: bool,
+            _changed: bool
     ) -> None:
         if len(rows) == 1:
             self.pause()
@@ -264,9 +267,8 @@ class MediaApi(QtCore.QObject):
             elif event.id == mpv.Events.log_message:
                 event_log = event.data
                 self._log_api.debug(
-                    'video/{}: {}'.format(
-                        event_log.prefix,
-                        event_log.text.strip()))
+                    f'video/{event_log.prefix}: {event_log.text.strip()}'
+                )
             elif event.id == mpv.Events.property_change:
                 event_prop = event.data
                 if event_prop.name == 'time-pos':

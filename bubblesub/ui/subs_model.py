@@ -40,7 +40,7 @@ class SubsModel(QtCore.QAbstractTableModel):
             self,
             api: bubblesub.api.Api,
             *args: T.Any,
-            **kwargs: T.Any,
+            **kwargs: T.Any
     ) -> None:
         super().__init__(*args, **kwargs)
         self._api = api
@@ -58,17 +58,18 @@ class SubsModel(QtCore.QAbstractTableModel):
         self.reset_cache()
 
         self._character_limit = (
-            api.opt.general['subs']['max_characters_per_second'])
+            api.opt.general['subs']['max_characters_per_second']
+        )
 
     def rowCount(
             self,
-            _parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+            _parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
         return len(self._subtitles)
 
     def columnCount(
             self,
-            _parent: QtCore.QModelIndex = QtCore.QModelIndex(),
+            _parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
         return len(self.column_order)
 
@@ -76,7 +77,7 @@ class SubsModel(QtCore.QAbstractTableModel):
             self,
             idx: int,
             orientation: int,
-            role: int = QtCore.Qt.DisplayRole,
+            role: int = QtCore.Qt.DisplayRole
     ) -> T.Any:
         if orientation == QtCore.Qt.Vertical:
             if role == QtCore.Qt.DisplayRole:
@@ -98,7 +99,7 @@ class SubsModel(QtCore.QAbstractTableModel):
     def data(
             self,
             index: QtCore.QModelIndex,
-            role: int = QtCore.Qt.DisplayRole,
+            role: int = QtCore.Qt.DisplayRole
     ) -> T.Any:
         if role == QtCore.Qt.DisplayRole:
             row_number = index.row()
@@ -119,18 +120,23 @@ class SubsModel(QtCore.QAbstractTableModel):
                         subtitle.actor,
                     SubsModelColumn.Text:
                         bubblesub.ass.util.ass_to_plaintext(
-                            subtitle.text, True),
+                            subtitle.text, True
+                        ),
                     SubsModelColumn.Note:
                         bubblesub.ass.util.ass_to_plaintext(
-                            subtitle.note, True),
+                            subtitle.note, True
+                        ),
                     SubsModelColumn.Duration:
                         '{:.1f}'.format(subtitle.duration / 1000.0),
-                    SubsModelColumn.CharactersPerSecond: (
-                        '{:.1f}'.format(
-                            bubblesub.ass.util.character_count(subtitle.text) /
-                            max(1, subtitle.duration / 1000.0))
-                        if subtitle.duration > 0
-                        else '-')
+                    SubsModelColumn.CharactersPerSecond:
+                        (
+                            '{:.1f}'.format(
+                                bubblesub.ass.util.character_count(
+                                    subtitle.text) /
+                                max(1, subtitle.duration / 1000.0))
+                            if subtitle.duration > 0 else
+                            '-'
+                        )
                 }
                 self._cache[row_number][_CACHE_TEXT] = data
             return data[column_type]
@@ -151,7 +157,8 @@ class SubsModel(QtCore.QAbstractTableModel):
             if not data:
                 ratio = (
                     bubblesub.ass.util.character_count(subtitle.text) /
-                    max(1, subtitle.duration / 1000.0))
+                    max(1, subtitle.duration / 1000.0)
+                )
                 ratio -= self._character_limit
                 ratio = max(0, ratio)
                 ratio /= self._character_limit
@@ -160,7 +167,8 @@ class SubsModel(QtCore.QAbstractTableModel):
                     bubblesub.ui.util.blend_colors(
                         self.parent().palette().base().color(),
                         self.parent().palette().highlight().color(),
-                        ratio))
+                        ratio)
+                    )
                 self._cache[row_number][_CACHE_CPS_BK] = data
             return data
 
@@ -176,7 +184,8 @@ class SubsModel(QtCore.QAbstractTableModel):
     def flags(self, _index: QtCore.QModelIndex) -> int:
         return T.cast(
             int,
-            QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+            QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        )
 
     def reset_cache(self, idx: T.Optional[int] = None) -> None:
         if idx:
@@ -191,12 +200,14 @@ class SubsModel(QtCore.QAbstractTableModel):
         # self.dataChanged.emit(
         #     self.index(idx, 0),
         #     self.index(idx, self.columnCount() - 1),
-        #     [QtCore.Qt.DisplayRole | QtCore.Qt.BackgroundRole])
+        #     [QtCore.Qt.DisplayRole | QtCore.Qt.BackgroundRole]
+        # )
         for i in range(self.columnCount()):
             self.dataChanged.emit(
                 self.index(idx, i),
                 self.index(idx, i),
-                [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole])
+                [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole]
+            )
 
     def _proxy_items_inserted(self, idx: int, count: int) -> None:
         self.reset_cache()

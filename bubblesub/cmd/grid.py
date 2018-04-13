@@ -34,7 +34,7 @@ class GridJumpToLineCommand(CoreCommand):
     async def run(self) -> None:
         async def run_dialog(
                 api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> T.Optional[int]:
             dialog = QtWidgets.QInputDialog(main_window)
             dialog.setLabelText('Line number to jump to:')
@@ -64,7 +64,7 @@ class GridJumpToTimeCommand(CoreCommand):
         async def _run_dialog(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow,
-                **kwargs: T.Any,
+                **kwargs: T.Any
         ) -> T.Optional[T.Tuple[int, bool]]:
             return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
 
@@ -72,11 +72,13 @@ class GridJumpToTimeCommand(CoreCommand):
             _run_dialog,
             value=(
                 self.api.subs.selected_lines[0].start
-                if self.api.subs.has_selection
-                else 0),
+                if self.api.subs.has_selection else
+                0
+            ),
             absolute_label='Time to jump to:',
             relative_checked=False,
-            show_radio=False)
+            show_radio=False
+        )
 
         if ret is not None:
             target_pts, _is_relative = ret
@@ -123,7 +125,9 @@ class GridSelectNextSubtitleCommand(CoreCommand):
             self.api.subs.selected_indexes = [
                 min(
                     self.api.subs.selected_indexes[-1] + 1,
-                    len(self.api.subs.lines) - 1)]
+                    len(self.api.subs.lines) - 1
+                )
+            ]
 
 
 class GridSelectAllCommand(CoreCommand):
@@ -156,7 +160,8 @@ class GridCopyTextToClipboardCommand(CoreCommand):
 
     async def run(self) -> None:
         QtWidgets.QApplication.clipboard().setText('\n'.join(
-            line.text for line in self.api.subs.selected_lines))
+            line.text for line in self.api.subs.selected_lines
+        ))
 
 
 class GridCopyTimesToClipboardCommand(CoreCommand):
@@ -171,8 +176,10 @@ class GridCopyTimesToClipboardCommand(CoreCommand):
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             '{} - {}'.format(
                 bubblesub.util.ms_to_str(line.start),
-                bubblesub.util.ms_to_str(line.end))
-            for line in self.api.subs.selected_lines))
+                bubblesub.util.ms_to_str(line.end)
+            )
+            for line in self.api.subs.selected_lines
+        ))
 
 
 class GridPasteTimesFromClipboardCommand(CoreCommand):
@@ -193,7 +200,8 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
         if len(lines) != len(self.api.subs.selected_lines):
             self.error(
                 'Size mismatch (selected {} lines, got {} lines in clipboard.'
-                .format(len(self.api.subs.selected_lines), len(lines)))
+                .format(len(self.api.subs.selected_lines), len(lines))
+            )
             return
 
         times: T.List[T.Tuple[int, int]] = []
@@ -202,7 +210,7 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
                 start, end = line.strip().split(' - ')
                 times.append((
                     bubblesub.util.str_to_ms(start),
-                    bubblesub.util.str_to_ms(end),
+                    bubblesub.util.str_to_ms(end)
                 ))
             except Exception:
                 self.error('Invalid time format: {}'.format(line))
@@ -224,7 +232,8 @@ class GridCopyToClipboardCommand(CoreCommand):
 
     async def run(self) -> None:
         QtWidgets.QApplication.clipboard().setText(
-            _pickle(self.api.subs.selected_lines))
+            _pickle(self.api.subs.selected_lines)
+        )
 
 
 class PasteFromClipboardBelowCommand(CoreCommand):
@@ -271,10 +280,11 @@ class SaveAudioSampleCommand(CoreCommand):
     async def run(self) -> None:
         async def run_dialog(
                 _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
+                main_window: QtWidgets.QMainWindow
         ) -> T.Optional[Path]:
             return bubblesub.ui.util.save_dialog(
-                main_window, 'Waveform Audio File (*.wav)')
+                main_window, 'Waveform Audio File (*.wav)'
+            )
 
         path = await self.api.gui.exec(run_dialog)
         if path is not None:
