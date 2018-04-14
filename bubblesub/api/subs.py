@@ -3,11 +3,11 @@ from pathlib import Path
 
 from PyQt5 import QtCore
 
-import bubblesub.ass.event
-import bubblesub.ass.file
-import bubblesub.ass.style
-import bubblesub.model
-import bubblesub.util
+import bubblesub.ass.reader
+import bubblesub.ass.writer
+from bubblesub.ass.file import AssFile
+from bubblesub.ass.event import EventList
+from bubblesub.ass.style import StyleList
 
 
 class SubtitlesApi(QtCore.QObject):
@@ -20,17 +20,17 @@ class SubtitlesApi(QtCore.QObject):
         self._loaded_video_path: T.Optional[Path] = None
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
-        self.ass_file = bubblesub.ass.file.AssFile()
+        self.ass_file = AssFile()
         self.lines.items_about_to_be_removed.connect(
             self._on_items_about_to_be_removed
         )
 
     @property
-    def lines(self) -> bubblesub.ass.event.EventList:
+    def lines(self) -> EventList:
         return self.ass_file.events
 
     @property
-    def styles(self) -> bubblesub.ass.style.StyleList:
+    def styles(self) -> StyleList:
         return self.ass_file.styles
 
     @property
@@ -80,7 +80,7 @@ class SubtitlesApi(QtCore.QObject):
 
     def unload(self) -> None:
         self._path = None
-        self.ass_file = bubblesub.ass.file.AssFile()
+        self.ass_file = AssFile()
         self.selected_indexes = []
         self.loaded.emit()
 
@@ -89,7 +89,7 @@ class SubtitlesApi(QtCore.QObject):
         path = Path(path)
         try:
             with path.open('r') as handle:
-                self.ass_file.load_ass(handle)
+                bubblesub.ass.reader.load_ass(handle, self.ass_file)
         except Exception:
             raise
 
@@ -107,7 +107,7 @@ class SubtitlesApi(QtCore.QObject):
         if remember_path:
             self._path = path
         with path.open('w') as handle:
-            self.ass_file.write_ass(handle)
+            bubblesub.ass.writer.write_ass(self.ass_file, handle)
         if remember_path:
             self.saved.emit()
 

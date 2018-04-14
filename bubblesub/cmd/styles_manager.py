@@ -13,6 +13,7 @@ from PyQt5 import QtWidgets
 import bubblesub.api
 import bubblesub.ass.file
 import bubblesub.ass.style
+import bubblesub.ass.writer
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
 from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
@@ -137,7 +138,7 @@ class StylePreview(QtWidgets.QGroupBox):
 
         self._ass_file.info = self._api.subs.info
         with self._tmp_subs_path.open('w') as handle:
-            self._ass_file.write_ass(handle)
+            bubblesub.ass.writer.write_ass(self._ass_file, handle)
 
     def _refresh_subs(self) -> None:
         if self._mpv_ready:
