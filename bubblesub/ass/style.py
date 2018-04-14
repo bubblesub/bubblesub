@@ -38,7 +38,7 @@ class Style(bubblesub.model.ObservableObject):
         self._old_name: T.Optional[str] = None
         self.style_list: T.Optional['StyleList'] = None
 
-        self.name = name
+        self._name = name
         self.font_name = font_name
         self.font_size = font_size
         self.primary_color = primary_color
@@ -62,10 +62,14 @@ class Style(bubblesub.model.ObservableObject):
         self.margin_vertical = margin_vertical
         self.encoding = encoding
 
-    def _before_change(self) -> None:
-        self._old_name = self.name
-        if self.style_list is not None:
-            self.style_list.item_about_to_change.emit(self.name)
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, new_name: str) -> None:
+        self._old_name = self._name
+        self._name = new_name
 
     def _after_change(self) -> None:
         if self.style_list is not None:

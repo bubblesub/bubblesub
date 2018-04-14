@@ -21,9 +21,7 @@ class SubtitlesApi(QtCore.QObject):
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
         self.ass_file = AssFile()
-        self.lines.items_about_to_be_removed.connect(
-            self._on_items_about_to_be_removed
-        )
+        self.lines.items_removed.connect(self._on_items_removed)
 
     @property
     def lines(self) -> EventList:
@@ -111,11 +109,12 @@ class SubtitlesApi(QtCore.QObject):
         if remember_path:
             self.saved.emit()
 
-    def _on_items_about_to_be_removed(self, idx: int, count: int) -> None:
+    def _on_items_removed(self, idx: int, count: int) -> None:
         new_indexes = list(sorted(self.selected_indexes))
         for i in reversed(range(idx, idx + count)):
             new_indexes = [
                 j - 1 if j > i else j
                 for j in new_indexes
-                if j != i]
+                if j != i
+            ]
         self.selected_indexes = new_indexes

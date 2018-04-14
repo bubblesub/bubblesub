@@ -89,11 +89,6 @@ class Event(bubblesub.model.ObservableObject):
         assert self.event_list is not None
         return self.event_list.get(index + 1, None)
 
-    def _before_change(self) -> None:
-        index = self.index
-        if index is not None and self.event_list is not None:
-            self.event_list.item_about_to_change.emit(index)
-
     def _after_change(self) -> None:
         index = self.index
         if index is not None and self.event_list is not None:

@@ -35,9 +35,6 @@ class ObservableObject:
         throttled = self._throttled
         self._throttled = True
 
-        if not throttled:
-            self._before_change()
-
         super().__setattr__(prop, new_value)
         self._dirty = True
 
@@ -48,16 +45,12 @@ class ObservableObject:
 
     def begin_update(self) -> None:
         self._throttled = True
-        self._before_change()
 
     def end_update(self) -> None:
         self._throttled = False
         if self._dirty:
             self._after_change()
             self._dirty = False
-
-    def _before_change(self) -> None:
-        pass
 
     def _after_change(self) -> None:
         pass
@@ -67,9 +60,6 @@ class ObservableListSignals(QtCore.QObject):
     items_inserted = QtCore.pyqtSignal([int, int])
     items_removed = QtCore.pyqtSignal([int, int])
     item_changed = QtCore.pyqtSignal([int])
-    items_about_to_be_inserted = QtCore.pyqtSignal([int, int])
-    items_about_to_be_removed = QtCore.pyqtSignal([int, int])
-    item_about_to_change = QtCore.pyqtSignal([int])
 
 
 # alternative to QtCore.QAbstractListModel that simplifies indexing
@@ -90,18 +80,6 @@ class ObservableList(T.Generic[TItem]):
     @property
     def item_changed(self) -> QtCore.pyqtSignal:
         return self._signals.item_changed
-
-    @property
-    def items_about_to_be_inserted(self) -> QtCore.pyqtSignal:
-        return self._signals.items_about_to_be_inserted
-
-    @property
-    def items_about_to_be_removed(self) -> QtCore.pyqtSignal:
-        return self._signals.items_about_to_be_removed
-
-    @property
-    def item_about_to_change(self) -> QtCore.pyqtSignal:
-        return self._signals.item_about_to_change
 
     def __getstate__(self) -> T.Any:
         return self._items
@@ -144,12 +122,10 @@ class ObservableList(T.Generic[TItem]):
     def insert(self, idx: int, items: T.List[TItem]) -> None:
         if not items:
             return
-        self.items_about_to_be_inserted.emit(idx, len(items))
         self._items = self._items[:idx] + items + self._items[idx:]
         self.items_inserted.emit(idx, len(items))
 
     def remove(self, idx: int, count: int) -> None:
-        self.items_about_to_be_removed.emit(idx, count)
         self._items = self._items[:idx] + self._items[idx + count:]
         self.items_removed.emit(idx, count)
 
@@ -164,9 +140,7 @@ class ObservableList(T.Generic[TItem]):
     def replace(self, values: T.List[TItem]) -> None:
         old_size = len(self)
         new_size = len(values)
-        self.items_about_to_be_removed.emit(0, old_size)
         self._items[:] = []
         self.items_removed.emit(0, old_size)
-        self.items_about_to_be_inserted.emit(0, new_size)
         self._items[:] = values
         self.items_inserted.emit(0, new_size)
