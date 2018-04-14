@@ -303,8 +303,8 @@ class StyleList(QtWidgets.QWidget):
         assert idx is not None
 
         self._styles_list_view.selectionModel().clear()
-        self._api.subs.styles.remove(idx, 1)
-        self._api.undo.capture()
+        with self._api.undo.capture():
+            self._api.subs.styles.remove(idx, 1)
 
     def _on_duplicate_button_click(self, _event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
@@ -315,13 +315,13 @@ class StyleList(QtWidgets.QWidget):
 
         style_copy = copy(style)
         style_copy.name += ' (copy)'
-        self._api.subs.styles.insert(idx + 1, [style_copy])
+        with self._api.undo.capture():
+            self._api.subs.styles.insert(idx + 1, [style_copy])
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear |
             QtCore.QItemSelectionModel.Select
         )
-        self._api.undo.capture()
 
     def _on_move_up_button_click(self, _event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
@@ -330,13 +330,13 @@ class StyleList(QtWidgets.QWidget):
         idx = self._api.subs.styles.index(style)
         assert idx is not None
 
-        self._api.subs.styles.move(idx, idx - 1)
+        with self._api.undo.capture():
+            self._api.subs.styles.move(idx, idx - 1)
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx - 1, 0),
             QtCore.QItemSelectionModel.Clear |
             QtCore.QItemSelectionModel.Select
         )
-        self._api.undo.capture()
 
     def _on_move_down_button_click(self, _event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
@@ -345,13 +345,13 @@ class StyleList(QtWidgets.QWidget):
         idx = self._api.subs.styles.index(style)
         assert idx is not None
 
-        self._api.subs.styles.move(idx, idx + 1)
+        with self._api.undo.capture():
+            self._api.subs.styles.move(idx, idx + 1)
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear |
             QtCore.QItemSelectionModel.Select
         )
-        self._api.undo.capture()
 
     def _on_rename_button_click(self, _event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
@@ -365,16 +365,16 @@ class StyleList(QtWidgets.QWidget):
         if not new_name:
             return
 
-        style.name = new_name
-        for line in self._api.subs.lines.items:
-            if line.style == old_name:
-                line.style = new_name
+        with self._api.undo.capture():
+            style.name = new_name
+            for line in self._api.subs.lines.items:
+                if line.style == old_name:
+                    line.style = new_name
 
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx, 0),
             QtCore.QItemSelectionModel.Select
         )
-        self._api.undo.capture()
 
 
 class FontGroupBox(QtWidgets.QGroupBox):
@@ -742,7 +742,7 @@ class StylesManagerCommand(CoreCommand):
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
         ) -> None:
-            StylesManagerDialog(api, main_window).exec_()
-            self.api.undo.capture()
+            with self.api.undo.capture():
+                StylesManagerDialog(api, main_window).exec_()
 
         await self.api.gui.exec(run)

@@ -2,6 +2,7 @@ import re
 import typing as T
 from copy import copy
 
+import bubblesub.ass.event
 from bubblesub.api.cmd import CoreCommand
 
 
@@ -30,22 +31,23 @@ class EditKaraokeSplitCommand(CoreCommand):
         syllables = self._get_syllables(sub.text)
 
         self.api.gui.begin_update()
-        self.api.subs.lines.remove(idx, 1)
+        with self.api.undo.capture():
+            self.api.subs.lines.remove(idx, 1)
 
-        new_subs = []
-        for syllable in syllables:
-            sub_copy = copy(sub)
-            sub_copy.text = syllable.text
-            sub_copy.start = start
-            sub_copy.end = min(end, start + syllable.duration * 10)
-            start = sub_copy.end
-            new_subs.append(sub_copy)
+            new_subs: T.List[bubblesub.ass.event.Event] = []
+            for syllable in syllables:
+                sub_copy = copy(sub)
+                sub_copy.text = syllable.text
+                sub_copy.start = start
+                sub_copy.end = min(end, start + syllable.duration * 10)
+                start = sub_copy.end
+                new_subs.append(sub_copy)
 
-        self.api.subs.lines.insert(idx, new_subs)
-        self.api.subs.selected_indexes = list(range(idx, idx + len(syllables)))
+            self.api.subs.lines.insert(idx, new_subs)
+            self.api.subs.selected_indexes = list(
+                range(idx, idx + len(syllables))
+            )
         self.api.gui.end_update()
-
-        self.api.undo.capture()
 
     def _get_syllables(self, text: str) -> T.List[Syllable]:
         syllables = [Syllable(text='', duration=0)]
@@ -79,16 +81,18 @@ class EditKaraokeJoinCommand(CoreCommand):
 
     async def run(self) -> None:
         subs = self.api.subs.selected_lines
-        for idx in reversed(self.api.subs.selected_indexes[1:]):
-            self.api.subs.lines.remove(idx, 1)
-        text = ''
-        for sub in subs:
-            text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
-        subs[0].text = text
-        subs[0].end = subs[-1].end
-        assert subs[0].index is not None
-        self.api.subs.selected_indexes = [subs[0].index]
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for idx in reversed(self.api.subs.selected_indexes[1:]):
+                self.api.subs.lines.remove(idx, 1)
+
+            text = ''
+            for sub in subs:
+                text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
+            subs[0].text = text
+            subs[0].end = subs[-1].end
+
+            assert subs[0].index is not None
+            self.api.subs.selected_indexes = [subs[0].index]
 
 
 class EditTransformationJoinCommand(CoreCommand):
@@ -101,22 +105,24 @@ class EditTransformationJoinCommand(CoreCommand):
 
     async def run(self) -> None:
         subs = self.api.subs.selected_lines
-        for idx in reversed(self.api.subs.selected_indexes[1:]):
-            self.api.subs.lines.remove(idx, 1)
-        text = ''
-        note = ''
-        pos = 0
-        for i, sub in enumerate(subs):
-            pos += sub.duration
-            text += sub.text
-            note += sub.note
-            if i != len(subs) - 1:
-                text += (
-                    '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos)
-                )
-        subs[0].text = text
-        subs[0].note = note
-        subs[0].end = subs[-1].end
-        assert subs[0].index is not None
-        self.api.subs.selected_indexes = [subs[0].index]
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for idx in reversed(self.api.subs.selected_indexes[1:]):
+                self.api.subs.lines.remove(idx, 1)
+
+            text = ''
+            note = ''
+            pos = 0
+            for i, sub in enumerate(subs):
+                pos += sub.duration
+                text += sub.text
+                note += sub.note
+                if i != len(subs) - 1:
+                    text += (
+                        '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos)
+                    )
+            subs[0].text = text
+            subs[0].note = note
+            subs[0].end = subs[-1].end
+
+            assert subs[0].index is not None
+            self.api.subs.selected_indexes = [subs[0].index]

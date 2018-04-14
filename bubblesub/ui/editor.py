@@ -266,26 +266,26 @@ class Editor(QtWidgets.QWidget):
         assert self._index is not None
 
         self._disconnect_api_signals()
-        subtitle = self._api.subs.lines[self._index]
-        subtitle.begin_update()
-        subtitle.start = self.top_bar.start_time_edit.get_value()
-        subtitle.end = self.top_bar.end_time_edit.get_value()
-        subtitle.style = self.bottom_bar.style_edit.lineEdit().text()
-        subtitle.actor = self.bottom_bar.actor_edit.lineEdit().text()
-        subtitle.text = (
-            self.center.text_edit.toPlainText().replace('\n', r'\N')
-        )
-        subtitle.note = (
-            self.center.note_edit.toPlainText().replace('\n', r'\N')
-        )
-        subtitle.effect = self.bottom_bar.effect_edit.text()
-        subtitle.layer = self.top_bar.layer_edit.value()
-        subtitle.margin_left = self.top_bar.margin_l_edit.value()
-        subtitle.margin_vertical = self.top_bar.margin_v_edit.value()
-        subtitle.margin_right = self.top_bar.margin_r_edit.value()
-        subtitle.is_comment = self.bottom_bar.comment_checkbox.isChecked()
-        subtitle.end_update()
-        self._api.undo.capture()
+        with self._api.undo.capture():
+            subtitle = self._api.subs.lines[self._index]
+            subtitle.begin_update()
+            subtitle.start = self.top_bar.start_time_edit.get_value()
+            subtitle.end = self.top_bar.end_time_edit.get_value()
+            subtitle.style = self.bottom_bar.style_edit.lineEdit().text()
+            subtitle.actor = self.bottom_bar.actor_edit.lineEdit().text()
+            subtitle.text = (
+                self.center.text_edit.toPlainText().replace('\n', r'\N')
+            )
+            subtitle.note = (
+                self.center.note_edit.toPlainText().replace('\n', r'\N')
+            )
+            subtitle.effect = self.bottom_bar.effect_edit.text()
+            subtitle.layer = self.top_bar.layer_edit.value()
+            subtitle.margin_left = self.top_bar.margin_l_edit.value()
+            subtitle.margin_vertical = self.top_bar.margin_v_edit.value()
+            subtitle.margin_right = self.top_bar.margin_r_edit.value()
+            subtitle.is_comment = self.bottom_bar.comment_checkbox.isChecked()
+            subtitle.end_update()
         self._connect_api_signals()
 
     def _on_grid_selection_change(

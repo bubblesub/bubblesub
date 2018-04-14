@@ -118,9 +118,12 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
     return eval_(ast.parse(str(expr), mode='eval').body)
 
 
-def make_ranges(indexes: T.Iterable[int]) -> T.Iterable[T.Tuple[int, int]]:
+def make_ranges(
+        indexes: T.Iterable[int],
+        reverse: bool = False
+) -> T.Iterable[T.Tuple[int, int]]:
     for _, group in itertools.groupby(
-            enumerate(indexes),
+            enumerate(sorted(indexes, reverse=reverse)),
             lambda item: item[1] - item[0]
     ):
         elems = list(group)

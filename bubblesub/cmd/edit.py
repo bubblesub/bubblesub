@@ -58,11 +58,12 @@ class EditInsertAboveCommand(CoreCommand):
             start = prev_sub.end
         if start > end:
             start = end
-        self.api.subs.lines.insert_one(
-            idx, start=start, end=end, style='Default'
-        )
-        self.api.subs.selected_indexes = [idx]
-        self.api.undo.capture()
+
+        with self.api.undo.capture():
+            self.api.subs.lines.insert_one(
+                idx, start=start, end=end, style='Default'
+            )
+            self.api.subs.selected_indexes = [idx]
 
 
 class EditInsertBelowCommand(CoreCommand):
@@ -86,11 +87,12 @@ class EditInsertBelowCommand(CoreCommand):
             end = next_sub.start
         if end < start:
             end = start
-        self.api.subs.lines.insert_one(
-            idx, start=start, end=end, style='Default'
-        )
-        self.api.subs.selected_indexes = [idx]
-        self.api.undo.capture()
+
+        with self.api.undo.capture():
+            self.api.subs.lines.insert_one(
+                idx, start=start, end=end, style='Default'
+            )
+            self.api.subs.selected_indexes = [idx]
 
 
 class EditMoveUpCommand(CoreCommand):
@@ -104,21 +106,23 @@ class EditMoveUpCommand(CoreCommand):
         return self.api.subs.selected_indexes[0] > 0
 
     async def run(self) -> None:
-        indexes: T.List[int] = []
-        for start_idx, count in bubblesub.util.make_ranges(
-                self.api.subs.selected_indexes
-        ):
-            self.api.subs.lines.insert(
-                start_idx - 1,
-                [
-                    copy(self.api.subs.lines[idx])
-                    for idx in range(start_idx, start_idx + count)
-                ]
-            )
-            self.api.subs.lines.remove(start_idx + count, count)
-            indexes += [start_idx + i - 1 for i in range(count)]
-        self.api.subs.selected_indexes = indexes
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            indexes: T.List[int] = []
+
+            for start_idx, count in bubblesub.util.make_ranges(
+                    self.api.subs.selected_indexes
+            ):
+                self.api.subs.lines.insert(
+                    start_idx - 1,
+                    [
+                        copy(self.api.subs.lines[idx])
+                        for idx in range(start_idx, start_idx + count)
+                    ]
+                )
+                self.api.subs.lines.remove(start_idx + count, count)
+                indexes += [start_idx + i - 1 for i in range(count)]
+
+            self.api.subs.selected_indexes = indexes
 
 
 class EditMoveDownCommand(CoreCommand):
@@ -135,23 +139,24 @@ class EditMoveDownCommand(CoreCommand):
         )
 
     async def run(self) -> None:
-        indexes: T.List[int] = []
-        for start_idx, count in reversed(
-                list(
-                    bubblesub.util.make_ranges(self.api.subs.selected_indexes)
+        with self.api.undo.capture():
+            indexes: T.List[int] = []
+
+            for start_idx, count in bubblesub.util.make_ranges(
+                    self.api.subs.selected_indexes,
+                    reverse=True
+            ):
+                self.api.subs.lines.insert(
+                    start_idx + count + 1,
+                    [
+                        copy(self.api.subs.lines[idx])
+                        for idx in range(start_idx, start_idx + count)
+                    ]
                 )
-        ):
-            self.api.subs.lines.insert(
-                start_idx + count + 1,
-                [
-                    copy(self.api.subs.lines[idx])
-                    for idx in range(start_idx, start_idx + count)
-                ]
-            )
-            self.api.subs.lines.remove(start_idx, count)
-            indexes += [start_idx + i + 1 for i in range(count)]
-        self.api.subs.selected_indexes = indexes
-        self.api.undo.capture()
+                self.api.subs.lines.remove(start_idx, count)
+                indexes += [start_idx + i + 1 for i in range(count)]
+
+            self.api.subs.selected_indexes = indexes
 
 
 class EditMoveToCommand(CoreCommand):
@@ -182,20 +187,21 @@ class EditMoveToCommand(CoreCommand):
         if base_idx is None:
             return
 
-        sub_copies: T.List[Event] = []
-        for start_idx, count in reversed(
-                list(
-                    bubblesub.util.make_ranges(self.api.subs.selected_indexes)
-                )
-        ):
-            sub_copies += list(reversed([
-                copy(self.api.subs.lines[idx])
-                for idx in range(start_idx, start_idx + count)
-            ]))
-            self.api.subs.lines.remove(start_idx, count)
-        sub_copies.reverse()
-        self.api.subs.lines.insert(base_idx, sub_copies)
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            sub_copies: T.List[Event] = []
+
+            for start_idx, count in bubblesub.util.make_ranges(
+                    self.api.subs.selected_indexes,
+                    reverse=True
+            ):
+                sub_copies += list(reversed([
+                    copy(self.api.subs.lines[idx])
+                    for idx in range(start_idx, start_idx + count)
+                ]))
+                self.api.subs.lines.remove(start_idx, count)
+
+            sub_copies.reverse()
+            self.api.subs.lines.insert(base_idx, sub_copies)
 
 
 class EditDuplicateCommand(CoreCommand):
@@ -208,19 +214,21 @@ class EditDuplicateCommand(CoreCommand):
 
     async def run(self) -> None:
         self.api.gui.begin_update()
-        new_selection: T.List[int] = []
-        for idx in reversed(self.api.subs.selected_indexes):
-            self.api.subs.lines.insert(
-                idx + 1, [copy(self.api.subs.lines[idx])]
-            )
-            new_selection.append(
-                idx
-                + len(self.api.subs.selected_indexes)
-                - len(new_selection)
-            )
-        self.api.subs.selected_indexes = new_selection
+        with self.api.undo.capture():
+            new_selection: T.List[int] = []
+
+            for idx in reversed(self.api.subs.selected_indexes):
+                self.api.subs.lines.insert(
+                    idx + 1, [copy(self.api.subs.lines[idx])]
+                )
+                new_selection.append(
+                    idx
+                    + len(self.api.subs.selected_indexes)
+                    - len(new_selection)
+                )
+
+            self.api.subs.selected_indexes = new_selection
         self.api.gui.end_update()
-        self.api.undo.capture()
 
 
 class EditDeleteCommand(CoreCommand):
@@ -232,14 +240,14 @@ class EditDeleteCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for start_idx, count in reversed(
-                list(
-                    bubblesub.util.make_ranges(self.api.subs.selected_indexes)
-                )
-        ):
-            self.api.subs.lines.remove(start_idx, count)
-        self.api.subs.selected_indexes = []
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for start_idx, count in bubblesub.util.make_ranges(
+                    self.api.subs.selected_indexes,
+                    reverse=True
+            ):
+                self.api.subs.lines.remove(start_idx, count)
+
+            self.api.subs.selected_indexes = []
 
 
 class EditSwapTextAndNotesCommand(CoreCommand):
@@ -251,11 +259,11 @@ class EditSwapTextAndNotesCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for sub in self.api.subs.selected_lines:
-            sub.begin_update()
-            sub.text, sub.note = sub.note, sub.text
-            sub.end_update()
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.begin_update()
+                sub.text, sub.note = sub.note, sub.text
+                sub.end_update()
 
 
 class EditSplitSubAtVideoCommand(CoreCommand):
@@ -273,12 +281,12 @@ class EditSplitSubAtVideoCommand(CoreCommand):
         if split_pos < sub.start or split_pos > sub.end:
             return
         self.api.gui.begin_update()
-        self.api.subs.lines.insert(idx + 1, [copy(sub)])
-        self.api.subs.lines[idx].end = split_pos
-        self.api.subs.lines[idx + 1].start = split_pos
-        self.api.subs.selected_indexes = [idx, idx + 1]
+        with self.api.undo.capture():
+            self.api.subs.lines.insert(idx + 1, [copy(sub)])
+            self.api.subs.lines[idx].end = split_pos
+            self.api.subs.lines[idx + 1].start = split_pos
+            self.api.subs.selected_indexes = [idx, idx + 1]
         self.api.gui.end_update()
-        self.api.undo.capture()
 
 
 class EditJoinSubsKeepFirstCommand(CoreCommand):
@@ -298,14 +306,14 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
 
     async def run(self) -> None:
         idx = self.api.subs.selected_indexes[0]
-        if len(self.api.subs.selected_indexes) == 1:
-            self.api.subs.selected_indexes = [idx, idx + 1]
-        last_idx = self.api.subs.selected_indexes[-1]
-        self.api.subs.lines[idx].end = self.api.subs.lines[last_idx].end
-        for i in reversed(self.api.subs.selected_indexes[1:]):
-            self.api.subs.lines.remove(i, 1)
-        self.api.subs.selected_indexes = [idx]
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            if len(self.api.subs.selected_indexes) == 1:
+                self.api.subs.selected_indexes = [idx, idx + 1]
+            last_idx = self.api.subs.selected_indexes[-1]
+            self.api.subs.lines[idx].end = self.api.subs.lines[last_idx].end
+            for i in reversed(self.api.subs.selected_indexes[1:]):
+                self.api.subs.lines.remove(i, 1)
+            self.api.subs.selected_indexes = [idx]
 
 
 class EditJoinSubsConcatenateCommand(CoreCommand):
@@ -324,28 +332,28 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
         return False
 
     async def run(self) -> None:
-        idx = self.api.subs.selected_indexes[0]
-        if len(self.api.subs.selected_indexes) == 1:
-            self.api.subs.selected_indexes = [idx, idx + 1]
-        last_idx = self.api.subs.selected_indexes[-1]
+        with self.api.undo.capture():
+            idx = self.api.subs.selected_indexes[0]
+            if len(self.api.subs.selected_indexes) == 1:
+                self.api.subs.selected_indexes = [idx, idx + 1]
+            last_idx = self.api.subs.selected_indexes[-1]
 
-        sub = self.api.subs.lines[idx]
-        sub.begin_update()
-        sub.end = self.api.subs.lines[last_idx].end
+            sub = self.api.subs.lines[idx]
+            sub.begin_update()
+            sub.end = self.api.subs.lines[last_idx].end
 
-        new_text = ''
-        new_note = ''
-        for i in reversed(self.api.subs.selected_indexes[1:]):
-            new_text = self.api.subs.lines[i].text + new_text
-            new_note = self.api.subs.lines[i].note + new_note
-            self.api.subs.lines.remove(i, 1)
+            new_text = ''
+            new_note = ''
+            for i in reversed(self.api.subs.selected_indexes[1:]):
+                new_text = self.api.subs.lines[i].text + new_text
+                new_note = self.api.subs.lines[i].note + new_note
+                self.api.subs.lines.remove(i, 1)
 
-        sub.text += new_text
-        sub.note += new_note
-        sub.end_update()
+            sub.text += new_text
+            sub.note += new_note
+            sub.end_update()
 
-        self.api.subs.selected_indexes = [idx]
-        self.api.undo.capture()
+            self.api.subs.selected_indexes = [idx]
 
 
 class EditShiftSubsWithGuiCommand(CoreCommand):
@@ -377,12 +385,12 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
             if not is_relative:
                 delta -= self.api.subs.selected_lines[0].start
 
-            for sub in self.api.subs.selected_lines:
-                sub.begin_update()
-                sub.start += delta
-                sub.end += delta
-                sub.end_update()
-            self.api.undo.capture()
+            with self.api.undo.capture():
+                for sub in self.api.subs.selected_lines:
+                    sub.begin_update()
+                    sub.start += delta
+                    sub.end += delta
+                    sub.end_update()
 
 
 class EditSnapSubsStartToVideoCommand(CoreCommand):
@@ -394,9 +402,9 @@ class EditSnapSubsStartToVideoCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for sub in self.api.subs.selected_lines:
-            sub.start = self.api.media.current_pts
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.start = self.api.media.current_pts
 
 
 class EditSnapSubsEndToVideoCommand(CoreCommand):
@@ -408,9 +416,9 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for sub in self.api.subs.selected_lines:
-            sub.end = self.api.media.current_pts
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.end = self.api.media.current_pts
 
 
 class EditSnapSubsToVideoCommand(CoreCommand):
@@ -422,13 +430,13 @@ class EditSnapSubsToVideoCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for sub in self.api.subs.selected_lines:
-            sub.start = self.api.media.current_pts
-            sub.end = (
-                self.api.media.current_pts
-                + self.api.opt.general['subs']['default_duration']
-            )
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.start = self.api.media.current_pts
+                sub.end = (
+                    self.api.media.current_pts
+                    + self.api.opt.general['subs']['default_duration']
+                )
 
 
 class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
@@ -447,9 +455,9 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
 
     async def run(self) -> None:
         assert self._prev_sub is not None
-        for sub in self.api.subs.selected_lines:
-            sub.start = self._prev_sub.end
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.start = self._prev_sub.end
 
 
 class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
@@ -468,9 +476,9 @@ class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
 
     async def run(self) -> None:
         assert self._next_sub is not None
-        for sub in self.api.subs.selected_lines:
-            sub.end = self._next_sub.start
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.end = self._next_sub.start
 
 
 class EditShiftSubsStartCommand(CoreCommand):
@@ -489,9 +497,9 @@ class EditShiftSubsStartCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for sub in self.api.subs.selected_lines:
-            sub.start = max(0, sub.start + self._ms)
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.start = max(0, sub.start + self._ms)
 
 
 class EditShiftSubsEndCommand(CoreCommand):
@@ -510,9 +518,9 @@ class EditShiftSubsEndCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for sub in self.api.subs.selected_lines:
-            sub.end = max(0, sub.end + self._ms)
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.end = max(0, sub.end + self._ms)
 
 
 class EditShiftSubsCommand(CoreCommand):
@@ -531,7 +539,7 @@ class EditShiftSubsCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        for sub in self.api.subs.selected_lines:
-            sub.start = max(0, sub.start + self._ms)
-            sub.end = max(0, sub.end + self._ms)
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_lines:
+                sub.start = max(0, sub.start + self._ms)
+                sub.end = max(0, sub.end + self._ms)

@@ -216,10 +216,10 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
                 self.error('Invalid time format: {}'.format(line))
                 return
 
-        for i, sub in enumerate(self.api.subs.selected_lines):
-            sub.start = times[i][0]
-            sub.end = times[i][1]
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            for i, sub in enumerate(self.api.subs.selected_lines):
+                sub.start = times[i][0]
+                sub.end = times[i][1]
 
 
 class GridCopyToClipboardCommand(CoreCommand):
@@ -247,9 +247,9 @@ class PasteFromClipboardBelowCommand(CoreCommand):
             return
         idx = self.api.subs.selected_indexes[-1] + 1
         items = T.cast(T.List[Event], _unpickle(text))
-        self.api.subs.lines.insert(idx, items)
-        self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            self.api.subs.lines.insert(idx, items)
+            self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
 class PasteFromClipboardAboveCommand(CoreCommand):
@@ -263,9 +263,9 @@ class PasteFromClipboardAboveCommand(CoreCommand):
             return
         idx = self.api.subs.selected_indexes[0]
         items = T.cast(T.List[Event], _unpickle(text))
-        self.api.subs.lines.insert(idx, items)
-        self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
-        self.api.undo.capture()
+        with self.api.undo.capture():
+            self.api.subs.lines.insert(idx, items)
+            self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
 class SaveAudioSampleCommand(CoreCommand):

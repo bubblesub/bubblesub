@@ -225,15 +225,15 @@ def _replace_all(
         mode: SearchMode
 ) -> int:
     count = 0
-    for sub in api.subs.lines.items:
-        old_subject_text = _get_subject_text_by_mode(sub, mode)
-        new_subject_text = re.sub(regex, new_text, old_subject_text)
-        if old_subject_text != new_subject_text:
-            _set_subject_text_by_mode(sub, mode, new_subject_text)
-            count += len(re.findall(regex, old_subject_text))
-    if count:
-        api.subs.selected_indexes = []
-    api.undo.capture()
+    with api.undo.capture():
+        for sub in api.subs.lines.items:
+            old_subject_text = _get_subject_text_by_mode(sub, mode)
+            new_subject_text = re.sub(regex, new_text, old_subject_text)
+            if old_subject_text != new_subject_text:
+                _set_subject_text_by_mode(sub, mode, new_subject_text)
+                count += len(re.findall(regex, old_subject_text))
+        if count:
+            api.subs.selected_indexes = []
     return count
 
 

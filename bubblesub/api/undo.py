@@ -1,3 +1,4 @@
+import contextlib
 import gzip
 import pickle
 import typing as T
@@ -44,7 +45,6 @@ class UndoApi:
         self._subs_api.loaded.connect(self._on_subtitles_load)
         self._subs_api.saved.connect(self._on_subtitles_save)
         self._ignore = False
-        self._tmp_state = self._make_state()
 
     @property
     def needs_save(self) -> bool:
@@ -58,11 +58,14 @@ class UndoApi:
     def has_redo(self) -> bool:
         return self._stack_pos + 1 < len(self._stack)
 
-    def capture(self) -> None:
+    @contextlib.contextmanager
+    def capture(self) -> T.Generator:
         if self._ignore:
             return
-        self._trim_stack_and_push(self._tmp_state, self._make_state())
-        self._tmp_state = self._make_state()
+        old_state = self._make_state()
+        yield
+        new_state = self._make_state()
+        self._trim_stack_and_push(old_state, new_state)
 
     def undo(self) -> None:
         if not self.has_undo:
@@ -100,7 +103,6 @@ class UndoApi:
         self._stack = [(state, state)]
         self._stack_pos = 0
         self._stack_pos_when_saved = 0
-        self._tmp_state = state
 
     def _on_subtitles_save(self) -> None:
         self._stack_pos_when_saved = self._stack_pos
@@ -116,4 +118,3 @@ class UndoApi:
         self._subs_api.lines.replace(state.lines.items)
         self._subs_api.styles.replace(state.styles.items)
         self._subs_api.selected_indexes = state.selected_indexes
-        self._tmp_state = state
