@@ -80,7 +80,7 @@ class Style(bubblesub.model.ObservableObject):
 
     def __setstate__(self, state: T.Any) -> None:
         state['style_list'] = bubblesub.util.ref_dict[state['style_list']]
-        self.__dict__ = state
+        self.__dict__.update(state)
 
     def __copy__(self) -> 'Style':
         ret = type(self)(name=self.name)

@@ -212,7 +212,7 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
                     bubblesub.util.str_to_ms(start),
                     bubblesub.util.str_to_ms(end)
                 ))
-            except Exception:
+            except ValueError:
                 self.error('Invalid time format: {}'.format(line))
                 return
 

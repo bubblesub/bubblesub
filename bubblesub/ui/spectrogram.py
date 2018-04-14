@@ -11,7 +11,9 @@ import bubblesub.provider
 
 DERIVATION_SIZE = 10
 DERIVATION_DISTANCE = 6
+# pylint: disable=invalid-name
 TSpectrumProviderResult = T.Tuple[int, T.List[int]]
+# pylint: enable=invalid-name
 
 
 class SpectrumProviderContext(

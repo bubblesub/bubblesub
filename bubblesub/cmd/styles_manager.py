@@ -1,11 +1,11 @@
 import atexit
 import locale
-import mpv
 import tempfile
 import typing as T
 from copy import copy
 from pathlib import Path
 
+import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -55,28 +55,31 @@ class StylePreview(QtWidgets.QGroupBox):
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = mpv.Context()
         self._mpv.set_log_level('v')
-        self._mpv.set_option('config', False)
-        self._mpv.set_option('quiet', False)
-        self._mpv.set_option('msg-level', 'all=error')
-        self._mpv.set_option('osc', False)
-        self._mpv.set_option('osd-bar', False)
-        self._mpv.set_option('cursor-autohide', 'no')
-        self._mpv.set_option('input-cursor', False)
-        self._mpv.set_option('input-vo-keyboard', False)
-        self._mpv.set_option('input-default-bindings', False)
-        self._mpv.set_option('ytdl', False)
-        self._mpv.set_option('sub-auto', False)
-        self._mpv.set_option('audio-file-auto', False)
-        self._mpv.set_option('vo', 'opengl')
-        self._mpv.set_option('pause', True)
-        self._mpv.set_option('idle', True)
-        self._mpv.set_option('sid', False)
-        self._mpv.set_option('wid', str(int(self._preview_box.winId())))
-        self._mpv.set_option('video-sync', 'display-vdrop')
-        self._mpv.set_option('keepaspect', True)
-        self._mpv.set_option('hwdec', 'auto')
-        self._mpv.set_option('stop-playback-on-init-failure', False)
-        self._mpv.set_option('keep-open', True)
+        for key, value in {
+                'config': False,
+                'quiet': False,
+                'msg-level': 'all=error',
+                'osc': False,
+                'osd-bar': False,
+                'cursor-autohide': 'no',
+                'input-cursor': False,
+                'input-vo-keyboard': False,
+                'input-default-bindings': False,
+                'ytdl': False,
+                'sub-auto': False,
+                'audio-file-auto': False,
+                'vo': 'opengl',
+                'pause': True,
+                'idle': True,
+                'sid': False,
+                'wid': str(int(self._preview_box.winId())),
+                'video-sync': 'display-vdrop',
+                'keepaspect': True,
+                'hwdec': 'auto',
+                'stop-playback-on-init-failure': False,
+                'keep-open': True,
+        }.items():
+            self._mpv.set_option(key, value)
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
 
@@ -145,7 +148,7 @@ class StylePreview(QtWidgets.QGroupBox):
             try:
                 self._save_subs()
                 self._mpv.command('sub_reload')
-            except Exception as ex:
+            except Exception as ex:  # pylint: disable=broad-except
                 print(ex)
 
     def _on_selection_change(
@@ -164,7 +167,7 @@ class StylePreview(QtWidgets.QGroupBox):
     def _on_slider_move(self, value: int) -> None:
         try:
             self._mpv.command('seek', str(value / 1000), 'absolute+exact')
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=broad-except
             print(ex)
 
 

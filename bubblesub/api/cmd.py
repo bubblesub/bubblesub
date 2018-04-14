@@ -20,7 +20,7 @@ class BaseCommand(abc.ABC):
 
     @bubblesub.model.classproperty
     @abc.abstractproperty
-    def name(cls) -> str:
+    def name(cls) -> str:  # pylint: disable=no-self-argument
         raise NotImplementedError('Command has no name')
 
     @property
@@ -69,7 +69,7 @@ class CommandApi(QtCore.QObject):
             start_time = time.time()
             try:
                 await cmd.run()
-            except Exception as ex:
+            except Exception as ex:  # pylint: disable=broad-except
                 self._api.log.error('cmd/{}: {}'.format(cmd.name, ex))
                 traceback.print_exc()
             end_time = time.time()
@@ -86,7 +86,7 @@ class CommandApi(QtCore.QObject):
             raise KeyError('No command named {}'.format(name))
         try:
             return T.cast(BaseCommand, ret(self._api, *args))
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             print('Error creating command {}'.format(name), file=sys.stderr)
             raise
 
@@ -107,14 +107,14 @@ class CommandApi(QtCore.QObject):
             self.plugins_loaded.emit()
 
 
-class CoreCommand(BaseCommand):
+class CoreCommand(BaseCommand):  # pylint: disable=abstract-method
     def __init_subclass__(cls) -> None:
         if not inspect.isabstract(cls):
             print('registering', cls, 'as', cls.name)
             CommandApi.core_registry[cls.name] = cls
 
 
-class PluginCommand(BaseCommand):
+class PluginCommand(BaseCommand):  # pylint: disable=abstract-method
     def __init_subclass__(cls) -> None:
         if not inspect.isabstract(cls):
             print('registering', cls, 'as', cls.name)

@@ -108,7 +108,7 @@ class Event(bubblesub.model.ObservableObject):
 
     def __setstate__(self, state: T.Any) -> None:
         state['event_list'] = bubblesub.util.ref_dict[state['event_list']]
-        self.__dict__ = state
+        self.__dict__.update(state)
 
     def __copy__(self) -> 'Event':
         ret = type(self)(start=self.start, end=self.end)

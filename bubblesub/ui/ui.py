@@ -27,7 +27,7 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
         assert api.opt.location is not None
         try:
             api.cmd.load_plugins(api.opt.location / 'scripts')
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=broad-except
             api.log.error(str(ex))
 
     api.media.start()

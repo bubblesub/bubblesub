@@ -19,7 +19,7 @@ class RefDict:
         self._map[key] = data
 
 
-ref_dict = RefDict()
+ref_dict = RefDict()  # pylint: disable=invalid-name
 
 
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:

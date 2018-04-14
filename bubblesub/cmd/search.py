@@ -28,7 +28,7 @@ def _create_search_regex(
 ) -> T.Pattern[str]:
     return re.compile(
         text if use_regexes else re.escape(text),
-        flags=(0 if case_sensitive else re.I)
+        flags=0 if case_sensitive else re.I
     )
 
 
@@ -366,7 +366,7 @@ class SearchDialog(QtWidgets.QDialog):
                 self._search(1)
             elif sender == self.count_btn:
                 self._count()
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=broad-except
             self._api.log.error(str(ex))
 
     def _replace_selection(self) -> None:

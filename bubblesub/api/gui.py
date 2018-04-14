@@ -3,9 +3,9 @@ import typing as T
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
-import bubblesub.api.api
+import bubblesub.api.api  # pylint: disable=unused-import
 
-TResult = T.TypeVar('TResult')
+TResult = T.TypeVar('TResult')  # pylint: disable=invalid-name
 
 
 class GuiApi(QtCore.QObject):

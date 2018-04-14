@@ -6,9 +6,9 @@ import typing as T
 
 from PyQt5 import QtCore
 
-TTask = T.TypeVar('TTask')
-TResult = T.TypeVar('TResult')
-TProvider = T.TypeVar('TProvider')
+TTask = T.TypeVar('TTask')  # pylint: disable=invalid-name
+TResult = T.TypeVar('TResult')  # pylint: disable=invalid-name
+TProvider = T.TypeVar('TProvider')  # pylint: disable=invalid-name
 
 
 class ProviderContext(T.Generic[TTask, TResult]):
@@ -56,7 +56,7 @@ class ProviderThread(QtCore.QThread):
                 break
             try:
                 result = work(arg)
-            except Exception as ex:
+            except Exception as ex:  # pylint: disable=broad-except
                 print(type(ex), ex, file=sys.stderr)
                 print(traceback.format_exc(), file=sys.stderr)
                 time.sleep(1)

@@ -127,12 +127,12 @@ class AudioApi(QtCore.QObject):
         return self._selection_end
 
     @property
-    def has_selection(self) -> bool:
-        return self._selection_start != 0 or self._selection_end != 0
-
-    @property
     def selection_size(self) -> int:
         return self._selection_end - self._selection_start
+
+    @property
+    def has_selection(self) -> bool:
+        return self._selection_start != 0 or self._selection_end != 0
 
     @property
     def has_audio_source(self) -> bool:
@@ -247,7 +247,13 @@ class AudioApi(QtCore.QObject):
         # increase compatibility with external programs
         if samples.dtype.name in ('float32', 'float64'):
             samples = (samples * (1 << 31)).astype(np.int32)
-        scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
+
+        # pylint: disable=no-member
+        scipy.io.wavfile.write(
+            path_or_handle,
+            self.sample_rate,
+            samples
+        )
 
     def _on_video_parse(self) -> None:
         self._min = 0

@@ -90,7 +90,7 @@ class SubtitlesApi(QtCore.QObject):
         try:
             with path.open('r') as handle:
                 bubblesub.ass.reader.load_ass(handle, self.ass_file)
-        except Exception:
+        except (FileNotFoundError, ValueError):
             raise
 
         self.selected_indexes = []

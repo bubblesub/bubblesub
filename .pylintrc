@@ -1,3 +1,6 @@
+[master]
+jobs=4
+
 [basic]
 good-names=
     ex,_,w,h,i,j,x,y,x1,x2,y1,y2,
@@ -38,6 +41,7 @@ disable=
     too-many-arguments,
     too-many-locals,
     too-many-instance-attributes,
+    too-many-public-methods,
 
     # plain stupid
     no-self-use,
@@ -51,3 +55,6 @@ ignored-modules=
     numpy
 
 extension-pkg-whitelist=mpv,PyQt5.QtOpenGL
+
+[miscellaneous]
+notes=FIXME,TODO

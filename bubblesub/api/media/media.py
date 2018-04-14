@@ -6,7 +6,7 @@ import fractions
 import typing as T
 from pathlib import Path
 
-import mpv
+import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore
 
 import bubblesub.util
@@ -63,27 +63,30 @@ class MediaApi(QtCore.QObject):
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = mpv.Context()
         self._mpv.set_log_level('error')
-        self._mpv.set_option('config', False)
-        self._mpv.set_option('quiet', False)
-        self._mpv.set_option('msg-level', 'all=error')
-        self._mpv.set_option('osc', False)
-        self._mpv.set_option('osd-bar', False)
-        self._mpv.set_option('cursor-autohide', 'no')
-        self._mpv.set_option('input-cursor', False)
-        self._mpv.set_option('input-vo-keyboard', False)
-        self._mpv.set_option('input-default-bindings', False)
-        self._mpv.set_option('ytdl', False)
-        self._mpv.set_option('sub-auto', False)
-        self._mpv.set_option('audio-file-auto', False)
-        self._mpv.set_option('vo', 'null' if args.no_video else 'opengl-cb')
-        self._mpv.set_option('pause', True)
-        self._mpv.set_option('idle', True)
-        self._mpv.set_option('sid', False)
-        self._mpv.set_option('video-sync', 'display-vdrop')
-        self._mpv.set_option('keepaspect', True)
-        self._mpv.set_option('hwdec', 'auto')
-        self._mpv.set_option('stop-playback-on-init-failure', False)
-        self._mpv.set_option('keep-open', True)
+        for key, value in {
+                'config': False,
+                'quiet': False,
+                'msg-level': 'all=error',
+                'osc': False,
+                'osd-bar': False,
+                'cursor-autohide': 'no',
+                'input-cursor': False,
+                'input-vo-keyboard': False,
+                'input-default-bindings': False,
+                'ytdl': False,
+                'sub-auto': False,
+                'audio-file-auto': False,
+                'vo': 'null' if args.no_video else 'opengl-cb',
+                'pause': True,
+                'idle': True,
+                'sid': False,
+                'video-sync': 'display-vdrop',
+                'keepaspect': True,
+                'hwdec': 'auto',
+                'stop-playback-on-init-failure': False,
+                'keep-open': True,
+        }.items():
+            self._mpv.set_option(key, value)
 
         self._mpv.observe_property('time-pos')
         self._mpv.observe_property('duration')
