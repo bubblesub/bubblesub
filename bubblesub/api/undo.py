@@ -5,6 +5,7 @@ import typing as T
 
 import bubblesub.ass.event
 import bubblesub.ass.style
+import bubblesub.util
 from bubblesub.api.subs import SubtitlesApi
 
 
@@ -44,7 +45,7 @@ class UndoApi:
         self._stack_pos_when_saved = -1
         self._subs_api.loaded.connect(self._on_subtitles_load)
         self._subs_api.saved.connect(self._on_subtitles_save)
-        self._ignore = False
+        self._ignore = bubblesub.util.ScopedCounter()
 
     @property
     def needs_save(self) -> bool:
@@ -60,7 +61,7 @@ class UndoApi:
 
     @contextlib.contextmanager
     def capture(self) -> T.Generator:
-        if self._ignore:
+        if self._ignore.num:
             return
         old_state = self._make_state()
         yield
@@ -71,21 +72,19 @@ class UndoApi:
         if not self.has_undo:
             raise RuntimeError('No more undo.')
 
-        self._ignore = True
-        old_state, _new_state = self._stack[self._stack_pos]
-        self._stack_pos -= 1
-        self._apply_state(old_state)
-        self._ignore = False
+        with self._ignore:
+            old_state, _new_state = self._stack[self._stack_pos]
+            self._stack_pos -= 1
+            self._apply_state(old_state)
 
     def redo(self) -> None:
         if not self.has_redo:
             raise RuntimeError('No more redo.')
 
-        self._ignore = True
-        self._stack_pos += 1
-        _old_state, new_state = self._stack[self._stack_pos]
-        self._apply_state(new_state)
-        self._ignore = False
+        with self._ignore:
+            self._stack_pos += 1
+            _old_state, new_state = self._stack[self._stack_pos]
+            self._apply_state(new_state)
 
     def _trim_stack(self) -> None:
         self._stack = self._stack[:self._stack_pos + 1]

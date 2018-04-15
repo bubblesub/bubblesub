@@ -130,3 +130,20 @@ def make_ranges(
         start_idx = elems[0][1]
         end_idx = elems[-1][1]
         yield (start_idx, end_idx + 1 - start_idx)
+
+
+class ScopedCounter:
+    def __init__(self) -> None:
+        self.num = 0
+
+    def __enter__(self) -> None:
+        self.num += 1
+
+    def __exit__(
+            self,
+            _exc_type: T.Optional[T.Type[BaseException]],
+            _exc_val: T.Optional[Exception],
+            _exc_tb: T.Any
+    ) -> bool:
+        self.num -= 1
+        return False
