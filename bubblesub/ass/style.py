@@ -111,7 +111,7 @@ class StyleList(bubblesub.model.ObservableList[Style]):
         super().insert(idx, items)
 
     def get_by_name(self, name: str) -> T.Optional[Style]:
-        for style in self.items:
+        for style in self._items:
             if style.name == name:
                 return style
         return None

@@ -42,7 +42,7 @@ def _write_styles(ass_file: AssFile, handle: T.IO) -> None:
         'MarginL, MarginR, MarginV, Encoding',
         file=handle
     )
-    for style in ass_file.styles.items:
+    for style in ass_file.styles:
         _write_style(style, handle)
 
 
@@ -81,7 +81,7 @@ def _write_events(ass_file: AssFile, handle: T.IO) -> None:
         'MarginL, MarginR, MarginV, Effect, Text',
         file=handle
     )
-    for event in ass_file.events.items:
+    for event in ass_file.events:
         _write_event(event, handle)
 
 

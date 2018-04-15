@@ -226,7 +226,7 @@ def _replace_all(
 ) -> int:
     count = 0
     with api.undo.capture():
-        for sub in api.subs.lines.items:
+        for sub in api.subs.lines:
             old_subject_text = _get_subject_text_by_mode(sub, mode)
             new_subject_text = re.sub(regex, new_text, old_subject_text)
             if old_subject_text != new_subject_text:
@@ -243,7 +243,7 @@ def _count(
         mode: SearchMode
 ) -> int:
     count = 0
-    for sub in api.subs.lines.items:
+    for sub in api.subs.lines:
         subject_text = _get_subject_text_by_mode(sub, mode)
         count += len(re.findall(regex, subject_text))
     return count

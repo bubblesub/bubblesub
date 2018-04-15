@@ -220,13 +220,13 @@ class Editor(QtWidgets.QWidget):
 
         self.bottom_bar.actor_edit.clear()
         self.bottom_bar.actor_edit.addItems(
-            sorted(list(set(sub.actor for sub in self._api.subs.lines.items)))
+            sorted(list(set(sub.actor for sub in self._api.subs.lines)))
         )
         self.bottom_bar.actor_edit.lineEdit().setText(subtitle.actor)
 
         self.bottom_bar.style_edit.clear()
         self.bottom_bar.style_edit.addItems(
-            sorted(list(set(sub.style for sub in self._api.subs.lines.items)))
+            sorted(list(set(sub.style for sub in self._api.subs.lines)))
         )
         self.bottom_bar.style_edit.lineEdit().setText(subtitle.style)
 

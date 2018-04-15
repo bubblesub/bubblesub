@@ -100,9 +100,8 @@ class ObservableList(T.Generic[TItem]):
             self._items[idx] = value
             self.item_changed.emit(idx)
 
-    @property
-    def items(self) -> T.List[TItem]:
-        return self._items
+    def __iter__(self) -> T.Iterator[TItem]:
+        yield from self._items
 
     def get(
             self,

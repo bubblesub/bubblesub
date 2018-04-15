@@ -312,7 +312,7 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         painter.setFont(QtGui.QFont(self.font().family(), 10))
 
-        for i, line in enumerate(self._api.subs.lines.items):
+        for i, line in enumerate(self._api.subs.lines):
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
             if x2 < 0 or x1 >= self.width():
@@ -462,7 +462,7 @@ class AudioSliderWidget(BaseAudioWidget):
         color = self.palette().highlight().color()
         color.setAlpha(40)
         painter.setBrush(QtGui.QBrush(color))
-        for line in self._api.subs.lines.items:
+        for line in self._api.subs.lines:
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
             painter.drawRect(x1, 0, x2 - x1, h - 1)

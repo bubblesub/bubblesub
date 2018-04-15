@@ -282,7 +282,7 @@ class StyleList(QtWidgets.QWidget):
             style_name = dialog.textValue()
 
             exists = False
-            for style in self._api.subs.styles.items:
+            for style in self._api.subs.styles:
                 if style.name == style_name:
                     exists = True
 
@@ -371,7 +371,7 @@ class StyleList(QtWidgets.QWidget):
 
         with self._api.undo.capture():
             style.name = new_name
-            for line in self._api.subs.lines.items:
+            for line in self._api.subs.lines:
                 if line.style == old_name:
                     line.style = new_name
 

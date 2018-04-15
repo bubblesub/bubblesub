@@ -84,7 +84,7 @@ class GridJumpToTimeCommand(CoreCommand):
             target_pts, _is_relative = ret
             best_distance = None
             best_idx = None
-            for i, sub in enumerate(self.api.subs.lines.items):
+            for i, sub in enumerate(self.api.subs.lines):
                 center = (sub.start + sub.end) / 2
                 distance = abs(target_pts - center)
                 if best_distance is None or distance < best_distance:
