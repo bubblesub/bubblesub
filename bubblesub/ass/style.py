@@ -35,6 +35,8 @@ class Style(bubblesub.model.ObservableObject):
             margin_vertical: int = 20,
             encoding: int = 1
     ) -> None:
+        super().__init__()
+
         self._old_name: T.Optional[str] = None
         self.style_list: T.Optional['StyleList'] = None
 

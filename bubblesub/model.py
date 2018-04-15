@@ -16,41 +16,38 @@ class classproperty(property):
 
 class ObservableObject:
     _dirty = False
-    _throttled = False
+
+    def __init__(self) -> None:
+        self._setattr_impl = self._setattr_normal
 
     def __setattr__(self, prop: str, new_value: T.Any) -> None:
         if prop.startswith('_'):
             super().__setattr__(prop, new_value)
-            return
+        else:
+            try:
+                old_value = getattr(self, prop)
+            except AttributeError:
+                super().__setattr__(prop, new_value)
+            else:
+                if new_value != old_value:
+                    self._setattr_impl(prop, new_value)
 
-        try:
-            old_value = getattr(self, prop)
-        except AttributeError:
-            super().__setattr__(prop, new_value)
-            return
+    def _setattr_normal(self, prop: str, new_value: T.Any) -> None:
+        super().__setattr__(prop, new_value)
+        self._after_change()
 
-        if new_value == old_value:
-            return
-
-        throttled = self._throttled
-        self._throttled = True
-
+    def _setattr_throttled(self, prop: str, new_value: T.Any) -> None:
         super().__setattr__(prop, new_value)
         self._dirty = True
 
-        if not throttled:
-            self._after_change()
-
-        self._throttled = throttled
-
     def begin_update(self) -> None:
-        self._throttled = True
+        self._setattr_impl = self._setattr_throttled
 
     def end_update(self) -> None:
-        self._throttled = False
         if self._dirty:
             self._after_change()
-            self._dirty = False
+        self._setattr_impl = self._setattr_normal
+        self._dirty = False
 
     def _after_change(self) -> None:
         pass

@@ -21,6 +21,8 @@ class Event(bubblesub.model.ObservableObject):
             margin_vertical: int = 0,
             is_comment: bool = False
     ) -> None:
+        super().__init__()
+
         self.event_list: T.Optional['EventList'] = None
 
         self.start = start
