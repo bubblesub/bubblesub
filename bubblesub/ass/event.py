@@ -109,7 +109,9 @@ class Event(bubblesub.model.ObservableObject):
 
     def __copy__(self) -> 'Event':
         ret = type(self)(start=self.start, end=self.end)
-        ret.__dict__.update(self.__dict__)
+        for key, value in self.__dict__.items():
+            if not callable(value):
+                ret.__dict__[key] = value
         ret.__dict__['event_list'] = None
         return ret
 

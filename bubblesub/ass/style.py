@@ -90,7 +90,9 @@ class Style(bubblesub.model.ObservableObject):
 
     def __copy__(self) -> 'Style':
         ret = type(self)(name=self.name)
-        ret.__dict__.update(self.__dict__)
+        for key, value in self.__dict__.items():
+            if not callable(value):
+                ret.__dict__[key] = value
         ret.__dict__['style_list'] = None
         return ret
 
