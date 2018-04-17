@@ -1,7 +1,7 @@
 import contextlib
-import gzip
 import pickle
 import typing as T
+import zlib
 
 import bubblesub.ass.event
 import bubblesub.ass.style
@@ -28,13 +28,28 @@ class UndoState:
     def styles(self) -> bubblesub.ass.style.StyleList:
         return T.cast(bubblesub.ass.style.StyleList, _unpickle(self._styles))
 
+    def __eq__(self, other: T.Any) -> T.Any:
+        if isinstance(other, UndoState):
+            # pylint: disable=protected-access
+            return (
+                self._lines == other._lines
+                and self._styles == other._styles
+            )
+        return NotImplemented
+
+    def __ne__(self, other: T.Any) -> T.Any:
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return result
+        return not result
+
 
 def _pickle(data: T.Any) -> bytes:
-    return gzip.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
+    return zlib.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
 
 
 def _unpickle(data: bytes) -> T.Any:
-    return pickle.loads(gzip.decompress(data))
+    return pickle.loads(zlib.decompress(data))
 
 
 class UndoApi:
@@ -65,7 +80,7 @@ class UndoApi:
         with self._ignore:
             yield
         new_state = self._make_state()
-        if not self._ignore.num:
+        if not self._ignore.num and new_state != old_state:
             self._trim_stack_and_push(old_state, new_state)
 
     def undo(self) -> None:

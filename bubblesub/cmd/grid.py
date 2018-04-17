@@ -1,7 +1,7 @@
 import base64
-import gzip
 import pickle
 import typing as T
+import zlib
 from pathlib import Path
 
 from PyQt5 import QtWidgets
@@ -14,13 +14,13 @@ from bubblesub.ass.event import Event
 def _pickle(data: T.Any) -> str:
     return (
         base64.b64encode(
-            gzip.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
+            zlib.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
         ).decode()
     )
 
 
 def _unpickle(text: str) -> T.Any:
-    return pickle.loads(gzip.decompress(base64.b64decode(text.encode())))
+    return pickle.loads(zlib.decompress(base64.b64decode(text.encode())))
 
 
 class GridJumpToLineCommand(CoreCommand):
