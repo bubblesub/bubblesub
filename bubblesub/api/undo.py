@@ -61,12 +61,12 @@ class UndoApi:
 
     @contextlib.contextmanager
     def capture(self) -> T.Generator:
-        if self._ignore.num:
-            return
         old_state = self._make_state()
-        yield
+        with self._ignore:
+            yield
         new_state = self._make_state()
-        self._trim_stack_and_push(old_state, new_state)
+        if not self._ignore.num:
+            self._trim_stack_and_push(old_state, new_state)
 
     def undo(self) -> None:
         if not self.has_undo:
