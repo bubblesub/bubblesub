@@ -494,10 +494,10 @@ class OutlineGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__('Outline', parent)
         self.outline_width_edit = QtWidgets.QDoubleSpinBox(self)
-        self.outline_width_edit.setMinimum(999)
+        self.outline_width_edit.setMinimum(0)
         self.outline_width_edit.setMaximum(999)
         self.shadow_width_edit = QtWidgets.QDoubleSpinBox(self)
-        self.shadow_width_edit.setMinimum(999)
+        self.shadow_width_edit.setMinimum(0)
         self.shadow_width_edit.setMaximum(999)
 
         layout = QtWidgets.QGridLayout(self)
