@@ -83,10 +83,10 @@ class Benchmark:
 
     def __exit__(self, *args: T.Any, **kwargs: T.Any) -> None:
         difference = time.time() - self._time
-        print(f'{self._msg}: ended {difference:.02f} s')
+        print(f'{self._msg}: ended {difference:.04f} s')
 
     def mark(self, msg: str) -> None:
-        print('{}: {:.02f} s'.format(msg, time.time() - self._time))
+        print('{}: {:.04f} s'.format(msg, time.time() - self._time))
         self._time = time.time()
 
 
