@@ -4,6 +4,8 @@ import typing as T
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
+import bubblesub.cache
+import bubblesub.ass.event
 import bubblesub.ass.util
 import bubblesub.ui.util
 import bubblesub.util
@@ -20,9 +22,6 @@ class SubsModelColumn(enum.Enum):
     CharactersPerSecond = 'cps'
 
 
-_CACHE_TEXT = 0
-_CACHE_CPS_BK = 1
-
 _HEADERS = {
     SubsModelColumn.Start: 'Start',
     SubsModelColumn.End: 'End',
@@ -33,6 +32,80 @@ _HEADERS = {
     SubsModelColumn.Duration: 'Duration',
     SubsModelColumn.CharactersPerSecond: 'CPS',
 }
+
+
+class SubtitleTextCache(bubblesub.cache.MemoryCache):
+    def __init__(self, api: bubblesub.api.Api) -> None:
+        super().__init__()
+        self._subtitles = api.subs.lines
+
+    def _real_get(self, index: T.Tuple[int, int]) -> T.Any:
+        row, column_type = index
+        subtitle = self._subtitles[row]
+        if column_type == SubsModelColumn.Start:
+            return bubblesub.util.ms_to_str(subtitle.start)
+        elif column_type == SubsModelColumn.End:
+            return bubblesub.util.ms_to_str(subtitle.end)
+        elif column_type == SubsModelColumn.Style:
+            return subtitle.style
+        elif column_type == SubsModelColumn.Actor:
+            return subtitle.actor
+        elif column_type == SubsModelColumn.Text:
+            return bubblesub.ass.util.ass_to_plaintext(subtitle.text, True)
+        elif column_type == SubsModelColumn.Note:
+            return bubblesub.ass.util.ass_to_plaintext(subtitle.note, True)
+        elif column_type == SubsModelColumn.Duration:
+            return '{:.1f}'.format(subtitle.duration / 1000.0)
+        elif column_type == SubsModelColumn.CharactersPerSecond:
+            return (
+                '{:.1f}'.format(
+                    bubblesub.ass.util.character_count(
+                        subtitle.text) /
+                    max(1, subtitle.duration / 1000.0))
+                if subtitle.duration > 0 else
+                '-'
+            )
+        raise RuntimeError
+
+
+class SubtitleBackgroundCache(bubblesub.cache.MemoryCache):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            palette: QtGui.QPalette
+    ) -> None:
+        super().__init__()
+        self._api = api
+        self._subtitles = api.subs.lines
+        self._character_limit = (
+            api.opt.general['subs']['max_characters_per_second']
+        )
+        self._palette = palette
+
+    def _real_get(self, index: T.Any) -> T.Any:
+        row, column_type = index
+        subtitle = self._subtitles[row]
+
+        if subtitle.is_comment:
+            return bubblesub.ui.util.get_color(self._api, 'grid/comment')
+
+        if column_type != SubsModelColumn.CharactersPerSecond:
+            return QtCore.QVariant()
+
+        ratio = (
+            bubblesub.ass.util.character_count(subtitle.text) /
+            max(1, subtitle.duration / 1000.0)
+        )
+        ratio -= self._character_limit
+        ratio = max(0, ratio)
+        ratio /= self._character_limit
+        ratio = min(1, ratio)
+        return QtGui.QColor(
+            bubblesub.ui.util.blend_colors(
+                self._palette.base().color(),
+                self._palette.highlight().color(),
+                ratio)
+            )
 
 
 class SubsModel(QtCore.QAbstractTableModel):
@@ -54,12 +127,9 @@ class SubsModel(QtCore.QAbstractTableModel):
         self._subtitles.item_changed.connect(self._proxy_data_changed)
         self._subtitles.items_inserted.connect(self._proxy_items_inserted)
         self._subtitles.items_removed.connect(self._proxy_items_removed)
-        self._cache: T.List[T.List[T.Any]] = []
-        self.reset_cache()
-
-        self._character_limit = (
-            api.opt.general['subs']['max_characters_per_second']
-        )
+        self._text_cache = SubtitleTextCache(api)
+        self._background_cache = SubtitleBackgroundCache(
+            api, self.parent().palette())
 
     def rowCount(
             self,
@@ -101,80 +171,17 @@ class SubsModel(QtCore.QAbstractTableModel):
             index: QtCore.QModelIndex,
             role: int = QtCore.Qt.DisplayRole
     ) -> T.Any:
-        if role == QtCore.Qt.DisplayRole:
-            row_number = index.row()
-            column_number = index.column()
-            column_type = self.column_order[column_number]
+        row_number = index.row()
+        column_number = index.column()
+        column_type = self.column_order[column_number]
 
-            data = self._cache[row_number][_CACHE_TEXT]
-            if not data:
-                subtitle = self._subtitles[row_number]
-                data = {
-                    SubsModelColumn.Start:
-                        bubblesub.util.ms_to_str(subtitle.start),
-                    SubsModelColumn.End:
-                        bubblesub.util.ms_to_str(subtitle.end),
-                    SubsModelColumn.Style:
-                        subtitle.style,
-                    SubsModelColumn.Actor:
-                        subtitle.actor,
-                    SubsModelColumn.Text:
-                        bubblesub.ass.util.ass_to_plaintext(
-                            subtitle.text, True
-                        ),
-                    SubsModelColumn.Note:
-                        bubblesub.ass.util.ass_to_plaintext(
-                            subtitle.note, True
-                        ),
-                    SubsModelColumn.Duration:
-                        '{:.1f}'.format(subtitle.duration / 1000.0),
-                    SubsModelColumn.CharactersPerSecond:
-                        (
-                            '{:.1f}'.format(
-                                bubblesub.ass.util.character_count(
-                                    subtitle.text) /
-                                max(1, subtitle.duration / 1000.0))
-                            if subtitle.duration > 0 else
-                            '-'
-                        )
-                }
-                self._cache[row_number][_CACHE_TEXT] = data
-            return data[column_type]
+        if role == QtCore.Qt.DisplayRole:
+            return self._text_cache[row_number, column_type]
 
         elif role == QtCore.Qt.BackgroundRole:
-            row_number = index.row()
-            column_number = index.column()
-            column_type = self.column_order[column_number]
-
-            subtitle = self._subtitles[row_number]
-            if subtitle.is_comment:
-                return bubblesub.ui.util.get_color(self._api, 'grid/comment')
-
-            if column_type != SubsModelColumn.CharactersPerSecond:
-                return QtCore.QVariant()
-
-            data = self._cache[row_number][_CACHE_CPS_BK]
-            if not data:
-                ratio = (
-                    bubblesub.ass.util.character_count(subtitle.text) /
-                    max(1, subtitle.duration / 1000.0)
-                )
-                ratio -= self._character_limit
-                ratio = max(0, ratio)
-                ratio /= self._character_limit
-                ratio = min(1, ratio)
-                data = QtGui.QColor(
-                    bubblesub.ui.util.blend_colors(
-                        self.parent().palette().base().color(),
-                        self.parent().palette().highlight().color(),
-                        ratio)
-                    )
-                self._cache[row_number][_CACHE_CPS_BK] = data
-            return data
+            return self._background_cache[row_number, column_type]
 
         elif role == QtCore.Qt.TextAlignmentRole:
-            column_number = index.column()
-            column_type = self.column_order[column_number]
             if column_type in (SubsModelColumn.Text, SubsModelColumn.Note):
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
@@ -189,9 +196,12 @@ class SubsModel(QtCore.QAbstractTableModel):
 
     def reset_cache(self, idx: T.Optional[int] = None) -> None:
         if idx:
-            self._cache[idx] = [None, None]
+            for col in SubsModelColumn:
+                del self._text_cache[idx, col]
+                del self._background_cache[idx, col]
         else:
-            self._cache = [[None, None] for i in range(len(self._subtitles))]
+            self._text_cache.wipe()
+            self._background_cache.wipe()
 
     def _proxy_data_changed(self, idx: int) -> None:
         self.reset_cache(idx)

@@ -1,3 +1,4 @@
+import abc
 import pickle
 import typing as T
 
@@ -35,3 +36,26 @@ def wipe_cache() -> None:
     for path in get_cache_dir().iterdir():
         if path.suffix == CACHE_SUFFIX:
             path.unlink()
+
+
+class MemoryCache(abc.ABC):
+    def __init__(self):
+        self._cache = {}
+
+    def __getitem__(self, index: T.Any) -> T.Any:
+        ret = self._cache.get(index, None)
+        if ret is None:
+            ret = self._real_get(index)
+            self._cache[index] = ret
+        return ret
+
+    def __delitem__(self, index: T.Any):
+        if index in self._cache:
+            del self._cache[index]
+
+    def wipe(self) -> None:
+        self._cache = {}
+
+    @abc.abstractmethod
+    def _real_get(self, index: T.Any) -> T.Any:
+        raise NotImplementedError('Not implemented')
