@@ -1,3 +1,5 @@
+from math import floor
+
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
@@ -60,7 +62,7 @@ class Video(QtWidgets.QWidget):
 
     def _on_video_volume_change(self) -> None:
         self._disconnect_signals()
-        self._volume_slider.setValue(int(self._api.media.volume))
+        self._volume_slider.setValue(floor(float(self._api.media.volume)))
         self._connect_signals()
 
     def _on_volume_slider_value_change(self) -> None:

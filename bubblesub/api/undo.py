@@ -129,6 +129,6 @@ class UndoApi:
         )
 
     def _apply_state(self, state: UndoState) -> None:
-        self._subs_api.lines.replace(state.lines)
-        self._subs_api.styles.replace(state.styles)
+        self._subs_api.lines.replace(list(state.lines))
+        self._subs_api.styles.replace(list(state.styles))
         self._subs_api.selected_indexes = state.selected_indexes
