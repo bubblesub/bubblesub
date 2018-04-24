@@ -8,6 +8,10 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.util
+from bubblesub.opt.menu import MenuItem
+from bubblesub.opt.menu import MenuCommand
+from bubblesub.opt.menu import MenuSeparator
+from bubblesub.opt.menu import SubMenu
 
 
 def error(msg: str) -> None:
@@ -180,7 +184,7 @@ class _CommandAction(QtWidgets.QAction):
 def setup_cmd_menu(
         api: bubblesub.api.Api,
         parent: QtWidgets.QWidget,
-        menu_def: T.List[T.Any]
+        menu_def: T.Sequence[MenuItem]
 ) -> T.Any:
     action_map: T.Any = {}
     if hasattr(parent, 'aboutToShow'):
@@ -191,24 +195,30 @@ def setup_cmd_menu(
             functools.partial(_on_menu_about_to_hide, parent)
         )
     for item in menu_def:
-        if item is None:
+        if isinstance(item, MenuSeparator):
             parent.addSeparator()
-        elif len(item) > 1 and isinstance(item[1], list):
-            submenu = parent.addMenu(item[0])
-            action_map.update(setup_cmd_menu(api, submenu, item[1]))
-        else:
-            cmd_name, *cmd_args = item
-            action = _CommandAction(api, cmd_name, cmd_args, parent)
-            action.setText(api.cmd.get(cmd_name, cmd_args).menu_name)
+        elif isinstance(item, SubMenu):
+            submenu = parent.addMenu(item.name)
+            action_map.update(setup_cmd_menu(api, submenu, item.children))
+        elif isinstance(item, MenuCommand):
+            action = _CommandAction(
+                api,
+                item.command_name,
+                item.command_args,
+                parent
+            )
+            action.setText(action.cmd.menu_name)
             parent.addAction(action)
-            action_map[(cmd_name, *cmd_args)] = action
+            action_map[(item.command_name, *item.command_args)] = action
+        else:
+            raise RuntimeError(f'Unexpected menu item {item}')
     return action_map
 
 
 @functools.lru_cache(maxsize=None)
 def get_color(api: bubblesub.api.Api, color_name: str) -> QtGui.QColor:
-    current_palette = api.opt.general['current_palette']
-    palette_def = api.opt.general['palettes'][current_palette]
+    current_palette = api.opt.general.current_palette
+    palette_def = api.opt.general.palettes[current_palette]
     color_value = palette_def[color_name]
     return QtGui.QColor(*color_value)
 

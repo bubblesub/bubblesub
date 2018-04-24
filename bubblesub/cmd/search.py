@@ -1,4 +1,3 @@
-import enum
 import re
 import typing as T
 
@@ -10,15 +9,9 @@ import bubblesub.api
 import bubblesub.ass.event
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
+from bubblesub.opt.general import SearchMode
 
 MAX_HISTORY_ENTRIES = 25
-
-
-class SearchMode(enum.IntEnum):
-    Text = 1
-    Note = 2
-    Actor = 3
-    Style = 4
 
 
 def _create_search_regex(
@@ -429,24 +422,24 @@ class SearchDialog(QtWidgets.QDialog):
     def _load_opt(self) -> None:
         self.search_text_edit.clear()
         self.search_text_edit.addItems(
-            [item for item in self._opt['history'] if item]
+            [item for item in self._opt.history if item]
         )
-        self.case_chkbox.setChecked(self._opt['case_sensitive'])
-        self.regex_chkbox.setChecked(self._opt['use_regexes'])
-        self.search_mode_group_box.set_value(self._opt['mode'])
+        self.case_chkbox.setChecked(self._opt.case_sensitive)
+        self.regex_chkbox.setChecked(self._opt.use_regexes)
+        self.search_mode_group_box.set_value(self._opt.mode)
 
     def _save_opt(self) -> None:
-        self._opt['history'] = [
+        self._opt.history = [
             self.search_text_edit.itemText(i)
             for i in range(self.search_text_edit.count())
         ]
-        self._opt['use_regexes'] = self._use_regexes
-        self._opt['case_sensitive'] = self._case_sensitive
-        self._opt['mode'] = self._mode
+        self._opt.use_regexes = self._use_regexes
+        self._opt.case_sensitive = self._case_sensitive
+        self._opt.mode = self._mode
 
     @property
     def _opt(self) -> T.Any:
-        return self._api.opt.general['search']
+        return self._api.opt.general.search
 
     @property
     def _text(self) -> str:
@@ -516,23 +509,22 @@ class SearchRepeatCommand(CoreCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return len(self.api.opt.general['search']['history']) > 0
+        return len(self.api.opt.general.search.history) > 0
 
     async def run(self) -> None:
         async def run(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
         ) -> None:
-            opt = self.api.opt.general['search']
             result = _search(
                 api,
                 main_window,
                 _create_search_regex(
-                    opt['history'][0],
-                    opt['case_sensitive'],
-                    opt['use_regexes']
+                    self.api.opt.general.search.history[0],
+                    self.api.opt.general.search.case_sensitive,
+                    self.api.opt.general.search.use_regexes
                 ),
-                opt['mode'],
+                self.api.opt.general.search.mode,
                 self._direction
             )
             if not result:

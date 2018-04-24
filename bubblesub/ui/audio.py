@@ -84,7 +84,7 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         timer = QtCore.QTimer(self)
         timer.setInterval(
-            api.opt.general['audio']['spectrogram_sync_interval']
+            api.opt.general.audio.spectrogram_sync_interval
         )
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
@@ -266,7 +266,7 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         pixels = np.zeros([width, height], dtype='byte')
         horizontal_res = (
-            self._api.opt.general['audio']['spectrogram_resolution']
+            self._api.opt.general.audio.spectrogram_resolution
         )
 
         # since the task queue is a LIFO queue, in order to render the columns

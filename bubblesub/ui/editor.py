@@ -14,7 +14,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
     def __init__(self, api: bubblesub.api.Api, *args: T.Any) -> None:
         super().__init__(*args)
 
-        spell_check_lang = api.opt.general['spell_check']
+        spell_check_lang = api.opt.general.spell_check
         try:
             self._dictionary = (
                 enchant.Dict(spell_check_lang)
@@ -53,7 +53,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
         self._name = name
         self._api = api
         try:
-            font_def = self._api.opt.general['fonts'][name]
+            font_def = self._api.opt.general.fonts[name]
             if font_def:
                 font = QtGui.QFont()
                 font.fromString(font_def)
@@ -70,7 +70,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
             font = self.font()
             font.setPointSize(new_size)
             self.setFont(font)
-            self._api.opt.general['fonts'][self._name] = (
+            self._api.opt.general.fonts[self._name] = (
                 self.font().toString()
             )
 
@@ -239,7 +239,7 @@ class Editor(QtWidgets.QWidget):
         self.setEnabled(True)
 
     def _convert_newlines(self, text: str) -> str:
-        if self._api.opt.general['convert_newlines']:
+        if self._api.opt.general.convert_newlines:
             return text.replace('\\N', '\n')
         return text
 

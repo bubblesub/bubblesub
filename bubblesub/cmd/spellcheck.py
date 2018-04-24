@@ -155,7 +155,7 @@ class EditSpellCheckCommand(CoreCommand):
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        spell_check_lang = self.api.opt.general['spell_check']
+        spell_check_lang = self.api.opt.general.spell_check
         if not spell_check_lang:
             bubblesub.ui.util.error('Spell check was disabled in config.')
             return

@@ -126,7 +126,7 @@ class SubsGrid(QtWidgets.QTableView):
         self.customContextMenuRequested.connect(self._open_menu)
         self.menu = QtWidgets.QMenu(self)
         bubblesub.ui.util.setup_cmd_menu(
-            self._api, self.menu, self._api.opt.context_menu
+            self._api, self.menu, self._api.opt.menu.context
         )
 
     def keyboardSearch(self, _text: str) -> None:

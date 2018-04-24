@@ -48,7 +48,7 @@ Screenshot:
 ## Configuration and plugins
 
 - `~/.config/bubblesub/scripts`: contains user plugins
-- `~/.config/bubblesub/`: contains user configuration in JSON (subject to change, **please back it up between upgrades**)
+- `~/.config/bubblesub/`: contains user configuration in JSON and INI
 - `~/.cache/bubblesub/`: used to cache time codes and such
 
 #### Example plugin: speech recognition of selected lines

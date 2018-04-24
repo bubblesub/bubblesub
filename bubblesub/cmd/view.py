@@ -20,7 +20,7 @@ class ViewSetPaletteCommand(CoreCommand):
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
         ) -> None:
-            api.opt.general['current_palette'] = self._palette_name
+            api.opt.general.current_palette = self._palette_name
             main_window.apply_palette(self._palette_name)
 
         await self.api.gui.exec(run)

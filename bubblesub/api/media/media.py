@@ -97,7 +97,7 @@ class MediaApi(QtCore.QObject):
         self.audio = AudioApi(self, log_api)
 
         self._timer = QtCore.QTimer(self)
-        self._timer.setInterval(opt_api.general['video']['subs_sync_interval'])
+        self._timer.setInterval(opt_api.general.video.subs_sync_interval)
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
     def start(self) -> None:

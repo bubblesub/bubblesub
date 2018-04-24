@@ -85,7 +85,7 @@ class AudioRealignSelectionToVideoCommand(CoreCommand):
         self.api.media.audio.select(
             self.api.media.current_pts,
             self.api.media.current_pts
-            + self.api.opt.general['subs']['default_duration']
+            + self.api.opt.general.subs.default_duration
         )
 
 

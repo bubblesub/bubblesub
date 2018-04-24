@@ -49,9 +49,9 @@ class EditInsertAboveCommand(CoreCommand):
         end = (
             cur_sub.start
             if cur_sub else
-            self.api.opt.general['subs']['default_duration']
+            self.api.opt.general.subs.default_duration
         )
-        start = end - self.api.opt.general['subs']['default_duration']
+        start = end - self.api.opt.general.subs.default_duration
         if start < 0:
             start = 0
         if prev_sub and start < prev_sub.end:
@@ -82,7 +82,7 @@ class EditInsertBelowCommand(CoreCommand):
             next_sub = self.api.subs.lines.get(idx)
 
         start = cur_sub.end if cur_sub else 0
-        end = start + self.api.opt.general['subs']['default_duration']
+        end = start + self.api.opt.general.subs.default_duration
         if next_sub and end > next_sub.start:
             end = next_sub.start
         if end < start:
@@ -435,7 +435,7 @@ class EditSnapSubsToVideoCommand(CoreCommand):
                 sub.start = self.api.media.current_pts
                 sub.end = (
                     self.api.media.current_pts
-                    + self.api.opt.general['subs']['default_duration']
+                    + self.api.opt.general.subs.default_duration
                 )
 
 

@@ -6,5 +6,5 @@ class ResetPluginsCommand(CoreCommand):
     menu_name = 'Reload plugins'
 
     async def run(self) -> None:
-        if self.api.opt.location:
-            self.api.cmd.load_plugins(self.api.opt.location / 'scripts')
+        if self.api.opt.root_dir:
+            self.api.cmd.load_plugins(self.api.opt.root_dir / 'scripts')

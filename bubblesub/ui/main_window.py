@@ -15,6 +15,9 @@ import bubblesub.ui.subs_grid
 import bubblesub.ui.util
 import bubblesub.ui.video
 from bubblesub.api.log import LogLevel
+from bubblesub.opt.menu import MenuCommand
+from bubblesub.opt.menu import MenuItem
+from bubblesub.opt.menu import MenuSeparator
 
 
 def _load_splitter_state(widget: QtWidgets.QWidget, data: str) -> None:
@@ -87,7 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         api.log.logged.connect(self._on_log)
 
-        self.apply_palette(T.cast(str, api.opt.general['current_palette']))
+        self.apply_palette(T.cast(str, api.opt.general.current_palette))
 
         self.subs_grid.setFocus()
         self._restore_splitters()
@@ -107,7 +110,7 @@ class MainWindow(QtWidgets.QMainWindow):
             event.accept()
 
     def apply_palette(self, palette_name: str) -> None:
-        palette_def = self._api.opt.general['palettes'][palette_name]
+        palette_def = self._api.opt.general.palettes[palette_name]
         palette = QtGui.QPalette()
         for color_type, color_value in palette_def.items():
             if '+' in color_type:
@@ -134,16 +137,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _setup_menu(self) -> T.Any:
         return bubblesub.ui.util.setup_cmd_menu(
-            self._api, self.menuBar(), self._api.opt.main_menu
+            self._api, self.menuBar(), self._api.opt.menu.main
         )
 
     def _setup_plugins_menu(self) -> None:
-        plugins_menu_def: T.List[T.Any] = [
-            ('misc/reload-plugins',),
-            None,
+        plugins_menu_def: T.List[MenuItem] = [
+            MenuCommand('misc/reload-plugins'),
+            MenuSeparator(),
         ]
         for plugin_name in sorted(self._api.cmd.plugin_registry):
-            plugins_menu_def.append((plugin_name, plugin_name))
+            plugins_menu_def.append(
+                MenuCommand(plugin_name, plugin_name)
+            )
         for action in self.menuBar().children():
             if action.objectName() == 'plugins-menu':
                 self.menuBar().removeAction(action.menuAction())
@@ -166,25 +171,29 @@ class MainWindow(QtWidgets.QMainWindow):
                     break
                 widget = widget.parent()
 
-        for context, items in self._api.opt.hotkeys.items():
-            for item in items:
-                keys, cmd_name, *cmd_args = item
-
-                action = action_map.get((cmd_name, *cmd_args))
+        for context, hotkeys in self._api.opt.hotkeys:
+            for hotkey in hotkeys:
+                action = action_map.get(
+                    (hotkey.command_name, *hotkey.command_args)
+                )
                 if action and context == 'global':
                     action.setText(
                         action.text()
                         + '\t'
-                        + QtGui.QKeySequence(keys).toString()
+                        + QtGui.QKeySequence(hotkey.shortcut).toString()
                     )
 
-                shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(keys), self)
-                shortcuts[(keys, context)] = shortcut
+                shortcut = QtWidgets.QShortcut(
+                    QtGui.QKeySequence(hotkey.shortcut), self
+                )
+                shortcuts[(hotkey.shortcut, context)] = shortcut
 
                 shortcut.activated.connect(
                     functools.partial(
                         self._api.cmd.run,
-                        self._api.cmd.get(cmd_name, cmd_args)
+                        self._api.cmd.get(
+                            hotkey.command_name, hotkey.command_args
+                        )
                     )
                 )
                 if context == 'audio':
@@ -196,20 +205,20 @@ class MainWindow(QtWidgets.QMainWindow):
                     raise RuntimeError('Invalid shortcut context')
 
                 shortcut.activatedAmbiguously.connect(
-                    functools.partial(resolve_ambiguity, keys)
+                    functools.partial(resolve_ambiguity, hotkey.shortcut)
                 )
 
     def _restore_splitters(self) -> None:
-        splitter_cfg = self._api.opt.general.get('splitters', None)
-        if not splitter_cfg:
+        opt = self._api.opt.general.splitters
+        if not opt:
             return
-        _load_splitter_state(self.top_bar, splitter_cfg['top'])
-        _load_splitter_state(self.editor_splitter, splitter_cfg['editor'])
-        _load_splitter_state(self.main_splitter, splitter_cfg['main'])
-        _load_splitter_state(self.console_splitter, splitter_cfg['console'])
+        _load_splitter_state(self.top_bar, opt['top'])
+        _load_splitter_state(self.editor_splitter, opt['editor'])
+        _load_splitter_state(self.main_splitter, opt['main'])
+        _load_splitter_state(self.console_splitter, opt['console'])
 
     def _store_splitters(self) -> None:
-        self._api.opt.general['splitters'] = {
+        self._api.opt.general.splitters = {
             'top': _get_splitter_state(self.top_bar),
             'editor': _get_splitter_state(self.editor_splitter),
             'main': _get_splitter_state(self.main_splitter),

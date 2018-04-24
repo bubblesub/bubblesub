@@ -95,7 +95,7 @@ class SubtitleBackgroundCache(bubblesub.cache.MemoryCache):
             max(1, subtitle.duration / 1000.0)
         )
         character_limit = (
-            self._api.opt.general['subs']['max_characters_per_second']
+            self._api.opt.general.subs.max_characters_per_second
         )
 
         ratio -= character_limit
@@ -121,7 +121,7 @@ class SubsModel(QtCore.QAbstractTableModel):
 
         self.column_order = [
             SubsModelColumn(name)
-            for name in api.opt.general['grid']['columns']
+            for name in api.opt.general.grid_columns
         ]
 
         self._subtitles = api.subs.lines
