@@ -3,6 +3,7 @@ import typing as T
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
 import bubblesub.cache
 import bubblesub.ass.event
@@ -112,10 +113,9 @@ class SubsModel(QtCore.QAbstractTableModel):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            *args: T.Any,
-            **kwargs: T.Any
+            parent: QtWidgets.QWidget
     ) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(parent)
         self._api = api
 
         self.column_order = [

@@ -713,7 +713,7 @@ class StylesManagerDialog(QtWidgets.QDialog):
             main_window: QtWidgets.QMainWindow
     ) -> None:
         super().__init__(main_window)
-        model = StylesModel(api)
+        model = StylesModel(api, self)
         selection_model = QtCore.QItemSelectionModel(model)
 
         self._style_list = StyleList(api, model, selection_model, self)
