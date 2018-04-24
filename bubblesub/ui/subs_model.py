@@ -73,15 +73,12 @@ class SubtitleBackgroundCache(bubblesub.cache.MemoryCache):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            palette: QtGui.QPalette
+            parent: QtWidgets.QWidget
     ) -> None:
         super().__init__()
         self._api = api
         self._subtitles = api.subs.lines
-        self._character_limit = (
-            api.opt.general['subs']['max_characters_per_second']
-        )
-        self._palette = palette
+        self._parent = parent
 
     def _real_get(self, index: T.Any) -> T.Any:
         row, column_type = index
@@ -97,14 +94,18 @@ class SubtitleBackgroundCache(bubblesub.cache.MemoryCache):
             bubblesub.ass.util.character_count(subtitle.text) /
             max(1, subtitle.duration / 1000.0)
         )
-        ratio -= self._character_limit
+        character_limit = (
+            self._api.opt.general['subs']['max_characters_per_second']
+        )
+
+        ratio -= character_limit
         ratio = max(0, ratio)
-        ratio /= self._character_limit
+        ratio /= character_limit
         ratio = min(1, ratio)
         return QtGui.QColor(
             bubblesub.ui.util.blend_colors(
-                self._palette.base().color(),
-                self._palette.highlight().color(),
+                self._parent.palette().base().color(),
+                self._parent.palette().highlight().color(),
                 ratio)
             )
 
@@ -128,8 +129,7 @@ class SubsModel(QtCore.QAbstractTableModel):
         self._subtitles.items_inserted.connect(self._proxy_items_inserted)
         self._subtitles.items_removed.connect(self._proxy_items_removed)
         self._text_cache = SubtitleTextCache(api)
-        self._background_cache = SubtitleBackgroundCache(
-            api, self.parent().palette())
+        self._background_cache = SubtitleBackgroundCache(api, parent)
 
     def rowCount(
             self,
