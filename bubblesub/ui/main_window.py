@@ -8,6 +8,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.audio
+import bubblesub.ui.console
 import bubblesub.ui.editor
 import bubblesub.ui.statusbar
 import bubblesub.ui.subs_grid
@@ -46,11 +47,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
         self.status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
 
-        self.console = QtWidgets.QTextEdit(self, readOnly=True)
-        self.console.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-        self.console.setFont(
-            QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
-        )
+        self.console = bubblesub.ui.console.Console(self._api, self)
 
         self.editor_splitter = QtWidgets.QSplitter(self)
         self.editor_splitter.setOrientation(QtCore.Qt.Vertical)
@@ -130,28 +127,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update()
 
     def _on_log(self, level: LogLevel, text: str) -> None:
-        print(f'[{level.name.lower()[0]}] {text}\n', end='')
+        print(f'[{level.name.lower()[0]}] {text}')
         if level == LogLevel.Debug:
             return
-
-        color_name = {
-            LogLevel.Error: 'console/error',
-            LogLevel.Warning: 'console/warning',
-            LogLevel.Info: 'console/info',
-            LogLevel.Debug: 'console/debug',
-        }[level]
-
-        self.console.moveCursor(QtGui.QTextCursor.End)
-        cursor = QtGui.QTextCursor(self.console.textCursor())
-        fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(
-            bubblesub.ui.util.get_color(self._api, color_name)
-        )
-        cursor.setCharFormat(fmt)
-        cursor.insertText(text + '\n')
-        self.console.verticalScrollBar().setValue(
-            self.console.verticalScrollBar().maximum()
-        )
+        self.console.log(level, text)
 
     def _setup_menu(self) -> T.Any:
         return bubblesub.ui.util.setup_cmd_menu(
