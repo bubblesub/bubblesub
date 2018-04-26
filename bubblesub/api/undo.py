@@ -1,3 +1,4 @@
+"""Undo API."""
 import contextlib
 import pickle
 import typing as T
@@ -10,25 +11,53 @@ from bubblesub.api.subs import SubtitlesApi
 
 
 class UndoState:
+    """Simplified application state."""
+
     def __init__(
             self,
             lines: bubblesub.ass.event.EventList,
             styles: bubblesub.ass.style.StyleList,
             selected_indexes: T.List[int]
     ) -> None:
+        """
+        Initialize self.
+
+        :param lines: list of lines for the currently loaded ASS file
+        :param styles: list of styles for the currently loaded ASS file
+        :param selected_indexes: current selection on the subtitle grid
+        """
         self._lines = _pickle(lines)
         self._styles = _pickle(styles)
         self.selected_indexes = selected_indexes
 
     @property
     def lines(self) -> bubblesub.ass.event.EventList:
+        """
+        Return list of remembered lines.
+
+        :return: list of remembered lines
+        """
         return T.cast(bubblesub.ass.event.EventList, _unpickle(self._lines))
 
     @property
     def styles(self) -> bubblesub.ass.style.StyleList:
+        """
+        Return list of remembered styles.
+
+        :return: list of remembered styles
+        """
         return T.cast(bubblesub.ass.style.StyleList, _unpickle(self._styles))
 
     def __eq__(self, other: T.Any) -> T.Any:
+        """
+        Whether two UndoStates are equivalent.
+
+        Needed to tell if nothing has changed when deciding whether to push
+        onto the undo stack.
+
+        :param other: object to compare self with
+        :return: bool or NotImplemented to fall back to default implementation
+        """
         if isinstance(other, UndoState):
             # pylint: disable=protected-access
             return (
@@ -38,6 +67,12 @@ class UndoState:
         return NotImplemented
 
     def __ne__(self, other: T.Any) -> T.Any:
+        """
+        Opposite of __eq__.
+
+        :param other: object to compare self with
+        :return: bool or NotImplemented to fall back to default implementation
+        """
         result = self.__eq__(other)
         if result is NotImplemented:
             return result
@@ -45,15 +80,34 @@ class UndoState:
 
 
 def _pickle(data: T.Any) -> bytes:
+    """
+    Serialize data and use compression to save memory usage.
+
+    :param data: object to serialize
+    :return: serialized data
+    """
     return zlib.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
 
 
 def _unpickle(data: bytes) -> T.Any:
+    """
+    Deserialize data.
+
+    :param data: serialized data
+    :return: deserialized object
+    """
     return pickle.loads(zlib.decompress(data))
 
 
 class UndoApi:
+    """The undo API."""
+
     def __init__(self, subs_api: SubtitlesApi) -> None:
+        """
+        Initialize self.
+
+        :param subs_api: subtitles API
+        """
         self._subs_api = subs_api
         self._stack: T.List[T.Tuple[UndoState, UndoState]] = []
         self._stack_pos = -1
@@ -64,18 +118,41 @@ class UndoApi:
 
     @property
     def needs_save(self) -> bool:
+        """
+        Return whether there are any unsaved changes.
+
+        :return: whether there are any unsaved changes
+        """
         return self._stack_pos_when_saved != self._stack_pos
 
     @property
     def has_undo(self) -> bool:
+        """
+        Return whether there's anything to undo.
+
+        :return: whether there's anything to undo
+        """
         return self._stack_pos - 1 >= 0
 
     @property
     def has_redo(self) -> bool:
+        """
+        Return whether there's anything to redo.
+
+        :return: whether there's anything to redo
+        """
         return self._stack_pos + 1 < len(self._stack)
 
     @contextlib.contextmanager
     def capture(self) -> T.Generator:
+        """
+        Record the application state before and after user operation.
+
+        Doesn't push onto undo stack if nothing has changed.
+        This function should wrap any operation that makes "undoable" changes
+        (such as changes to the ASS lines or styles), especially operations
+        from within commands. Otherwise the undo may behave unpredictably.
+        """
         old_state = self._make_state()
         with self._ignore:
             yield
@@ -84,6 +161,7 @@ class UndoApi:
             self._trim_stack_and_push(old_state, new_state)
 
     def undo(self) -> None:
+        """Restore previous application state."""
         if not self.has_undo:
             raise RuntimeError('No more undo.')
 
@@ -93,6 +171,7 @@ class UndoApi:
             self._apply_state(old_state)
 
     def redo(self) -> None:
+        """Reapply undone application state."""
         if not self.has_redo:
             raise RuntimeError('No more redo.')
 
@@ -102,12 +181,19 @@ class UndoApi:
             self._apply_state(new_state)
 
     def _trim_stack(self) -> None:
+        """Discard any redo information."""
         self._stack = self._stack[:self._stack_pos + 1]
         self._stack_pos = len(self._stack) - 1
 
     def _trim_stack_and_push(
             self, old_state: UndoState, new_state: UndoState
     ) -> None:
+        """
+        Discard any redo information and push given state.
+
+        :param old_state: state before change
+        :param new_state: state after change
+        """
         self._trim_stack()
         self._stack.append((old_state, new_state))
         self._stack_pos = len(self._stack) - 1

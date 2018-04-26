@@ -1,3 +1,4 @@
+"""Subtitles API."""
 import typing as T
 from pathlib import Path
 
@@ -11,11 +12,18 @@ from bubblesub.ass.style import StyleList
 
 
 class SubtitlesApi(QtCore.QObject):
+    """
+    The subtitles API.
+
+    Encapsulates ASS styles, subtitles and subtitle selection.
+    """
+
     loaded = QtCore.pyqtSignal()
     saved = QtCore.pyqtSignal()
     selection_changed = QtCore.pyqtSignal(list, bool)
 
     def __init__(self) -> None:
+        """Initialize self."""
         super().__init__()
         self._loaded_video_path: T.Optional[Path] = None
         self._selected_indexes: T.List[int] = []
@@ -25,22 +33,51 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def lines(self) -> EventList:
+        """
+        Return list of ASS lines.
+
+        :return: list of lines
+        """
         return self.ass_file.events
 
     @property
     def styles(self) -> StyleList:
+        """
+        Return list of ASS styles.
+
+        :return: list of styles
+        """
         return self.ass_file.styles
 
     @property
     def info(self) -> T.Dict[str, str]:
+        """
+        Return info dict.
+
+        This holds basic information about ASS version, video resolution etc.
+
+        :return: info dict
+        """
         return self.ass_file.info
 
     @property
     def meta(self) -> T.Dict[str, str]:
+        """
+        Return meta dict.
+
+        This holds extra user information not part of the usual ASS spec.
+
+        :return: meta dict
+        """
         return self.ass_file.meta
 
     @property
     def remembered_video_path(self) -> T.Optional[Path]:
+        """
+        Return path of the associated video file.
+
+        :return: path of the associated video file or None if no video
+        """
         path: str = self.meta.get('Video File', '')
         if not path:
             return None
@@ -50,23 +87,48 @@ class SubtitlesApi(QtCore.QObject):
 
     @remembered_video_path.setter
     def remembered_video_path(self, path: Path) -> None:
+        """
+        Set path of the associated video file, updating meta dict.
+
+        :param path: path to the video file
+        """
         self.meta['Video File'] = str(path)
         self.meta['Audio File'] = str(path)
 
     @property
     def path(self) -> T.Optional[Path]:
+        """
+        Return path of the currently loaded ASS file.
+
+        :return: path of the currently loaded ASS file or None if no file
+        """
         return self._path
 
     @property
     def has_selection(self) -> bool:
+        """
+        Return whether there are any selected lines.
+
+        :return: whether there are any selected lines
+        """
         return len(self.selected_indexes) > 0
 
     @property
     def selected_indexes(self) -> T.List[int]:
+        """
+        Return indexes of the selected lines.
+
+        :return: indexes of the selected lines
+        """
         return self._selected_indexes
 
     @selected_indexes.setter
     def selected_indexes(self, new_selection: T.List[int]) -> None:
+        """
+        Update line selection.
+
+        :param new_selection: new list of selected indexes
+        """
         new_selection = list(sorted(new_selection))
         changed = new_selection != self._selected_indexes
         self._selected_indexes = new_selection
@@ -74,15 +136,26 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def selected_lines(self) -> T.List[bubblesub.ass.event.Event]:
+        """
+        Return list of selected lines.
+
+        :return: list of selected lines
+        """
         return [self.lines[idx] for idx in self.selected_indexes]
 
     def unload(self) -> None:
+        """Load empty ASS file."""
         self._path = None
         self.ass_file = AssFile()
         self.selected_indexes = []
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:
+        """
+        Load specified ASS file.
+
+        :param path: path to load the file from
+        """
         assert path
         path = Path(path)
         try:
@@ -100,6 +173,13 @@ class SubtitlesApi(QtCore.QObject):
             path: T.Union[str, Path],
             remember_path: bool = False
     ) -> None:
+        """
+        Save current state to the specified file.
+
+        :param path: path to save the state to
+        :param remember_path:
+            whether to update `self.path` with the specified `path`
+        """
         assert path
         path = Path(path)
         if remember_path:

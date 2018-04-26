@@ -1,3 +1,4 @@
+"""ASS file writer."""
 import typing as T
 
 from bubblesub.ass.event import Event
@@ -110,6 +111,12 @@ def _write_event(event: Event, handle: T.IO) -> None:
 
 
 def write_ass(ass_file: AssFile, handle: T.IO) -> None:
+    """
+    Save ASS to the specified target.
+
+    :param ass_file: file to save
+    :param handle: writable stream
+    """
     print("[Script Info]", file=handle)
     for line in NOTICE.splitlines(False):
         print(";", line, file=handle)

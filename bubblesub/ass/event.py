@@ -1,3 +1,4 @@
+"""ASS event and event list."""
 import typing as T
 
 import bubblesub.ass
@@ -6,6 +7,8 @@ import bubblesub.util
 
 
 class Event(bubblesub.model.ObservableObject):
+    """ASS event."""
+
     def __init__(
             self,
             start: int,
@@ -21,6 +24,22 @@ class Event(bubblesub.model.ObservableObject):
             margin_vertical: int = 0,
             is_comment: bool = False
     ) -> None:
+        """
+        Initialize self.
+
+        :param start: start PTS
+        :param end: end PTS
+        :param style: style name
+        :param actor: actor name
+        :param text: event text
+        :param note: event note
+        :param effect: unused
+        :param layer: layer number
+        :param margin_left: pixels
+        :param margin_right: pixels
+        :param margin_vertical: pixels
+        :param is_comment: whether to shown the subtitle in the player
+        """
         super().__init__()
 
         self.event_list: T.Optional['EventList'] = None
@@ -38,31 +57,60 @@ class Event(bubblesub.model.ObservableObject):
         self.margin_vertical = margin_vertical
         self.is_comment = is_comment
 
-    def set_event_list(self, events: 'EventList') -> None:
-        self.event_list = events
-
     @property
     def text(self) -> str:
+        """
+        Return event text.
+
+        :return: text
+        """
         return self._text
 
     @text.setter
     def text(self, value: str) -> None:
+        """
+        Set new event text.
+
+        :param value: new text
+        """
         self._text = value.replace('\n', '\\N')
 
     @property
     def note(self) -> str:
+        """
+        Return event note.
+
+        Notes are shown in the editor, but not in the player.
+
+        :return: note
+        """
         return self._note
 
     @note.setter
     def note(self, value: str) -> None:
+        """
+        Set new note.
+
+        :param value: new note
+        """
         self._note = value.replace('\n', '\\N')
 
     @property
     def duration(self) -> int:
+        """
+        Return subtitle duration in milliseconds.
+
+        :return: duration
+        """
         return self.end - self.start
 
     @property
     def index(self) -> T.Optional[int]:
+        """
+        Return subtitle index in the parent subtitle list, starting at 0.
+
+        :return: index if subtitle has parent list, None otherwise
+        """
         # XXX: meh
         if self.event_list is not None:
             return self.event_list.index(self)
@@ -70,6 +118,11 @@ class Event(bubblesub.model.ObservableObject):
 
     @property
     def number(self) -> T.Optional[int]:
+        """
+        Return subtitle index in the parent subtitle list, starting at 1.
+
+        :return: index if subtitle has parent list, None otherwise
+        """
         index = self.index
         if index is None:
             return None
@@ -77,6 +130,11 @@ class Event(bubblesub.model.ObservableObject):
 
     @property
     def prev(self) -> T.Optional['Event']:
+        """
+        Return previous subtitle from the parent subtitle list.
+
+        :return: previous subtitle if has parent list, None otherwise
+        """
         index = self.index
         if index is None:
             return None
@@ -85,6 +143,11 @@ class Event(bubblesub.model.ObservableObject):
 
     @property
     def next(self) -> T.Optional['Event']:
+        """
+        Return next subtitle from the parent subtitle list.
+
+        :return: next subtitle if has parent list, None otherwise
+        """
         index = self.index
         if index is None:
             return None
@@ -92,11 +155,17 @@ class Event(bubblesub.model.ObservableObject):
         return self.event_list.get(index + 1, None)
 
     def _after_change(self) -> None:
+        """Emit item changed event in the parent subtitle list."""
         index = self.index
         if index is not None and self.event_list is not None:
             self.event_list.item_changed.emit(index)
 
     def __getstate__(self) -> T.Any:
+        """
+        Return pickle compatible object representation.
+
+        :return: object representation
+        """
         ret = self.__dict__.copy()
         key = id(ret['event_list'])
         bubblesub.util.ref_dict[key] = ret['event_list']
@@ -104,10 +173,22 @@ class Event(bubblesub.model.ObservableObject):
         return ret
 
     def __setstate__(self, state: T.Any) -> None:
+        """
+        Load class state from pickle compatible object representation.
+
+        :param state: object representation
+        """
         state['event_list'] = bubblesub.util.ref_dict[state['event_list']]
         self.__dict__.update(state)
 
     def __copy__(self) -> 'Event':
+        """
+        Duplicate self.
+
+        Returned duplicate is detached from the parent subtitle list.
+
+        :return: duplicate of self
+        """
         ret = type(self)(start=self.start, end=self.end)
         for key, value in self.__dict__.items():
             if not callable(value):
@@ -117,16 +198,31 @@ class Event(bubblesub.model.ObservableObject):
 
 
 class EventList(bubblesub.model.ObservableList[Event]):
+    """ASS event list."""
+
     def insert_one(
             self,
             idx: T.Optional[int] = None,
             **kwargs: T.Any
     ) -> Event:
+        """
+        Insert single event at the specified position.
+
+        :param idx: index to add the new event at
+        :param kwargs: arguments compatible with Event's constructor
+        :return: created event
+        """
         subtitle = Event(**kwargs)
         self.insert(len(self) if idx is None else idx, [subtitle])
         return subtitle
 
     def insert(self, idx: int, items: T.List[Event]) -> None:
+        """
+        Insert events at the specified position.
+
+        :param idx: index to add the new events at
+        :param items: events to add
+        """
         for item in items:
             assert item.event_list is None, 'Event belongs to another list'
             item.event_list = self

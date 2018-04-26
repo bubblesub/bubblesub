@@ -1,3 +1,4 @@
+"""Menu config."""
 import json
 import typing as T
 
@@ -5,33 +6,59 @@ from bubblesub.opt.base import BaseConfig
 
 
 class MenuItem:
+    """Base menu item in GUI."""
+
     pass
 
 
 class MenuCommand(MenuItem):
+    """Menu item associated with a bubblesub command."""
+
     def __init__(self, command_name: str, *command_args: T.Any) -> None:
+        """
+        Initialize self.
+
+        Menu label is taken from the associated command.
+
+        :param command_name: name of the command to execute when the menu item
+            is invoked
+        :param command_args: arguments for the command
+        """
         self.command_name = command_name
         self.command_args = command_args
 
 
 class MenuSeparator(MenuItem):
+    """Empty horizontal line."""
+
     pass
 
 
 class SubMenu(MenuItem):
+    """Menu item that opens up another sub menu."""
+
     def __init__(
             self,
             name: str,
             children: T.MutableSequence[MenuItem]
     ) -> None:
+        """
+        Initialize self.
+
+        :param name: menu label
+        :param children: submenu items
+        """
         self.name = name
         self.children = children
 
 
 class MenuConfig(BaseConfig):
+    """Configuration for GUI menu."""
+
     file_name = 'menu.json'
 
     def __init__(self) -> None:
+        """Initialize self."""
         self.main: T.MutableSequence[MenuItem] = [
             SubMenu(
                 '&File',
@@ -211,6 +238,11 @@ class MenuConfig(BaseConfig):
         ]
 
     def loads(self, text: str) -> None:
+        """
+        Load internals from a human readable representation.
+
+        :param text: JSON
+        """
         def load_menu(
                 target: T.MutableSequence[MenuItem],
                 source: T.Any
@@ -240,6 +272,11 @@ class MenuConfig(BaseConfig):
         load_menu(self.context, obj['context'])
 
     def dumps(self) -> str:
+        """
+        Serialize internals to a human readable representation.
+
+        :return: JSON
+        """
         class MenuEncoder(json.JSONEncoder):
             def default(self, o: T.Any) -> T.Any:  # pylint: disable=E0202
                 if isinstance(o, MenuSeparator):

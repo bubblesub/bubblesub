@@ -1,3 +1,4 @@
+"""ASS file reader."""
 import re
 import typing as T
 
@@ -34,14 +35,14 @@ def _timestamp_to_ms(text: str) -> int:
     return milliseconds
 
 
-class ReadContext:
+class _ReadContext:
     field_names: T.List[str] = []
 
 
 def _inside_info_section(
         line: str,
         ass_file: AssFile,
-        _context: ReadContext
+        _context: _ReadContext
 ) -> None:
     if line.startswith(';'):
         return
@@ -52,7 +53,7 @@ def _inside_info_section(
 def _inside_meta_section(
         line: str,
         ass_file: AssFile,
-        _context: ReadContext
+        _context: _ReadContext
 ) -> None:
     if line.startswith(';'):
         return
@@ -63,7 +64,7 @@ def _inside_meta_section(
 def _inside_styles_section(
         line: str,
         ass_file: AssFile,
-        ctx: ReadContext
+        ctx: _ReadContext
 ) -> None:
     if line.startswith('Format:'):
         _, rest = line.split(': ', 1)
@@ -103,7 +104,7 @@ def _inside_styles_section(
 def _inside_events_section(
         line: str,
         ass_file: AssFile,
-        ctx: ReadContext
+        ctx: _ReadContext
 ) -> None:
     if line.startswith('Format:'):
         _, rest = line.split(': ', 1)
@@ -149,14 +150,20 @@ def _inside_events_section(
 
 
 def load_ass(handle: T.IO, ass_file: AssFile) -> None:
-    ctx = ReadContext()
+    """
+    Load ASS from the specified source.
+
+    :param handle: readable stream
+    :param ass_file: file to load to
+    """
+    ctx = _ReadContext()
 
     ass_file.events.clear()
     ass_file.styles.clear()
     ass_file.meta.clear()
     ass_file.info.clear()
 
-    handler: T.Optional[T.Callable[[str, AssFile, ReadContext], None]] = None
+    handler: T.Optional[T.Callable[[str, AssFile, _ReadContext], None]] = None
 
     for i, line in enumerate(handle):
         line = line.strip()

@@ -1,3 +1,5 @@
+"""General config."""
+
 import configparser
 import enum
 import io
@@ -9,6 +11,8 @@ from bubblesub.opt.base import BaseConfig
 
 
 class SearchMode(enum.IntEnum):
+    """Search mode in subtitles grid."""
+
     Text = 1
     Note = 2
     Actor = 3
@@ -117,10 +121,22 @@ PALETTE_LIGHT: T.Dict[str, T.Tuple[int, ...]] = {
 
 
 def _serialize_color(color: T.Tuple[int, ...]) -> str:
+    """
+    Convert internal color representation to a human readable form.
+
+    :param color: tuple with color components
+    :return: text in form of `#FFFFFF`
+    """
     return '#' + ''.join(f'{component:02X}' for component in color)
 
 
 def _deserialize_color(color: str) -> T.Tuple[int, ...]:
+    """
+    Convert a human readable color to internal representation.
+
+    :param color: text in form of `#FFFFFF`
+    :return: tuple with color components
+    """
     return tuple(
         int(match.group(1), 16)
         for match in re.finditer('([0-9a-fA-F]{2})', color.lstrip('#'))
@@ -128,24 +144,36 @@ def _deserialize_color(color: str) -> T.Tuple[int, ...]:
 
 
 class SubtitlesConfig:
+    """Config related to subtitles."""
+
     def __init__(self) -> None:
+        """Initialize self."""
         self.max_characters_per_second = 15
         self.default_duration = 2000
 
 
 class VideoConfig:
+    """Config related to video and playback."""
+
     def __init__(self) -> None:
+        """Initialize self."""
         self.subs_sync_interval = 65
 
 
 class AudioConfig:
+    """Config related to audio and spectrogram."""
+
     def __init__(self) -> None:
+        """Initialize self."""
         self.spectrogram_resolution = 10
         self.spectrogram_sync_interval = 65
 
 
 class SearchConfig:
+    """Config related to search in subtitle grid."""
+
     def __init__(self) -> None:
+        """Initialize self."""
         self.history: T.List[str] = []
         self.case_sensitive = False
         self.use_regexes = False
@@ -153,9 +181,12 @@ class SearchConfig:
 
 
 class GeneralConfig(BaseConfig):
+    """General config."""
+
     file_name = 'general.ini'
 
     def __init__(self) -> None:
+        """Initialize self."""
         self.spell_check = 'en_US'
         self.convert_newlines = True
         self.grid_columns = [
@@ -187,6 +218,11 @@ class GeneralConfig(BaseConfig):
         self.search = SearchConfig()
 
     def loads(self, text: str) -> None:
+        """
+        Load internals from a human readable representation.
+
+        :param text: INI
+        """
         cfg = configparser.RawConfigParser()
         cfg.optionxform = lambda option: option
         cfg.read_string(text)
@@ -261,6 +297,11 @@ class GeneralConfig(BaseConfig):
                     }
 
     def dumps(self) -> str:
+        """
+        Save internals from a human readable representation.
+
+        :return: INI
+        """
         cfg = configparser.RawConfigParser()
         cfg.optionxform = lambda option: option
         cfg.read_dict(

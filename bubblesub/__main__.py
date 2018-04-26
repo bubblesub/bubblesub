@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""CLI endpoint."""
 import argparse
 
 import bubblesub.cache
@@ -7,6 +8,11 @@ import bubblesub.ui
 
 
 def parse_args() -> argparse.Namespace:
+    """
+    Parse user arguments from CLI.
+
+    :return: parsed args
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('file', nargs='?')
     parser.add_argument('--no-config', action='store_true')
@@ -16,6 +22,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """CLI endpoint."""
     args = parse_args()
 
     opt = bubblesub.opt.Options()

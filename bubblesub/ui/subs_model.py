@@ -40,8 +40,8 @@ class SubtitleTextCache(bubblesub.cache.MemoryCache):
         super().__init__()
         self._subtitles = api.subs.lines
 
-    def _real_get(self, index: T.Tuple[int, int]) -> T.Any:
-        row, column_type = index
+    def _real_get(self, key: T.Tuple[int, int]) -> T.Any:
+        row, column_type = key
         subtitle = self._subtitles[row]
         if column_type == SubsModelColumn.Start:
             return bubblesub.util.ms_to_str(subtitle.start)
@@ -80,8 +80,8 @@ class SubtitleBackgroundCache(bubblesub.cache.MemoryCache):
         self._subtitles = api.subs.lines
         self._parent = parent
 
-    def _real_get(self, index: T.Any) -> T.Any:
-        row, column_type = index
+    def _real_get(self, key: T.Any) -> T.Any:
+        row, column_type = key
         subtitle = self._subtitles[row]
 
         if subtitle.is_comment:

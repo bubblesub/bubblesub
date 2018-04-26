@@ -1,3 +1,4 @@
+"""Hotkey config."""
 import json
 import typing as T
 
@@ -5,21 +6,34 @@ from bubblesub.opt.base import BaseConfig
 
 
 class Hotkey:
+    """Hotkey definition."""
+
     def __init__(
             self,
             shortcut: str,
             command_name: str,
             *command_args: T.Any
     ) -> None:
+        """
+        Initialize self.
+
+        :param shortcut: key combination that activates the hotkey
+        :param command_name: name of the command to execute when the hotkey
+            is invoked
+        :param command_args: arguments for the command
+        """
         self.shortcut = shortcut
         self.command_name = command_name
         self.command_args = command_args
 
 
 class HotkeysConfig(BaseConfig):
+    """Configuration for global and widget-centric GUI hotkeys."""
+
     file_name = 'hotkeys.json'
 
     def __init__(self) -> None:
+        """Initialize self."""
         self.hotkeys: T.Dict[str, T.List[Hotkey]] = {
             'global':
             [
@@ -118,6 +132,11 @@ class HotkeysConfig(BaseConfig):
         }
 
     def loads(self, text: str) -> None:
+        """
+        Load internals from a human readable representation.
+
+        :param text: JSON
+        """
         obj = json.loads(text)
         for context_name in self.hotkeys:
             self.hotkeys[context_name].clear()
@@ -131,6 +150,11 @@ class HotkeysConfig(BaseConfig):
                 )
 
     def dumps(self) -> str:
+        """
+        Serialize internals to a human readable representation.
+
+        :return: JSON
+        """
         return json.dumps(
             {
                 context_name:
@@ -142,10 +166,15 @@ class HotkeysConfig(BaseConfig):
                     }
                     for hotkey in hotkeys
                 ]
-                for context_name, hotkeys in self
+                for context_name, hotkeys in self.__iter__()
             },
             indent=4
         )
 
-    def __iter__(self):
+    def __iter__(self) -> T.Iterator[T.Tuple[str, T.List[Hotkey]]]:
+        """
+        Let users iterate directly over this config.
+
+        :return: iterator
+        """
         return iter(self.hotkeys.items())

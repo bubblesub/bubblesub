@@ -97,7 +97,7 @@ setup(
         'pyenchant',
         'pympv',
         'xdg',
-        'ass_tag_parser'
+        'ass_tag_parser',
     ],
 
     extras_require={
@@ -106,7 +106,8 @@ setup(
             'pylint',
             'pycodestyle',
             'pydocstyle',
-            'mypy'
+            'mypy',
+            'docstring_parser'
         ]
     },
 

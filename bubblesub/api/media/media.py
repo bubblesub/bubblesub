@@ -1,3 +1,4 @@
+"""Media API."""
 import argparse
 import locale
 import atexit
@@ -18,6 +19,8 @@ from bubblesub.api.subs import SubtitlesApi
 
 
 class MediaApi(QtCore.QObject):
+    """The media API."""
+
     loaded = QtCore.pyqtSignal()
     parsed = QtCore.pyqtSignal()
     current_pts_changed = QtCore.pyqtSignal()
@@ -32,6 +35,14 @@ class MediaApi(QtCore.QObject):
             opt_api: Options,
             args: argparse.Namespace
     ) -> None:
+        """
+        Initialize self.
+
+        :param subs_api: subtitles API
+        :param log_api: logging API
+        :param opt_api: configuration API
+        :param args: CLI arguments
+        """
         super().__init__()
 
         self._log_api = log_api
@@ -101,21 +112,33 @@ class MediaApi(QtCore.QObject):
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
     def start(self) -> None:
+        """Start internal worker threads."""
         self.audio.start()
         self.video.start()
         self._timer.start()
 
     def stop(self) -> None:
+        """Stop internal worker threads."""
         self.audio.stop()
         self.video.stop()
         self._timer.stop()
 
     def unload(self) -> None:
+        """Unload currently loaded video."""
+        self._playback_speed = fractions.Fraction(1.0)
+        self._volume = fractions.Fraction(100.0)
+        self._current_pts = 0
+        self._max_pts = 0
         self._path = None
         self.loaded.emit()
         self._reload_video()
 
     def load(self, path: T.Union[str, Path]) -> None:
+        """
+        Load video.
+
+        :param path: path where to load the video from
+        """
         assert path is not None
         self._path = Path(path)
         if str(self._subs_api.remembered_video_path) != str(self._path):
@@ -124,6 +147,12 @@ class MediaApi(QtCore.QObject):
         self.loaded.emit()
 
     def seek(self, pts: int, precise: bool = True) -> None:
+        """
+        Seek to specified position in the video.
+
+        :param pts: PTS to seek to
+        :param precise: whether to be preciser at the expense of performance
+        """
         if not self._mpv_ready:
             return
         self._set_end(None)  # mpv refuses to seek beyond --end
@@ -137,66 +166,121 @@ class MediaApi(QtCore.QObject):
             )
 
     def step_frame_forward(self) -> None:
+        """Step one frame forward."""
         if not self._mpv_ready:
             return
         self._set_end(None)  # mpv refuses to seek beyond --end
         self._mpv.command('frame-step')
 
     def step_frame_backward(self) -> None:
+        """Step one frame back."""
         if not self._mpv_ready:
             return
         self._set_end(None)  # mpv refuses to seek beyond --end
         self._mpv.command('frame-back-step')
 
     def play(self, start: int, end: int) -> None:
+        """
+        Play the currently loaded video at specified PTS range.
+
+        :param start: start PTS
+        :param end: end PTS
+        """
         self._play(start, end)
 
     def unpause(self) -> None:
+        """Unpause the currently loaded video."""
         self._play(None, None)
 
     def pause(self) -> None:
+        """Pause the currently loaded video."""
         self._mpv.set_property('pause', True)
 
     @property
     def playback_speed(self) -> fractions.Fraction:
+        """
+        Return playback rate for the currently loaded video.
+
+        :return: playback rate for the currently loaded video, 1.0 if no video
+        """
         return self._playback_speed
 
     @playback_speed.setter
     def playback_speed(self, value: fractions.Fraction) -> None:
+        """
+        Set new playback rate for the currently loaded video.
+
+        :param value: new playback rate
+        """
         self._playback_speed = value
         self._mpv.set_property('speed', float(self._playback_speed))
         self.playback_speed_changed.emit()
 
     @property
     def volume(self) -> fractions.Fraction:
+        """
+        Return volume for the currently loaded video.
+
+        :return: volume for the currently loaded video, 100.0 if no video
+        """
         return self._volume
 
     @volume.setter
     def volume(self, value: fractions.Fraction) -> None:
+        """
+        Set new volume for the currently loaded video.
+
+        :param value: new volume
+        """
         self._volume = value
         self._mpv.set_property('volume', float(self._volume))
         self.volume_changed.emit()
 
     @property
     def current_pts(self) -> int:
+        """
+        Return current video position.
+
+        :return: current video position, 0 if no video
+        """
         return self._current_pts
 
     @property
     def max_pts(self) -> int:
+        """
+        Return maximum video position.
+
+        :return: maximum video position, 0 if no video
+        """
         return self._max_pts
 
     @property
     def is_paused(self) -> bool:
+        """
+        Return whether the currently loaded video is paused.
+
+        :return: whether the currently loaded video is paused, True if no video
+        """
         if not self._mpv_ready:
             return True
         return bool(self._mpv.get_property('pause'))
 
     @property
     def path(self) -> T.Optional[Path]:
+        """
+        Return path to the currently loaded video.
+
+        :return: path to the currently loaded video, None if no video
+        """
         return self._path
 
     @property
     def is_loaded(self) -> bool:
+        """
+        Return whether there's video loaded.
+
+        :return: whether there's video loaded
+        """
         return self._path is not None
 
     def _play(self, start: T.Optional[int], end: T.Optional[int]) -> None:

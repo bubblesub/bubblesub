@@ -1,3 +1,4 @@
+"""ASS style and style list."""
 import typing as T
 from collections import namedtuple
 
@@ -9,6 +10,8 @@ Color = namedtuple('Color', ['red', 'green', 'blue', 'alpha'])
 
 
 class Style(bubblesub.model.ObservableObject):
+    """ASS style."""
+
     def __init__(
             self,
             name: str,
@@ -35,6 +38,33 @@ class Style(bubblesub.model.ObservableObject):
             margin_vertical: int = 20,
             encoding: int = 1
     ) -> None:
+        """
+        Initialize self.
+
+        :param name: style name
+        :param font_name: font family
+        :param font_size: font size in points
+        :param primary_color: font color as tuple
+        :param secondary_color: inactive karaoke font color as tuple
+        :param outline_color: outline font color as tuple
+        :param back_color: shadow font color as tuple
+        :param bold: bold
+        :param italic: italic
+        :param underline: underline
+        :param strike_out: strike out
+        :param scale_x: horizontal scale factor (100.0 = 100%)
+        :param scale_y: vertical scale factor (100.0 = 100%)
+        :param spacing: kerning
+        :param angle: angle in degrees
+        :param border_style: border style
+        :param outline: outline in pixels
+        :param shadow: shadow in pixels
+        :param alignment: alignment (1-9)
+        :param margin_left: left margin in pixels
+        :param margin_right: right margin in pixels
+        :param margin_vertical: vertical margins in pixels
+        :param encoding: text encoding
+        """
         super().__init__()
 
         self._old_name: T.Optional[str] = None
@@ -66,18 +96,37 @@ class Style(bubblesub.model.ObservableObject):
 
     @property
     def name(self) -> str:
+        """
+        Return style name.
+
+        :return: style name
+        """
         return self._name
 
     @name.setter
     def name(self, new_name: str) -> None:
+        """
+        Set new style name.
+
+        Remembers old name so that the event with style change can be fired
+        with the old name.
+
+        :param new_name: new name
+        """
         self._old_name = self._name
         self._name = new_name
 
     def _after_change(self) -> None:
+        """Emit item changed event in the parent style list."""
         if self.style_list is not None:
             self.style_list.item_changed.emit(self._old_name)
 
     def __getstate__(self) -> T.Any:
+        """
+        Return pickle compatible object representation.
+
+        :return: object representation
+        """
         ret = self.__dict__.copy()
         key = id(ret['style_list'])
         bubblesub.util.ref_dict[key] = ret['style_list']
@@ -85,10 +134,22 @@ class Style(bubblesub.model.ObservableObject):
         return ret
 
     def __setstate__(self, state: T.Any) -> None:
+        """
+        Load class state from pickle compatible object representation.
+
+        :param state: object representation
+        """
         state['style_list'] = bubblesub.util.ref_dict[state['style_list']]
         self.__dict__.update(state)
 
     def __copy__(self) -> 'Style':
+        """
+        Duplicate self.
+
+        Returned duplicate is detached from the parent style list.
+
+        :return: duplicate of self
+        """
         ret = type(self)(name=self.name)
         for key, value in self.__dict__.items():
             if not callable(value):
@@ -98,23 +159,45 @@ class Style(bubblesub.model.ObservableObject):
 
 
 class StyleList(bubblesub.model.ObservableList[Style]):
+    """ASS style list."""
+
     def insert_one(
             self,
             name: str,
             index: T.Optional[int] = None,
             **kwargs: T.Any
     ) -> Style:
+        """
+        Insert single style at the specified position.
+
+        :param name: name of the style
+        :param index: index to add the new style at
+        :param kwargs: arguments compatible with Style's constructor
+        :return: created style
+        """
         style = Style(name=name, **kwargs)
         self.insert(len(self) if index is None else index, [style])
         return style
 
     def insert(self, idx: int, items: T.List[Style]) -> None:
+        """
+        Insert styles at the specified position.
+
+        :param idx: index to add the new styles at
+        :param items: styles to add
+        """
         for item in items:
             assert item.style_list is None, 'Style belongs to another list'
             item.style_list = self
         super().insert(idx, items)
 
     def get_by_name(self, name: str) -> T.Optional[Style]:
+        """
+        Retrieve style by its name.
+
+        :param name: name of the style to look for
+        :return: style instance if one was found, None otherwise
+        """
         for style in self._items:
             if style.name == name:
                 return style

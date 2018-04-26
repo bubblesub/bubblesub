@@ -1,3 +1,4 @@
+"""Core API."""
 import argparse
 
 import bubblesub.api.cmd
@@ -10,11 +11,19 @@ import bubblesub.opt
 
 
 class Api:
+    """Core class grouping all descendant APIs."""
+
     def __init__(
             self,
             opt: bubblesub.opt.Options,
             args: argparse.Namespace
     ) -> None:
+        """
+        Initialize self.
+
+        :param opt: config
+        :param args: CLI arguments
+        """
         self.opt = opt
         self.log = bubblesub.api.log.LogApi()
         self.gui = bubblesub.api.gui.GuiApi(self)
