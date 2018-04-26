@@ -4,14 +4,14 @@ from pathlib import Path
 import ffms
 from PyQt5 import QtCore
 
-import bubblesub.cache
-import bubblesub.provider
-import bubblesub.util
-import bubblesub.api.media.media
 import bubblesub.api.log
+import bubblesub.api.media.media
+import bubblesub.cache
+import bubblesub.util
+import bubblesub.worker
 
 
-class TimecodesProviderResult:
+class TimecodesWorkerResult:
     def __init__(
             self,
             path: Path,
@@ -23,15 +23,17 @@ class TimecodesProviderResult:
         self.keyframes = keyframes
 
 
-class TimecodesProviderContext(
-        bubblesub.provider.ProviderContext[Path, TimecodesProviderResult]
-):
-    def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
-        super().__init__()
+class TimecodesWorker(bubblesub.worker.Worker):
+    def __init__(
+            self,
+            parent: QtCore.QObject,
+            log_api: 'bubblesub.api.log.LogApi'
+    ) -> None:
+        super().__init__(parent)
         self._log_api = log_api
 
-    def work(self, task: Path) -> TimecodesProviderResult:
-        path = task
+    def _do_work(self, task: T.Any) -> T.Any:
+        path = T.cast(Path, task)
         self._log_api.info('video/timecodes: loading... ({})'.format(path))
 
         path_hash = bubblesub.util.hash_digest(path)
@@ -47,16 +49,7 @@ class TimecodesProviderContext(
             bubblesub.cache.save_cache(cache_name, (timecodes, keyframes))
 
         self._log_api.info('video/timecodes: loaded')
-        return TimecodesProviderResult(path, timecodes, keyframes)
-
-
-class TimecodesProvider(bubblesub.provider.Provider[TimecodesProviderContext]):
-    def __init__(
-            self,
-            parent: QtCore.QObject,
-            log_api: 'bubblesub.api.log.LogApi'
-    ) -> None:
-        super().__init__(parent, TimecodesProviderContext(log_api))
+        return TimecodesWorkerResult(path, timecodes, keyframes)
 
 
 class VideoApi(QtCore.QObject):
@@ -75,8 +68,14 @@ class VideoApi(QtCore.QObject):
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
 
-        self._timecodes_provider = TimecodesProvider(self, log_api)
-        self._timecodes_provider.finished.connect(self._got_timecodes)
+        self._timecodes_worker = TimecodesWorker(self, log_api)
+        self._timecodes_worker.task_finished.connect(self._got_timecodes)
+
+    def start(self) -> None:
+        self._timecodes_worker.start()
+
+    def stop(self) -> None:
+        self._timecodes_worker.stop()
 
     def get_opengl_context(self) -> T.Any:
         return self._media_api._mpv.opengl_cb_api()
@@ -110,9 +109,9 @@ class VideoApi(QtCore.QObject):
         self.timecodes_updated.emit()
 
         if self._media_api.is_loaded:
-            self._timecodes_provider.schedule_task(self._media_api.path)
+            self._timecodes_worker.schedule_task(self._media_api.path)
 
-    def _got_timecodes(self, result: TimecodesProviderResult) -> None:
+    def _got_timecodes(self, result: TimecodesWorkerResult) -> None:
         if result.path == self._media_api.path:
             self._timecodes = result.timecodes
             self._keyframes = result.keyframes

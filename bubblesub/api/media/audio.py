@@ -8,26 +8,28 @@ import scipy.io.wavfile
 import numpy as np
 from PyQt5 import QtCore
 
-import bubblesub.cache
-import bubblesub.provider
-import bubblesub.util
-import bubblesub.api.media.media
 import bubblesub.api.log
+import bubblesub.api.media.media
+import bubblesub.cache
+import bubblesub.util
+import bubblesub.worker
 
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
 
 
-class AudioSourceProviderContext(
-        bubblesub.provider.ProviderContext[Path, ffms.AudioSource]
-):
-    def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
-        super().__init__()
+class AudioSourceWorker(bubblesub.worker.Worker):
+    def __init__(
+            self,
+            parent: QtCore.QObject,
+            log_api: 'bubblesub.api.log.LogApi'
+    ) -> None:
+        super().__init__(parent)
         self._log_api = log_api
 
-    def work(self, task: Path) -> ffms.AudioSource:
-        path = task
+    def _do_work(self, task: T.Any) -> T.Any:
+        path = T.cast(Path, task)
         self._log_api.info('audio/sampler: loading... ({})'.format(path))
 
         path_hash = bubblesub.util.hash_digest(path)
@@ -59,15 +61,6 @@ class AudioSourceProviderContext(
         return audio_source
 
 
-class AudioSourceProvider(bubblesub.provider.Provider):
-    def __init__(
-            self,
-            parent: QtCore.QObject,
-            log_api: 'bubblesub.api.log.LogApi'
-    ) -> None:
-        super().__init__(parent, AudioSourceProviderContext(log_api))
-
-
 class AudioApi(QtCore.QObject):
     view_changed = QtCore.pyqtSignal()
     selection_changed = QtCore.pyqtSignal()
@@ -91,8 +84,14 @@ class AudioApi(QtCore.QObject):
         self._media_api.parsed.connect(self._on_video_parse)
         self._media_api.max_pts_changed.connect(self._on_max_pts_change)
         self._audio_source: T.Union[None, ffms.AudioSource] = None
-        self._audio_source_provider = AudioSourceProvider(self, self._log_api)
-        self._audio_source_provider.finished.connect(self._got_audio_source)
+        self._audio_source_worker = AudioSourceWorker(self, self._log_api)
+        self._audio_source_worker.task_finished.connect(self._got_audio_source)
+
+    def start(self) -> None:
+        self._audio_source_worker.start()
+
+    def stop(self) -> None:
+        self._audio_source_worker.stop()
 
     @property
     def min(self) -> int:
@@ -261,7 +260,7 @@ class AudioApi(QtCore.QObject):
         self.zoom_view(1, 0.5)  # emits view_changed
         self._audio_source = _LOADING
         if self._media_api.path:
-            self._audio_source_provider.schedule_task(self._media_api.path)
+            self._audio_source_worker.schedule_task(self._media_api.path)
 
     def _on_max_pts_change(self) -> None:
         self._min = 0

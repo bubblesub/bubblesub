@@ -17,6 +17,8 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
     loop = quamash.QEventLoop(app)
     asyncio.set_event_loop(loop)
 
+    app.aboutToQuit.connect(api.media.stop)
+
     if not args.no_config:
         api.opt.load(api.opt.DEFAULT_PATH)
 

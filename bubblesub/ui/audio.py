@@ -9,7 +9,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.api.media.audio
-from bubblesub.ui.spectrogram import SpectrumProvider, DERIVATION_SIZE
+from bubblesub.ui.spectrogram import SpectrumWorker, DERIVATION_SIZE
 from bubblesub.ui.util import blend_colors, get_color
 
 NOT_CACHED = object()
@@ -73,8 +73,10 @@ class AudioPreviewWidget(BaseAudioWidget):
     ) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 2.5))
-        self._spectrum_provider = SpectrumProvider(self, self._api)
-        self._spectrum_provider.finished.connect(self._on_spectrum_update)
+        self._spectrum_worker = SpectrumWorker(self, api)
+        self._spectrum_worker.task_finished.connect(self._on_spectrum_update)
+        self._spectrum_worker.start()
+
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
         self._need_repaint = False
         self._drag_mode = DragMode.Off
@@ -83,9 +85,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         self._generate_color_table()
 
         timer = QtCore.QTimer(self)
-        timer.setInterval(
-            api.opt.general.audio.spectrogram_sync_interval
-        )
+        timer.setInterval(api.opt.general.audio.spectrogram_sync_interval)
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
@@ -189,11 +189,11 @@ class AudioPreviewWidget(BaseAudioWidget):
             for key, value in self._spectrum_cache.items()
             if value is not CACHING
         }
-        self._spectrum_provider.clear_tasks()
+        self._spectrum_worker.clear_tasks()
 
     def _on_video_load(self) -> None:
         self._spectrum_cache.clear()
-        self._spectrum_provider.clear_tasks()
+        self._spectrum_worker.clear_tasks()
         self.update()
 
     def _on_video_current_pts_change(self) -> None:
@@ -276,7 +276,7 @@ class AudioPreviewWidget(BaseAudioWidget):
             pts = (pts // horizontal_res) * horizontal_res
             column = self._spectrum_cache.get(pts, NOT_CACHED)
             if column is NOT_CACHED:
-                self._spectrum_provider.schedule_task(pts)
+                self._spectrum_worker.schedule_task(pts)
                 self._spectrum_cache[pts] = CACHING
                 continue
             if column is CACHING:

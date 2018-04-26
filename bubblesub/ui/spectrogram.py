@@ -6,22 +6,22 @@ import numpy as np
 from PyQt5 import QtCore
 
 import bubblesub.api
-import bubblesub.provider
+import bubblesub.worker
 
 
 DERIVATION_SIZE = 10
 DERIVATION_DISTANCE = 6
-# pylint: disable=invalid-name
-TSpectrumProviderResult = T.Tuple[int, T.List[int]]
-# pylint: enable=invalid-name
 
 
-class SpectrumProviderContext(
-        bubblesub.provider.ProviderContext[int, TSpectrumProviderResult]
-):
-    def __init__(self, api: bubblesub.api.Api) -> None:
-        super().__init__()
+class SpectrumWorker(bubblesub.worker.Worker):
+    def __init__(self, parent: QtCore.QObject, api: bubblesub.api.Api) -> None:
+        super().__init__(parent)
         self._api = api
+        self._input: T.Any = None
+        self._output: T.Any = None
+        self._fftw: T.Any = None
+
+    def _start_work(self) -> None:
         self._input = pyfftw.empty_aligned(
             2 << DERIVATION_SIZE, dtype=np.float32
         )
@@ -32,7 +32,7 @@ class SpectrumProviderContext(
             self._input, self._output, flags=('FFTW_MEASURE',)
         )
 
-    def work(self, task: int) -> TSpectrumProviderResult:
+    def _do_work(self, task: T.Any) -> T.Any:
         pts = task
 
         audio_frame = int(pts * self._api.media.audio.sample_rate / 1000.0)
@@ -53,7 +53,10 @@ class SpectrumProviderContext(
         elif sample_fmt not in (ffms.FFMS_FMT_FLT, ffms.FFMS_FMT_DBL):
             raise RuntimeError('Unknown sample format: {}'.format(sample_fmt))
 
+        assert self._input is not None
         self._input[0:len(samples)] = samples
+
+        assert self._fftw is not None
         out = self._fftw()
 
         scale_factor = 9 / np.sqrt(1 * (1 << DERIVATION_SIZE))
@@ -69,12 +72,3 @@ class SpectrumProviderContext(
         out = np.flip(out, axis=0)
         out = out.astype(dtype=np.uint8)
         return (pts, out)
-
-
-class SpectrumProvider(bubblesub.provider.Provider[SpectrumProviderContext]):
-    def __init__(
-            self,
-            parent: QtCore.QObject,
-            api: bubblesub.api.Api
-    ) -> None:
-        super().__init__(parent, SpectrumProviderContext(api))

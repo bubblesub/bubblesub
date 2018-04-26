@@ -101,7 +101,14 @@ class MediaApi(QtCore.QObject):
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
     def start(self) -> None:
+        self.audio.start()
+        self.video.start()
         self._timer.start()
+
+    def stop(self) -> None:
+        self.audio.stop()
+        self.video.stop()
+        self._timer.stop()
 
     def unload(self) -> None:
         self._path = None
