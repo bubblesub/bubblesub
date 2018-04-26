@@ -30,7 +30,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
 
     def _do_work(self, task: T.Any) -> T.Any:
         path = T.cast(Path, task)
-        self._log_api.info('audio/sampler: loading... ({})'.format(path))
+        self._log_api.info(f'audio/sampler: loading... ({path})')
 
         path_hash = bubblesub.util.hash_digest(path)
         cache_name = f'index-{path_hash}-audio'
@@ -49,6 +49,10 @@ class AudioSourceWorker(bubblesub.worker.Worker):
                 index = None
 
         if not index:
+            if not path.exists():
+                self._log_api.error('audio/sampler: audio file not found')
+                return None
+
             indexer = ffms.Indexer(str(path))
             index = indexer.do_indexing(-1)
             index.write(str(cache_path))
@@ -267,9 +271,10 @@ class AudioApi(QtCore.QObject):
         self._max = self._media_api.max_pts
         self.zoom_view(1, 0.5)  # emits view_changed
 
-    def _got_audio_source(self, result: ffms.AudioSource) -> None:
-        self._audio_source = result
-        self.parsed.emit()
+    def _got_audio_source(self, result: T.Optional[ffms.AudioSource]) -> None:
+        if result is not None:
+            self._audio_source = result
+            self.parsed.emit()
 
     def _wait_for_audio_source(self) -> None:
         while self._audio_source is _LOADING:

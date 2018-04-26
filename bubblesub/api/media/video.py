@@ -34,7 +34,7 @@ class TimecodesWorker(bubblesub.worker.Worker):
 
     def _do_work(self, task: T.Any) -> T.Any:
         path = T.cast(Path, task)
-        self._log_api.info('video/timecodes: loading... ({})'.format(path))
+        self._log_api.info(f'video/timecodes: loading... ({path})')
 
         path_hash = bubblesub.util.hash_digest(path)
         cache_name = f'index-{path_hash}-video'
@@ -43,6 +43,10 @@ class TimecodesWorker(bubblesub.worker.Worker):
         if result:
             timecodes, keyframes = result
         else:
+            if not path.exists():
+                self._log_api.error('video/timecodes: video file not found')
+                return None
+
             video = ffms.VideoSource(str(path))
             timecodes = video.track.timecodes
             keyframes = video.track.keyframes
@@ -111,8 +115,11 @@ class VideoApi(QtCore.QObject):
         if self._media_api.is_loaded:
             self._timecodes_worker.schedule_task(self._media_api.path)
 
-    def _got_timecodes(self, result: TimecodesWorkerResult) -> None:
-        if result.path == self._media_api.path:
+    def _got_timecodes(
+            self,
+            result: T.Optional[TimecodesWorkerResult]
+    ) -> None:
+        if result is not None and result.path == self._media_api.path:
             self._timecodes = result.timecodes
             self._keyframes = result.keyframes
             self.timecodes_updated.emit()
