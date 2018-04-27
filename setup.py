@@ -1,4 +1,74 @@
-from setuptools import setup, find_packages
+import sys
+from setuptools import setup, find_packages, Command
+
+
+class PyTestCommand(Command):
+    description = 'run tests'
+    user_options = [('pytest-args=', 'a', 'Arguments to pass to pytest')]
+
+    def initialize_options(self):
+        self.pytest_args = ''
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import shlex
+        import pytest
+        errno = pytest.main(shlex.split(self.pytest_args))
+        sys.exit(errno)
+
+
+class LintCommand(Command):
+    description = 'run linters'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import subprocess
+        import glob
+
+        commands = [
+            ['pycodestyle', 'bubblesub'],
+            [
+                'pydocstyle',
+                'bubblesub/api',
+                'bubblesub/opt',
+                'bubblesub/ass',
+            ] + glob.glob('bubblesub/*.py'),
+            ['pylint', 'bubblesub']
+        ]
+
+        for command in commands:
+            status = subprocess.run(command)
+            if status.returncode != 0:
+                sys.exit(status.returncode)
+        sys.exit(0)
+
+
+class MypyCommand(Command):
+    description = 'run type checks'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import subprocess
+
+        status = subprocess.run([
+            'mypy', 'bubblesub', '--ignore-missing-imports'
+        ])
+        sys.exit(status.returncode)
+
 
 setup(
     author='Marcin Kurczewski',
@@ -26,8 +96,24 @@ setup(
         'pyenchant',
         'pympv',
         'xdg',
-        'ass_tag_parser',
+        'ass_tag_parser'
     ],
+
+    extras_require={
+        'develop': [
+            'pytest',
+            'pylint',
+            'pycodestyle',
+            'pydocstyle',
+            'mypy'
+        ]
+    },
+
+    cmdclass={
+        'test': PyTestCommand,
+        'lint': LintCommand,
+        'mypy': MypyCommand
+    },
 
     classifiers=[
         'Environment :: X11 Applications :: Qt',
@@ -39,6 +125,6 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Text Editors',
         'Topic :: Multimedia :: Sound/Audio',
-        'Topic :: Multimedia :: Video',
+        'Topic :: Multimedia :: Video'
     ]
 )

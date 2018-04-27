@@ -45,6 +45,13 @@ Screenshot:
 - Enter its directory: `cd bubblesub`
 - Install `bubblesub`: `pip install --user .`
 
+## Development
+
+- Install development dependencies: `pip install --user -e '.[develop]'`
+- Run tests: `python setup.py test`
+- Run linters: `python setup.py lint`
+- Run type checks: `python setup.py mypy`
+
 ## Configuration and plugins
 
 - `~/.config/bubblesub/scripts`: contains user plugins
