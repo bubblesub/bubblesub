@@ -20,8 +20,14 @@ from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuSeparator
 
 
-def _load_splitter_state(widget: QtWidgets.QWidget, data: str) -> None:
-    widget.restoreState(base64.b64decode(data))
+def _load_splitter_state(
+        widget: QtWidgets.QWidget,
+        opt: T.Dict[str, str],
+        key: str
+) -> None:
+    data = opt.get(key, None)
+    if data:
+        widget.restoreState(base64.b64decode(data))
 
 
 def _get_splitter_state(widget: QtWidgets.QWidget) -> str:
@@ -212,10 +218,10 @@ class MainWindow(QtWidgets.QMainWindow):
         opt = self._api.opt.general.splitters
         if not opt:
             return
-        _load_splitter_state(self.top_bar, opt['top'])
-        _load_splitter_state(self.editor_splitter, opt['editor'])
-        _load_splitter_state(self.main_splitter, opt['main'])
-        _load_splitter_state(self.console_splitter, opt['console'])
+        _load_splitter_state(self.top_bar, opt, 'top')
+        _load_splitter_state(self.editor_splitter, opt, 'editor')
+        _load_splitter_state(self.main_splitter, opt, 'main')
+        _load_splitter_state(self.console_splitter, opt, 'console')
 
     def _store_splitters(self) -> None:
         self._api.opt.general.splitters = {

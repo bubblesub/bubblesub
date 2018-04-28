@@ -239,8 +239,8 @@ class GeneralConfig(BaseConfig):
         self.current_palette = (
             cfg.get('basic', 'current_palette', fallback=self.current_palette)
         )
-        for key, value in self.splitters.items():
-            self.splitters[key] = cfg.get('splitters', key, fallback=value)
+        for key, value in cfg.items('splitters'):
+            self.splitters[key] = value
         for key, value in self.fonts.items():
             self.fonts[key] = cfg.get('fonts', key, fallback=value)
 
