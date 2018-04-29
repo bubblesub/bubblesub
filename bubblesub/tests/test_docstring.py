@@ -97,5 +97,5 @@ def test_docstrings(path) -> None:
             if isinstance(node, ast.FunctionDef):
                 verify_function_docstring(node)
         except AssertionError:
-            print(f'Error at {path.name}:{node.lineno}')
+            print(f'Error at {path}:{node.lineno}')
             raise
