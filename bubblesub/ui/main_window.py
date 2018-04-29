@@ -106,6 +106,7 @@ class MainWindow(QtWidgets.QMainWindow):
         bubblesub.ui.util.get_color.cache_clear()
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
+        self.subs_grid.store_grid_columns()
         self._store_splitters()
         if self._api.undo.needs_save and not bubblesub.ui.util.ask(
                 'There are unsaved changes. '

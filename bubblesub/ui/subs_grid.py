@@ -104,6 +104,7 @@ class SubsGrid(QtWidgets.QTableView):
         self.setModel(SubsModel(self, api))
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
+        self.horizontalHeader().setSectionsMovable(True)
         self.verticalHeader().setDefaultSectionSize(
             self.fontMetrics().height() + MAGIC_MARGIN3
         )
@@ -143,6 +144,14 @@ class SubsGrid(QtWidgets.QTableView):
                 old_col_idx = header.visualIndex(col.value)
                 header.swapSections(old_col_idx, new_col_idx)
                 header.showSection(new_col_idx)
+
+    def store_grid_columns(self) -> None:
+        header = self.horizontalHeader()
+        self._api.opt.general.grid_columns = [
+            SubsModelColumn(header.logicalIndex(i)).name
+            for i in SubsModelColumn
+            if not header.isSectionHidden(i)
+        ]
 
     def keyboardSearch(self, _text: str) -> None:
         pass
