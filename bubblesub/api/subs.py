@@ -2,25 +2,24 @@
 import typing as T
 from pathlib import Path
 
-from PyQt5 import QtCore
-
 import bubblesub.ass.reader
 import bubblesub.ass.writer
+import bubblesub.event
 from bubblesub.ass.file import AssFile
 from bubblesub.ass.event import EventList
 from bubblesub.ass.style import StyleList
 
 
-class SubtitlesApi(QtCore.QObject):
+class SubtitlesApi:
     """
     The subtitles API.
 
     Encapsulates ASS styles, subtitles and subtitle selection.
     """
 
-    loaded = QtCore.pyqtSignal()
-    saved = QtCore.pyqtSignal()
-    selection_changed = QtCore.pyqtSignal(list, bool)
+    loaded = bubblesub.event.EventHandler()
+    saved = bubblesub.event.EventHandler()
+    selection_changed = bubblesub.event.EventHandler(list, bool)
 
     def __init__(self) -> None:
         """Initialize self."""

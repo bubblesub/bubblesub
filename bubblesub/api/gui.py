@@ -1,20 +1,20 @@
 """GUI API."""
 import typing as T
 
-from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 import bubblesub.api.api  # pylint: disable=unused-import
+import bubblesub.event
 
 TResult = T.TypeVar('TResult')  # pylint: disable=invalid-name
 
 
-class GuiApi(QtCore.QObject):
+class GuiApi:
     """The GUI API."""
 
-    quit_requested = QtCore.pyqtSignal()
-    begin_update_requested = QtCore.pyqtSignal()
-    end_update_requested = QtCore.pyqtSignal()
+    quit_requested = bubblesub.event.EventHandler()
+    begin_update_requested = bubblesub.event.EventHandler()
+    end_update_requested = bubblesub.event.EventHandler()
 
     def __init__(self, api: 'bubblesub.api.api.Api') -> None:
         """

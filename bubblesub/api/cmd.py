@@ -9,9 +9,8 @@ import traceback
 import typing as T
 from pathlib import Path
 
-from PyQt5 import QtCore
-
 import bubblesub.api.api
+import bubblesub.event
 import bubblesub.model
 
 
@@ -97,12 +96,12 @@ class BaseCommand(abc.ABC):
         self.api.log.error(f'cmd/{self.name}: {text}')
 
 
-class CommandApi(QtCore.QObject):
+class CommandApi:
     """The command API."""
 
     core_registry: T.Dict[str, T.Type] = {}
     plugin_registry: T.Dict[str, T.Type] = {}
-    plugins_loaded = QtCore.pyqtSignal()
+    plugins_loaded = bubblesub.event.EventHandler()
 
     def __init__(self, api: 'bubblesub.api.Api') -> None:
         """

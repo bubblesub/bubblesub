@@ -7,11 +7,11 @@ from pathlib import Path
 import ffms
 import scipy.io.wavfile
 import numpy as np
-from PyQt5 import QtCore
 
 import bubblesub.api.log
 import bubblesub.api.media.media
 import bubblesub.cache
+import bubblesub.event
 import bubblesub.util
 import bubblesub.worker
 
@@ -23,18 +23,13 @@ _SAMPLER_LOCK = threading.Lock()
 class AudioSourceWorker(bubblesub.worker.Worker):
     """Detached audio source provider."""
 
-    def __init__(
-            self,
-            parent: QtCore.QObject,
-            log_api: 'bubblesub.api.log.LogApi'
-    ) -> None:
+    def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
         """
         Initialize self.
 
-        :param parent: owner object
         :param log_api: logging API
         """
-        super().__init__(parent)
+        super().__init__()
         self._log_api = log_api
 
     def _do_work(self, task: T.Any) -> T.Any:
@@ -80,12 +75,12 @@ class AudioSourceWorker(bubblesub.worker.Worker):
         return audio_source
 
 
-class AudioApi(QtCore.QObject):
+class AudioApi:
     """The audio API."""
 
-    view_changed = QtCore.pyqtSignal()
-    selection_changed = QtCore.pyqtSignal()
-    parsed = QtCore.pyqtSignal()
+    view_changed = bubblesub.event.EventHandler()
+    selection_changed = bubblesub.event.EventHandler()
+    parsed = bubblesub.event.EventHandler()
 
     def __init__(
             self,
@@ -111,7 +106,7 @@ class AudioApi(QtCore.QObject):
         self._media_api.parsed.connect(self._on_video_parse)
         self._media_api.max_pts_changed.connect(self._on_max_pts_change)
         self._audio_source: T.Union[None, ffms.AudioSource] = None
-        self._audio_source_worker = AudioSourceWorker(self, self._log_api)
+        self._audio_source_worker = AudioSourceWorker(log_api)
         self._audio_source_worker.task_finished.connect(self._got_audio_source)
 
     def start(self) -> None:

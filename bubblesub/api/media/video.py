@@ -3,10 +3,10 @@ import typing as T
 from pathlib import Path
 
 import ffms
-from PyQt5 import QtCore
 
 import bubblesub.api.log
 import bubblesub.api.media.media
+import bubblesub.event
 import bubblesub.cache
 import bubblesub.util
 import bubblesub.worker
@@ -36,18 +36,13 @@ class TimecodesWorkerResult:
 class TimecodesWorker(bubblesub.worker.Worker):
     """Detached timecodes provider."""
 
-    def __init__(
-            self,
-            parent: QtCore.QObject,
-            log_api: 'bubblesub.api.log.LogApi'
-    ) -> None:
+    def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
         """
         Initialize self.
 
-        :param parent: owner object
         :param log_api: logging API
         """
-        super().__init__(parent)
+        super().__init__()
         self._log_api = log_api
 
     def _do_work(self, task: T.Any) -> T.Any:
@@ -80,10 +75,10 @@ class TimecodesWorker(bubblesub.worker.Worker):
         return TimecodesWorkerResult(path, timecodes, keyframes)
 
 
-class VideoApi(QtCore.QObject):
+class VideoApi:
     """The video API."""
 
-    timecodes_updated = QtCore.pyqtSignal()
+    timecodes_updated = bubblesub.event.EventHandler()
 
     def __init__(
             self,
@@ -104,7 +99,7 @@ class VideoApi(QtCore.QObject):
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
 
-        self._timecodes_worker = TimecodesWorker(self, log_api)
+        self._timecodes_worker = TimecodesWorker(log_api)
         self._timecodes_worker.task_finished.connect(self._got_timecodes)
 
     def start(self) -> None:

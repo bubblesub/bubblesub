@@ -73,7 +73,7 @@ class AudioPreviewWidget(BaseAudioWidget):
     ) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 2.5))
-        self._spectrum_worker = SpectrumWorker(self, api)
+        self._spectrum_worker = SpectrumWorker(api)
         self._spectrum_worker.task_finished.connect(self._on_spectrum_update)
         self._spectrum_worker.start()
 

@@ -3,7 +3,6 @@ import typing as T
 import ffms
 import pyfftw
 import numpy as np
-from PyQt5 import QtCore
 
 import bubblesub.api
 import bubblesub.worker
@@ -14,8 +13,8 @@ DERIVATION_DISTANCE = 6
 
 
 class SpectrumWorker(bubblesub.worker.Worker):
-    def __init__(self, parent: QtCore.QObject, api: bubblesub.api.Api) -> None:
-        super().__init__(parent)
+    def __init__(self, api: bubblesub.api.Api) -> None:
+        super().__init__()
         self._api = api
         self._input: T.Any = None
         self._output: T.Any = None

@@ -10,6 +10,7 @@ from pathlib import Path
 import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore
 
+import bubblesub.event
 import bubblesub.util
 from bubblesub.opt import Options
 from bubblesub.api.media.audio import AudioApi
@@ -18,15 +19,15 @@ from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 
 
-class MediaApi(QtCore.QObject):
+class MediaApi:
     """The media API."""
 
-    loaded = QtCore.pyqtSignal()
-    parsed = QtCore.pyqtSignal()
-    current_pts_changed = QtCore.pyqtSignal()
-    max_pts_changed = QtCore.pyqtSignal()
-    volume_changed = QtCore.pyqtSignal()
-    playback_speed_changed = QtCore.pyqtSignal()
+    loaded = bubblesub.event.EventHandler()
+    parsed = bubblesub.event.EventHandler()
+    current_pts_changed = bubblesub.event.EventHandler()
+    max_pts_changed = bubblesub.event.EventHandler()
+    volume_changed = bubblesub.event.EventHandler()
+    playback_speed_changed = bubblesub.event.EventHandler()
 
     def __init__(
             self,
@@ -107,7 +108,7 @@ class MediaApi(QtCore.QObject):
         self.video = VideoApi(self, log_api)
         self.audio = AudioApi(self, log_api)
 
-        self._timer = QtCore.QTimer(self)
+        self._timer = QtCore.QTimer(parent=None)
         self._timer.setInterval(opt_api.general.video.subs_sync_interval)
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 

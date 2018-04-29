@@ -13,13 +13,9 @@ class Worker(QtCore.QThread):
 
     task_finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent: QtCore.QObject) -> None:
-        """
-        Initialize self.
-
-        :param parent: parent object
-        """
-        super().__init__(parent)
+    def __init__(self) -> None:
+        """Initialize self."""
+        super().__init__(parent=None)
         self._running = False
         self._queue: queue.LifoQueue = queue.LifoQueue()
 

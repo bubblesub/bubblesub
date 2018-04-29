@@ -60,8 +60,7 @@ class SubtitleTextCache(bubblesub.cache.MemoryCache):
         elif column_type == SubsModelColumn.CharactersPerSecond:
             return (
                 '{:.1f}'.format(
-                    bubblesub.ass.util.character_count(
-                        subtitle.text) /
+                    bubblesub.ass.util.character_count(subtitle.text) /
                     max(1, subtitle.duration / 1000.0))
                 if subtitle.duration > 0 else
                 '-'
