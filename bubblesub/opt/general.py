@@ -10,6 +10,19 @@ import typing as T
 from bubblesub.opt.base import BaseConfig
 
 
+class SubsModelColumn(enum.IntEnum):
+    """Column indices in subtitles grid."""
+
+    Start = 0
+    End = 1
+    Style = 2
+    Actor = 3
+    Text = 4
+    Note = 5
+    Duration = 6
+    CharsPerSec = 7
+
+
 class SearchMode(enum.IntEnum):
     """Search mode in subtitles grid."""
 
@@ -189,16 +202,7 @@ class GeneralConfig(BaseConfig):
         """Initialize self."""
         self.spell_check = 'en_US'
         self.convert_newlines = True
-        self.grid_columns = [
-            'start',
-            'end',
-            'style',
-            'actor',
-            'text',
-            'note',
-            'duration',
-            'cps',
-        ]
+        self.grid_columns = [col.name for col in SubsModelColumn]
         self.splitters: T.Dict[str, str] = {}
 
         self.current_palette = 'light'

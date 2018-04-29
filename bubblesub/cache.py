@@ -1,5 +1,5 @@
 """Caching utilities."""
-import abc
+import functools
 import pickle
 import typing as T
 
@@ -63,48 +63,62 @@ def wipe_cache() -> None:
             path.unlink()
 
 
-class MemoryCache(abc.ABC):
-    """Class providing functionality similar to functools.lru_cache."""
+class Memoize:
+    """
+    Simple function memoization.
 
-    def __init__(self):
-        """Initialize self."""
+    Its advantage over functools.lru_cache boils down to the ability
+    of removing single items from the cache.
+    """
+
+    def __init__(self, func: T.Callable[..., T.Any]) -> None:
+        """
+        Initialize self.
+
+        :param func: function to cache the results for
+        """
+        self._func = func
+        self._cache: T.Dict = {}
+
+    def __get__(self, obj: T.Any, objtype: T.Any = None) -> T.Callable:
+        """
+        Support instance methods.
+
+        :param obj: object instance
+        :param objtype: object type
+        :return: instance-bound callback or free function
+        """
+        func = functools.partial(self.__call__, obj)
+        setattr(func, 'wipe_cache', self._wipe_cache)
+        setattr(func, 'wipe_cache_at', self._wipe_cache_at)
+        return func
+
+    def __call__(self, *args: T.Any, **kwargs: T.Any) -> T.Any:
+        """
+        Try to get the result from cache; call underlying function if failed.
+
+        :param args: arguments for the underlying function
+        :param kwargs: keyword arguments for the underlying function
+        :return: function result
+        """
+        cache_key = self._get_cache_key(*args[1:], **kwargs)
+        if cache_key not in self._cache:
+            self._cache[cache_key] = self._func(*args, **kwargs)
+        return self._cache[cache_key]
+
+    def _wipe_cache(self) -> None:
+        """Wipe entire cache."""
         self._cache = {}
 
-    def __getitem__(self, key: T.Any) -> T.Any:
+    def _wipe_cache_at(self, *args: T.Any, **kwargs: T.Any) -> None:
         """
-        Retrieve object with given key.
+        Delete key from cache.
 
-        If object is unavailable, calls _real_get and caches its result under
-        given key.
-
-        :param key: cache key
-        :return: cached object
+        :param args: cached function arguments
+        :param kwargs: cached function keyword arguments
         """
-        ret = self._cache.get(key, None)
-        if ret is None:
-            ret = self._real_get(key)
-            self._cache[key] = ret
-        return ret
+        cache_key = self._get_cache_key(*args, **kwargs)
+        self._cache.pop(cache_key, None)
 
-    def __delitem__(self, key: T.Any):
-        """
-        Delete object with given key from cache.
-
-        :param key: cache key to delete
-        """
-        if key in self._cache:
-            del self._cache[key]
-
-    def wipe(self) -> None:
-        """Wipe cache."""
-        self._cache = {}
-
-    @abc.abstractmethod
-    def _real_get(self, key: T.Any) -> T.Any:
-        """
-        Create the object (without cache lookups).
-
-        :param key: cache key the object was looked up with
-        :return: created object
-        """
-        raise NotImplementedError('Not implemented')
+    def _get_cache_key(self, *args: T.Any, **kwargs: T.Any) -> T.Any:
+        return (self._func, args, frozenset(kwargs.items()))

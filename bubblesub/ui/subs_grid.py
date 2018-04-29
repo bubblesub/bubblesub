@@ -7,7 +7,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
-from bubblesub.ui.subs_model import SubsModel, SubsModelColumn
+from bubblesub.ui.model.subs import SubsModel, SubsModelColumn
 from bubblesub.ui.util import get_color
 
 # ????
@@ -101,7 +101,7 @@ class SubsGrid(QtWidgets.QTableView):
     ) -> None:
         super().__init__(parent)
         self._api = api
-        self.setModel(SubsModel(api, self))
+        self.setModel(SubsModel(self, api))
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
         self.verticalHeader().setDefaultSectionSize(
@@ -109,12 +109,11 @@ class SubsGrid(QtWidgets.QTableView):
         )
 
         self._subs_grid_delegate = SubsGridDelegate(self._api, self)
-        for i, column_type in enumerate(self.model().column_order):
-            if column_type in (SubsModelColumn.Text, SubsModelColumn.Note):
-                self.setItemDelegateForColumn(i, self._subs_grid_delegate)
-                self.horizontalHeader().setSectionResizeMode(
-                    i, QtWidgets.QHeaderView.Stretch
-                )
+        for column_idx in (SubsModelColumn.Text, SubsModelColumn.Note):
+            self.setItemDelegateForColumn(column_idx, self._subs_grid_delegate)
+            self.horizontalHeader().setSectionResizeMode(
+                column_idx, QtWidgets.QHeaderView.Stretch
+            )
 
         api.subs.loaded.connect(self._on_subs_load)
         api.subs.selection_changed.connect(self._on_api_selection_change)
@@ -129,11 +128,27 @@ class SubsGrid(QtWidgets.QTableView):
             self._api, self.menu, self._api.opt.menu.context
         )
 
+    def restore_grid_columns(self) -> None:
+        header = self.horizontalHeader()
+        for col in SubsModelColumn:
+            header.hideSection(col.value)
+        for new_col_idx, col_name in enumerate(
+                self._api.opt.general.grid_columns
+        ):
+            try:
+                col = SubsModelColumn[col_name]
+            except KeyError:
+                print(f'Unknown column "{col_name}"')
+            else:
+                old_col_idx = header.visualIndex(col.value)
+                header.swapSections(old_col_idx, new_col_idx)
+                header.showSection(new_col_idx)
+
     def keyboardSearch(self, _text: str) -> None:
         pass
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
-        self.model().reset_cache()
+        self.model().wipe_cache()
         self._subs_grid_delegate.syntax_highlight.update_style_map()
 
     def _open_menu(self, position: QtCore.QPoint) -> None:

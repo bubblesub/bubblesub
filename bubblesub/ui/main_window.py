@@ -99,6 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.apply_palette(T.cast(str, api.opt.general.current_palette))
 
         self.subs_grid.setFocus()
+        self.subs_grid.restore_grid_columns()
         self._restore_splitters()
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:

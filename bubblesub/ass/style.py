@@ -95,6 +95,18 @@ class Style(bubblesub.model.ObservableObject):
         self.encoding = encoding
 
     @property
+    def index(self) -> T.Optional[int]:
+        """
+        Return style index in the parent style list, starting at 0.
+
+        :return: index if style has parent list, None otherwise
+        """
+        # XXX: meh
+        if self.style_list is not None:
+            return self.style_list.index(self)
+        return None
+
+    @property
     def name(self) -> str:
         """
         Return style name.
@@ -118,8 +130,9 @@ class Style(bubblesub.model.ObservableObject):
 
     def _after_change(self) -> None:
         """Emit item changed event in the parent style list."""
-        if self.style_list is not None:
-            self.style_list.item_changed.emit(self._old_name)
+        index = self.index
+        if index is not None and self.style_list is not None:
+            self.style_list.item_changed.emit(self.index)
 
     def __getstate__(self) -> T.Any:
         """

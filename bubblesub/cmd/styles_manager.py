@@ -16,7 +16,7 @@ import bubblesub.ass.style
 import bubblesub.ass.writer
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
-from bubblesub.ui.styles_model import StylesModel, StylesModelColumn
+from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
 
 
 class StylePreview(QtWidgets.QGroupBox):
@@ -713,7 +713,7 @@ class StylesManagerDialog(QtWidgets.QDialog):
             main_window: QtWidgets.QMainWindow
     ) -> None:
         super().__init__(main_window)
-        model = StylesModel(api, self)
+        model = StylesModel(self, api.subs.styles)
         selection_model = QtCore.QItemSelectionModel(model)
 
         self._style_list = StyleList(api, model, selection_model, self)
