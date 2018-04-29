@@ -266,6 +266,21 @@ class SearchModeGroupBox(QtWidgets.QGroupBox):
         raise RuntimeError('No radio selected')
 
 
+class SearchTextEdit(QtWidgets.QComboBox):
+    def __init__(self, parent: QtWidgets.QWidget) -> None:
+        super().__init__(parent)
+        self.setEditable(True)
+        self.setMaxCount(MAX_HISTORY_ENTRIES)
+        self.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
+        self.setSizePolicy(QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Preferred
+        ))
+        completer = self.completer()
+        completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
+        self.setCompleter(completer)
+
+
 class SearchDialog(QtWidgets.QDialog):
     def __init__(
             self,
@@ -278,18 +293,7 @@ class SearchDialog(QtWidgets.QDialog):
         self._main_window = main_window
         self._api = api
 
-        self.search_text_edit = QtWidgets.QComboBox(self)
-        self.search_text_edit.setEditable(True)
-        self.search_text_edit.setMaxCount(MAX_HISTORY_ENTRIES)
-        self.search_text_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
-        self.search_text_edit.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Preferred
-        ))
-        completer = self.search_text_edit.completer()
-        completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
-        self.search_text_edit.setCompleter(completer)
-
+        self.search_text_edit = SearchTextEdit(self)
         self.replacement_text_edit = QtWidgets.QLineEdit(self)
         self.case_chkbox = QtWidgets.QCheckBox('Case sensitivity', self)
         self.regex_chkbox = QtWidgets.QCheckBox(
@@ -313,21 +317,21 @@ class SearchDialog(QtWidgets.QDialog):
         strip.clicked.connect(self.action)
         strip.rejected.connect(self.reject)
 
-        self._load_opt()
-        self._update_replacement_enabled()
-
         settings_box = QtWidgets.QWidget(self)
         settings_box_layout = QtWidgets.QVBoxLayout(settings_box)
         settings_box_layout.setSpacing(16)
         settings_box_layout.setContentsMargins(0, 0, 0, 0)
-        settings_box_layout.addWidget(search_label)
-        settings_box_layout.addWidget(self.search_text_edit)
-        settings_box_layout.addWidget(replace_label)
-        settings_box_layout.addWidget(self.replacement_text_edit)
-        settings_box_layout.addWidget(self.case_chkbox)
-        settings_box_layout.addWidget(self.regex_chkbox)
-        settings_box_layout.addWidget(self.search_mode_group_box)
-        settings_box_layout.addWidget(strip)
+        for widget in [
+                search_label,
+                self.search_text_edit,
+                replace_label,
+                self.replacement_text_edit,
+                self.case_chkbox,
+                self.regex_chkbox,
+                self.search_mode_group_box,
+                strip
+        ]:
+            settings_box_layout.addWidget(widget)
 
         if not show_replace_controls:
             replace_label.hide()
@@ -340,6 +344,8 @@ class SearchDialog(QtWidgets.QDialog):
         layout.addWidget(settings_box)
         layout.addWidget(strip)
 
+        self._load_opt()
+        self._update_replacement_enabled()
         self.search_text_edit.lineEdit().selectAll()
 
     def reject(self) -> T.Any:
