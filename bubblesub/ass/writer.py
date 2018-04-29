@@ -21,9 +21,9 @@ def _ms_to_timestamp(milliseconds: int) -> str:
 
 
 def _write_info(ass_file: AssFile, handle: T.IO) -> None:
-    # FIXME: the state is mutated…
-    ass_file.info['ScriptType'] = 'v4.00+'
-    for key, value in ass_file.info.items():
+    info = {key: value for key, value in ass_file.info.items()}
+    info['ScriptType'] = 'v4.00+'
+    for key, value in info.items():
         print(key, value, sep=': ', file=handle)
 
 
