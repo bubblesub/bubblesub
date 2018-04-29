@@ -233,9 +233,10 @@ class GeneralConfig(BaseConfig):
         self.convert_newlines = cfg.getboolean(
             'basic', 'convert_newlines', fallback=self.convert_newlines
         )
-        self.grid_columns = cfg.get(
-            'basic', 'grid_columns', fallback=''
-        ).split(',')
+        if cfg.get('basic', 'grid_columns', fallback=None):
+            self.grid_columns = cfg.get('basic', 'grid_columns').split(',')
+        else:
+            self.grid_columns = [col.name for col in SubsModelColumn]
         self.current_palette = (
             cfg.get('basic', 'current_palette', fallback=self.current_palette)
         )
@@ -285,8 +286,8 @@ class GeneralConfig(BaseConfig):
             cfg.get('search', 'history', fallback='[]')
         )
 
+        self.palettes.clear()
         if any(section.startswith('palette.') for section in cfg.sections()):
-            self.palettes.clear()
             for section_name, section in cfg.items():
                 match = re.match(r'^palette\.(\w+)$', section_name)
                 if match:
