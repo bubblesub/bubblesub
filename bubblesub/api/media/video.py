@@ -3,6 +3,7 @@ import typing as T
 from pathlib import Path
 
 import ffms
+import mpv  # pylint: disable=wrong-import-order
 
 import bubblesub.api.log
 import bubblesub.api.media.media
@@ -83,18 +84,21 @@ class VideoApi:
     def __init__(
             self,
             media_api: 'bubblesub.api.media.media.MediaApi',
-            log_api: 'bubblesub.api.log.LogApi'
+            log_api: 'bubblesub.api.log.LogApi',
+            mpv_: mpv.Context
     ) -> None:
         """
         Initialize self.
 
         :param media_api: media API
         :param log_api: logging API
+        :param mpv_: mpv context
         """
         super().__init__()
 
         self._media_api = media_api
         self._media_api.loaded.connect(self._on_media_load)
+        self._mpv = mpv_
 
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
@@ -116,7 +120,7 @@ class VideoApi:
 
         :return: OpenGL context
         """
-        return self._media_api._mpv.opengl_cb_api()
+        return self._mpv.opengl_cb_api()
 
     def screenshot(self, path: Path, include_subtitles: bool) -> None:
         """
@@ -125,7 +129,7 @@ class VideoApi:
         :param path: path to save the screenshot to
         :param include_subtitles: whether to 'burn in' the subtitles
         """
-        self._media_api._mpv.command(
+        self._mpv.command(
             'screenshot-to-file',
             path,
             'subtitles' if include_subtitles else 'video'

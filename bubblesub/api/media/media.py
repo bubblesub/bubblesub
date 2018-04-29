@@ -105,7 +105,7 @@ class MediaApi:
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
 
-        self.video = VideoApi(self, log_api)
+        self.video = VideoApi(self, log_api, self._mpv)
         self.audio = AudioApi(self, log_api)
 
         self._timer = QtCore.QTimer(parent=None)
