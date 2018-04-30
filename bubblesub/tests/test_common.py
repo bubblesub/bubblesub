@@ -14,22 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""ASS file."""
-
-import typing as T
-from collections import OrderedDict
-
-from bubblesub.ass.event import EventList
-from bubblesub.ass.style import StyleList
+from .common import collect_source_files
 
 
-class AssFile:
-    """ASS file."""
-
-    def __init__(self) -> None:
-        """Initialize self."""
-        self.styles = StyleList()
-        self.styles.insert_one(name='Default')
-        self.events = EventList()
-        self.meta: T.Dict[str, str] = OrderedDict()
-        self.info: T.Dict[str, str] = OrderedDict()
+def test_collect_files() -> None:
+    files = list(collect_source_files())
+    assert any(p.name == '__main__.py' for p in files)

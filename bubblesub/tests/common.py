@@ -14,22 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""ASS file."""
-
 import typing as T
-from collections import OrderedDict
-
-from bubblesub.ass.event import EventList
-from bubblesub.ass.style import StyleList
+from pathlib import Path
 
 
-class AssFile:
-    """ASS file."""
+ROOT_DIR = Path(__file__).parent.parent
 
-    def __init__(self) -> None:
-        """Initialize self."""
-        self.styles = StyleList()
-        self.styles.insert_one(name='Default')
-        self.events = EventList()
-        self.meta: T.Dict[str, str] = OrderedDict()
-        self.info: T.Dict[str, str] = OrderedDict()
+
+def collect_source_files(root: Path = ROOT_DIR) -> T.Iterable[Path]:
+    for path in root.iterdir():
+        if path.is_dir():
+            yield from collect_source_files(path)
+        elif path.is_file() and path.suffix == '.py':
+            yield path

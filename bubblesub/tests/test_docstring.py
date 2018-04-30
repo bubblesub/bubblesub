@@ -1,11 +1,27 @@
+# bubblesub - ASS subtitle editor
+# Copyright (C) 2018 Marcin Kurczewski
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import ast
-import typing as T
 from pathlib import Path
 
 import pytest
 import docstring_parser
 
-ROOT_DIR = Path(__file__).parent.parent
+from .common import collect_source_files
+
 IGNORED_ARGUMENTS = {
     'self', 'args', 'kwargs', '_exc_type', '_exc_val', '_exc_tb'
 }
@@ -13,14 +29,6 @@ IGNORED_ARGUMENTS = {
 
 def is_sentence(text: str) -> bool:
     return text.endswith('.') and not text.endswith('etc.')
-
-
-def collect_files(root: Path) -> T.Iterable[Path]:
-    for path in root.iterdir():
-        if path.is_dir():
-            yield from collect_files(path)
-        elif path.is_file() and path.suffix == '.py':
-            yield path
 
 
 def verify_function_params(
@@ -85,13 +93,8 @@ def verify_function_docstring(node: ast.FunctionDef) -> None:
     verify_function_returns(node, docstring)
 
 
-def test_collect_files():
-    files = list(collect_files(ROOT_DIR))
-    assert any(p.name == '__main__.py' for p in files)
-
-
-@pytest.mark.parametrize('path', collect_files(ROOT_DIR))
-def test_docstrings(path) -> None:
+@pytest.mark.parametrize('path', collect_source_files())
+def test_docstrings(path: Path) -> None:
     for node in ast.walk(ast.parse(path.read_text())):
         try:
             if isinstance(node, ast.FunctionDef):
