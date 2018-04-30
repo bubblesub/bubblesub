@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Command layer."""
+
 import bubblesub.cmd.file
 import bubblesub.cmd.grid
 import bubblesub.cmd.edit

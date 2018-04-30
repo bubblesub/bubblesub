@@ -14,7 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Command API."""
+"""
+Command API.
+
+Commands use the API layer to manipulate the program state in
+interesting, complex ways.
+"""
 
 import abc
 import asyncio

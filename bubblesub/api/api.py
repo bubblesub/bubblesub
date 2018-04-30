@@ -14,7 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Core API."""
+"""
+Core API.
+
+Encapsulates most of the program state and offers simple interfaces
+to manipulate it.
+"""
 
 import argparse
 
