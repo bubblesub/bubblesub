@@ -14,14 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import atexit
-import locale
-import tempfile
 import typing as T
 from copy import copy
-from pathlib import Path
 
-import mpv  # pylint: disable=wrong-import-order
+import PIL.Image
+import PIL.ImageQt
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -30,6 +27,7 @@ import bubblesub.api
 import bubblesub.ass.file
 import bubblesub.ass.style
 import bubblesub.ass.writer
+import bubblesub.ui.ass_renderer
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
@@ -46,145 +44,90 @@ class StylePreview(QtWidgets.QGroupBox):
         self._api = api
         self._selection_model = selection_model
 
-        self._preview_box = QtWidgets.QFrame(self)
+        self._ctx = bubblesub.ui.ass_renderer.AssContext()
+        self._renderer = self._ctx.make_renderer()
+        self._renderer.set_fonts()
+
+        self._editor = QtWidgets.QPlainTextEdit()
+        self._editor.setPlainText('Test テスト\n0123456789')
+        self._editor.setFixedWidth(400)
+        self._editor.setTabChangesFocus(True)
+        bubblesub.ui.util.set_text_edit_height(self._editor, 2)
+
+        self._preview_box = QtWidgets.QLabel(self)
+        self._preview_box.setLineWidth(1)
+        self._preview_box.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self._preview_box.setFrameShadow(QtWidgets.QFrame.Sunken)
         self._preview_box.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding,
-            QtWidgets.QSizePolicy.MinimumExpanding
+            QtWidgets.QSizePolicy.Ignored,
+            QtWidgets.QSizePolicy.Ignored
         ))
-
-        self._slider = QtWidgets.QSlider(self)
-        self._slider.setOrientation(QtCore.Qt.Horizontal)
-        self._slider.setMinimum(0)
-        self._slider.setMaximum(api.media.max_pts)
-
-        self._text_box = QtWidgets.QPlainTextEdit(self)
-        self._text_box.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Maximum
-        ))
-        self._text_box.setFixedHeight(100)
-        if self._api.subs.selected_lines:
-            self._text_box.document().setPlainText(
-                self._api.subs.selected_lines[0].text
-            )
-
-        locale.setlocale(locale.LC_NUMERIC, 'C')
-        self._mpv = mpv.Context()
-        self._mpv.set_log_level('v')
-        for key, value in {
-                'config': False,
-                'quiet': False,
-                'msg-level': 'all=error',
-                'osc': False,
-                'osd-bar': False,
-                'cursor-autohide': 'no',
-                'input-cursor': False,
-                'input-vo-keyboard': False,
-                'input-default-bindings': False,
-                'ytdl': False,
-                'sub-auto': False,
-                'audio-file-auto': False,
-                'vo': 'opengl',
-                'pause': True,
-                'idle': True,
-                'sid': False,
-                'wid': str(int(self._preview_box.winId())),
-                'video-sync': 'display-vdrop',
-                'keepaspect': True,
-                'hwdec': 'auto',
-                'stop-playback-on-init-failure': False,
-                'keep-open': True,
-        }.items():
-            self._mpv.set_option(key, value)
-        self._mpv.set_wakeup_callback(self._mpv_event_handler)
-        self._mpv.initialize()
 
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self._editor)
         layout.addWidget(self._preview_box)
-        layout.addWidget(self._slider)
-        layout.addWidget(self._text_box)
 
-        self._tmp_subs_path = Path(tempfile.mkstemp(suffix='.ass')[1])
-        atexit.register(self._tmp_subs_path.unlink)
-        self._ass_file = bubblesub.ass.file.AssFile()
-        self._save_subs()
+        self._update_preview()
+        self._editor.textChanged.connect(self._update_preview)
+        api.subs.styles.item_changed.connect(self._update_preview)
+        api.subs.styles.items_inserted.connect(self._update_preview)
+        api.subs.styles.items_removed.connect(self._update_preview)
+        selection_model.selectionChanged.connect(self._update_preview)
 
-        self._mpv.command('loadfile', str(api.media.path))
-        self._mpv_ready = False
+    @property
+    def _selected_style(self) -> T.Optional[bubblesub.ass.style.Style]:
+        try:
+            idx = self._selection_model.selectedIndexes()[0].row()
+        except IndexError:
+            return None
+        else:
+            return self._api.subs.styles[idx]
 
-        self._slider.valueChanged.connect(self._on_slider_move)
-        self._text_box.textChanged.connect(self._on_text_change)
-        api.subs.styles.item_changed.connect(self._on_styles_change)
-        api.subs.styles.items_inserted.connect(self._on_styles_change)
-        api.subs.styles.items_removed.connect(self._on_styles_change)
-        selection_model.selectionChanged.connect(self._on_selection_change)
+    def _update_preview(self) -> None:
+        selected_style = self._selected_style
+        if not selected_style:
+            self._preview_box.clear()
+            return
 
-    def sizeHint(self) -> QtCore.QSize:
-        return QtCore.QSize(640, 480)
+        resolution = (self._preview_box.width(), self._preview_box.height())
 
-    def _mpv_event_handler(self) -> None:
-        while self._mpv:
-            event = self._mpv.wait_event(.01)
-            if event.id == mpv.Events.none:
-                break
-            elif event.id == mpv.Events.file_loaded:
-                self._mpv_loaded()
+        fake_style_list = bubblesub.ass.style.StyleList()
+        fake_style_list.insert(0, [copy(selected_style)])
+        fake_style_list.get(0).name = 'Default'
 
-    def _mpv_loaded(self) -> None:
-        self._mpv_ready = True
-        self._mpv.set_property('pause', True)
-        self._mpv.command('sub_add', str(self._tmp_subs_path))
-        self._slider.setValue(self._api.media.current_pts)
-
-    def _save_subs(self) -> None:
-        if self._selection_model.selectedIndexes():
-            row = self._selection_model.selectedIndexes()[0].row()
-            style = self._api.subs.styles[row]
-            style_copy = copy(style)
-            style_copy.name = 'Default'
-            self._ass_file.styles.clear()
-            self._ass_file.styles.insert(0, [style_copy])
-
-        self._ass_file.events.clear()
-        self._ass_file.events.insert_one(
+        fake_event_list = bubblesub.ass.event.EventList()
+        fake_event_list.insert_one(
             0,
             start=0,
-            end=self._api.media.max_pts,
-            style='Default',
-            text=self._text_box.toPlainText()
+            end=1000,
+            text=self._editor.toPlainText().replace('\n', '\\N'),
+            style='Default'
         )
 
-        self._ass_file.info = self._api.subs.info
-        with self._tmp_subs_path.open('w') as handle:
-            bubblesub.ass.writer.write_ass(self._ass_file, handle)
+        track = self._ctx.make_track()
+        track.populate(fake_style_list, fake_event_list, play_res=resolution)
 
-    def _refresh_subs(self) -> None:
-        if self._mpv_ready:
-            try:
-                self._save_subs()
-                self._mpv.command('sub_reload')
-            except Exception as ex:  # pylint: disable=broad-except
-                print(ex)
+        self._renderer.set_all_sizes(resolution)
+        imgs = self._renderer.render_frame(track, now=0)
 
-    def _on_selection_change(
-            self,
-            _selected: QtCore.QItemSelection,
-            _deselected: QtCore.QItemSelection
-    ) -> None:
-        self._refresh_subs()
+        image = PIL.Image.new(mode='RGBA', size=resolution)
+        for img in imgs:
+            red, green, blue, alpha = img.rgba
+            color = PIL.Image.new(
+                'RGBA', image.size, (red, green, blue, 255 - alpha)
+            )
 
-    def _on_styles_change(self) -> None:
-        self._refresh_subs()
+            mask = PIL.Image.new('L', image.size, (255,))
+            mask_data = mask.load()
+            for y in range(img.h):
+                for x in range(img.w):
+                    mask_data[img.dst_x + x, img.dst_y + y] = 255 - img[x, y]
 
-    def _on_text_change(self) -> None:
-        self._refresh_subs()
+            image = PIL.Image.composite(image, color, mask)
 
-    def _on_slider_move(self, value: int) -> None:
-        try:
-            self._mpv.command('seek', str(value / 1000), 'absolute+exact')
-        except Exception as ex:  # pylint: disable=broad-except
-            print(ex)
+        image = PIL.ImageQt.ImageQt(image)
+        image = QtGui.QImage(image)
+        self._preview_box.setPixmap(QtGui.QPixmap.fromImage(image))
 
 
 class StyleList(QtWidgets.QWidget):
@@ -418,17 +361,15 @@ class FontGroupBox(QtWidgets.QGroupBox):
         self.font_name_edit.addItems(all_fonts)
 
         layout = QtWidgets.QGridLayout(self)
-        layout.setColumnStretch(0, 1)
-        layout.setColumnStretch(1, 2)
         layout.addWidget(QtWidgets.QLabel('Name:', self), 0, 0)
-        layout.addWidget(self.font_name_edit, 0, 1)
+        layout.addWidget(self.font_name_edit, 0, 1, 1, 2)
         layout.addWidget(QtWidgets.QLabel('Size:', self), 1, 0)
-        layout.addWidget(self.font_size_edit, 1, 1)
+        layout.addWidget(self.font_size_edit, 1, 1, 1, 2)
         layout.addWidget(QtWidgets.QLabel('Style:', self), 2, 0)
         layout.addWidget(self.bold_checkbox, 2, 1)
         layout.addWidget(self.italic_checkbox, 3, 1)
-        layout.addWidget(self.underline_checkbox, 4, 1)
-        layout.addWidget(self.strike_out_checkbox, 5, 1)
+        layout.addWidget(self.underline_checkbox, 2, 2)
+        layout.addWidget(self.strike_out_checkbox, 3, 2)
 
 
 class AlignmentGroupBox(QtWidgets.QGroupBox):
@@ -734,19 +675,13 @@ class StylesManagerDialog(QtWidgets.QDialog):
 
         self._style_list = StyleList(api, model, selection_model, self)
         self._style_editor = StyleEditor(model, selection_model, self)
-        self._preview_box = (
-            StylePreview(api, selection_model, self)
-            if api.media.path else
-            None
-        )
-
         self._style_editor.setEnabled(False)
+        self._preview_box = StylePreview(api, selection_model, self)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.addWidget(self._style_list)
         layout.addWidget(self._style_editor)
-        if self._preview_box:
-            layout.addWidget(self._preview_box)
+        layout.addWidget(self._preview_box)
 
 
 class StylesManagerCommand(CoreCommand):
