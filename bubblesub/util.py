@@ -189,11 +189,13 @@ def make_ranges(
     :param reverse: whether ranges should be made in reverse order
     :return: list of tuples symbolizing start and end of each range
     """
-    for _, group in itertools.groupby(
-            enumerate(sorted(indexes, reverse=reverse)),
-            lambda item: item[1] - item[0]
-    ):
+    items = list(enumerate(sorted(indexes)))
+    if reverse:
+        items.reverse()
+    for _, group in itertools.groupby(items, lambda item: item[1] - item[0]):
         elems = list(group)
+        if reverse:
+            elems.reverse()
         start_idx = elems[0][1]
         end_idx = elems[-1][1]
         yield (start_idx, end_idx + 1 - start_idx)
