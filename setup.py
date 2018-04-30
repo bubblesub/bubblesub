@@ -66,7 +66,12 @@ class MypyCommand(Command):
         import subprocess
 
         status = subprocess.run([
-            'mypy', 'bubblesub', '--ignore-missing-imports'
+            'mypy',
+            'bubblesub',
+            '--ignore-missing-imports',
+            '--disallow-untyped-calls',
+            '--disallow-untyped-defs',
+            '--disallow-incomplete-defs',
         ])
         sys.exit(status.returncode)
 

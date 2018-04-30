@@ -46,7 +46,7 @@ class Worker(QtCore.QThread):
             self._queue.task_done()
         self._end_work()
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop processing any remaining tasks and quit the thread ASAP."""
         self._running = False
 
