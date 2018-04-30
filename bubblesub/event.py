@@ -1,11 +1,14 @@
 """Event handler and signaling."""
+
+import typing as T
+
 from PyQt5 import QtCore
 
 
 class EventHandler:
     """Event handler."""
 
-    def __init__(self, *types):
+    def __init__(self, *types: T.Any) -> None:
         """
         Initialize self.
 
@@ -16,7 +19,7 @@ class EventHandler:
 
         self._signal_wrapper = _SignalWrapper()
 
-    def emit(self, *args) -> None:
+    def emit(self, *args: T.Any) -> None:
         """
         Emit signal for the subscribers to consume.
 
@@ -24,7 +27,7 @@ class EventHandler:
         """
         self._signal.emit(*args)
 
-    def connect(self, handler) -> None:
+    def connect(self, handler: T.Callable) -> None:
         """
         Attach a new subscriber callback to the signal.
 
@@ -32,7 +35,7 @@ class EventHandler:
         """
         self._signal.connect(handler)
 
-    def disconnect(self, handler) -> None:
+    def disconnect(self, handler: T.Callable) -> None:
         """
         Detach a subscriber callback from the signal.
 
@@ -41,5 +44,5 @@ class EventHandler:
         self._signal.disconnect(handler)
 
     @property
-    def _signal(self):
+    def _signal(self) -> QtCore.pyqtSignal:
         return self._signal_wrapper.signal

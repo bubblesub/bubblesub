@@ -11,7 +11,7 @@ IGNORED_ARGUMENTS = {
 }
 
 
-def is_sentence(text):
+def is_sentence(text: str) -> bool:
     return text.endswith('.') and not text.endswith('etc.')
 
 
