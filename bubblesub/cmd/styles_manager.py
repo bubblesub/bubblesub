@@ -27,6 +27,7 @@ import bubblesub.api
 import bubblesub.ass.file
 import bubblesub.ass.style
 import bubblesub.ass.writer
+import bubblesub.data
 import bubblesub.ui.ass_renderer
 import bubblesub.ui.util
 from bubblesub.api.cmd import CoreCommand
@@ -54,6 +55,14 @@ class StylePreview(QtWidgets.QGroupBox):
         self._editor.setTabChangesFocus(True)
         bubblesub.ui.util.set_text_edit_height(self._editor, 2)
 
+        self._background_combobox = QtWidgets.QComboBox()
+        for i, path in enumerate(
+                bubblesub.data.get_all(api.opt, 'style_preview_bk')
+        ):
+            self._background_combobox.addItem(path.name, path.resolve())
+            if path.name == api.opt.general.styles.preview_background:
+                self._background_combobox.setCurrentIndex(i)
+
         self._preview_box = QtWidgets.QLabel(self)
         self._preview_box.setLineWidth(1)
         self._preview_box.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -65,14 +74,24 @@ class StylePreview(QtWidgets.QGroupBox):
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(self._editor)
+        layout.addWidget(self._background_combobox)
         layout.addWidget(self._preview_box)
 
         self._update_preview()
         self._editor.textChanged.connect(self._on_text_change)
+        self._background_combobox.currentIndexChanged.connect(
+            self._on_background_change
+        )
         api.subs.styles.item_changed.connect(self._update_preview)
         api.subs.styles.items_inserted.connect(self._update_preview)
         api.subs.styles.items_removed.connect(self._update_preview)
         selection_model.selectionChanged.connect(self._update_preview)
+
+    def _on_background_change(self) -> None:
+        self._update_preview()
+        self._api.opt.general.styles.preview_background = (
+            self._background_combobox.currentData().name
+        )
 
     def _on_text_change(self) -> None:
         self._update_preview()
@@ -117,6 +136,14 @@ class StylePreview(QtWidgets.QGroupBox):
         imgs = self._renderer.render_frame(track, now=0)
 
         image = PIL.Image.new(mode='RGBA', size=resolution)
+
+        background_path = self._background_combobox.currentData()
+        if background_path and background_path.exists():
+            background = PIL.Image.open(background_path)
+            for y in range(0, resolution[1], background.height):
+                for x in range(0, resolution[0], background.width):
+                    image.paste(background, (x, y))
+
         for img in imgs:
             red, green, blue, alpha = img.rgba
             color = PIL.Image.new(

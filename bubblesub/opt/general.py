@@ -187,6 +187,7 @@ class StylesConfig:
     def __init__(self) -> None:
         """Initialize self."""
         self.preview_test_text = 'Test テスト\n0123456789'
+        self.preview_background = 'transparency-grid.png'
 
 
 class VideoConfig:
@@ -307,6 +308,11 @@ class GeneralConfig(BaseConfig):
             'preview_test_text',
             fallback=self.styles.preview_test_text
         )
+        self.styles.preview_background = cfg.get(
+            'styles',
+            'preview_background',
+            fallback=self.styles.preview_background
+        )
 
         self.search.case_sensitive = cfg.getboolean(
             'search', 'case_sensitive', fallback=self.search.case_sensitive
@@ -376,7 +382,8 @@ class GeneralConfig(BaseConfig):
 
                 'styles':
                 {
-                    'preview_test_text': self.styles.preview_test_text
+                    'preview_test_text': self.styles.preview_test_text,
+                    'preview_background': self.styles.preview_background
                 },
 
                 'search':

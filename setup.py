@@ -108,6 +108,9 @@ setup(
         ]
     },
 
+    package_dir={'bubblesub': 'bubblesub'},
+    package_data={'bubblesub': ['data/**/*']},
+
     install_requires=[
         'ffms',
         'numpy',
