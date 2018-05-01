@@ -181,6 +181,14 @@ class SubtitlesConfig:
         self.default_duration = 2000
 
 
+class StylesConfig:
+    """Config related to subtitle styles."""
+
+    def __init__(self) -> None:
+        """Initialize self."""
+        self.preview_test_text = 'Test テスト\n0123456789'
+
+
 class VideoConfig:
     """Config related to video and playback."""
 
@@ -233,6 +241,7 @@ class GeneralConfig(BaseConfig):
         }
 
         self.subs = SubtitlesConfig()
+        self.styles = StylesConfig()
         self.audio = AudioConfig()
         self.video = VideoConfig()
         self.search = SearchConfig()
@@ -291,6 +300,12 @@ class GeneralConfig(BaseConfig):
             'subs',
             'default_duration',
             fallback=self.subs.default_duration
+        )
+
+        self.styles.preview_test_text = cfg.get(
+            'styles',
+            'preview_test_text',
+            fallback=self.styles.preview_test_text
         )
 
         self.search.case_sensitive = cfg.getboolean(
@@ -357,6 +372,11 @@ class GeneralConfig(BaseConfig):
                     'max_characters_per_second':
                         self.subs.max_characters_per_second,
                     'default_duration': self.subs.default_duration
+                },
+
+                'styles':
+                {
+                    'preview_test_text': self.styles.preview_test_text
                 },
 
                 'search':

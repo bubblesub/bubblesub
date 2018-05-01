@@ -49,7 +49,7 @@ class StylePreview(QtWidgets.QGroupBox):
         self._renderer.set_fonts()
 
         self._editor = QtWidgets.QPlainTextEdit()
-        self._editor.setPlainText('Test テスト\n0123456789')
+        self._editor.setPlainText(api.opt.general.styles.preview_test_text)
         self._editor.setFixedWidth(400)
         self._editor.setTabChangesFocus(True)
         bubblesub.ui.util.set_text_edit_height(self._editor, 2)
@@ -68,11 +68,17 @@ class StylePreview(QtWidgets.QGroupBox):
         layout.addWidget(self._preview_box)
 
         self._update_preview()
-        self._editor.textChanged.connect(self._update_preview)
+        self._editor.textChanged.connect(self._on_text_change)
         api.subs.styles.item_changed.connect(self._update_preview)
         api.subs.styles.items_inserted.connect(self._update_preview)
         api.subs.styles.items_removed.connect(self._update_preview)
         selection_model.selectionChanged.connect(self._update_preview)
+
+    def _on_text_change(self) -> None:
+        self._update_preview()
+        self._api.opt.general.styles.preview_test_text = (
+            self._editor.toPlainText()
+        )
 
     @property
     def _selected_style(self) -> T.Optional[bubblesub.ass.style.Style]:
