@@ -332,15 +332,16 @@ def time_jump_dialog(
     return None
 
 
-def set_text_edit_height(editor: QtWidgets.QPlainTextEdit, rows: int) -> None:
-    pdoc = editor.document()
-    metrics = QtGui.QFontMetrics(pdoc.defaultFont())
+def get_text_edit_row_height(
+        editor: QtWidgets.QPlainTextEdit,
+        rows: int
+) -> int:
+    metrics = QtGui.QFontMetrics(editor.document().defaultFont())
     margins = editor.contentsMargins()
-    height = (
+    return (
         metrics.lineSpacing() * rows
-        + (pdoc.documentMargin() + editor.frameWidth()) * 2
+        + (editor.document().documentMargin() + editor.frameWidth()) * 2
         + margins.top()
         + margins.bottom()
         + 1
     )
-    editor.setFixedHeight(height)

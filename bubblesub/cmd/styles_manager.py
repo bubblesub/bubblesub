@@ -53,7 +53,9 @@ class StylePreview(QtWidgets.QGroupBox):
         self._editor.setPlainText(api.opt.general.styles.preview_test_text)
         self._editor.setFixedWidth(400)
         self._editor.setTabChangesFocus(True)
-        bubblesub.ui.util.set_text_edit_height(self._editor, 2)
+        self._editor.setFixedHeight(
+            bubblesub.ui.util.get_text_edit_row_height(self._editor, 2)
+        )
 
         self._background_combobox = QtWidgets.QComboBox()
         for i, path in enumerate(

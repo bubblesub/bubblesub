@@ -61,11 +61,9 @@ class TextEdit(QtWidgets.QPlainTextEdit):
             self,
             api: bubblesub.api.Api,
             name: str,
-            parent: QtWidgets.QWidget,
-            *args: T.Any,
-            **kwargs: T.Any
+            parent: QtWidgets.QWidget
     ) -> None:
-        super().__init__(parent, *args, **kwargs)
+        super().__init__(parent)
         self._name = name
         self._api = api
         try:
@@ -76,6 +74,10 @@ class TextEdit(QtWidgets.QPlainTextEdit):
                 self.setFont(font)
         except KeyError:
             pass
+
+        self.setMinimumHeight(
+            bubblesub.ui.util.get_text_edit_row_height(self, 2)
+        )
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.modifiers() & QtCore.Qt.ControlModifier:
@@ -143,16 +145,15 @@ class CenterBar(QtWidgets.QWidget):
     ) -> None:
         super().__init__(parent)
 
-        self.text_edit = TextEdit(
-            api, 'editor', self, tabChangesFocus=True
-        )
-        self.note_edit = TextEdit(
-            api, 'notes', self, tabChangesFocus=True, placeholderText='Notes'
-        )
-
+        self.text_edit = TextEdit(api, 'editor', self)
+        self.text_edit.setTabChangesFocus(True)
         self.text_edit.highlighter = (
             SpellCheckHighlighter(api, self.text_edit.document())
         )
+
+        self.note_edit = TextEdit(api, 'notes', self)
+        self.note_edit.setTabChangesFocus(True)
+        self.note_edit.setPlaceholderText('Notes')
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(4)
