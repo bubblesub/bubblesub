@@ -533,8 +533,8 @@ class StyleEditor(QtWidgets.QWidget):
         self.font_group_box = FontGroupBox(self)
         self.colors_group_box = ColorsGroupBox(self)
         self.outline_group_box = OutlineGroupBox(self)
-        self.margins_group_box = MarginGroupBox(self)
         self.misc_group_box = MiscGroupBox(self)
+        self.margins_group_box = MarginGroupBox(self)
         self.alignment_group_box = AlignmentGroupBox(self)
 
         left_widget = QtWidgets.QWidget(self)
