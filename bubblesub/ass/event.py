@@ -20,7 +20,6 @@ import typing as T
 
 import bubblesub.ass
 import bubblesub.model
-import bubblesub.util
 
 
 class Event(bubblesub.model.ObservableObject):
@@ -181,12 +180,12 @@ class Event(bubblesub.model.ObservableObject):
         """
         Return pickle compatible object representation.
 
+        The pickled copy is detached from the parent list.
+
         :return: object representation
         """
         ret = self.__dict__.copy()
-        key = id(ret['event_list'])
-        bubblesub.util.ref_dict[key] = ret['event_list']
-        ret['event_list'] = key
+        del ret['event_list']
         return ret
 
     def __setstate__(self, state: T.Any) -> None:
@@ -195,14 +194,14 @@ class Event(bubblesub.model.ObservableObject):
 
         :param state: object representation
         """
-        state['event_list'] = bubblesub.util.ref_dict[state['event_list']]
         self.__dict__.update(state)
+        self.event_list = None
 
     def __copy__(self) -> 'Event':
         """
         Duplicate self.
 
-        Returned duplicate is detached from the parent subtitle list.
+        The copy is detached from the parent list.
 
         :return: duplicate of self
         """

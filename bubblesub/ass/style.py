@@ -21,7 +21,6 @@ from collections import namedtuple
 
 import bubblesub.ass
 import bubblesub.model
-import bubblesub.util
 
 Color = namedtuple('Color', ['red', 'green', 'blue', 'alpha'])
 
@@ -155,12 +154,12 @@ class Style(bubblesub.model.ObservableObject):
         """
         Return pickle compatible object representation.
 
+        The pickled copy is detached from the parent list.
+
         :return: object representation
         """
         ret = self.__dict__.copy()
-        key = id(ret['style_list'])
-        bubblesub.util.ref_dict[key] = ret['style_list']
-        ret['style_list'] = key
+        del ret['style_list']
         return ret
 
     def __setstate__(self, state: T.Any) -> None:
@@ -169,14 +168,14 @@ class Style(bubblesub.model.ObservableObject):
 
         :param state: object representation
         """
-        state['style_list'] = bubblesub.util.ref_dict[state['style_list']]
         self.__dict__.update(state)
+        self.style_list = None
 
     def __copy__(self) -> 'Style':
         """
         Duplicate self.
 
-        Returned duplicate is detached from the parent style list.
+        The copy is detached from the parent list.
 
         :return: duplicate of self
         """

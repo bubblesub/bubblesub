@@ -26,35 +26,6 @@ import typing as T
 MAX_REPRESENTABLE_TIME = 3599990
 
 
-class RefDict:
-    """A dictionary-like object that stores references to objects."""
-
-    def __init__(self) -> None:
-        """Initialize self."""
-        self._map: T.Dict[int, T.Any] = {}
-
-    def __getitem__(self, key: int) -> T.Any:
-        """
-        Return self[key].
-
-        :param key: object id
-        :return: associated object
-        """
-        return self._map[key]
-
-    def __setitem__(self, key: int, value: T.Any) -> None:
-        """
-        Set self[key] to value.
-
-        :param key: object id
-        :param value: object instance
-        """
-        self._map[key] = value
-
-
-ref_dict = RefDict()  # pylint: disable=invalid-name
-
-
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
     """
     Convert PTS to tuple symbolizing time.

@@ -331,9 +331,5 @@ class ObservableList(T.Generic[TItem]):
 
         :param values: new content
         """
-        old_size = len(self)
-        new_size = len(values)
-        self._items[:] = []
-        self.items_removed.emit(0, old_size)
-        self._items[:] = values
-        self.items_inserted.emit(0, new_size)
+        self.clear()
+        self.insert(0, values)
