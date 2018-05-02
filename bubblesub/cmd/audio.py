@@ -135,7 +135,7 @@ class AudioSnapSelectionEndToVideoCommand(CoreCommand):
         )
 
 
-class AudioRealignSelectionToVideoCommand(CoreCommand):
+class AudioPlaceSelectionAtVideoCommand(CoreCommand):
     """
     Realigns the selection to the current video frame.
 
@@ -143,8 +143,8 @@ class AudioRealignSelectionToVideoCommand(CoreCommand):
     and the selection size is set to the default subtitle duration.
     """
 
-    name = 'audio/snap-sel-to-video'
-    menu_name = '&Snap selection to video'
+    name = 'audio/place-sel-at-video'
+    menu_name = '&Place selection at current video frame'
 
     @property
     def is_enabled(self) -> bool:

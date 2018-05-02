@@ -538,7 +538,7 @@ class EditSnapSubsStartToVideoCommand(CoreCommand):
     """Snaps selected subtitles' start to the current video frame."""
 
     name = 'edit/snap-subs-start-to-video'
-    menu_name = '&Snap subtitles start to video'
+    menu_name = '&Snap subtitles start to current video frame'
 
     @property
     def is_enabled(self) -> bool:
@@ -560,7 +560,7 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
     """Snaps selected subtitles' end to the current video frame."""
 
     name = 'edit/snap-subs-end-to-video'
-    menu_name = '&Snap subtitles end to video'
+    menu_name = '&Snap subtitles end to current video frame'
 
     @property
     def is_enabled(self) -> bool:
@@ -578,7 +578,7 @@ class EditSnapSubsEndToVideoCommand(CoreCommand):
                 sub.end = self.api.media.current_pts
 
 
-class EditSnapSubsToVideoCommand(CoreCommand):
+class EditPlaceSubsAtVideoCommand(CoreCommand):
     """
     Realigns the selected subtitles to the current video frame.
 
@@ -586,8 +586,8 @@ class EditSnapSubsToVideoCommand(CoreCommand):
     and the subtitles duration is set to the default subtitle duration.
     """
 
-    name = 'edit/snap-subs-to-video'
-    menu_name = '&Snap subtitles to video'
+    name = 'edit/place-subs-at-video'
+    menu_name = '&Place subtitles at current video frame'
 
     @property
     def is_enabled(self) -> bool:

@@ -205,7 +205,7 @@ class MenuConfig(BaseConfig):
                         [
                             MenuCommand('audio/snap-sel-start-to-video'),
                             MenuCommand('audio/snap-sel-end-to-video'),
-                            MenuCommand('audio/snap-sel-to-video'),
+                            MenuCommand('audio/place-sel-at-video'),
                         ]
                     ),
                     SubMenu(
