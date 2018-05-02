@@ -36,7 +36,7 @@ class AudioScrollCommand(CoreCommand):
 
         :return: name shown in GUI menu
         """
-        direction = ['backward', 'forward'][self._delta > 0]
+        direction = 'forward' if self._delta > 0 else 'backward'
         return f'&Scroll waveform {direction} by {self._delta*100}%'
 
     def __init__(self, api: bubblesub.api.Api, delta: float) -> None:

@@ -235,7 +235,7 @@ class VideoStepFrameCommand(CoreCommand):
         return 'Step {} &frame{} {}'.format(
             abs(self._delta),
             's' if abs(self._delta) > 1 else '',
-            ['backward', 'forward'][self._delta > 0]
+            'forward' if self._delta > 0 else 'backward'
         )
 
     @property
