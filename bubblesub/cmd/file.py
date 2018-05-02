@@ -75,11 +75,22 @@ class FileOpenCommand(CoreCommand):
     name = 'file/open'
     menu_name = '&Open'
 
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            path: T.Optional[Path] = None
+    ) -> None:
+        super().__init__(api)
+        self._path = path
+
     async def run(self) -> None:
         if _ask_about_unsaved_changes(self.api):
-            path = await self.api.gui.exec(
-                _get_load_file_name, SUBS_FILE_FILTER
-            )
+            if self._path:
+                path = self._path
+            else:
+                path = await self.api.gui.exec(
+                    _get_load_file_name, SUBS_FILE_FILTER
+                )
             if not path:
                 self.info('opening cancelled.')
             else:
@@ -91,8 +102,19 @@ class FileLoadVideo(CoreCommand):
     name = 'file/load-video'
     menu_name = '&Load video'
 
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            path: T.Optional[Path] = None
+    ) -> None:
+        super().__init__(api)
+        self._path = path
+
     async def run(self) -> None:
-        path = await self.api.gui.exec(_get_load_file_name, VIDEO_FILE_FILTER)
+        if self._path:
+            path = self._path
+        else:
+            path = await self.api.gui.exec(_get_load_file_name, VIDEO_FILE_FILTER)
         if not path:
             self.info('loading video cancelled.')
         else:
@@ -110,9 +132,9 @@ class FileSaveCommand(CoreCommand):
             path = await self.api.gui.exec(
                 _get_save_file_name, SUBS_FILE_FILTER
             )
-            if not path:
-                self.info('saving cancelled.')
-                return
+        if not path:
+            self.info('saving cancelled.')
+            return
         self.api.subs.save_ass(path, remember_path=True)
         self.info('saved subtitles to {}'.format(path))
 
@@ -121,10 +143,21 @@ class FileSaveAsCommand(CoreCommand):
     name = 'file/save-as'
     menu_name = '&Save as'
 
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            path: T.Optional[Path] = None
+    ) -> None:
+        super().__init__(api)
+        self._path = path
+
     async def run(self) -> None:
-        path = await self.api.gui.exec(
-            _get_save_file_name, SUBS_FILE_FILTER
-        )
+        if self._path:
+            path = self._path
+        else:
+            path = await self.api.gui.exec(
+                _get_save_file_name, SUBS_FILE_FILTER
+            )
         if not path:
             self.info('saving cancelled.')
         else:
