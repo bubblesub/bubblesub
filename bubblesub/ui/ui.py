@@ -52,7 +52,7 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
     main_window.show()
 
     if args.file:
-        api.subs.load_ass(args.file)
+        api.cmd.run(api.cmd.get('file/open', [args.file]))
 
     with loop:
         loop.run_forever()
