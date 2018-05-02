@@ -34,7 +34,7 @@ from bubblesub.api.cmd import CoreCommand
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
 
 
-class StylePreview(QtWidgets.QGroupBox):
+class _StylePreview(QtWidgets.QGroupBox):
     def __init__(
             self,
             api: bubblesub.api.Api,
@@ -165,7 +165,7 @@ class StylePreview(QtWidgets.QGroupBox):
         self._preview_box.setPixmap(QtGui.QPixmap.fromImage(image))
 
 
-class StyleList(QtWidgets.QWidget):
+class _StyleList(QtWidgets.QWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
@@ -375,7 +375,7 @@ class StyleList(QtWidgets.QWidget):
         )
 
 
-class FontGroupBox(QtWidgets.QGroupBox):
+class _FontGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__('Font', parent)
         self.font_name_edit = QtWidgets.QComboBox(self)
@@ -407,7 +407,7 @@ class FontGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.strike_out_checkbox, 3, 2)
 
 
-class AlignmentGroupBox(QtWidgets.QGroupBox):
+class _AlignmentGroupBox(QtWidgets.QGroupBox):
     changed = QtCore.pyqtSignal()
 
     def __init__(self, parent: QtWidgets.QWidget) -> None:
@@ -461,7 +461,7 @@ class AlignmentGroupBox(QtWidgets.QGroupBox):
     value = QtCore.pyqtProperty(int, get_value, set_value)
 
 
-class ColorsGroupBox(QtWidgets.QGroupBox):
+class _ColorsGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__('Colors', parent)
         self.primary_color_button = bubblesub.ui.util.ColorPicker(self)
@@ -482,7 +482,7 @@ class ColorsGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.back_color_button, 3, 1)
 
 
-class OutlineGroupBox(QtWidgets.QGroupBox):
+class _OutlineGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__('Outline', parent)
         self.outline_width_edit = QtWidgets.QDoubleSpinBox(self)
@@ -501,7 +501,7 @@ class OutlineGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.shadow_width_edit, 1, 1)
 
 
-class MarginGroupBox(QtWidgets.QGroupBox):
+class _MarginGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__('Margins', parent)
         self.margin_left_edit = QtWidgets.QSpinBox(self)
@@ -525,7 +525,7 @@ class MarginGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.margin_vertical_edit, 2, 1)
 
 
-class MiscGroupBox(QtWidgets.QGroupBox):
+class _MiscGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__('Transformations', parent)
         self.scale_x_edit = QtWidgets.QDoubleSpinBox(self)
@@ -554,7 +554,7 @@ class MiscGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.spacing_edit, 3, 1)
 
 
-class StyleEditor(QtWidgets.QWidget):
+class _StyleEditor(QtWidgets.QWidget):
     def __init__(
             self,
             model: StylesModel,
@@ -565,12 +565,12 @@ class StyleEditor(QtWidgets.QWidget):
         self._model = model
         selection_model.selectionChanged.connect(self._on_selection_change)
 
-        self.font_group_box = FontGroupBox(self)
-        self.colors_group_box = ColorsGroupBox(self)
-        self.outline_group_box = OutlineGroupBox(self)
-        self.misc_group_box = MiscGroupBox(self)
-        self.margins_group_box = MarginGroupBox(self)
-        self.alignment_group_box = AlignmentGroupBox(self)
+        self.font_group_box = _FontGroupBox(self)
+        self.colors_group_box = _ColorsGroupBox(self)
+        self.outline_group_box = _OutlineGroupBox(self)
+        self.misc_group_box = _MiscGroupBox(self)
+        self.margins_group_box = _MarginGroupBox(self)
+        self.alignment_group_box = _AlignmentGroupBox(self)
 
         left_widget = QtWidgets.QWidget(self)
         left_layout = QtWidgets.QVBoxLayout(left_widget)
@@ -698,7 +698,7 @@ class StyleEditor(QtWidgets.QWidget):
         self.mapper.submit()
 
 
-class StylesManagerDialog(QtWidgets.QDialog):
+class _StylesManagerDialog(QtWidgets.QDialog):
     def __init__(
             self,
             api: bubblesub.api.Api,
@@ -708,10 +708,10 @@ class StylesManagerDialog(QtWidgets.QDialog):
         model = StylesModel(self, api.subs.styles)
         selection_model = QtCore.QItemSelectionModel(model)
 
-        self._style_list = StyleList(api, model, selection_model, self)
-        self._style_editor = StyleEditor(model, selection_model, self)
+        self._style_list = _StyleList(api, model, selection_model, self)
+        self._style_editor = _StyleEditor(model, selection_model, self)
         self._style_editor.setEnabled(False)
-        self._preview_box = StylePreview(api, selection_model, self)
+        self._preview_box = _StylePreview(api, selection_model, self)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.addWidget(self._style_list)
@@ -733,6 +733,6 @@ class StylesManagerCommand(CoreCommand):
                 main_window: QtWidgets.QMainWindow
         ) -> None:
             with self.api.undo.capture():
-                StylesManagerDialog(api, main_window).exec_()
+                _StylesManagerDialog(api, main_window).exec_()
 
         await self.api.gui.exec(run)

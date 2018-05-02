@@ -28,7 +28,7 @@ import bubblesub.util
 from bubblesub.api.cmd import CoreCommand
 
 
-class SpellCheckDialog(QtWidgets.QDialog):
+class _SpellCheckDialog(QtWidgets.QDialog):
     def __init__(
             self,
             api: bubblesub.api.Api,
@@ -188,6 +188,6 @@ class EditSpellCheckCommand(CoreCommand):
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
         ) -> None:
-            SpellCheckDialog(api, main_window, dictionary)
+            _SpellCheckDialog(api, main_window, dictionary)
 
         await self.api.gui.exec(run)

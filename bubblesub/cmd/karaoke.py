@@ -22,7 +22,7 @@ import bubblesub.ass.event
 from bubblesub.api.cmd import CoreCommand
 
 
-class Syllable:
+class _Syllable:
     def __init__(self, text: str, duration: int) -> None:
         self.text = text
         self.duration = duration
@@ -65,13 +65,13 @@ class EditKaraokeSplitCommand(CoreCommand):
             )
         self.api.gui.end_update()
 
-    def _get_syllables(self, text: str) -> T.List[Syllable]:
-        syllables = [Syllable(text='', duration=0)]
+    def _get_syllables(self, text: str) -> T.List[_Syllable]:
+        syllables = [_Syllable(text='', duration=0)]
         for group in re.split('({[^{}]*})', text):
             if group.startswith('{'):
                 match = re.search('\\\\k(\\d+)', group)
                 if match:
-                    syllables.append(Syllable(
+                    syllables.append(_Syllable(
                         text='',
                         duration=int(match.group(1))
                     ))

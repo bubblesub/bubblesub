@@ -258,7 +258,7 @@ def _count(
     return count
 
 
-class SearchModeGroupBox(QtWidgets.QGroupBox):
+class _SearchModeGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__('Search mode:', parent)
         self._radio_buttons = {
@@ -282,7 +282,7 @@ class SearchModeGroupBox(QtWidgets.QGroupBox):
         raise RuntimeError('No radio selected')
 
 
-class SearchTextEdit(QtWidgets.QComboBox):
+class _SearchTextEdit(QtWidgets.QComboBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self.setEditable(True)
@@ -297,7 +297,7 @@ class SearchTextEdit(QtWidgets.QComboBox):
         self.setCompleter(completer)
 
 
-class SearchDialog(QtWidgets.QDialog):
+class _SearchDialog(QtWidgets.QDialog):
     def __init__(
             self,
             api: bubblesub.api.Api,
@@ -309,13 +309,13 @@ class SearchDialog(QtWidgets.QDialog):
         self._main_window = main_window
         self._api = api
 
-        self.search_text_edit = SearchTextEdit(self)
+        self.search_text_edit = _SearchTextEdit(self)
         self.replacement_text_edit = QtWidgets.QLineEdit(self)
         self.case_chkbox = QtWidgets.QCheckBox('Case sensitivity', self)
         self.regex_chkbox = QtWidgets.QCheckBox(
             'Use regular expressions', self
         )
-        self.search_mode_group_box = SearchModeGroupBox(self)
+        self.search_mode_group_box = _SearchModeGroupBox(self)
 
         search_label = QtWidgets.QLabel('Text to search for:', self)
         replace_label = QtWidgets.QLabel('Text to replace with:', self)
@@ -499,7 +499,9 @@ class SearchCommand(CoreCommand):
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
         ) -> None:
-            SearchDialog(api, main_window, show_replace_controls=False).exec_()
+            _SearchDialog(
+                api, main_window, show_replace_controls=False
+            ).exec_()
 
         await self.api.gui.exec(run)
 
@@ -513,7 +515,7 @@ class SearchAndReplaceCommand(CoreCommand):
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
         ) -> None:
-            SearchDialog(api, main_window, show_replace_controls=True).exec_()
+            _SearchDialog(api, main_window, show_replace_controls=True).exec_()
 
         await self.api.gui.exec(run)
 
