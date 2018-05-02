@@ -54,6 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, api: bubblesub.api.Api) -> None:
         super().__init__()
         self._api = api
+        self._api.log.logged.connect(self._on_log)
         self._update_title()
 
         api.gui.quit_requested.connect(self.close)
@@ -109,8 +110,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
-
-        api.log.logged.connect(self._on_log)
 
         self.apply_palette(T.cast(str, api.opt.general.current_palette))
 
