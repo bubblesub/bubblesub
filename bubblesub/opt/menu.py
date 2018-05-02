@@ -225,8 +225,8 @@ class MenuConfig(BaseConfig):
                     MenuSeparator(),
                     MenuCommand('edit/shift-subs-with-gui'),
                     MenuSeparator(),
-                    MenuCommand('audio/scroll', -1),
-                    MenuCommand('audio/scroll', 1),
+                    MenuCommand('audio/scroll', -0.05),
+                    MenuCommand('audio/scroll', 0.05),
                     MenuCommand('audio/zoom', 1.1),
                     MenuCommand('audio/zoom', 0.9)
                 ]

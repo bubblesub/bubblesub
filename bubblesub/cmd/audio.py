@@ -27,14 +27,15 @@ class AudioScrollCommand(CoreCommand):
 
     @property
     def menu_name(self) -> str:
-        return '&Scroll waveform %s' % ['backward', 'forward'][self._delta > 0]
+        direction = ['backward', 'forward'][self._delta > 0]
+        return f'&Scroll waveform {direction} by {self._delta*100}%'
 
-    def __init__(self, api: bubblesub.api.Api, delta: int) -> None:
+    def __init__(self, api: bubblesub.api.Api, delta: float) -> None:
         super().__init__(api)
         self._delta = delta
 
     async def run(self) -> None:
-        distance = int(self._delta * self.api.media.audio.view_size * 0.05)
+        distance = int(self._delta * self.api.media.audio.view_size)
         self.api.media.audio.move_view(distance)
 
 
