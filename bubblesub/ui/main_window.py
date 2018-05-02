@@ -170,9 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
             MenuSeparator(),
         ]
         for plugin_name in sorted(self._api.cmd.plugin_registry):
-            plugins_menu_def.append(
-                MenuCommand(plugin_name, plugin_name)
-            )
+            plugins_menu_def.append(MenuCommand(plugin_name))
         for action in self.menuBar().children():
             if action.objectName() == 'plugins-menu':
                 self.menuBar().removeAction(action.menuAction())

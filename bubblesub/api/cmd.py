@@ -39,12 +39,11 @@ import bubblesub.model
 class BaseCommand(abc.ABC):
     """Base class for all commands."""
 
-    def __init__(self, api: 'bubblesub.api.api.Api', *_args: T.Any) -> None:
+    def __init__(self, api: 'bubblesub.api.api.Api') -> None:
         """
         Initialize self.
 
         :param api: core API
-        :param _args: optional arguments to the command
         """
         self.api = api
 
@@ -167,13 +166,14 @@ class CommandApi:
         :param args: command arguments
         :return: BaseCommand instance
         """
-        ret = self.plugin_registry.get(name)
-        if not ret:
-            ret = self.core_registry.get(name)
-        if not ret:
+        cls = self.plugin_registry.get(name)
+        if not cls:
+            cls = self.core_registry.get(name)
+        if not cls:
             raise KeyError('No command named {}'.format(name))
         try:
-            return T.cast(BaseCommand, ret(self._api, *args))
+            instance = cls(self._api, *args)
+            return T.cast(BaseCommand, instance)
         except Exception:  # pylint: disable=broad-except
             print('Error creating command {}'.format(name), file=sys.stderr)
             raise
