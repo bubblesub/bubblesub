@@ -123,6 +123,7 @@ setup(
         'pympv',
         'xdg',
         'ass_tag_parser',
+        'Pillow',
     ],
 
     extras_require={
