@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Commands related to subtitle manipulation."""
+
 import typing as T
 from copy import copy
 
@@ -25,34 +27,53 @@ from bubblesub.ass.event import Event
 
 
 class EditUndoCommand(CoreCommand):
+    """Undoes last edit operation."""
+
     name = 'edit/undo'
     menu_name = '&Undo'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.undo.has_undo
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.undo.undo()
 
 
 class EditRedoCommand(CoreCommand):
+    """Redoes last edit operation."""
+
     name = 'edit/redo'
     menu_name = '&Redo'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.undo.has_redo
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.undo.redo()
 
 
 class EditInsertAboveCommand(CoreCommand):
+    """Inserts one empty subtitle above the current subtitle selection."""
+
     name = 'edit/insert-above'
     menu_name = '&Insert subtitle (above)'
 
     async def run(self) -> None:
+        """Carry out the command."""
         if not self.api.subs.selected_indexes:
             idx = 0
             prev_sub = None
@@ -83,10 +104,13 @@ class EditInsertAboveCommand(CoreCommand):
 
 
 class EditInsertBelowCommand(CoreCommand):
+    """Inserts one empty subtitle below the current subtitle selection."""
+
     name = 'edit/insert-below'
     menu_name = '&Insert subtitle (below)'
 
     async def run(self) -> None:
+        """Carry out the command."""
         if not self.api.subs.selected_indexes:
             idx = 0
             cur_sub = None
@@ -112,16 +136,24 @@ class EditInsertBelowCommand(CoreCommand):
 
 
 class EditMoveUpCommand(CoreCommand):
+    """Moves the selected subtitles up."""
+
     name = 'edit/move-up'
     menu_name = '&Move selected subtitles up'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         if not self.api.subs.selected_indexes:
             return False
         return self.api.subs.selected_indexes[0] > 0
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             indexes: T.List[int] = []
 
@@ -142,11 +174,18 @@ class EditMoveUpCommand(CoreCommand):
 
 
 class EditMoveDownCommand(CoreCommand):
+    """Moves the selected subtitles down."""
+
     name = 'edit/move-down'
     menu_name = '&Move selected subtitles down'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         if not self.api.subs.selected_indexes:
             return False
         return (
@@ -155,6 +194,7 @@ class EditMoveDownCommand(CoreCommand):
         )
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             indexes: T.List[int] = []
 
@@ -176,14 +216,26 @@ class EditMoveDownCommand(CoreCommand):
 
 
 class EditMoveToCommand(CoreCommand):
+    """
+    Moves the selected subtitles to the specified position.
+
+    Asks for the position interactively.
+    """
+
     name = 'edit/move-to'
     menu_name = '&Move selected subtitles to...'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.selected_indexes) > 0
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run_dialog(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -221,14 +273,26 @@ class EditMoveToCommand(CoreCommand):
 
 
 class EditDuplicateCommand(CoreCommand):
+    """
+    Duplicates the selected subtitles.
+
+    The newly created subtitles are interleaved with the current selection.
+    """
+
     name = 'edit/duplicate'
     menu_name = '&Duplicate selected subtitles'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.gui.begin_update()
         with self.api.undo.capture():
             new_selection: T.List[int] = []
@@ -248,14 +312,22 @@ class EditDuplicateCommand(CoreCommand):
 
 
 class EditDeleteCommand(CoreCommand):
+    """Deletes the selected subtitles."""
+
     name = 'edit/delete'
     menu_name = '&Delete selected subtitles'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             for start_idx, count in bubblesub.util.make_ranges(
                     self.api.subs.selected_indexes,
@@ -267,14 +339,22 @@ class EditDeleteCommand(CoreCommand):
 
 
 class EditSwapTextAndNotesCommand(CoreCommand):
+    """Swaps subtitle text with their notes in the selected subtitles."""
+
     name = 'edit/swap-text-and-notes'
     menu_name = '&Swap notes with subtitle text'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
                 sub.begin_update()
@@ -283,14 +363,22 @@ class EditSwapTextAndNotesCommand(CoreCommand):
 
 
 class EditSplitSubAtVideoCommand(CoreCommand):
+    """Splits the selected subtitle into two at the current video frame."""
+
     name = 'edit/split-sub-at-video'
     menu_name = '&Split selected subtitle at video frame'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.selected_indexes) == 1
 
     async def run(self) -> None:
+        """Carry out the command."""
         idx = self.api.subs.selected_indexes[0]
         sub = self.api.subs.lines[idx]
         split_pos = self.api.media.current_pts
@@ -306,11 +394,22 @@ class EditSplitSubAtVideoCommand(CoreCommand):
 
 
 class EditJoinSubsKeepFirstCommand(CoreCommand):
+    """
+    Joins the selected subtitles together.
+
+    Keeps only the first subtitle's properties.
+    """
+
     name = 'edit/join-subs/keep-first'
     menu_name = '&Join subtitles (keep first)'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         if len(self.api.subs.selected_indexes) > 1:
             return True
         if len(self.api.subs.selected_indexes) == 1:
@@ -321,6 +420,7 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
         return False
 
     async def run(self) -> None:
+        """Carry out the command."""
         idx = self.api.subs.selected_indexes[0]
         with self.api.undo.capture():
             if len(self.api.subs.selected_indexes) == 1:
@@ -333,11 +433,23 @@ class EditJoinSubsKeepFirstCommand(CoreCommand):
 
 
 class EditJoinSubsConcatenateCommand(CoreCommand):
+    """
+    Joins the selected subtitles together.
+
+    Keeps the first subtitle's properties and concatenates the text and notes
+    of the consecutive subtitles.
+    """
+
     name = 'edit/join-subs/concatenate'
     menu_name = '&Join subtitles (concatenate)'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         if len(self.api.subs.selected_indexes) > 1:
             return True
         if len(self.api.subs.selected_indexes) == 1:
@@ -348,6 +460,7 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
         return False
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             idx = self.api.subs.selected_indexes[0]
             if len(self.api.subs.selected_indexes) == 1:
@@ -373,14 +486,26 @@ class EditJoinSubsConcatenateCommand(CoreCommand):
 
 
 class EditShiftSubsWithGuiCommand(CoreCommand):
+    """
+    Shifts the subtitle boundaries by the specified distance.
+
+    Prompts user for details with a GUI dialog.
+    """
+
     name = 'edit/shift-subs-with-gui'
     menu_name = '&Shift times...'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def _run_dialog(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow,
@@ -410,42 +535,71 @@ class EditShiftSubsWithGuiCommand(CoreCommand):
 
 
 class EditSnapSubsStartToVideoCommand(CoreCommand):
+    """Snaps selected subtitles' start to the current video frame."""
+
     name = 'edit/snap-subs-start-to-video'
     menu_name = '&Snap subtitles start to video'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
                 sub.start = self.api.media.current_pts
 
 
 class EditSnapSubsEndToVideoCommand(CoreCommand):
+    """Snaps selected subtitles' end to the current video frame."""
+
     name = 'edit/snap-subs-end-to-video'
     menu_name = '&Snap subtitles end to video'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
                 sub.end = self.api.media.current_pts
 
 
 class EditSnapSubsToVideoCommand(CoreCommand):
+    """
+    Realigns the selected subtitles to the current video frame.
+
+    The subtitles start time is placed at the current video frame
+    and the subtitles duration is set to the default subtitle duration.
+    """
+
     name = 'edit/snap-subs-to-video'
     menu_name = '&Snap subtitles to video'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
                 sub.start = self.api.media.current_pts
@@ -456,11 +610,18 @@ class EditSnapSubsToVideoCommand(CoreCommand):
 
 
 class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
+    """Snaps the selected subtitles start times to the subtitle above."""
+
     name = 'edit/snap-subs-start-to-prev-sub'
     menu_name = '&Snap subtitles start to previous subtitle'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self._prev_sub is not None
 
     @property
@@ -470,6 +631,7 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
         return self.api.subs.selected_lines[0].prev
 
     async def run(self) -> None:
+        """Carry out the command."""
         assert self._prev_sub is not None
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
@@ -477,11 +639,18 @@ class EditSnapSubsStartToPreviousSubtitleCommand(CoreCommand):
 
 
 class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
+    """Snaps the selected subtitles end times to the subtitle below."""
+
     name = 'edit/snap-subs-end-to-next-sub'
     menu_name = '&Snap subtitles end to next subtitle'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self._next_sub is not None
 
     @property
@@ -491,6 +660,7 @@ class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
         return self.api.subs.selected_lines[-1].next
 
     async def run(self) -> None:
+        """Carry out the command."""
         assert self._next_sub is not None
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
@@ -498,64 +668,121 @@ class EditSnapSubsEndToNextSubtitleCommand(CoreCommand):
 
 
 class EditShiftSubsStartCommand(CoreCommand):
+    """Shifts selected subtitles start times by the specified distance."""
+
     name = 'edit/shift-subs-start'
 
-    def __init__(self, api: bubblesub.api.Api, ms: int) -> None:
+    def __init__(self, api: bubblesub.api.Api, delta: int) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param delta: milliseconds to shift the subtitles by
+        """
         super().__init__(api)
-        self._ms = ms
+        self._delta = delta
 
     @property
     def menu_name(self) -> str:
-        return '&Shift subtitles start ({:+})'.format(self._ms)
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        return '&Shift subtitles start ({:+})'.format(self._delta)
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
-                sub.start = max(0, sub.start + self._ms)
+                sub.start = max(0, sub.start + self._delta)
 
 
 class EditShiftSubsEndCommand(CoreCommand):
+    """Shifts selected subtitles end times by the specified distance."""
+
     name = 'edit/shift-subs-end'
 
-    def __init__(self, api: bubblesub.api.Api, ms: int) -> None:
+    def __init__(self, api: bubblesub.api.Api, delta: int) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param delta: milliseconds to shift the subtitles by
+        """
         super().__init__(api)
-        self._ms = ms
+        self._delta = delta
 
     @property
     def menu_name(self) -> str:
-        return '&Shift subtitles end ({:+})'.format(self._ms)
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        return '&Shift subtitles end ({:+})'.format(self._delta)
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
-                sub.end = max(0, sub.end + self._ms)
+                sub.end = max(0, sub.end + self._delta)
 
 
 class EditShiftSubsCommand(CoreCommand):
+    """Shifts selected subtitles by the specified distance."""
+
     name = 'edit/shift-subs'
 
-    def __init__(self, api: bubblesub.api.Api, ms: int) -> None:
+    def __init__(self, api: bubblesub.api.Api, delta: int) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param delta: milliseconds to shift the subtitles by
+        """
         super().__init__(api)
-        self._ms = ms
+        self._delta = delta
 
     @property
     def menu_name(self) -> str:
-        return '&Shift subtitles end ({:+})'.format(self._ms)
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        return '&Shift subtitles end ({:+})'.format(self._delta)
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
-                sub.start = max(0, sub.start + self._ms)
-                sub.end = max(0, sub.end + self._ms)
+                sub.start = max(0, sub.start + self._delta)
+                sub.end = max(0, sub.end + self._delta)

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Commands related to files."""
+
 import typing as T
 from pathlib import Path
 
@@ -63,15 +65,30 @@ def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
 
 
 class FileNewCommand(CoreCommand):
+    """
+    Opens a new file.
+
+    Prompts user to save the current file if there are unsaved changes.
+    """
+
     name = 'file/new'
     menu_name = '&New'
 
     async def run(self) -> None:
+        """Carry out the command."""
         if _ask_about_unsaved_changes(self.api):
             self.api.subs.unload()
 
 
 class FileOpenCommand(CoreCommand):
+    """
+    Opens an existing subtitles file.
+
+    Prompts user to save the current file if there are unsaved changes.
+    Prompts user to choose where to load the file from if the path wasn't
+    specified in the command arguments.
+    """
+
     name = 'file/open'
     menu_name = '&Open'
 
@@ -80,10 +97,17 @@ class FileOpenCommand(CoreCommand):
             api: bubblesub.api.Api,
             path: T.Optional[Path] = None
     ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param path: optional path to load the subtitles from
+        """
         super().__init__(api)
         self._path = path
 
     async def run(self) -> None:
+        """Carry out the command."""
         if _ask_about_unsaved_changes(self.api):
             if self._path:
                 path = self._path
@@ -99,6 +123,13 @@ class FileOpenCommand(CoreCommand):
 
 
 class FileLoadVideo(CoreCommand):
+    """
+    Loads a video file for the audio/video playback.
+
+    Prompts user to choose where to load the file from if the path wasn't
+    specified in the command arguments.
+    """
+
     name = 'file/load-video'
     menu_name = '&Load video'
 
@@ -107,14 +138,23 @@ class FileLoadVideo(CoreCommand):
             api: bubblesub.api.Api,
             path: T.Optional[Path] = None
     ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param path: optional path to load the video from
+        """
         super().__init__(api)
         self._path = path
 
     async def run(self) -> None:
+        """Carry out the command."""
         if self._path:
             path = self._path
         else:
-            path = await self.api.gui.exec(_get_load_file_name, VIDEO_FILE_FILTER)
+            path = await self.api.gui.exec(
+                _get_load_file_name, VIDEO_FILE_FILTER
+            )
         if not path:
             self.info('loading video cancelled.')
         else:
@@ -123,10 +163,18 @@ class FileLoadVideo(CoreCommand):
 
 
 class FileSaveCommand(CoreCommand):
+    """
+    Saves the current subtitles to an ASS file.
+
+    If the currently loaded subtitles weren't ever saved, prompts user to
+    choose where to save the file to.
+    """
+
     name = 'file/save'
     menu_name = '&Save'
 
     async def run(self) -> None:
+        """Carry out the command."""
         path = self.api.subs.path
         if not path:
             path = await self.api.gui.exec(
@@ -140,6 +188,13 @@ class FileSaveCommand(CoreCommand):
 
 
 class FileSaveAsCommand(CoreCommand):
+    """
+    Saves the current subtitles to an ASS file.
+
+    Prompts user to choose where to save the file to if the path wasn't
+    specified in the command arguments.
+    """
+
     name = 'file/save-as'
     menu_name = '&Save as'
 
@@ -148,10 +203,17 @@ class FileSaveAsCommand(CoreCommand):
             api: bubblesub.api.Api,
             path: T.Optional[Path] = None
     ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param path: optional path to save the subtitles to
+        """
         super().__init__(api)
         self._path = path
 
     async def run(self) -> None:
+        """Carry out the command."""
         if self._path:
             path = self._path
         else:
@@ -166,8 +228,15 @@ class FileSaveAsCommand(CoreCommand):
 
 
 class FileQuitCommand(CoreCommand):
+    """
+    Quits the application.
+
+    Prompts user to save the current file if there are unsaved changes.
+    """
+
     name = 'file/quit'
     menu_name = '&Quit'
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.gui.quit()

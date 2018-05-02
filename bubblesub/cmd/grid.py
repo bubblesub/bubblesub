@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Commands related to the subtitle grid."""
+
 import base64
 import pickle
 import typing as T
@@ -40,14 +42,26 @@ def _unpickle(text: str) -> T.Any:
 
 
 class GridJumpToLineCommand(CoreCommand):
+    """
+    Jumps to the specified line.
+
+    Prompts user for the line number with a GUI dialog.
+    """
+
     name = 'grid/jump-to-line'
     menu_name = 'Jump to line by number...'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.lines) > 0
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run_dialog(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -69,14 +83,26 @@ class GridJumpToLineCommand(CoreCommand):
 
 
 class GridJumpToTimeCommand(CoreCommand):
+    """
+    Jumps to the specified time.
+
+    Prompts user for details with a GUI dialog.
+    """
+
     name = 'grid/jump-to-time'
     menu_name = 'Jump to line by time...'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.lines) > 0
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def _run_dialog(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow,
@@ -111,14 +137,22 @@ class GridJumpToTimeCommand(CoreCommand):
 
 
 class GridSelectPrevSubtitleCommand(CoreCommand):
+    """Selects the subtitle above the first currently selected subtitle."""
+
     name = 'grid/select-prev-sub'
     menu_name = 'Select previous subtitle'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.lines) > 0
 
     async def run(self) -> None:
+        """Carry out the command."""
         if not self.api.subs.selected_indexes:
             self.api.subs.selected_indexes = [len(self.api.subs.lines) - 1, 0]
         else:
@@ -127,14 +161,22 @@ class GridSelectPrevSubtitleCommand(CoreCommand):
 
 
 class GridSelectNextSubtitleCommand(CoreCommand):
+    """Selects the subtitle below the last currently selected subtitle."""
+
     name = 'grid/select-next-sub'
     menu_name = 'Select next subtitle'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.lines) > 0
 
     async def run(self) -> None:
+        """Carry out the command."""
         if not self.api.subs.selected_indexes:
             self.api.subs.selected_indexes = [0]
         else:
@@ -147,48 +189,75 @@ class GridSelectNextSubtitleCommand(CoreCommand):
 
 
 class GridSelectAllCommand(CoreCommand):
+    """Selects all subtitles."""
+
     name = 'grid/select-all'
     menu_name = 'Select all subtitles'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.lines) > 0
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.subs.selected_indexes = list(range(len(self.api.subs.lines)))
 
 
 class GridSelectNothingCommand(CoreCommand):
+    """Clears subtitle selection."""
+
     name = 'grid/select-nothing'
     menu_name = 'Clear subtitle selection'
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.subs.selected_indexes = []
 
 
 class GridCopyTextToClipboardCommand(CoreCommand):
+    """Copies text from the subtitle selection."""
+
     name = 'grid/copy-text-to-clipboard'
     menu_name = 'Copy selected subtitles text to clipboard'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             line.text for line in self.api.subs.selected_lines
         ))
 
 
 class GridCopyTimesToClipboardCommand(CoreCommand):
+    """Copies time boundaries from the subtitle selection."""
+
     name = 'grid/copy-times-to-clipboard'
     menu_name = 'Copy selected subtitles times to clipboard'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             '{} - {}'.format(
                 bubblesub.util.ms_to_str(line.start),
@@ -199,14 +268,22 @@ class GridCopyTimesToClipboardCommand(CoreCommand):
 
 
 class GridPasteTimesFromClipboardCommand(CoreCommand):
+    """Pastes time boundaries into the subtitle selection."""
+
     name = 'grid/paste-times-from-clipboard'
     menu_name = 'Paste times to selected subtitles from clipboard'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
             self.error('Clipboard is empty, aborting.')
@@ -239,24 +316,35 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
 
 
 class GridCopyToClipboardCommand(CoreCommand):
+    """Copies the selected subtitles."""
+
     name = 'grid/copy-to-clipboard'
     menu_name = 'Copy selected subtitles to clipboard'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         QtWidgets.QApplication.clipboard().setText(
             _pickle(self.api.subs.selected_lines)
         )
 
 
 class PasteFromClipboardBelowCommand(CoreCommand):
+    """Pastes subtitles below the selection."""
+
     name = 'grid/paste-from-clipboard-below'
     menu_name = 'Paste subtitles from clipboard (below)'
 
     async def run(self) -> None:
+        """Carry out the command."""
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
             self.error('Clipboard is empty, aborting.')
@@ -269,10 +357,13 @@ class PasteFromClipboardBelowCommand(CoreCommand):
 
 
 class PasteFromClipboardAboveCommand(CoreCommand):
+    """Pastes subtitles above the selection."""
+
     name = 'grid/paste-from-clipboard-above'
     menu_name = 'Paste subtitles from clipboard (above)'
 
     async def run(self) -> None:
+        """Carry out the command."""
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
             self.error('Clipboard is empty, aborting.')
@@ -285,15 +376,28 @@ class PasteFromClipboardAboveCommand(CoreCommand):
 
 
 class SaveAudioSampleCommand(CoreCommand):
+    """
+    Saves current subtitle selection to a WAV file.
+
+    The audio starts at the first selected subtitle start and ends at the last
+    selected subtitle end.
+    """
+
     name = 'grid/create-audio-sample'
     menu_name = 'Create audio sample...'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection \
             and self.api.media.audio.has_audio_source
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run_dialog(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow

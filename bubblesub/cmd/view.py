@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""General GUI commands."""
+
 from PyQt5 import QtWidgets
 
 import bubblesub.api
@@ -21,17 +23,31 @@ from bubblesub.api.cmd import CoreCommand
 
 
 class ViewSetPaletteCommand(CoreCommand):
+    """Changes the GUI color theme."""
+
     name = 'view/set-palette'
 
     def __init__(self, api: bubblesub.api.Api, palette_name: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param palette_name: name of the palette to change to
+        """
         super().__init__(api)
         self._palette_name = palette_name
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         return '&Switch to {} color scheme'.format(self._palette_name)
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -43,10 +59,13 @@ class ViewSetPaletteCommand(CoreCommand):
 
 
 class ViewFocusTextEditorCommand(CoreCommand):
+    """Focuses the subtitle text edit field."""
+
     name = 'view/focus-text-editor'
     menu_name = '&Focus text editor'
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -58,10 +77,13 @@ class ViewFocusTextEditorCommand(CoreCommand):
 
 
 class ViewFocusNoteEditorCommand(CoreCommand):
+    """Focuses the subtitle note edit field."""
+
     name = 'view/focus-note-editor'
     menu_name = '&Focus note editor'
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -73,10 +95,13 @@ class ViewFocusNoteEditorCommand(CoreCommand):
 
 
 class ViewFocusGridCommand(CoreCommand):
+    """Focuses the subtitles grid."""
+
     name = 'view/focus-grid'
     menu_name = '&Focus subtitles grid'
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -87,10 +112,13 @@ class ViewFocusGridCommand(CoreCommand):
 
 
 class ViewFocusSpectrogramCommand(CoreCommand):
+    """Focuses the audio waveform."""
+
     name = 'view/focus-spectrogram'
     menu_name = '&Focus spectrogram'
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Commands related to karaoke."""
+
 import re
 import typing as T
 from copy import copy
@@ -29,17 +31,25 @@ class _Syllable:
 
 
 class EditKaraokeSplitCommand(CoreCommand):
+    """Splits the selected subtitles according to the karaoke tags inside."""
+
     name = 'edit/karaoke-split'
     menu_name = '&Split subtitles as karaoke'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return (
             len(self.api.subs.selected_indexes) == 1
             and '\\k' in self.api.subs.selected_lines[0].text
         )
 
     async def run(self) -> None:
+        """Carry out the command."""
         idx = self.api.subs.selected_indexes[0]
         sub = self.api.subs.lines[idx]
         start = sub.start
@@ -88,14 +98,22 @@ class EditKaraokeSplitCommand(CoreCommand):
 
 
 class EditKaraokeJoinCommand(CoreCommand):
+    """Joins the selected subtitles adding karaoke timing tags inbetween."""
+
     name = 'edit/karaoke-join'
     menu_name = '&Join subtitles (as karaoke)'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self) -> None:
+        """Carry out the command."""
         subs = self.api.subs.selected_lines
         with self.api.undo.capture():
             for idx in reversed(self.api.subs.selected_indexes[1:]):
@@ -112,14 +130,26 @@ class EditKaraokeJoinCommand(CoreCommand):
 
 
 class EditTransformationJoinCommand(CoreCommand):
+    """
+    Joins the selected subtitles adding animation timing tags inbetween.
+
+    The syllables appear one after another.
+    """
+
     name = 'edit/transformation-join'
     menu_name = '&Join subtitles (as transformation)'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self) -> None:
+        """Carry out the command."""
         subs = self.api.subs.selected_lines
         with self.api.undo.capture():
             for idx in reversed(self.api.subs.selected_indexes[1:]):

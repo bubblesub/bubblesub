@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Spell check command."""
+
 import typing as T
 
 import enchant
@@ -163,14 +165,22 @@ class _SpellCheckDialog(QtWidgets.QDialog):
 
 
 class EditSpellCheckCommand(CoreCommand):
+    """Opens up the spell check dialog."""
+
     name = 'edit/spell-check'
     menu_name = '&Spell check...'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         spell_check_lang = self.api.opt.general.spell_check
         if not spell_check_lang:
             bubblesub.ui.util.error('Spell check was disabled in config.')

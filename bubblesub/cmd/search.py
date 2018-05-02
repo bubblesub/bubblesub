@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Commands for searching/searching and replacing."""
+
 import re
 import typing as T
 
@@ -491,10 +493,13 @@ class _SearchDialog(QtWidgets.QDialog):
 
 
 class SearchCommand(CoreCommand):
+    """Opens up the search dialog."""
+
     name = 'edit/search'
     menu_name = '&Search...'
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -507,10 +512,13 @@ class SearchCommand(CoreCommand):
 
 
 class SearchAndReplaceCommand(CoreCommand):
+    """Opens up the search and replace dialog."""
+
     name = 'edit/search-and-replace'
     menu_name = '&Search and replace...'
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -521,21 +529,40 @@ class SearchAndReplaceCommand(CoreCommand):
 
 
 class SearchRepeatCommand(CoreCommand):
+    """Repeats last search operation."""
+
     name = 'edit/search-repeat'
 
     def __init__(self, api: bubblesub.api.Api, direction: int) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param direction: 1 to search forward, -1 to search backward
+        """
         super().__init__(api)
         self._direction = direction
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         return '&Search %s' % ['previous', 'next'][self._direction > 0]
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return len(self.api.opt.general.search.history) > 0
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow

@@ -58,6 +58,7 @@ class LintCommand(Command):
                 'bubblesub/api',
                 'bubblesub/opt',
                 'bubblesub/ass',
+                'bubblesub/cmd',
             ] + glob.glob('bubblesub/*.py'),
             ['pylint', 'bubblesub']
         ]

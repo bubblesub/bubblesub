@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Styles manager command."""
+
 import typing as T
 from copy import copy
 
@@ -720,14 +722,22 @@ class _StylesManagerDialog(QtWidgets.QDialog):
 
 
 class StylesManagerCommand(CoreCommand):
+    """Opens up the style manager."""
+
     name = 'edit/manage-styles'
     menu_name = '&Manage styles...'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return True
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def run(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow

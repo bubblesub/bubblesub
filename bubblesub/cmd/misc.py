@@ -14,13 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Miscellaneous commands."""
+
 from bubblesub.api.cmd import CoreCommand
 
 
 class ResetPluginsCommand(CoreCommand):
+    """Reloads the user plugins."""
+
     name = 'misc/reload-plugins'
     menu_name = 'Reload plugins'
 
     async def run(self) -> None:
+        """Carry out the command."""
         if self.api.opt.root_dir:
             self.api.cmd.load_plugins(self.api.opt.root_dir / 'scripts')

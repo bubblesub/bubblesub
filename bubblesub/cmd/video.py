@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Commands related to video and playback."""
+
 import bisect
 import re
 import typing as T
@@ -27,19 +29,29 @@ from bubblesub.api.cmd import CoreCommand
 
 
 class VideoPlayCurrentLineCommand(CoreCommand):
+    """Plays the currently selected subtitle."""
+
     name = 'video/play-current-line'
     menu_name = '&Play current line'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded and self.api.subs.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         sub = self.api.subs.selected_lines[0]
         self.api.media.play(sub.start, sub.end)
 
 
 class VideoPlayAroundSelectionCommand(CoreCommand):
+    """Plays a region near the current waveform selection."""
+
     name = 'video/play-around-sel'
     menu_name = '&Play selection'
 
@@ -49,16 +61,30 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
             delta_start: int,
             delta_end: int
     ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param delta_start: delta relative to the selection start in
+            milliseconds
+        :param delta_end: delta relative to the selection end in milliseconds
+        """
         super().__init__(api)
         self._delta_start = delta_start
         self._delta_end = delta_end
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded \
             and self.api.media.audio.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.media.play(
             self.api.media.audio.selection_start + self._delta_start,
             self.api.media.audio.selection_end + self._delta_end
@@ -66,6 +92,8 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
 
 
 class VideoPlayAroundSelectionStartCommand(CoreCommand):
+    """Plays a region near the current waveform selection start."""
+
     name = 'video/play-around-sel-start'
 
     def __init__(
@@ -74,12 +102,25 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
             delta_start: int,
             delta_end: int
     ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param delta_start: delta relative to the selection start in
+            milliseconds
+        :param delta_end: delta relative to the selection start in milliseconds
+        """
         super().__init__(api)
         self._delta_start = delta_start
         self._delta_end = delta_end
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         if self._delta_start < 0 and self._delta_end == 0:
             return 'Play {} ms &before selection start'.format(
                 abs(self._delta_start)
@@ -94,10 +135,16 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded \
             and self.api.media.audio.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.media.play(
             self.api.media.audio.selection_start + self._delta_start,
             self.api.media.audio.selection_start + self._delta_end
@@ -105,6 +152,8 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
 
 
 class VideoPlayAroundSelectionEndCommand(CoreCommand):
+    """Plays a region near the current waveform selection end."""
+
     name = 'video/play-around-sel-end'
 
     def __init__(
@@ -113,12 +162,24 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
             delta_start: int,
             delta_end: int
     ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param delta_start: delta relative to the selection end in milliseconds
+        :param delta_end: delta relative to the selection end in milliseconds
+        """
         super().__init__(api)
         self._delta_start = delta_start
         self._delta_end = delta_end
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         if self._delta_start < 0 and self._delta_end == 0:
             return 'Play {} ms &before selection end'.format(
                 abs(self._delta_start)
@@ -133,10 +194,16 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded \
             and self.api.media.audio.has_selection
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.media.play(
             self.api.media.audio.selection_end + self._delta_start,
             self.api.media.audio.selection_end + self._delta_end
@@ -144,14 +211,27 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
 
 
 class VideoStepFrameCommand(CoreCommand):
+    """Seeks the video by the specified amount of frames."""
+
     name = 'video/step-frame'
 
     def __init__(self, api: bubblesub.api.Api, delta: int) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param delta: how many frames to step
+        """
         super().__init__(api)
         self._delta = delta
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         return 'Step {} &frame{} {}'.format(
             abs(self._delta),
             's' if abs(self._delta) > 1 else '',
@@ -160,9 +240,15 @@ class VideoStepFrameCommand(CoreCommand):
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded
 
     async def run(self) -> None:
+        """Carry out the command."""
         if self._delta == 1:
             self.api.media.step_frame_forward()
         elif self._delta == -1:
@@ -182,6 +268,8 @@ class VideoStepFrameCommand(CoreCommand):
 
 
 class VideoStepMillisecondsCommand(CoreCommand):
+    """Seeks the video by the specified milliseconds."""
+
     name = 'video/step-ms'
 
     def __init__(
@@ -190,12 +278,25 @@ class VideoStepMillisecondsCommand(CoreCommand):
             delta: int,
             precise: bool
     ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param delta: how many milliseconds to step
+        :param precise: whether to use precise seeking
+            at the expense of performance
+        """
         super().__init__(api)
         self._delta = delta
         self._precise = precise
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         return '&Seek {} by {} ms'.format(
             ['backward', 'forward'][self._delta > 0],
             abs(self._delta)
@@ -203,23 +304,41 @@ class VideoStepMillisecondsCommand(CoreCommand):
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.media.seek(
             self.api.media.current_pts + self._delta, self._precise
         )
 
 
 class VideoSeekWithGuiCommand(CoreCommand):
+    """
+    Seeks the video to the desired place.
+
+    Prompts user for details with a GUI dialog.
+    """
+
     name = 'video/seek-with-gui'
     menu_name = '&Seek to...'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def _run_dialog(
                 _api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow,
@@ -247,33 +366,55 @@ class VideoSeekWithGuiCommand(CoreCommand):
 
 
 class VideoSetPlaybackSpeed(CoreCommand):
+    """Adjusts the video playback speed."""
+
     name = 'video/set-playback-speed'
 
     def __init__(self, api: bubblesub.api.Api, expr: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param expr: expression to calculate new playback speed
+        """
         super().__init__(api)
         self._expr = expr
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         return '&Set playback speed to {}'.format(
             self._expr.format('current speed')
         )
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.media.playback_speed = bubblesub.util.eval_expr(
             self._expr.format(self.api.media.playback_speed)
         )
 
 
 class VideoTogglePauseCommand(CoreCommand):
+    """Pauses or unpauses the video playback."""
+
     name = 'video/toggle-pause'
     menu_name = '&Toggle pause'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded
 
     async def run(self) -> None:
+        """Carry out the command."""
         if self.api.media.is_paused:
             self.api.media.unpause()
         else:
@@ -281,34 +422,56 @@ class VideoTogglePauseCommand(CoreCommand):
 
 
 class VideoUnpauseCommand(CoreCommand):
+    """Unpauses the video playback."""
+
     name = 'video/unpause'
     menu_name = '&Play until end of the file'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded
 
     async def run(self) -> None:
+        """Carry out the command."""
         if not self.api.media.is_paused:
             return
         self.api.media.unpause()
 
 
 class VideoPauseCommand(CoreCommand):
+    """Pauses the video playback."""
+
     name = 'video/pause'
     menu_name = '&Pause playback'
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded
 
     async def run(self) -> None:
+        """Carry out the command."""
         if self.api.media.is_paused:
             return
         self.api.media.pause()
 
 
 class VideoScreenshotCommand(CoreCommand):
+    """
+    Makes a screenshot of the current video frame.
+
+    Prompts user for the path where to save the screenshot to.
+    """
+
     name = 'video/screenshot'
 
     def __init__(
@@ -316,20 +479,38 @@ class VideoScreenshotCommand(CoreCommand):
             api: bubblesub.api.Api,
             include_subtitles: bool
     ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param include_subtitles: whether to "burn" the subtitles into
+            the screenshot
+        """
         super().__init__(api)
         self._include_subtitles = include_subtitles
 
     @property
     def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
         return self.api.media.is_loaded
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         return '&Save screenshot ({} subtitles)'.format(
             'with' if self._include_subtitles else 'without'
         )
 
     async def run(self) -> None:
+        """Carry out the command."""
         async def _run_dialog(
                 api: bubblesub.api.Api,
                 main_window: QtWidgets.QMainWindow
@@ -357,17 +538,31 @@ class VideoScreenshotCommand(CoreCommand):
 
 
 class VideoSetVolumeCommand(CoreCommand):
+    """Adjusts the video volume."""
+
     name = 'video/set-volume'
 
     def __init__(self, api: bubblesub.api.Api, expr: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param expr: expression to calculate new volume
+        """
         super().__init__(api)
         self._expr = expr
 
     @property
     def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
         return '&Set volume to {}'.format(self._expr.format('current volume'))
 
     async def run(self) -> None:
+        """Carry out the command."""
         self.api.media.volume = bubblesub.util.eval_expr(
             self._expr.format(self.api.media.volume)
         )
