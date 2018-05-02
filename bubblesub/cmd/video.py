@@ -249,9 +249,9 @@ class VideoSeekWithGuiCommand(CoreCommand):
 class VideoSetPlaybackSpeed(CoreCommand):
     name = 'video/set-playback-speed'
 
-    def __init__(self, api: bubblesub.api.Api, expr: T.Any) -> None:
+    def __init__(self, api: bubblesub.api.Api, expr: str) -> None:
         super().__init__(api)
-        self._expr = str(expr)
+        self._expr = expr
 
     @property
     def menu_name(self) -> str:
@@ -359,9 +359,9 @@ class VideoScreenshotCommand(CoreCommand):
 class VideoSetVolumeCommand(CoreCommand):
     name = 'video/set-volume'
 
-    def __init__(self, api: bubblesub.api.Api, expr: T.Any) -> None:
+    def __init__(self, api: bubblesub.api.Api, expr: str) -> None:
         super().__init__(api)
-        self._expr = str(expr)
+        self._expr = expr
 
     @property
     def menu_name(self) -> str:
