@@ -217,17 +217,21 @@ def setup_cmd_menu(
             submenu = parent.addMenu(item.name)
             action_map.update(setup_cmd_menu(api, submenu, item.children))
         elif isinstance(item, MenuCommand):
-            action = _CommandAction(
-                api,
-                item.command_name,
-                item.command_args,
-                parent
-            )
+            try:
+                action = _CommandAction(
+                    api,
+                    item.command_name,
+                    item.command_args,
+                    parent
+                )
+            except KeyError:
+                api.log.error(f'Unknown command {item.command_name}')
+                continue
             action.setText(action.cmd.menu_name)
             parent.addAction(action)
             action_map[(item.command_name, *item.command_args)] = action
         else:
-            raise RuntimeError(f'Unexpected menu item {item}')
+            api.log.error(f'Unexpected menu item {item}')
     return action_map
 
 

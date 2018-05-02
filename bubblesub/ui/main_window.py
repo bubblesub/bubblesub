@@ -31,6 +31,7 @@ import bubblesub.ui.subs_grid
 import bubblesub.ui.util
 import bubblesub.ui.video
 from bubblesub.api.log import LogLevel
+from bubblesub.opt.hotkeys import Hotkey
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuSeparator
@@ -182,6 +183,21 @@ class MainWindow(QtWidgets.QMainWindow):
     def _setup_hotkeys(self, action_map: T.Any) -> None:
         shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut] = {}
 
+        for context, hotkeys in self._api.opt.hotkeys:
+            for hotkey in hotkeys:
+                shortcut = self._setup_hotkey(
+                    action_map, context, hotkey, shortcuts
+                )
+                if shortcut:
+                    shortcuts[(hotkey.shortcut, context)] = shortcut
+
+    def _setup_hotkey(
+            self,
+            action_map: T.Any,
+            context: str,
+            hotkey: Hotkey,
+            shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut]
+    ) -> QtWidgets.QShortcut:
         def resolve_ambiguity(keys: str) -> None:
             widget = QtWidgets.QApplication.focusWidget()
             while widget:
@@ -192,42 +208,43 @@ class MainWindow(QtWidgets.QMainWindow):
                     break
                 widget = widget.parent()
 
-        for context, hotkeys in self._api.opt.hotkeys:
-            for hotkey in hotkeys:
-                action = action_map.get(
-                    (hotkey.command_name, *hotkey.command_args)
-                )
-                if action and context == 'global':
-                    action.setText(
-                        action.text()
-                        + '\t'
-                        + QtGui.QKeySequence(hotkey.shortcut).toString()
-                    )
+        try:
+            command = self._api.cmd.get(
+                hotkey.command_name, hotkey.command_args
+            )
+        except KeyError:
+            self._api.log.error(f'Unknown command {hotkey.command_name}')
+            return None
 
-                shortcut = QtWidgets.QShortcut(
-                    QtGui.QKeySequence(hotkey.shortcut), self
-                )
-                shortcuts[(hotkey.shortcut, context)] = shortcut
+        action = action_map.get((hotkey.command_name, *hotkey.command_args))
+        if action and context == 'global':
+            action.setText(
+                action.text()
+                + '\t'
+                + QtGui.QKeySequence(hotkey.shortcut).toString()
+            )
 
-                shortcut.activated.connect(
-                    functools.partial(
-                        self._api.cmd.run,
-                        self._api.cmd.get(
-                            hotkey.command_name, hotkey.command_args
-                        )
-                    )
-                )
-                if context == 'audio':
-                    shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
-                    shortcut.setParent(self.audio)
-                elif context == 'global':
-                    shortcut.setContext(QtCore.Qt.ApplicationShortcut)
-                else:
-                    raise RuntimeError('Invalid shortcut context')
+        shortcut = QtWidgets.QShortcut(
+            QtGui.QKeySequence(hotkey.shortcut), self
+        )
 
-                shortcut.activatedAmbiguously.connect(
-                    functools.partial(resolve_ambiguity, hotkey.shortcut)
-                )
+        shortcut.activated.connect(
+            functools.partial(self._api.cmd.run, command)
+        )
+
+        if context == 'audio':
+            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+            shortcut.setParent(self.audio)
+        elif context == 'global':
+            shortcut.setContext(QtCore.Qt.ApplicationShortcut)
+        else:
+            raise RuntimeError('Invalid shortcut context')
+
+        shortcut.activatedAmbiguously.connect(
+            functools.partial(resolve_ambiguity, hotkey.shortcut)
+        )
+
+        return shortcut
 
     def _restore_splitters(self) -> None:
         opt = self._api.opt.general.splitters
