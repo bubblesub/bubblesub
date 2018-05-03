@@ -157,7 +157,7 @@ class HotkeysConfig(BaseConfig):
         obj = json.loads(text)
         for context_name in self.hotkeys:
             self.hotkeys[context_name].clear()
-            for hotkey_obj in obj[context_name]:
+            for hotkey_obj in obj.get(context_name, []):
                 self.hotkeys[context_name].append(
                     Hotkey(
                         hotkey_obj['shortcut'],
