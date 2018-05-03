@@ -32,9 +32,44 @@ class GenerateDocumentationCommand(Command):
     def finalize_options(self):
         pass
 
+    @property
+    def _docs_dir(self) -> Path:
+        return Path(__file__).parent / 'docs'
+
     def run(self):
-        with (Path(__file__).parent / 'docs' / 'cmd.md').open('w') as handle:
+        with (self._docs_dir / 'doc.md').open('w') as handle:
+            self._generate_hotkeys_documentation(handle=handle)
             self._generate_commands_documentation(handle=handle)
+
+    def _generate_hotkeys_documentation(self, handle):
+        import bubblesub.opt
+
+        opt = bubblesub.opt.Options()
+
+        table = []
+        for context, hotkeys in opt.hotkeys:
+            for hotkey in hotkeys:
+                cmd_name = hotkey.command_name
+                cmd_anchor = self._get_anchor_name('cmd', cmd_name)
+                row = [
+                    f'<kbd>{hotkey.shortcut}</kbd>',
+                    context,
+                    f'<a href="#user-content-{cmd_anchor}">`{cmd_name}`</a>',
+                    ', '.join(f'`{arg}`' for arg in hotkey.command_args)
+                ]
+                table.append(row)
+
+        print('# Default hotkeys', file=handle)
+        print('', file=handle)
+        print('Context refers to the currently focused widget.', file=handle)
+        print('', file=handle)
+        print(
+            self._make_table(
+                ['Shortcut', 'Context', 'Command name', 'Command parameters'],
+                table
+            ),
+            file=handle
+        )
 
     def _generate_commands_documentation(self, handle):
         import bubblesub.api.cmd
@@ -55,10 +90,12 @@ class GenerateDocumentationCommand(Command):
             }
 
             row = []
+            cmd_anchor = self._get_anchor_name('cmd', cmd.name)
             cmd_name = cmd.name.replace('-', '\N{NON-BREAKING HYPHEN}')
             row.append(f'`{cmd_name}`')
 
-            desc = cls_docstring.short_description
+            desc = f'<a name="{cmd_anchor}"></a>'
+            desc += cls_docstring.short_description
             if cls_docstring.long_description:
                 desc += '\n'
                 desc += cls_docstring.long_description.replace('\n', ' ')
@@ -80,18 +117,32 @@ class GenerateDocumentationCommand(Command):
             table.append(row)
 
         print('# Default commands', file=handle)
-        print(f'| Command name | Description |', file=handle)
-        print(f'|:-------------|:------------|', file=handle)
-        for row in table:
-            print(
+        print(
+            self._make_table(['Command name', 'Description'], table),
+            file=handle
+        )
+
+    @staticmethod
+    def _get_anchor_name(prefix: str, name: str) -> str:
+        return prefix + '-' + name.replace('/', '-')
+
+    @staticmethod
+    def _make_table(
+            header_names: T.List[str],
+            rows: T.List[T.List[str]]
+    ) -> str:
+        ret = '| ' + ' | '.join(header_names) + ' |\n'
+        ret += '|' + '|'.join([':--' for _ in header_names]) + '|\n'
+        for row in rows:
+            ret += (
                 '|'
                 + ' | '.join(
                     str(cell).replace('\n', '<br>')
                     for cell in row
                 )
-                + ' |',
-                file=handle
+                + ' |\n'
             )
+        return ret
 
     @staticmethod
     def _repr_type(type_: type) -> str:
