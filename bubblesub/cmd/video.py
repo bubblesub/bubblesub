@@ -25,10 +25,10 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 
 
-class VideoPlayCurrentLineCommand(CoreCommand):
+class VideoPlayCurrentLineCommand(BaseCommand):
     """Plays the currently selected subtitle."""
 
     name = 'video/play-current-line'
@@ -49,7 +49,7 @@ class VideoPlayCurrentLineCommand(CoreCommand):
         self.api.media.play(sub.start, sub.end)
 
 
-class VideoPlayAroundSelectionCommand(CoreCommand):
+class VideoPlayAroundSelectionCommand(BaseCommand):
     """Plays a region near the current spectrogram selection."""
 
     name = 'video/play-around-sel'
@@ -91,7 +91,7 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
         )
 
 
-class VideoPlayAroundSelectionStartCommand(CoreCommand):
+class VideoPlayAroundSelectionStartCommand(BaseCommand):
     """Plays a region near the current spectrogram selection start."""
 
     name = 'video/play-around-sel-start'
@@ -151,7 +151,7 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
         )
 
 
-class VideoPlayAroundSelectionEndCommand(CoreCommand):
+class VideoPlayAroundSelectionEndCommand(BaseCommand):
     """Plays a region near the current spectrogram selection end."""
 
     name = 'video/play-around-sel-end'
@@ -210,7 +210,7 @@ class VideoPlayAroundSelectionEndCommand(CoreCommand):
         )
 
 
-class VideoStepFrameCommand(CoreCommand):
+class VideoStepFrameCommand(BaseCommand):
     """Seeks the video by the specified amount of frames."""
 
     name = 'video/step-frame'
@@ -267,7 +267,7 @@ class VideoStepFrameCommand(CoreCommand):
             )
 
 
-class VideoStepMillisecondsCommand(CoreCommand):
+class VideoStepMillisecondsCommand(BaseCommand):
     """Seeks the video by the specified milliseconds."""
 
     name = 'video/step-ms'
@@ -318,7 +318,7 @@ class VideoStepMillisecondsCommand(CoreCommand):
         )
 
 
-class VideoSeekWithGuiCommand(CoreCommand):
+class VideoSeekWithGuiCommand(BaseCommand):
     """
     Seeks the video to the desired place.
 
@@ -365,7 +365,7 @@ class VideoSeekWithGuiCommand(CoreCommand):
                 self.api.media.seek(value)
 
 
-class VideoSetPlaybackSpeed(CoreCommand):
+class VideoSetPlaybackSpeed(BaseCommand):
     """Adjusts the video playback speed."""
 
     name = 'video/set-playback-speed'
@@ -398,7 +398,7 @@ class VideoSetPlaybackSpeed(CoreCommand):
         )
 
 
-class VideoTogglePauseCommand(CoreCommand):
+class VideoTogglePauseCommand(BaseCommand):
     """Pauses or unpauses the video playback."""
 
     name = 'video/toggle-pause'
@@ -421,7 +421,7 @@ class VideoTogglePauseCommand(CoreCommand):
             self.api.media.pause()
 
 
-class VideoUnpauseCommand(CoreCommand):
+class VideoUnpauseCommand(BaseCommand):
     """Unpauses the video playback."""
 
     name = 'video/unpause'
@@ -443,7 +443,7 @@ class VideoUnpauseCommand(CoreCommand):
         self.api.media.unpause()
 
 
-class VideoPauseCommand(CoreCommand):
+class VideoPauseCommand(BaseCommand):
     """Pauses the video playback."""
 
     name = 'video/pause'
@@ -465,7 +465,7 @@ class VideoPauseCommand(CoreCommand):
         self.api.media.pause()
 
 
-class VideoScreenshotCommand(CoreCommand):
+class VideoScreenshotCommand(BaseCommand):
     """
     Makes a screenshot of the current video frame.
 
@@ -537,7 +537,7 @@ class VideoScreenshotCommand(CoreCommand):
             self.api.media.video.screenshot(path, self._include_subtitles)
 
 
-class VideoSetVolumeCommand(CoreCommand):
+class VideoSetVolumeCommand(BaseCommand):
     """Adjusts the video volume."""
 
     name = 'video/set-volume'

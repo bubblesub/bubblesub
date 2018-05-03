@@ -17,10 +17,10 @@
 """Miscellaneous commands."""
 
 import bubblesub.api
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 
 
-class ResetPluginsCommand(CoreCommand):
+class ResetPluginsCommand(BaseCommand):
     """Reloads the user plugins."""
 
     name = 'misc/reload-plugins'

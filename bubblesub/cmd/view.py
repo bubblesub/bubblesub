@@ -19,10 +19,10 @@
 from PyQt5 import QtWidgets
 
 import bubblesub.api
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 
 
-class ViewSetPaletteCommand(CoreCommand):
+class ViewSetPaletteCommand(BaseCommand):
     """Changes the GUI color theme."""
 
     name = 'view/set-palette'
@@ -58,7 +58,7 @@ class ViewSetPaletteCommand(CoreCommand):
         await self.api.gui.exec(run)
 
 
-class ViewFocusTextEditorCommand(CoreCommand):
+class ViewFocusTextEditorCommand(BaseCommand):
     """Focuses the subtitle text edit field."""
 
     name = 'view/focus-text-editor'
@@ -76,7 +76,7 @@ class ViewFocusTextEditorCommand(CoreCommand):
         await self.api.gui.exec(run)
 
 
-class ViewFocusNoteEditorCommand(CoreCommand):
+class ViewFocusNoteEditorCommand(BaseCommand):
     """Focuses the subtitle note edit field."""
 
     name = 'view/focus-note-editor'
@@ -94,7 +94,7 @@ class ViewFocusNoteEditorCommand(CoreCommand):
         await self.api.gui.exec(run)
 
 
-class ViewFocusGridCommand(CoreCommand):
+class ViewFocusGridCommand(BaseCommand):
     """Focuses the subtitles grid."""
 
     name = 'view/focus-grid'
@@ -111,7 +111,7 @@ class ViewFocusGridCommand(CoreCommand):
         await self.api.gui.exec(run)
 
 
-class ViewFocusSpectrogramCommand(CoreCommand):
+class ViewFocusSpectrogramCommand(BaseCommand):
     """Focuses the audio spectrogram."""
 
     name = 'view/focus-spectrogram'

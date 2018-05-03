@@ -23,7 +23,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 
 VIDEO_FILE_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'
 SUBS_FILE_FILTER = 'Advanced Substation Alpha (*.ass)'
@@ -64,7 +64,7 @@ def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
     )
 
 
-class FileNewCommand(CoreCommand):
+class FileNewCommand(BaseCommand):
     """
     Opens a new file.
 
@@ -80,7 +80,7 @@ class FileNewCommand(CoreCommand):
             self.api.subs.unload()
 
 
-class FileOpenCommand(CoreCommand):
+class FileOpenCommand(BaseCommand):
     """
     Opens an existing subtitles file.
 
@@ -122,7 +122,7 @@ class FileOpenCommand(CoreCommand):
                 self.info('opened {}'.format(path))
 
 
-class FileLoadVideo(CoreCommand):
+class FileLoadVideo(BaseCommand):
     """
     Loads a video file for the audio/video playback.
 
@@ -162,7 +162,7 @@ class FileLoadVideo(CoreCommand):
             self.info('loading {}'.format(path))
 
 
-class FileSaveCommand(CoreCommand):
+class FileSaveCommand(BaseCommand):
     """
     Saves the current subtitles to an ASS file.
 
@@ -187,7 +187,7 @@ class FileSaveCommand(CoreCommand):
         self.info('saved subtitles to {}'.format(path))
 
 
-class FileSaveAsCommand(CoreCommand):
+class FileSaveAsCommand(BaseCommand):
     """
     Saves the current subtitles to an ASS file.
 
@@ -227,7 +227,7 @@ class FileSaveAsCommand(CoreCommand):
             self.info('saved subtitles to {}'.format(path))
 
 
-class FileQuitCommand(CoreCommand):
+class FileQuitCommand(BaseCommand):
     """
     Quits the application.
 

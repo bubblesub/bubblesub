@@ -20,11 +20,11 @@ import bisect
 import typing as T
 
 import bubblesub.api
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 
 
-class AudioScrollCommand(CoreCommand):
+class AudioScrollCommand(BaseCommand):
     """Scrolls the spectrogram horizontally by its width's percentage."""
 
     name = 'audio/scroll'
@@ -55,7 +55,7 @@ class AudioScrollCommand(CoreCommand):
         self.api.media.audio.move_view(distance)
 
 
-class AudioZoomCommand(CoreCommand):
+class AudioZoomCommand(BaseCommand):
     """Zooms the spectrogram in or out by the specified factor."""
 
     name = 'audio/zoom'
@@ -87,7 +87,7 @@ class AudioZoomCommand(CoreCommand):
         self.api.media.audio.zoom_view(new_factor, mouse_x)
 
 
-class AudioSnapSelectionStartToVideoCommand(CoreCommand):
+class AudioSnapSelectionStartToVideoCommand(BaseCommand):
     """Snaps the spectrogram selection start to nearest video frame."""
 
     name = 'audio/snap-sel-start-to-video'
@@ -111,7 +111,7 @@ class AudioSnapSelectionStartToVideoCommand(CoreCommand):
         )
 
 
-class AudioSnapSelectionEndToVideoCommand(CoreCommand):
+class AudioSnapSelectionEndToVideoCommand(BaseCommand):
     """Snaps the spectrogram selection end to nearest video frame."""
 
     name = 'audio/snap-sel-end-to-video'
@@ -135,7 +135,7 @@ class AudioSnapSelectionEndToVideoCommand(CoreCommand):
         )
 
 
-class AudioPlaceSelectionAtVideoCommand(CoreCommand):
+class AudioPlaceSelectionAtVideoCommand(BaseCommand):
     """
     Realigns the selection to the current video frame.
 
@@ -165,7 +165,7 @@ class AudioPlaceSelectionAtVideoCommand(CoreCommand):
         )
 
 
-class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
+class AudioSnapSelectionStartToPreviousSubtitleCommand(BaseCommand):
     """Snaps the spectrogram selection start to the subtitle above."""
 
     name = 'audio/snap-sel-start-to-prev-sub'
@@ -197,7 +197,7 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
         )
 
 
-class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
+class AudioSnapSelectionEndToNextSubtitleCommand(BaseCommand):
     """Snaps the spectrogram selection end to the subtitle below."""
 
     name = 'audio/snap-sel-end-to-next-sub'
@@ -229,7 +229,7 @@ class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
         )
 
 
-class AudioShiftSelectionStartCommand(CoreCommand):
+class AudioShiftSelectionStartCommand(BaseCommand):
     """Shifts the spectrogram selection start by the specified distance."""
 
     name = 'audio/shift-sel-start'
@@ -297,7 +297,7 @@ class AudioShiftSelectionStartCommand(CoreCommand):
             )
 
 
-class AudioShiftSelectionEndCommand(CoreCommand):
+class AudioShiftSelectionEndCommand(BaseCommand):
     """Shifts the spectrogram selection end by the specified distance."""
 
     name = 'audio/shift-sel-end'
@@ -364,7 +364,7 @@ class AudioShiftSelectionEndCommand(CoreCommand):
             )
 
 
-class AudioShiftSelectionCommand(CoreCommand):
+class AudioShiftSelectionCommand(BaseCommand):
     """Shifts the spectrogram selection start/end by the specified distance."""
 
     name = 'audio/shift-sel'
@@ -434,7 +434,7 @@ class AudioShiftSelectionCommand(CoreCommand):
             )
 
 
-class AudioCommitSelectionCommand(CoreCommand):
+class AudioCommitSelectionCommand(BaseCommand):
     """
     Commits the spectrogram selection into the current subtitle.
 

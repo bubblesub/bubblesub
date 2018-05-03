@@ -25,7 +25,7 @@ from pathlib import Path
 from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 
 
@@ -41,7 +41,7 @@ def _unpickle(text: str) -> T.Any:
     return pickle.loads(zlib.decompress(base64.b64decode(text.encode())))
 
 
-class GridJumpToLineCommand(CoreCommand):
+class GridJumpToLineCommand(BaseCommand):
     """
     Jumps to the specified line.
 
@@ -82,7 +82,7 @@ class GridJumpToLineCommand(CoreCommand):
             self.api.subs.selected_indexes = [value - 1]
 
 
-class GridJumpToTimeCommand(CoreCommand):
+class GridJumpToTimeCommand(BaseCommand):
     """
     Jumps to the specified time.
 
@@ -136,7 +136,7 @@ class GridJumpToTimeCommand(CoreCommand):
                 self.api.subs.selected_indexes = [best_idx]
 
 
-class GridSelectPrevSubtitleCommand(CoreCommand):
+class GridSelectPrevSubtitleCommand(BaseCommand):
     """Selects the subtitle above the first currently selected subtitle."""
 
     name = 'grid/select-prev-sub'
@@ -160,7 +160,7 @@ class GridSelectPrevSubtitleCommand(CoreCommand):
                 max(0, self.api.subs.selected_indexes[0] - 1)]
 
 
-class GridSelectNextSubtitleCommand(CoreCommand):
+class GridSelectNextSubtitleCommand(BaseCommand):
     """Selects the subtitle below the last currently selected subtitle."""
 
     name = 'grid/select-next-sub'
@@ -188,7 +188,7 @@ class GridSelectNextSubtitleCommand(CoreCommand):
             ]
 
 
-class GridSelectAllCommand(CoreCommand):
+class GridSelectAllCommand(BaseCommand):
     """Selects all subtitles."""
 
     name = 'grid/select-all'
@@ -208,7 +208,7 @@ class GridSelectAllCommand(CoreCommand):
         self.api.subs.selected_indexes = list(range(len(self.api.subs.lines)))
 
 
-class GridSelectNothingCommand(CoreCommand):
+class GridSelectNothingCommand(BaseCommand):
     """Clears subtitle selection."""
 
     name = 'grid/select-nothing'
@@ -219,7 +219,7 @@ class GridSelectNothingCommand(CoreCommand):
         self.api.subs.selected_indexes = []
 
 
-class GridCopyTextToClipboardCommand(CoreCommand):
+class GridCopyTextToClipboardCommand(BaseCommand):
     """Copies text from the subtitle selection."""
 
     name = 'grid/copy-text-to-clipboard'
@@ -241,7 +241,7 @@ class GridCopyTextToClipboardCommand(CoreCommand):
         ))
 
 
-class GridCopyTimesToClipboardCommand(CoreCommand):
+class GridCopyTimesToClipboardCommand(BaseCommand):
     """Copies time boundaries from the subtitle selection."""
 
     name = 'grid/copy-times-to-clipboard'
@@ -267,7 +267,7 @@ class GridCopyTimesToClipboardCommand(CoreCommand):
         ))
 
 
-class GridPasteTimesFromClipboardCommand(CoreCommand):
+class GridPasteTimesFromClipboardCommand(BaseCommand):
     """Pastes time boundaries into the subtitle selection."""
 
     name = 'grid/paste-times-from-clipboard'
@@ -315,7 +315,7 @@ class GridPasteTimesFromClipboardCommand(CoreCommand):
                 sub.end = times[i][1]
 
 
-class GridCopyToClipboardCommand(CoreCommand):
+class GridCopyToClipboardCommand(BaseCommand):
     """Copies the selected subtitles."""
 
     name = 'grid/copy-to-clipboard'
@@ -337,7 +337,7 @@ class GridCopyToClipboardCommand(CoreCommand):
         )
 
 
-class PasteFromClipboardBelowCommand(CoreCommand):
+class PasteFromClipboardBelowCommand(BaseCommand):
     """Pastes subtitles below the selection."""
 
     name = 'grid/paste-from-clipboard-below'
@@ -356,7 +356,7 @@ class PasteFromClipboardBelowCommand(CoreCommand):
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
-class PasteFromClipboardAboveCommand(CoreCommand):
+class PasteFromClipboardAboveCommand(BaseCommand):
     """Pastes subtitles above the selection."""
 
     name = 'grid/paste-from-clipboard-above'
@@ -375,7 +375,7 @@ class PasteFromClipboardAboveCommand(CoreCommand):
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
-class SaveAudioSampleCommand(CoreCommand):
+class SaveAudioSampleCommand(BaseCommand):
     """
     Saves current subtitle selection to a WAV file.
 

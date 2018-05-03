@@ -21,7 +21,7 @@ import typing as T
 from copy import copy
 
 import bubblesub.ass.event
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 
 
 class _Syllable:
@@ -30,7 +30,7 @@ class _Syllable:
         self.duration = duration
 
 
-class EditKaraokeSplitCommand(CoreCommand):
+class EditKaraokeSplitCommand(BaseCommand):
     """Splits the selected subtitles according to the karaoke tags inside."""
 
     name = 'edit/karaoke-split'
@@ -97,7 +97,7 @@ class EditKaraokeSplitCommand(CoreCommand):
         return syllables
 
 
-class EditKaraokeJoinCommand(CoreCommand):
+class EditKaraokeJoinCommand(BaseCommand):
     """Joins the selected subtitles adding karaoke timing tags inbetween."""
 
     name = 'edit/karaoke-join'
@@ -129,7 +129,7 @@ class EditKaraokeJoinCommand(CoreCommand):
             self.api.subs.selected_indexes = [subs[0].index]
 
 
-class EditTransformationJoinCommand(CoreCommand):
+class EditTransformationJoinCommand(BaseCommand):
     """
     Joins the selected subtitles adding animation timing tags inbetween.
 

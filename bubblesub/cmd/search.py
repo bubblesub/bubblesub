@@ -26,7 +26,7 @@ from PyQt5 import QtWidgets
 import bubblesub.api
 import bubblesub.ass.event
 import bubblesub.ui.util
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 from bubblesub.opt.general import SearchMode
 
 MAX_HISTORY_ENTRIES = 25
@@ -492,7 +492,7 @@ class _SearchDialog(QtWidgets.QDialog):
         )
 
 
-class SearchCommand(CoreCommand):
+class SearchCommand(BaseCommand):
     """Opens up the search dialog."""
 
     name = 'edit/search'
@@ -511,7 +511,7 @@ class SearchCommand(CoreCommand):
         await self.api.gui.exec(run)
 
 
-class SearchAndReplaceCommand(CoreCommand):
+class SearchAndReplaceCommand(BaseCommand):
     """Opens up the search and replace dialog."""
 
     name = 'edit/search-and-replace'
@@ -528,7 +528,7 @@ class SearchAndReplaceCommand(CoreCommand):
         await self.api.gui.exec(run)
 
 
-class SearchRepeatCommand(CoreCommand):
+class SearchRepeatCommand(BaseCommand):
     """Repeats last search operation."""
 
     name = 'edit/search-repeat'

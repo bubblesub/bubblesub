@@ -32,7 +32,7 @@ import bubblesub.ass.writer
 import bubblesub.data
 import bubblesub.ui.ass_renderer
 import bubblesub.ui.util
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
 
 
@@ -721,7 +721,7 @@ class _StylesManagerDialog(QtWidgets.QDialog):
         layout.addWidget(self._preview_box)
 
 
-class StylesManagerCommand(CoreCommand):
+class StylesManagerCommand(BaseCommand):
     """Opens up the style manager."""
 
     name = 'edit/manage-styles'

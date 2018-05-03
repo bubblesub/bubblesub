@@ -224,7 +224,7 @@ class CommandApi:
         """
         Register a core command to the registry.
 
-        :param cls: type inheriting from CoreCommand
+        :param cls: type inheriting from BaseCommand
         """
         print(f'registering {cls} as {cls.name}')
         self._command_registry[cls.name] = cls
@@ -235,10 +235,11 @@ class CommandApi:
         """
         Register a plugin command to the registry.
 
-        Unlike core commands, for which the menu is constructed via
+        User commands can be accessed from the 'plugins' menu and reloaded at
+        runtime. Unlike core commands, for which the menu is constructed via
         opt.menu.MenuConfig, the plugins build the menu by themselves.
 
-        :param cls: type inheriting from PluginCommand
+        :param cls: type inheriting from BaseCommand
         :param menu_item: menu item to show in the plugins menu
         """
         print(f'registering {cls} as {cls.name}')
@@ -257,20 +258,3 @@ class CommandApi:
         :return: plugins menu
         """
         return self._plugin_menu
-
-
-class CoreCommand(BaseCommand):  # pylint: disable=abstract-method
-    """Base class for internal bubblesub commands."""
-
-    pass
-
-
-class PluginCommand(BaseCommand):  # pylint: disable=abstract-method
-    """
-    Base class for external user commands.
-
-    User commands can be accessed from the 'plugins' menu and reloaded at
-    runtime.
-    """
-
-    pass

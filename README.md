@@ -57,7 +57,7 @@ import io
 import asyncio
 
 import speech_recognition as sr
-from bubblesub.api.cmd import PluginCommand
+from bubblesub.api.cmd import BaseCommand
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import SubMenu
 
@@ -89,7 +89,7 @@ async def _work(language, api, logger, line):
                 line.note = note
 
 
-class SpeechRecognitionCommand(PluginCommand):
+class SpeechRecognitionCommand(BaseCommand):
     name = 'plugin/speech-recognition'
 
     def __init__(self, api, language_code, language_name):

@@ -27,7 +27,7 @@ import bubblesub.api
 import bubblesub.ass.util
 import bubblesub.ui.util
 import bubblesub.util
-from bubblesub.api.cmd import CoreCommand
+from bubblesub.api.cmd import BaseCommand
 
 
 class _SpellCheckDialog(QtWidgets.QDialog):
@@ -164,7 +164,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         self._replacement_text_edit.setText(event.data())
 
 
-class EditSpellCheckCommand(CoreCommand):
+class EditSpellCheckCommand(BaseCommand):
     """Opens up the spell check dialog."""
 
     name = 'edit/spell-check'
