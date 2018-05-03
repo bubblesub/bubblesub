@@ -17,7 +17,96 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import sys
+import typing as T
+from pathlib import Path
 from setuptools import setup, find_packages, Command
+
+
+class GenerateDocumentationCommand(Command):
+    description = 'generate documentation'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        with (Path(__file__).parent / 'docs' / 'cmd.md').open('w') as handle:
+            self._generate_commands_documentation(handle=handle)
+
+    def _generate_commands_documentation(self, handle):
+        import bubblesub.api.cmd
+        import bubblesub.cmd
+        import inspect
+        import docstring_parser
+
+        table = []
+
+        for cmd in bubblesub.api.cmd.CommandApi.core_registry.values():
+            signature = inspect.signature(cmd.__init__)
+            cls_docstring = docstring_parser.parse(cmd.__doc__)
+            init_docstring = docstring_parser.parse(cmd.__init__.__doc__)
+            parameters = {
+                name: param
+                for name, param in signature.parameters.items()
+                if name not in {'self', 'api'}
+            }
+
+            row = []
+            cmd_name = cmd.name.replace('-', '\N{NON-BREAKING HYPHEN}')
+            row.append(f'`{cmd_name}`')
+
+            desc = cls_docstring.short_description
+            if cls_docstring.long_description:
+                desc += '\n'
+                desc += cls_docstring.long_description.replace('\n', ' ')
+            desc += '\n'
+
+            if parameters:
+                desc += 'Parameters:\n<ol>'
+                for num, item in enumerate(parameters.items()):
+                    name, param = item
+                    param_type = self._repr_type(param.annotation)
+                    param_desc = next(
+                        p for p in init_docstring.params if p.arg_name == name
+                    ).description.replace('\n', '')
+                    desc += f'<li>{name} ({param_type}): {param_desc}</li>'
+                desc += '</ol>'
+
+            row.append(desc.strip())
+
+            table.append(row)
+
+        print('# Default commands', file=handle)
+        print(f'| Command name | Description |', file=handle)
+        print(f'|:-------------|:------------|', file=handle)
+        for row in table:
+            print(
+                '|'
+                + ' | '.join(
+                    str(cell).replace('\n', '<br>')
+                    for cell in row
+                )
+                + ' |',
+                file=handle
+            )
+
+    @staticmethod
+    def _repr_type(type_: type) -> str:
+        for comp, name in {
+                str: 'string',
+                int: 'integer',
+                float: 'real number',
+                bool: 'boolean',
+                Path: 'path',
+        }.items():
+            if type_ == comp:
+                return name
+            if type_ == T.Optional[comp]:
+                return name + ', optional'
+        raise RuntimeError(f'Don\'t know how to describe "{type_}"')
 
 
 class PyTestCommand(Command):
@@ -139,6 +228,7 @@ setup(
     },
 
     cmdclass={
+        'doc': GenerateDocumentationCommand,
         'test': PyTestCommand,
         'lint': LintCommand,
         'mypy': MypyCommand

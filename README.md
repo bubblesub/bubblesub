@@ -25,7 +25,6 @@ Simple extensible ASS subtitle editor for Linux
 
 - Documentation
     - Hotkeys
-    - Built-in commands
     - Configuration files
     - The API
 - Meta data editor
