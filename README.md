@@ -2,19 +2,20 @@
 
 Simple extensible ASS subtitle editor for Linux
 
+![](docs/screen.png)
+
 ## Features
 
-- Python - extend it however you want with ease
+- **Python - easily extend it however you want**
 - Video preview
 - Audio preview (spectrogram)
 - Audio and video are synced at all times
-- Spectrogram range selection for eases timing
 - Spectrogram shows where subs start and end
-- Slow playback support
-- I can sub an entire episode without ever having to touch the mouse
+- Slow playback support (with audio pitch correction)
+- **I can sub an entire episode without ever having to touch the mouse**
 - Mouse users are not excluded and can click their way to all the commands
-- Robust plugin API (everything GUI is capable of can be done through the API)
-- Simple architecture (Commands ↔ API ↔ GUI)
+- **Robust plugin API** (everything GUI is capable of can be done through the API)
+- **Simple architecture** (Commands ↔ API ↔ GUI)
 - Separate control for persistent inline comments (useful for translating)
 - Newlines support in the editor
 - Seeking is aligned to video frames
@@ -23,14 +24,7 @@ Simple extensible ASS subtitle editor for Linux
 
 **Planned features**
 
-- Documentation
-    - Configuration files
-    - The API
 - Meta data editor
-
-Screenshot:
-
-![](docs/screen.png)
 
 ## Installation
 
@@ -43,18 +37,18 @@ Screenshot:
 - Enter its directory: `cd bubblesub`
 - Install `bubblesub`: `pip install --user .`
 
-## Development
+## Documentation
 
-- Install development dependencies: `pip install --user -e '.[develop]'`
-- Run tests: `python setup.py test`
-- Run linters: `python setup.py lint`
-- Run type checks: `python setup.py mypy`
+- For API documentation, please consult the docstrings in the `bubblesub.api`
+module.
+- For default hotkeys and commands descriptions, please consult [this
+file](https://github.com/rr-/bubblesub/tree/master/docs/doc.md).
 
 ## Configuration and plugins
 
-- `~/.config/bubblesub/scripts`: contains user plugins
-- `~/.config/bubblesub/`: contains user configuration in JSON and INI
-- `~/.cache/bubblesub/`: used to cache time codes and such
+- `$XDG_CONFIG_HOME/bubblesub/scripts`: contains user plugins
+- `$XDG_CONFIG_HOME/bubblesub/`: contains user configuration in JSON and INI
+- `$XDG_CACHE_HOME/bubblesub/`: used to cache time codes and such
 
 #### Example plugin: speech recognition of selected lines
 
@@ -112,24 +106,14 @@ class SpeechRecognitionCommand(PluginCommand):
 
 1. Why not aegisub?
 
-    As of August 2017:
-
-    - It's dead
-        - Forum is down for two months
-        - Bug tracker is down for much longer
-        - Pull requests are ignored
-    - It has numerous unfixed bugs
-        - It often crashes
-        - Recent menu wasn't working for at least 2 years
-        - Karaoke joining never worked to begin with
-    - Its API is very limited and I can't write the plugins I need
-    - Its code is complicated making it hard to add features to
+    Because it doesn't cover my needs, it's too convoluted and its development
+    is too slow.
 
 2. Windows builds?
 
     This is a hobby project and wrestling with Windows to have it compile a
-    single C dependency library isn't my idea of a well-spent afternoon. It
-    should be possible with MSYS2.
+    single C dependency library isn't my idea of a well-spent afternoon.
+    It should be possible with MSYS2.
 
 ## Contributing
 
@@ -139,5 +123,13 @@ class SpeechRecognitionCommand(PluginCommand):
 
 2. I want a feature.
 
-    Chances are I'm too busy to work on features I don't personally need, so
-    pull requests are strongly encouraged.
+    Chances are I'm too busy to work on features I don't personally need,
+    so pull requests are strongly encouraged.
+
+**Basic development guidelines**
+
+- Install development dependencies: `pip install --user -e '.[develop]'`
+- Run tests: `python setup.py test`
+- Run linters: `python setup.py lint`
+- Run type checks: `python setup.py mypy`
+- Generate documentation: `python setup.py doc`
