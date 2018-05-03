@@ -23,6 +23,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
 import bubblesub.api
+import bubblesub.ui.console
 import bubblesub.ui.main_window
 import bubblesub.ui.util
 
@@ -33,13 +34,12 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
     loop = quamash.QEventLoop(app)
     asyncio.set_event_loop(loop)
 
+    console = bubblesub.ui.console.Console(api, None)
+
     app.aboutToQuit.connect(api.media.stop)
 
     if not args.no_config:
         api.opt.load(api.opt.DEFAULT_PATH)
-
-    main_window = bubblesub.ui.main_window.MainWindow(api)
-    api.gui.set_main_window(main_window)
 
     if not args.no_config:
         assert api.opt.root_dir is not None
@@ -47,6 +47,9 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
             api.cmd.load_plugins(api.opt.root_dir / 'scripts')
         except Exception as ex:  # pylint: disable=broad-except
             api.log.error(str(ex))
+
+    main_window = bubblesub.ui.main_window.MainWindow(api, console)
+    api.gui.set_main_window(main_window)
 
     api.media.start()
     main_window.show()

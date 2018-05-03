@@ -83,6 +83,14 @@ class Console(QtWidgets.QTextEdit):
         self.setReadOnly(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
 
+        api.log.logged.connect(self._on_log)
+
+    def _on_log(self, level: LogLevel, text: str) -> None:
+        print(f'[{level.name.lower()[0]}] {text}')
+        if level == LogLevel.Debug:
+            return
+        self.log(level, text)
+
     def log(self, level: LogLevel, text: str) -> None:
         self.moveCursor(QtGui.QTextCursor.End)
         cursor = QtGui.QTextCursor(self.textCursor())

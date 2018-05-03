@@ -30,7 +30,6 @@ import bubblesub.ui.statusbar
 import bubblesub.ui.subs_grid
 import bubblesub.ui.util
 import bubblesub.ui.video
-from bubblesub.api.log import LogLevel
 from bubblesub.opt.hotkeys import Hotkey
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import MenuItem
@@ -52,13 +51,13 @@ def _get_splitter_state(widget: QtWidgets.QWidget) -> str:
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, api: bubblesub.api.Api) -> None:
+    def __init__(self,
+            api: bubblesub.api.Api,
+            console: 'bubblesub.ui.console.Console'
+    ) -> None:
         super().__init__()
 
-        self.console = bubblesub.ui.console.Console(api, self)
-
         self._api = api
-        self._api.log.logged.connect(self._on_log)
         self._update_title()
 
         api.gui.quit_requested.connect(self.close)
@@ -92,9 +91,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.top_bar.setStretchFactor(1, 1)
 
         self.console_splitter = QtWidgets.QSplitter(self)
+        console.setParent(self.console_splitter)
         self.console_splitter.setOrientation(QtCore.Qt.Horizontal)
         self.console_splitter.addWidget(self.subs_grid)
-        self.console_splitter.addWidget(self.console)
+        self.console_splitter.addWidget(console)
         self.console_splitter.setStretchFactor(0, 2)
         self.console_splitter.setStretchFactor(1, 1)
 
@@ -153,12 +153,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 palette.setColor(target_role, QtGui.QColor(*color_value))
         self.setPalette(palette)
         self.update()
-
-    def _on_log(self, level: LogLevel, text: str) -> None:
-        print(f'[{level.name.lower()[0]}] {text}')
-        if level == LogLevel.Debug:
-            return
-        self.console.log(level, text)
 
     def _setup_menu(self) -> T.Any:
         return bubblesub.ui.util.setup_cmd_menu(
