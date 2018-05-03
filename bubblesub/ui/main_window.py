@@ -203,7 +203,7 @@ class MainWindow(QtWidgets.QMainWindow):
             while widget:
                 try:
                     if widget == self.audio:
-                        shortcuts[(keys, 'audio')].activated.emit()
+                        shortcuts[(keys, 'spectrogram')].activated.emit()
                 except IndexError:
                     break
                 widget = widget.parent()
@@ -232,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow):
             functools.partial(self._api.cmd.run, command)
         )
 
-        if context == 'audio':
+        if context == 'spectrogram':
             shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
             shortcut.setParent(self.audio)
         elif context == 'global':

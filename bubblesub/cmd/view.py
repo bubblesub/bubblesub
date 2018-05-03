@@ -112,7 +112,7 @@ class ViewFocusGridCommand(CoreCommand):
 
 
 class ViewFocusSpectrogramCommand(CoreCommand):
-    """Focuses the audio waveform."""
+    """Focuses the audio spectrogram."""
 
     name = 'view/focus-spectrogram'
     menu_name = '&Focus spectrogram'

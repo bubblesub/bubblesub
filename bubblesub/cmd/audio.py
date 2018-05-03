@@ -25,7 +25,7 @@ from bubblesub.ass.event import Event
 
 
 class AudioScrollCommand(CoreCommand):
-    """Scrolls the waveform viewport horizontally by its width's percentage."""
+    """Scrolls the spectrogram horizontally by its width's percentage."""
 
     name = 'audio/scroll'
 
@@ -37,7 +37,7 @@ class AudioScrollCommand(CoreCommand):
         :return: name shown in GUI menu
         """
         direction = 'forward' if self._delta > 0 else 'backward'
-        return f'&Scroll waveform {direction} by {self._delta*100}%'
+        return f'&Scroll spectrogram {direction} by {self._delta*100}%'
 
     def __init__(self, api: bubblesub.api.Api, delta: float) -> None:
         """
@@ -56,7 +56,7 @@ class AudioScrollCommand(CoreCommand):
 
 
 class AudioZoomCommand(CoreCommand):
-    """Zooms the waveform viewport in or out by the specified factor."""
+    """Zooms the spectrogram in or out by the specified factor."""
 
     name = 'audio/zoom'
 
@@ -67,7 +67,7 @@ class AudioZoomCommand(CoreCommand):
 
         :return: name shown in GUI menu
         """
-        return '&Zoom waveform %s' % ['in', 'out'][self._delta > 1]
+        return '&Zoom spectrogram %s' % ['in', 'out'][self._delta > 1]
 
     def __init__(self, api: bubblesub.api.Api, delta: int) -> None:
         """
@@ -88,7 +88,7 @@ class AudioZoomCommand(CoreCommand):
 
 
 class AudioSnapSelectionStartToVideoCommand(CoreCommand):
-    """Snaps the waveform selection start to nearest video frame."""
+    """Snaps the spectrogram selection start to nearest video frame."""
 
     name = 'audio/snap-sel-start-to-video'
     menu_name = '&Snap selection start to video'
@@ -112,7 +112,7 @@ class AudioSnapSelectionStartToVideoCommand(CoreCommand):
 
 
 class AudioSnapSelectionEndToVideoCommand(CoreCommand):
-    """Snaps the waveform selection end to nearest video frame."""
+    """Snaps the spectrogram selection end to nearest video frame."""
 
     name = 'audio/snap-sel-end-to-video'
     menu_name = '&Snap selection end to video'
@@ -166,7 +166,7 @@ class AudioPlaceSelectionAtVideoCommand(CoreCommand):
 
 
 class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
-    """Snaps the waveform selection start to the subtitle above."""
+    """Snaps the spectrogram selection start to the subtitle above."""
 
     name = 'audio/snap-sel-start-to-prev-sub'
     menu_name = '&Snap selection start to previous subtitle'
@@ -198,7 +198,7 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(CoreCommand):
 
 
 class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
-    """Snaps the waveform selection end to the subtitle below."""
+    """Snaps the spectrogram selection end to the subtitle below."""
 
     name = 'audio/snap-sel-end-to-next-sub'
     menu_name = '&Snap selection start to next subtitle'
@@ -230,7 +230,7 @@ class AudioSnapSelectionEndToNextSubtitleCommand(CoreCommand):
 
 
 class AudioShiftSelectionStartCommand(CoreCommand):
-    """Shifts the waveform selection start by the specified distance."""
+    """Shifts the spectrogram selection start by the specified distance."""
 
     name = 'audio/shift-sel-start'
 
@@ -298,7 +298,7 @@ class AudioShiftSelectionStartCommand(CoreCommand):
 
 
 class AudioShiftSelectionEndCommand(CoreCommand):
-    """Shifts the waveform selection end by the specified distance."""
+    """Shifts the spectrogram selection end by the specified distance."""
 
     name = 'audio/shift-sel-end'
 
@@ -365,7 +365,7 @@ class AudioShiftSelectionEndCommand(CoreCommand):
 
 
 class AudioShiftSelectionCommand(CoreCommand):
-    """Shifts the waveform selection start/end by the specified distance."""
+    """Shifts the spectrogram selection start/end by the specified distance."""
 
     name = 'audio/shift-sel'
 
@@ -436,10 +436,10 @@ class AudioShiftSelectionCommand(CoreCommand):
 
 class AudioCommitSelectionCommand(CoreCommand):
     """
-    Commits the waveform selection into the current subtitle.
+    Commits the spectrogram selection into the current subtitle.
 
     The selected subtitle start and end times is synced to the current
-    waveform selection boundaries.
+    spectrogram selection boundaries.
     """
 
     name = 'audio/commit-sel'

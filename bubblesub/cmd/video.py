@@ -50,7 +50,7 @@ class VideoPlayCurrentLineCommand(CoreCommand):
 
 
 class VideoPlayAroundSelectionCommand(CoreCommand):
-    """Plays a region near the current waveform selection."""
+    """Plays a region near the current spectrogram selection."""
 
     name = 'video/play-around-sel'
     menu_name = '&Play selection'
@@ -92,7 +92,7 @@ class VideoPlayAroundSelectionCommand(CoreCommand):
 
 
 class VideoPlayAroundSelectionStartCommand(CoreCommand):
-    """Plays a region near the current waveform selection start."""
+    """Plays a region near the current spectrogram selection start."""
 
     name = 'video/play-around-sel-start'
 
@@ -152,7 +152,7 @@ class VideoPlayAroundSelectionStartCommand(CoreCommand):
 
 
 class VideoPlayAroundSelectionEndCommand(CoreCommand):
-    """Plays a region near the current waveform selection end."""
+    """Plays a region near the current spectrogram selection end."""
 
     name = 'video/play-around-sel-end'
 

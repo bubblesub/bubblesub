@@ -109,7 +109,7 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Alt+Down', 'edit/move-down'),
             ],
 
-            'audio':
+            'spectrogram':
             [
                 Hotkey('Shift+1', 'audio/shift-sel-start', -10),
                 Hotkey('Shift+2', 'audio/shift-sel-start', 10),
