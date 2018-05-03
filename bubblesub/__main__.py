@@ -48,16 +48,14 @@ def main() -> None:
     if args.wipe_cache:
         bubblesub.cache.wipe_cache()
 
-    print('loading API...')
     from bubblesub.api import Api
     api = Api(opt, args)
 
-    print('loading commands...')
-    from bubblesub import cmd
-    cmd.register_core_commands(api)
-
-    print('loading UI...')
     bubblesub.ui.run(api, args)
+
+    if not args.no_config:
+        assert api.opt.root_dir is not None
+        api.opt.save(api.opt.root_dir)
 
 
 if __name__ == '__main__':

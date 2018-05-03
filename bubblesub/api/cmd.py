@@ -121,7 +121,7 @@ class BaseCommand(abc.ABC):
 class CommandApi:
     """The command API."""
 
-    plugins_loaded = bubblesub.event.EventHandler()
+    commands_loaded = bubblesub.event.EventHandler()
 
     def __init__(self, api: 'bubblesub.api.Api') -> None:
         """
@@ -132,8 +132,7 @@ class CommandApi:
         super().__init__()
         self._api = api
         self._thread = None
-        self._core_registry: T.Dict[str, T.Type] = {}
-        self._plugin_registry: T.Dict[str, T.Type] = {}
+        self._command_registry: T.Dict[str, T.Type] = {}
         self._plugin_menu: T.List[MenuItem] = []
 
     def run(self, cmd: BaseCommand) -> None:
@@ -168,9 +167,7 @@ class CommandApi:
         :param args: command arguments
         :return: BaseCommand instance
         """
-        cls = self._plugin_registry.get(name)
-        if not cls:
-            cls = self._core_registry.get(name)
+        cls = self._command_registry.get(name)
         if not cls:
             raise KeyError(f'No command named "{name}"')
         try:
@@ -180,42 +177,48 @@ class CommandApi:
             self._api.log.error(f'Error creating command "{name}"')
             raise
 
-    def load_plugins(self, path: Path) -> None:
+    def load_commands(self, path: Path) -> None:
         """
-        Reload all the plugin commands from the specified path.
+        Load commands from the specified path.
 
-        Plugins must have a `register` method that receives a reference to
-        the `CommandApi`. This function should register all the plugin commands
-        within that plugin with the `CommandApi.register_plugin_command`
-        method.
+        The file must have a `register` function that receives a reference to
+        the `CommandApi`. This function should register all the commands
+        within that file with the `CommandApi.register_plugin_command` or
+        `CommandApi.register_core_command` method.
 
         :param path: dictionary containing plugin definitions
         """
-        self._plugin_menu.clear()
-        self._plugin_registry.clear()
         specs = []
         if path.exists():
             for subpath in path.glob('*.py'):
+                if subpath.stem == '__init__':
+                    continue
                 subpath_rel = subpath.relative_to(path)
                 spec = importlib.util.spec_from_file_location(
                     '.'.join(
-                        ['bubblesub', 'plugin']
+                        ['bubblesub', 'cmd']
                         + list(subpath_rel.parent.parts)
                         + [subpath_rel.stem]
                     ), str(subpath)
                 )
                 if spec is not None:
                     specs.append(spec)
-        try:
-            for spec in specs:
+
+        for spec in specs:
+            try:
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)
-                try:
-                    mod.register(self)
-                except Exception as ex:  # pylint: disable=broad-except
-                    self._api.log.error(str(ex))
-        finally:
-            self.plugins_loaded.emit()
+                mod.register(self)
+            except Exception as ex:  # pylint: disable=broad-except
+                self._api.log.error(str(ex))
+        self.commands_loaded.emit()
+
+    def unload_plugin_commands(self) -> None:
+        """Remove plugin commands from the registry and clear plugins menu."""
+        self._plugin_menu[:] = []
+        for key in list(self._command_registry.keys()):
+            if key.startswith('plugin/'):
+                del self._command_registry[key]
 
     def register_core_command(self, cls: T.Type[BaseCommand]) -> None:
         """
@@ -224,7 +227,7 @@ class CommandApi:
         :param cls: type inheriting from CoreCommand
         """
         print(f'registering {cls} as {cls.name}')
-        self._core_registry[cls.name] = cls
+        self._command_registry[cls.name] = cls
 
     def register_plugin_command(
             self, cls: T.Type[BaseCommand], menu_item: MenuItem
@@ -244,7 +247,7 @@ class CommandApi:
                 'Plugin commands must start with "plugin/" prefix'
             )
 
-        self._plugin_registry[cls.name] = cls
+        self._command_registry[cls.name] = cls
         self._plugin_menu.append(menu_item)
 
     def get_plugin_menu_items(self) -> T.List[MenuItem]:

@@ -411,3 +411,27 @@ class SaveAudioSampleCommand(CoreCommand):
             start_pts = self.api.subs.selected_lines[0].start
             end_pts = self.api.subs.selected_lines[-1].end
             self.api.media.audio.save_wav(path, start_pts, end_pts)
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    for cls in [
+            GridJumpToLineCommand,
+            GridJumpToTimeCommand,
+            GridSelectPrevSubtitleCommand,
+            GridSelectNextSubtitleCommand,
+            GridSelectAllCommand,
+            GridSelectNothingCommand,
+            GridCopyTextToClipboardCommand,
+            GridCopyTimesToClipboardCommand,
+            GridPasteTimesFromClipboardCommand,
+            GridCopyToClipboardCommand,
+            PasteFromClipboardBelowCommand,
+            PasteFromClipboardAboveCommand,
+            SaveAudioSampleCommand,
+    ]:
+        cmd_api.register_core_command(cls)

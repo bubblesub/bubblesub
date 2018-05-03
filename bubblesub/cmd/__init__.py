@@ -14,27 +14,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Command layer."""
-
-import bubblesub.api
-import bubblesub.cmd.file
-import bubblesub.cmd.grid
-import bubblesub.cmd.edit
-import bubblesub.cmd.search
-import bubblesub.cmd.audio
-import bubblesub.cmd.video
-import bubblesub.cmd.karaoke
-import bubblesub.cmd.view
-import bubblesub.cmd.spellcheck
-import bubblesub.cmd.styles_manager
-import bubblesub.cmd.misc
-
-
-def register_core_commands(api: bubblesub.api.Api) -> None:
-    """
-    Register core commands in the API.
-
-    :param api: API instance to register the commands in
-    """
-    for cls in bubblesub.api.cmd.CoreCommand.__subclasses__():
-        api.cmd.register_core_command(cls)
+"""Built-in commands."""

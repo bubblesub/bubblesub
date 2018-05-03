@@ -16,6 +16,7 @@
 
 """Miscellaneous commands."""
 
+import bubblesub.api
 from bubblesub.api.cmd import CoreCommand
 
 
@@ -28,4 +29,14 @@ class ResetPluginsCommand(CoreCommand):
     async def run(self) -> None:
         """Carry out the command."""
         if self.api.opt.root_dir:
-            self.api.cmd.load_plugins(self.api.opt.root_dir / 'scripts')
+            self.api.cmd.unload_plugin_commands()
+            self.api.cmd.load_commands(self.api.opt.root_dir / 'scripts')
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    cmd_api.register_core_command(ResetPluginsCommand)

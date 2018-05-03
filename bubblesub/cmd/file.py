@@ -240,3 +240,20 @@ class FileQuitCommand(CoreCommand):
     async def run(self) -> None:
         """Carry out the command."""
         self.api.gui.quit()
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    for cls in [
+            FileNewCommand,
+            FileOpenCommand,
+            FileLoadVideo,
+            FileSaveCommand,
+            FileSaveAsCommand,
+            FileQuitCommand,
+    ]:
+        cmd_api.register_core_command(cls)

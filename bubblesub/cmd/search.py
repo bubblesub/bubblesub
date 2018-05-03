@@ -582,3 +582,17 @@ class SearchRepeatCommand(CoreCommand):
                 bubblesub.ui.util.notice('No occurences found.')
 
         await self.api.gui.exec(run)
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    for cls in [
+            SearchCommand,
+            SearchAndReplaceCommand,
+            SearchRepeatCommand,
+    ]:
+        cmd_api.register_core_command(cls)

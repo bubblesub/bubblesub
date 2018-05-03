@@ -51,7 +51,8 @@ def _get_splitter_state(widget: QtWidgets.QWidget) -> str:
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self,
+    def __init__(
+            self,
             api: bubblesub.api.Api,
             console: 'bubblesub.ui.console.Console'
     ) -> None:
@@ -68,7 +69,7 @@ class MainWindow(QtWidgets.QMainWindow):
             lambda: self.setUpdatesEnabled(True)
         )
         api.subs.loaded.connect(self._update_title)
-        api.cmd.plugins_loaded.connect(self._setup_plugins_menu)
+        api.cmd.commands_loaded.connect(self._setup_plugins_menu)
 
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)

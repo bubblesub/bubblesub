@@ -463,3 +463,25 @@ class AudioCommitSelectionCommand(CoreCommand):
                 sub.start = self.api.media.audio.selection_start
                 sub.end = self.api.media.audio.selection_end
                 sub.end_update()
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    for cls in [
+            AudioScrollCommand,
+            AudioZoomCommand,
+            AudioSnapSelectionStartToVideoCommand,
+            AudioSnapSelectionEndToVideoCommand,
+            AudioPlaceSelectionAtVideoCommand,
+            AudioSnapSelectionStartToPreviousSubtitleCommand,
+            AudioSnapSelectionEndToNextSubtitleCommand,
+            AudioShiftSelectionStartCommand,
+            AudioShiftSelectionEndCommand,
+            AudioShiftSelectionCommand,
+            AudioCommitSelectionCommand,
+    ]:
+        cmd_api.register_core_command(cls)

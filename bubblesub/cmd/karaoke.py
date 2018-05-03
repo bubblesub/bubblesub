@@ -172,3 +172,17 @@ class EditTransformationJoinCommand(CoreCommand):
 
             assert subs[0].index is not None
             self.api.subs.selected_indexes = [subs[0].index]
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    for cls in [
+            EditKaraokeSplitCommand,
+            EditKaraokeJoinCommand,
+            EditTransformationJoinCommand,
+    ]:
+        cmd_api.register_core_command(cls)

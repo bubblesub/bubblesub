@@ -746,3 +746,12 @@ class StylesManagerCommand(CoreCommand):
                 _StylesManagerDialog(api, main_window).exec_()
 
         await self.api.gui.exec(run)
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    cmd_api.register_core_command(StylesManagerCommand)

@@ -566,3 +566,27 @@ class VideoSetVolumeCommand(CoreCommand):
         self.api.media.volume = bubblesub.util.eval_expr(
             self._expr.format(self.api.media.volume)
         )
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    for cls in [
+            VideoPlayCurrentLineCommand,
+            VideoPlayAroundSelectionCommand,
+            VideoPlayAroundSelectionStartCommand,
+            VideoPlayAroundSelectionEndCommand,
+            VideoStepFrameCommand,
+            VideoStepMillisecondsCommand,
+            VideoSeekWithGuiCommand,
+            VideoSetPlaybackSpeed,
+            VideoTogglePauseCommand,
+            VideoUnpauseCommand,
+            VideoPauseCommand,
+            VideoScreenshotCommand,
+            VideoSetVolumeCommand,
+    ]:
+        cmd_api.register_core_command(cls)

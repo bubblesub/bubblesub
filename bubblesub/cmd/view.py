@@ -126,3 +126,19 @@ class ViewFocusSpectrogramCommand(CoreCommand):
             main_window.audio.setFocus()
 
         await self.api.gui.exec(run)
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    for cls in [
+            ViewSetPaletteCommand,
+            ViewFocusTextEditorCommand,
+            ViewFocusNoteEditorCommand,
+            ViewFocusGridCommand,
+            ViewFocusSpectrogramCommand,
+    ]:
+        cmd_api.register_core_command(cls)

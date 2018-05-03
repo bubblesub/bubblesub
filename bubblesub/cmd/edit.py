@@ -786,3 +786,36 @@ class EditShiftSubsCommand(CoreCommand):
             for sub in self.api.subs.selected_lines:
                 sub.start = max(0, sub.start + self._delta)
                 sub.end = max(0, sub.end + self._delta)
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    """
+    Register commands in this file into the command API.
+
+    :param cmd_api: command API
+    """
+    for cls in [
+            EditUndoCommand,
+            EditRedoCommand,
+            EditInsertAboveCommand,
+            EditInsertBelowCommand,
+            EditMoveUpCommand,
+            EditMoveDownCommand,
+            EditMoveToCommand,
+            EditDuplicateCommand,
+            EditDeleteCommand,
+            EditSwapTextAndNotesCommand,
+            EditSplitSubAtVideoCommand,
+            EditJoinSubsKeepFirstCommand,
+            EditJoinSubsConcatenateCommand,
+            EditShiftSubsWithGuiCommand,
+            EditSnapSubsStartToVideoCommand,
+            EditSnapSubsEndToVideoCommand,
+            EditPlaceSubsAtVideoCommand,
+            EditSnapSubsStartToPreviousSubtitleCommand,
+            EditSnapSubsEndToNextSubtitleCommand,
+            EditShiftSubsStartCommand,
+            EditShiftSubsEndCommand,
+            EditShiftSubsCommand,
+    ]:
+        cmd_api.register_core_command(cls)
