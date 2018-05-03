@@ -24,8 +24,6 @@ interesting, complex ways.
 import abc
 import asyncio
 import importlib.util
-import inspect
-import sys
 import time
 import traceback
 import typing as T
@@ -34,6 +32,7 @@ from pathlib import Path
 import bubblesub.api.api
 import bubblesub.event
 import bubblesub.model
+from bubblesub.opt.menu import MenuItem
 
 
 class BaseCommand(abc.ABC):
@@ -49,7 +48,9 @@ class BaseCommand(abc.ABC):
 
     @bubblesub.model.classproperty
     @abc.abstractproperty
-    def name(cls) -> str:  # pylint: disable=no-self-argument
+    def name(  # pylint: disable=no-self-argument
+            cls: T.Type['BaseCommand']
+    ) -> str:
         """
         Return command name.
 
@@ -120,8 +121,6 @@ class BaseCommand(abc.ABC):
 class CommandApi:
     """The command API."""
 
-    core_registry: T.Dict[str, T.Type] = {}
-    plugin_registry: T.Dict[str, T.Type] = {}
     plugins_loaded = bubblesub.event.EventHandler()
 
     def __init__(self, api: 'bubblesub.api.Api') -> None:
@@ -133,6 +132,9 @@ class CommandApi:
         super().__init__()
         self._api = api
         self._thread = None
+        self._core_registry: T.Dict[str, T.Type] = {}
+        self._plugin_registry: T.Dict[str, T.Type] = {}
+        self._plugin_menu: T.List[MenuItem] = []
 
     def run(self, cmd: BaseCommand) -> None:
         """
@@ -145,12 +147,12 @@ class CommandApi:
             return
 
         async def run() -> None:
-            self._api.log.info('cmd/{}: running...'.format(cmd.name))
+            self._api.log.info(f'cmd/{cmd.name}: running...')
             start_time = time.time()
             try:
                 await cmd.run()
             except Exception as ex:  # pylint: disable=broad-except
-                self._api.log.error('cmd/{}: {}'.format(cmd.name, ex))
+                self._api.log.error(f'cmd/{cmd.name}: {ex}')
                 traceback.print_exc()
             end_time = time.time()
             took = end_time - start_time
@@ -158,7 +160,7 @@ class CommandApi:
 
         asyncio.ensure_future(run())
 
-    def get(self, name: str, args: T.Any) -> BaseCommand:
+    def get(self, name: str, args: T.List[T.Any]) -> BaseCommand:
         """
         Retrieve command instance by its name and arguments.
 
@@ -166,54 +168,98 @@ class CommandApi:
         :param args: command arguments
         :return: BaseCommand instance
         """
-        cls = self.plugin_registry.get(name)
+        cls = self._plugin_registry.get(name)
         if not cls:
-            cls = self.core_registry.get(name)
+            cls = self._core_registry.get(name)
         if not cls:
-            raise KeyError('No command named {}'.format(name))
+            raise KeyError(f'No command named "{name}"')
         try:
             instance = cls(self._api, *args)
             return T.cast(BaseCommand, instance)
         except Exception:  # pylint: disable=broad-except
-            print('Error creating command {}'.format(name), file=sys.stderr)
+            self._api.log.error(f'Error creating command "{name}"')
             raise
 
     def load_plugins(self, path: Path) -> None:
         """
-        Reload all the plugin commands.
+        Reload all the plugin commands from the specified path.
+
+        Plugins must have a `register` method that receives a reference to
+        the `CommandApi`. This function should register all the plugin commands
+        within that plugin with the `CommandApi.register_plugin_command`
+        method.
 
         :param path: dictionary containing plugin definitions
         """
-        self.plugin_registry.clear()
+        self._plugin_menu.clear()
+        self._plugin_registry.clear()
         specs = []
         if path.exists():
             for subpath in path.glob('*.py'):
+                subpath_rel = subpath.relative_to(path)
                 spec = importlib.util.spec_from_file_location(
-                    'bubblesub.plugin', str(subpath)
+                    '.'.join(
+                        ['bubblesub', 'plugin']
+                        + list(subpath_rel.parent.parts)
+                        + [subpath_rel.stem]
+                    ), str(subpath)
                 )
                 if spec is not None:
                     specs.append(spec)
         try:
             for spec in specs:
-                spec.loader.exec_module(importlib.util.module_from_spec(spec))
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                try:
+                    mod.register(self)
+                except Exception as ex:  # pylint: disable=broad-except
+                    self._api.log.error(str(ex))
         finally:
             self.plugins_loaded.emit()
+
+    def register_core_command(self, cls: T.Type[BaseCommand]) -> None:
+        """
+        Register a core command to the registry.
+
+        :param cls: type inheriting from CoreCommand
+        """
+        print(f'registering {cls} as {cls.name}')
+        self._core_registry[cls.name] = cls
+
+    def register_plugin_command(
+            self, cls: T.Type[BaseCommand], menu_item: MenuItem
+    ) -> None:
+        """
+        Register a plugin command to the registry.
+
+        Unlike core commands, for which the menu is constructed via
+        opt.menu.MenuConfig, the plugins build the menu by themselves.
+
+        :param cls: type inheriting from PluginCommand
+        :param menu_item: menu item to show in the plugins menu
+        """
+        print(f'registering {cls} as {cls.name}')
+        if not cls.name.startswith('plugin/'):
+            raise ValueError(
+                'Plugin commands must start with "plugin/" prefix'
+            )
+
+        self._plugin_registry[cls.name] = cls
+        self._plugin_menu.append(menu_item)
+
+    def get_plugin_menu_items(self) -> T.List[MenuItem]:
+        """
+        Return plugin menu items.
+
+        :return: plugins menu
+        """
+        return self._plugin_menu
 
 
 class CoreCommand(BaseCommand):  # pylint: disable=abstract-method
     """Base class for internal bubblesub commands."""
 
-    def __init_subclass__(cls) -> None:
-        """
-        Register core command.
-
-        Ran on application startup for all declared core command classes.
-
-        :param cls: type inheriting from CoreCommand
-        """
-        if not inspect.isabstract(cls):
-            print('registering', cls, 'as', cls.name)
-            CommandApi.core_registry[cls.name] = cls
+    pass
 
 
 class PluginCommand(BaseCommand):  # pylint: disable=abstract-method
@@ -224,15 +270,4 @@ class PluginCommand(BaseCommand):  # pylint: disable=abstract-method
     runtime.
     """
 
-    def __init_subclass__(cls) -> None:
-        """
-        Register plugin command.
-
-        Ran on application startup or plugin reload for all declared plugin
-        command classes.
-
-        :param cls: type inheriting from PluginCommand
-        """
-        if not inspect.isabstract(cls):
-            print('registering', cls, 'as', cls.name)
-            CommandApi.plugin_registry[cls.name] = cls
+    pass

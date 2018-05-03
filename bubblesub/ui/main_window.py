@@ -54,6 +54,9 @@ def _get_splitter_state(widget: QtWidgets.QWidget) -> str:
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, api: bubblesub.api.Api) -> None:
         super().__init__()
+
+        self.console = bubblesub.ui.console.Console(api, self)
+
         self._api = api
         self._api.log.logged.connect(self._on_log)
         self._update_title()
@@ -73,8 +76,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor = bubblesub.ui.editor.Editor(api, self)
         self.subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
         self.status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
-
-        self.console = bubblesub.ui.console.Console(self._api, self)
 
         self.editor_splitter = QtWidgets.QSplitter(self)
         self.editor_splitter.setOrientation(QtCore.Qt.Vertical)
@@ -169,8 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
             MenuCommand('misc/reload-plugins'),
             MenuSeparator(),
         ]
-        for plugin_name in sorted(self._api.cmd.plugin_registry):
-            plugins_menu_def.append(MenuCommand(plugin_name))
+        plugins_menu_def += self._api.cmd.get_plugin_menu_items()
         for action in self.menuBar().children():
             if action.objectName() == 'plugins-menu':
                 self.menuBar().removeAction(action.menuAction())

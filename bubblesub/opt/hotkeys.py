@@ -41,7 +41,7 @@ class Hotkey:
         """
         self.shortcut = shortcut
         self.command_name = command_name
-        self.command_args = command_args
+        self.command_args = list(command_args)
 
 
 class HotkeysConfig(BaseConfig):

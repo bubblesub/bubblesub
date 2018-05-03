@@ -16,6 +16,7 @@
 
 """Command layer."""
 
+import bubblesub.api
 import bubblesub.cmd.file
 import bubblesub.cmd.grid
 import bubblesub.cmd.edit
@@ -27,3 +28,13 @@ import bubblesub.cmd.view
 import bubblesub.cmd.spellcheck
 import bubblesub.cmd.styles_manager
 import bubblesub.cmd.misc
+
+
+def register_core_commands(api: bubblesub.api.Api) -> None:
+    """
+    Register core commands in the API.
+
+    :param api: API instance to register the commands in
+    """
+    for cls in bubblesub.api.cmd.CoreCommand.__subclasses__():
+        api.cmd.register_core_command(cls)

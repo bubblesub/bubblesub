@@ -50,11 +50,11 @@ def main() -> None:
 
     print('loading API...')
     from bubblesub.api import Api
+    api = Api(opt, args)
 
     print('loading commands...')
-    from bubblesub import cmd as _
-
-    api = Api(opt, args)
+    from bubblesub import cmd
+    cmd.register_core_commands(api)
 
     print('loading UI...')
     bubblesub.ui.run(api, args)

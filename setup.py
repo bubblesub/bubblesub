@@ -79,10 +79,10 @@ class GenerateDocumentationCommand(Command):
 
         table = []
 
-        for cmd in bubblesub.api.cmd.CommandApi.core_registry.values():
-            signature = inspect.signature(cmd.__init__)
-            cls_docstring = docstring_parser.parse(cmd.__doc__)
-            init_docstring = docstring_parser.parse(cmd.__init__.__doc__)
+        for cls in bubblesub.api.cmd.CoreCommand.__subclasses__():
+            signature = inspect.signature(cls.__init__)
+            cls_docstring = docstring_parser.parse(cls.__doc__)
+            init_docstring = docstring_parser.parse(cls.__init__.__doc__)
             parameters = {
                 name: param
                 for name, param in signature.parameters.items()
@@ -90,8 +90,8 @@ class GenerateDocumentationCommand(Command):
             }
 
             row = []
-            cmd_anchor = self._get_anchor_name('cmd', cmd.name)
-            cmd_name = cmd.name.replace('-', '\N{NON-BREAKING HYPHEN}')
+            cmd_anchor = self._get_anchor_name('cmd', cls.name)
+            cmd_name = cls.name.replace('-', '\N{NON-BREAKING HYPHEN}')
             row.append(f'`{cmd_name}`')
 
             desc = f'<a name="{cmd_anchor}"></a>'
