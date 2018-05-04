@@ -378,7 +378,11 @@ class _StyleList(QtWidgets.QWidget):
 
 
 class _FontGroupBox(QtWidgets.QGroupBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+            self,
+            parent: QtWidgets.QWidget,
+            mapper: QtWidgets.QDataWidgetMapper
+    ) -> None:
         super().__init__('Font', parent)
         self.font_name_edit = QtWidgets.QComboBox(self)
         self.font_name_edit.setEditable(False)
@@ -408,11 +412,24 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.underline_checkbox, 2, 2)
         layout.addWidget(self.strike_out_checkbox, 3, 2)
 
+        mapper.addMapping(self.font_name_edit, StylesModelColumn.FontName)
+        mapper.addMapping(self.font_size_edit, StylesModelColumn.FontSize)
+        mapper.addMapping(self.bold_checkbox, StylesModelColumn.Bold)
+        mapper.addMapping(self.italic_checkbox, StylesModelColumn.Italic)
+        mapper.addMapping(self.underline_checkbox, StylesModelColumn.Underline)
+        mapper.addMapping(
+            self.strike_out_checkbox, StylesModelColumn.StrikeOut
+        )
+
 
 class _AlignmentGroupBox(QtWidgets.QGroupBox):
     changed = QtCore.pyqtSignal()
 
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+            self,
+            parent: QtWidgets.QWidget,
+            mapper: QtWidgets.QDataWidgetMapper
+    ) -> None:
         super().__init__('Alignment', parent)
         self.radio_buttons = {
             x: QtWidgets.QRadioButton(
@@ -450,6 +467,8 @@ class _AlignmentGroupBox(QtWidgets.QGroupBox):
                 lambda _event: self.changed.emit()
             )
 
+        mapper.addMapping(self, StylesModelColumn.Alignment)
+
     def get_value(self) -> int:
         for idx, radio_button in self.radio_buttons.items():
             if radio_button.isChecked():
@@ -460,11 +479,15 @@ class _AlignmentGroupBox(QtWidgets.QGroupBox):
         if value in self.radio_buttons:
             self.radio_buttons[value].setChecked(True)
 
-    value = QtCore.pyqtProperty(int, get_value, set_value)
+    value = QtCore.pyqtProperty(int, get_value, set_value, user=True)
 
 
 class _ColorsGroupBox(QtWidgets.QGroupBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+            self,
+            parent: QtWidgets.QWidget,
+            mapper: QtWidgets.QDataWidgetMapper
+    ) -> None:
         super().__init__('Colors', parent)
         self.primary_color_button = bubblesub.ui.util.ColorPicker(self)
         self.secondary_color_button = bubblesub.ui.util.ColorPicker(self)
@@ -483,9 +506,26 @@ class _ColorsGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(QtWidgets.QLabel('Shadow:', self), 3, 0)
         layout.addWidget(self.back_color_button, 3, 1)
 
+        mapper.addMapping(
+            self.primary_color_button, StylesModelColumn.PrimaryColor
+        )
+        mapper.addMapping(
+            self.secondary_color_button, StylesModelColumn.SecondaryColor
+        )
+        mapper.addMapping(
+            self.back_color_button, StylesModelColumn.BackColor
+        )
+        mapper.addMapping(
+            self.outline_color_button, StylesModelColumn.OutlineColor
+        )
+
 
 class _OutlineGroupBox(QtWidgets.QGroupBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+            self,
+            parent: QtWidgets.QWidget,
+            mapper: QtWidgets.QDataWidgetMapper
+    ) -> None:
         super().__init__('Outline', parent)
         self.outline_width_edit = QtWidgets.QDoubleSpinBox(self)
         self.outline_width_edit.setMinimum(0)
@@ -502,9 +542,20 @@ class _OutlineGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(QtWidgets.QLabel('Shadow:', self), 1, 0)
         layout.addWidget(self.shadow_width_edit, 1, 1)
 
+        mapper.addMapping(
+            self.shadow_width_edit, StylesModelColumn.ShadowWidth
+        )
+        mapper.addMapping(
+            self.outline_width_edit, StylesModelColumn.OutlineWidth
+        )
+
 
 class _MarginGroupBox(QtWidgets.QGroupBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+            self,
+            parent: QtWidgets.QWidget,
+            mapper: QtWidgets.QDataWidgetMapper
+    ) -> None:
         super().__init__('Margins', parent)
         self.margin_left_edit = QtWidgets.QSpinBox(self)
         self.margin_left_edit.setMinimum(0)
@@ -526,9 +577,23 @@ class _MarginGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(QtWidgets.QLabel('Vertical:', self), 2, 0)
         layout.addWidget(self.margin_vertical_edit, 2, 1)
 
+        mapper.addMapping(
+            self.margin_left_edit, StylesModelColumn.MarginLeft
+        )
+        mapper.addMapping(
+            self.margin_right_edit, StylesModelColumn.MarginRight
+        )
+        mapper.addMapping(
+            self.margin_vertical_edit, StylesModelColumn.MarginVertical
+        )
+
 
 class _MiscGroupBox(QtWidgets.QGroupBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+            self,
+            parent: QtWidgets.QWidget,
+            mapper: QtWidgets.QDataWidgetMapper
+    ) -> None:
         super().__init__('Transformations', parent)
         self.scale_x_edit = QtWidgets.QDoubleSpinBox(self)
         self.scale_x_edit.setMinimum(0)
@@ -555,6 +620,11 @@ class _MiscGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(QtWidgets.QLabel('Spacing:', self), 3, 0)
         layout.addWidget(self.spacing_edit, 3, 1)
 
+        mapper.addMapping(self.scale_x_edit, StylesModelColumn.ScaleX)
+        mapper.addMapping(self.scale_y_edit, StylesModelColumn.ScaleY)
+        mapper.addMapping(self.angle_edit, StylesModelColumn.Angle)
+        mapper.addMapping(self.spacing_edit, StylesModelColumn.Spacing)
+
 
 class _StyleEditor(QtWidgets.QWidget):
     def __init__(
@@ -564,15 +634,17 @@ class _StyleEditor(QtWidgets.QWidget):
             parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
+        self._mapper = QtWidgets.QDataWidgetMapper()
+        self._mapper.setModel(model)
         self._model = model
         selection_model.selectionChanged.connect(self._on_selection_change)
 
-        self.font_group_box = _FontGroupBox(self)
-        self.colors_group_box = _ColorsGroupBox(self)
-        self.outline_group_box = _OutlineGroupBox(self)
-        self.misc_group_box = _MiscGroupBox(self)
-        self.margins_group_box = _MarginGroupBox(self)
-        self.alignment_group_box = _AlignmentGroupBox(self)
+        self.font_group_box = _FontGroupBox(self, self._mapper)
+        self.colors_group_box = _ColorsGroupBox(self, self._mapper)
+        self.outline_group_box = _OutlineGroupBox(self, self._mapper)
+        self.misc_group_box = _MiscGroupBox(self, self._mapper)
+        self.margins_group_box = _MarginGroupBox(self, self._mapper)
+        self.alignment_group_box = _AlignmentGroupBox(self, self._mapper)
 
         left_widget = QtWidgets.QWidget(self)
         left_layout = QtWidgets.QVBoxLayout(left_widget)
@@ -593,58 +665,6 @@ class _StyleEditor(QtWidgets.QWidget):
         layout.addWidget(left_widget)
         layout.addWidget(right_widget)
 
-        mapping = {
-            StylesModelColumn.FontName:
-                self.font_group_box.font_name_edit,
-            StylesModelColumn.FontSize:
-                self.font_group_box.font_size_edit,
-            StylesModelColumn.Bold:
-                self.font_group_box.bold_checkbox,
-            StylesModelColumn.Italic:
-                self.font_group_box.italic_checkbox,
-            StylesModelColumn.Underline:
-                self.font_group_box.underline_checkbox,
-            StylesModelColumn.StrikeOut:
-                self.font_group_box.strike_out_checkbox,
-            StylesModelColumn.PrimaryColor:
-                (self.colors_group_box.primary_color_button, b'color'),
-            StylesModelColumn.SecondaryColor:
-                (self.colors_group_box.secondary_color_button, b'color'),
-            StylesModelColumn.BackColor:
-                (self.colors_group_box.back_color_button, b'color'),
-            StylesModelColumn.OutlineColor:
-                (self.colors_group_box.outline_color_button, b'color'),
-            StylesModelColumn.ShadowWidth:
-                self.outline_group_box.shadow_width_edit,
-            StylesModelColumn.OutlineWidth:
-                self.outline_group_box.outline_width_edit,
-            StylesModelColumn.ScaleX:
-                self.misc_group_box.scale_x_edit,
-            StylesModelColumn.ScaleY:
-                self.misc_group_box.scale_y_edit,
-            StylesModelColumn.Angle:
-                self.misc_group_box.angle_edit,
-            StylesModelColumn.Spacing:
-                self.misc_group_box.spacing_edit,
-            StylesModelColumn.MarginLeft:
-                self.margins_group_box.margin_left_edit,
-            StylesModelColumn.MarginRight:
-                self.margins_group_box.margin_right_edit,
-            StylesModelColumn.MarginVertical:
-                self.margins_group_box.margin_vertical_edit,
-            StylesModelColumn.Alignment:
-                (self.alignment_group_box, b'value'),
-        }
-
-        self.mapper = QtWidgets.QDataWidgetMapper()
-        self.mapper.setModel(self._model)
-        for column_idx, widget in mapping.items():
-            if isinstance(widget, tuple):
-                widget, class_property = widget
-                self.mapper.addMapping(widget, column_idx, class_property)
-            else:
-                self.mapper.addMapping(widget, column_idx)
-
         self._connect_signals()
 
     def _on_selection_change(
@@ -654,50 +674,38 @@ class _StyleEditor(QtWidgets.QWidget):
     ) -> None:
         if selected.indexes():
             self.setEnabled(True)
-            self.mapper.setCurrentIndex(selected.indexes()[0].row())
+            self._mapper.setCurrentIndex(selected.indexes()[0].row())
         else:
             self.setEnabled(False)
 
     def _connect_signals(self) -> None:
-        self.mapper.setSubmitPolicy(QtWidgets.QDataWidgetMapper.ManualSubmit)
-        for widget in [
-                self.font_group_box.font_name_edit
-        ]:
-            widget.currentIndexChanged.connect(self._submit)
+        self._mapper.setSubmitPolicy(QtWidgets.QDataWidgetMapper.ManualSubmit)
 
-        for widget in [
-                self.colors_group_box.primary_color_button,
-                self.colors_group_box.secondary_color_button,
-                self.colors_group_box.back_color_button,
-                self.colors_group_box.outline_color_button,
-                self.alignment_group_box,
-        ]:
-            widget.changed.connect(self._submit)
+        signal_mapper: T.Dict[
+            QtWidgets.QWidget,
+            T.Callable[[QtWidgets.QWidget], QtCore.pyqtSignal]
+        ] = {
+            QtWidgets.QCheckBox: lambda widget: widget.toggled,
+            QtWidgets.QSpinBox: lambda widget: widget.valueChanged,
+            QtWidgets.QDoubleSpinBox: lambda widget: widget.valueChanged,
+            QtWidgets.QComboBox: lambda widget: widget.currentIndexChanged,
+            _AlignmentGroupBox: lambda widget: widget.changed,
+            bubblesub.ui.util.ColorPicker: lambda widget: widget.changed,
+        }
 
-        for widget in [
-                self.font_group_box.font_size_edit,
-                self.outline_group_box.shadow_width_edit,
-                self.outline_group_box.outline_width_edit,
-                self.misc_group_box.scale_x_edit,
-                self.misc_group_box.scale_y_edit,
-                self.misc_group_box.angle_edit,
-                self.misc_group_box.spacing_edit,
-                self.margins_group_box.margin_left_edit,
-                self.margins_group_box.margin_right_edit,
-                self.margins_group_box.margin_vertical_edit,
-        ]:
-            widget.valueChanged.connect(self._submit)
-
-        for widget in [
-                self.font_group_box.bold_checkbox,
-                self.font_group_box.italic_checkbox,
-                self.font_group_box.underline_checkbox,
-                self.font_group_box.strike_out_checkbox,
-        ]:
-            widget.toggled.connect(self._submit)
+        for column in StylesModelColumn:
+            widget = self._mapper.mappedWidgetAt(column)
+            if widget is None:
+                continue
+            for type_, get_signal in signal_mapper.items():
+                if isinstance(widget, type_):
+                    get_signal(widget).connect(self._submit)
+                    break
+            else:
+                raise RuntimeError(f'Unknown widget type: "{type(widget)}"')
 
     def _submit(self, *_args: T.Any) -> None:
-        self.mapper.submit()
+        self._mapper.submit()
 
 
 class _StylesManagerDialog(QtWidgets.QDialog):

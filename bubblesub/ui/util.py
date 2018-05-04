@@ -101,7 +101,7 @@ class ColorPicker(QtWidgets.QWidget):
             self._color = color
             self.changed.emit()
 
-    color = QtCore.pyqtProperty(QtGui.QColor, get_color, set_color)
+    color = QtCore.pyqtProperty(QtGui.QColor, get_color, set_color, user=True)
 
 
 class TimeEdit(QtWidgets.QLineEdit):
