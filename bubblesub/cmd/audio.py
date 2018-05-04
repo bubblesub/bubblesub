@@ -24,7 +24,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 
 
-class AudioScrollCommand(BaseCommand):
+class ScrollSpectrogramCommand(BaseCommand):
     """Scrolls the spectrogram horizontally by its width's percentage."""
 
     name = 'audio/scroll'
@@ -55,7 +55,7 @@ class AudioScrollCommand(BaseCommand):
         self.api.media.audio.move_view(distance)
 
 
-class AudioZoomCommand(BaseCommand):
+class ZoomSpectrogramCommand(BaseCommand):
     """Zooms the spectrogram in or out by the specified factor."""
 
     name = 'audio/zoom'
@@ -87,7 +87,7 @@ class AudioZoomCommand(BaseCommand):
         self.api.media.audio.zoom_view(new_factor, mouse_x)
 
 
-class AudioSnapSelectionStartToVideoCommand(BaseCommand):
+class SnapSpectrogramSelectionStartToVideoCommand(BaseCommand):
     """Snaps the spectrogram selection start to nearest video frame."""
 
     name = 'audio/snap-sel-start-to-video'
@@ -111,7 +111,7 @@ class AudioSnapSelectionStartToVideoCommand(BaseCommand):
         )
 
 
-class AudioSnapSelectionEndToVideoCommand(BaseCommand):
+class SnapSpectrogramSelectionEndToVideoCommand(BaseCommand):
     """Snaps the spectrogram selection end to nearest video frame."""
 
     name = 'audio/snap-sel-end-to-video'
@@ -135,7 +135,7 @@ class AudioSnapSelectionEndToVideoCommand(BaseCommand):
         )
 
 
-class AudioPlaceSelectionAtVideoCommand(BaseCommand):
+class PlaceSpectrogramSelectionAtVideoCommand(BaseCommand):
     """
     Realigns the selection to the current video frame.
 
@@ -165,7 +165,7 @@ class AudioPlaceSelectionAtVideoCommand(BaseCommand):
         )
 
 
-class AudioSnapSelectionStartToPreviousSubtitleCommand(BaseCommand):
+class SnapSpectrogramSelectionStartToPreviousSubtitleCommand(BaseCommand):
     """Snaps the spectrogram selection start to the subtitle above."""
 
     name = 'audio/snap-sel-start-to-prev-sub'
@@ -197,7 +197,7 @@ class AudioSnapSelectionStartToPreviousSubtitleCommand(BaseCommand):
         )
 
 
-class AudioSnapSelectionEndToNextSubtitleCommand(BaseCommand):
+class SnapSpectrogramSelectionEndToNextSubtitleCommand(BaseCommand):
     """Snaps the spectrogram selection end to the subtitle below."""
 
     name = 'audio/snap-sel-end-to-next-sub'
@@ -229,7 +229,7 @@ class AudioSnapSelectionEndToNextSubtitleCommand(BaseCommand):
         )
 
 
-class AudioShiftSelectionStartCommand(BaseCommand):
+class ShiftSpectrogramSelectionStartCommand(BaseCommand):
     """Shifts the spectrogram selection start by the specified distance."""
 
     name = 'audio/shift-sel-start'
@@ -297,7 +297,7 @@ class AudioShiftSelectionStartCommand(BaseCommand):
             )
 
 
-class AudioShiftSelectionEndCommand(BaseCommand):
+class ShiftSpectrogramSelectionEndCommand(BaseCommand):
     """Shifts the spectrogram selection end by the specified distance."""
 
     name = 'audio/shift-sel-end'
@@ -364,7 +364,7 @@ class AudioShiftSelectionEndCommand(BaseCommand):
             )
 
 
-class AudioShiftSelectionCommand(BaseCommand):
+class ShiftSpectrogramSelectionCommand(BaseCommand):
     """Shifts the spectrogram selection start/end by the specified distance."""
 
     name = 'audio/shift-sel'
@@ -434,7 +434,7 @@ class AudioShiftSelectionCommand(BaseCommand):
             )
 
 
-class AudioCommitSelectionCommand(BaseCommand):
+class CommitSpectrogramSelectionCommand(BaseCommand):
     """
     Commits the spectrogram selection into the current subtitle.
 
@@ -472,16 +472,16 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            AudioScrollCommand,
-            AudioZoomCommand,
-            AudioSnapSelectionStartToVideoCommand,
-            AudioSnapSelectionEndToVideoCommand,
-            AudioPlaceSelectionAtVideoCommand,
-            AudioSnapSelectionStartToPreviousSubtitleCommand,
-            AudioSnapSelectionEndToNextSubtitleCommand,
-            AudioShiftSelectionStartCommand,
-            AudioShiftSelectionEndCommand,
-            AudioShiftSelectionCommand,
-            AudioCommitSelectionCommand,
+            ScrollSpectrogramCommand,
+            ZoomSpectrogramCommand,
+            SnapSpectrogramSelectionStartToVideoCommand,
+            SnapSpectrogramSelectionEndToVideoCommand,
+            PlaceSpectrogramSelectionAtVideoCommand,
+            SnapSpectrogramSelectionStartToPreviousSubtitleCommand,
+            SnapSpectrogramSelectionEndToNextSubtitleCommand,
+            ShiftSpectrogramSelectionStartCommand,
+            ShiftSpectrogramSelectionEndCommand,
+            ShiftSpectrogramSelectionCommand,
+            CommitSpectrogramSelectionCommand,
     ]:
         cmd_api.register_core_command(cls)

@@ -30,7 +30,7 @@ class _Syllable:
         self.duration = duration
 
 
-class EditKaraokeSplitCommand(BaseCommand):
+class KaraokeSplitCommand(BaseCommand):
     """Splits the selected subtitles according to the karaoke tags inside."""
 
     name = 'edit/karaoke-split'
@@ -97,7 +97,7 @@ class EditKaraokeSplitCommand(BaseCommand):
         return syllables
 
 
-class EditKaraokeJoinCommand(BaseCommand):
+class KaraokeJoinCommand(BaseCommand):
     """Joins the selected subtitles adding karaoke timing tags inbetween."""
 
     name = 'edit/karaoke-join'
@@ -129,7 +129,7 @@ class EditKaraokeJoinCommand(BaseCommand):
             self.api.subs.selected_indexes = [subs[0].index]
 
 
-class EditTransformationJoinCommand(BaseCommand):
+class TransformationJoinCommand(BaseCommand):
     """
     Joins the selected subtitles adding animation timing tags inbetween.
 
@@ -181,8 +181,8 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            EditKaraokeSplitCommand,
-            EditKaraokeJoinCommand,
-            EditTransformationJoinCommand,
+            KaraokeSplitCommand,
+            KaraokeJoinCommand,
+            TransformationJoinCommand,
     ]:
         cmd_api.register_core_command(cls)

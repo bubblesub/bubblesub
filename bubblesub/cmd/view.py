@@ -22,7 +22,7 @@ import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 
 
-class ViewSetPaletteCommand(BaseCommand):
+class SetPaletteCommand(BaseCommand):
     """Changes the GUI color theme."""
 
     name = 'view/set-palette'
@@ -58,7 +58,7 @@ class ViewSetPaletteCommand(BaseCommand):
         await self.api.gui.exec(run)
 
 
-class ViewFocusTextEditorCommand(BaseCommand):
+class FocusTextEditorCommand(BaseCommand):
     """Focuses the subtitle text edit field."""
 
     name = 'view/focus-text-editor'
@@ -76,7 +76,7 @@ class ViewFocusTextEditorCommand(BaseCommand):
         await self.api.gui.exec(run)
 
 
-class ViewFocusNoteEditorCommand(BaseCommand):
+class FocusNoteEditorCommand(BaseCommand):
     """Focuses the subtitle note edit field."""
 
     name = 'view/focus-note-editor'
@@ -94,7 +94,7 @@ class ViewFocusNoteEditorCommand(BaseCommand):
         await self.api.gui.exec(run)
 
 
-class ViewFocusGridCommand(BaseCommand):
+class FocusSubtitlesGridCommand(BaseCommand):
     """Focuses the subtitles grid."""
 
     name = 'view/focus-grid'
@@ -111,7 +111,7 @@ class ViewFocusGridCommand(BaseCommand):
         await self.api.gui.exec(run)
 
 
-class ViewFocusSpectrogramCommand(BaseCommand):
+class FocusSpectrogramCommand(BaseCommand):
     """Focuses the audio spectrogram."""
 
     name = 'view/focus-spectrogram'
@@ -135,10 +135,10 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            ViewSetPaletteCommand,
-            ViewFocusTextEditorCommand,
-            ViewFocusNoteEditorCommand,
-            ViewFocusGridCommand,
-            ViewFocusSpectrogramCommand,
+            SetPaletteCommand,
+            FocusTextEditorCommand,
+            FocusNoteEditorCommand,
+            FocusSubtitlesGridCommand,
+            FocusSpectrogramCommand,
     ]:
         cmd_api.register_core_command(cls)

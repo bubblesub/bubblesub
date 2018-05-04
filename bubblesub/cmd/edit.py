@@ -26,7 +26,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 
 
-class EditUndoCommand(BaseCommand):
+class UndoCommand(BaseCommand):
     """Undoes last edit operation."""
 
     name = 'edit/undo'
@@ -46,7 +46,7 @@ class EditUndoCommand(BaseCommand):
         self.api.undo.undo()
 
 
-class EditRedoCommand(BaseCommand):
+class RedoCommand(BaseCommand):
     """Redoes last edit operation."""
 
     name = 'edit/redo'
@@ -66,7 +66,7 @@ class EditRedoCommand(BaseCommand):
         self.api.undo.redo()
 
 
-class EditInsertAboveCommand(BaseCommand):
+class InsertSubtitleAboveCommand(BaseCommand):
     """Inserts one empty subtitle above the current subtitle selection."""
 
     name = 'edit/insert-above'
@@ -103,7 +103,7 @@ class EditInsertAboveCommand(BaseCommand):
             self.api.subs.selected_indexes = [idx]
 
 
-class EditInsertBelowCommand(BaseCommand):
+class InsertSubtitleBelowCommand(BaseCommand):
     """Inserts one empty subtitle below the current subtitle selection."""
 
     name = 'edit/insert-below'
@@ -135,7 +135,7 @@ class EditInsertBelowCommand(BaseCommand):
             self.api.subs.selected_indexes = [idx]
 
 
-class EditMoveUpCommand(BaseCommand):
+class MoveSubtitlesUpCommand(BaseCommand):
     """Moves the selected subtitles up."""
 
     name = 'edit/move-up'
@@ -173,7 +173,7 @@ class EditMoveUpCommand(BaseCommand):
             self.api.subs.selected_indexes = indexes
 
 
-class EditMoveDownCommand(BaseCommand):
+class MoveSubtitlesDownCommand(BaseCommand):
     """Moves the selected subtitles down."""
 
     name = 'edit/move-down'
@@ -215,7 +215,7 @@ class EditMoveDownCommand(BaseCommand):
             self.api.subs.selected_indexes = indexes
 
 
-class EditMoveToCommand(BaseCommand):
+class MoveSubtitlesToCommand(BaseCommand):
     """
     Moves the selected subtitles to the specified position.
 
@@ -272,7 +272,7 @@ class EditMoveToCommand(BaseCommand):
             self.api.subs.lines.insert(base_idx, sub_copies)
 
 
-class EditDuplicateCommand(BaseCommand):
+class DuplicateSubtitlesCommand(BaseCommand):
     """
     Duplicates the selected subtitles.
 
@@ -311,7 +311,7 @@ class EditDuplicateCommand(BaseCommand):
         self.api.gui.end_update()
 
 
-class EditDeleteCommand(BaseCommand):
+class DeleteSubtitlesCommand(BaseCommand):
     """Deletes the selected subtitles."""
 
     name = 'edit/delete'
@@ -338,7 +338,7 @@ class EditDeleteCommand(BaseCommand):
             self.api.subs.selected_indexes = []
 
 
-class EditSwapTextAndNotesCommand(BaseCommand):
+class SwapTextAndNotesCommand(BaseCommand):
     """Swaps subtitle text with their notes in the selected subtitles."""
 
     name = 'edit/swap-text-and-notes'
@@ -362,7 +362,7 @@ class EditSwapTextAndNotesCommand(BaseCommand):
                 sub.end_update()
 
 
-class EditSplitSubAtVideoCommand(BaseCommand):
+class SplitSubtitleAtVideoCommand(BaseCommand):
     """Splits the selected subtitle into two at the current video frame."""
 
     name = 'edit/split-sub-at-video'
@@ -393,7 +393,7 @@ class EditSplitSubAtVideoCommand(BaseCommand):
         self.api.gui.end_update()
 
 
-class EditJoinSubsKeepFirstCommand(BaseCommand):
+class JoinSubtitlesKeepFirstCommand(BaseCommand):
     """
     Joins the selected subtitles together.
 
@@ -432,7 +432,7 @@ class EditJoinSubsKeepFirstCommand(BaseCommand):
             self.api.subs.selected_indexes = [idx]
 
 
-class EditJoinSubsConcatenateCommand(BaseCommand):
+class JoinSubtitlesConcatenateCommand(BaseCommand):
     """
     Joins the selected subtitles together.
 
@@ -485,7 +485,7 @@ class EditJoinSubsConcatenateCommand(BaseCommand):
             self.api.subs.selected_indexes = [idx]
 
 
-class EditShiftSubsWithGuiCommand(BaseCommand):
+class ShiftSubtitlesWithGuiCommand(BaseCommand):
     """
     Shifts the subtitle boundaries by the specified distance.
 
@@ -534,7 +534,7 @@ class EditShiftSubsWithGuiCommand(BaseCommand):
                     sub.end_update()
 
 
-class EditSnapSubsStartToVideoCommand(BaseCommand):
+class SnapSubtitlesStartToVideoCommand(BaseCommand):
     """Snaps selected subtitles' start to the current video frame."""
 
     name = 'edit/snap-subs-start-to-video'
@@ -556,7 +556,7 @@ class EditSnapSubsStartToVideoCommand(BaseCommand):
                 sub.start = self.api.media.current_pts
 
 
-class EditSnapSubsEndToVideoCommand(BaseCommand):
+class SnapSubtitlesEndToVideoCommand(BaseCommand):
     """Snaps selected subtitles' end to the current video frame."""
 
     name = 'edit/snap-subs-end-to-video'
@@ -578,7 +578,7 @@ class EditSnapSubsEndToVideoCommand(BaseCommand):
                 sub.end = self.api.media.current_pts
 
 
-class EditPlaceSubsAtVideoCommand(BaseCommand):
+class PlaceSubtitlesAtVideoCommand(BaseCommand):
     """
     Realigns the selected subtitles to the current video frame.
 
@@ -609,7 +609,7 @@ class EditPlaceSubsAtVideoCommand(BaseCommand):
                 )
 
 
-class EditSnapSubsStartToPreviousSubtitleCommand(BaseCommand):
+class SnapSubtitlesStartToPreviousSubtitleCommand(BaseCommand):
     """Snaps the selected subtitles start times to the subtitle above."""
 
     name = 'edit/snap-subs-start-to-prev-sub'
@@ -638,7 +638,7 @@ class EditSnapSubsStartToPreviousSubtitleCommand(BaseCommand):
                 sub.start = self._prev_sub.end
 
 
-class EditSnapSubsEndToNextSubtitleCommand(BaseCommand):
+class SnapSubtitlesEndToNextSubtitleCommand(BaseCommand):
     """Snaps the selected subtitles end times to the subtitle below."""
 
     name = 'edit/snap-subs-end-to-next-sub'
@@ -667,7 +667,7 @@ class EditSnapSubsEndToNextSubtitleCommand(BaseCommand):
                 sub.end = self._next_sub.start
 
 
-class EditShiftSubsStartCommand(BaseCommand):
+class ShiftSubtitlesStartCommand(BaseCommand):
     """Shifts selected subtitles start times by the specified distance."""
 
     name = 'edit/shift-subs-start'
@@ -707,7 +707,7 @@ class EditShiftSubsStartCommand(BaseCommand):
                 sub.start = max(0, sub.start + self._delta)
 
 
-class EditShiftSubsEndCommand(BaseCommand):
+class ShiftSubtitlesEndCommand(BaseCommand):
     """Shifts selected subtitles end times by the specified distance."""
 
     name = 'edit/shift-subs-end'
@@ -747,7 +747,7 @@ class EditShiftSubsEndCommand(BaseCommand):
                 sub.end = max(0, sub.end + self._delta)
 
 
-class EditShiftSubsCommand(BaseCommand):
+class ShiftSubtitlesCommand(BaseCommand):
     """Shifts selected subtitles by the specified distance."""
 
     name = 'edit/shift-subs'
@@ -795,27 +795,27 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            EditUndoCommand,
-            EditRedoCommand,
-            EditInsertAboveCommand,
-            EditInsertBelowCommand,
-            EditMoveUpCommand,
-            EditMoveDownCommand,
-            EditMoveToCommand,
-            EditDuplicateCommand,
-            EditDeleteCommand,
-            EditSwapTextAndNotesCommand,
-            EditSplitSubAtVideoCommand,
-            EditJoinSubsKeepFirstCommand,
-            EditJoinSubsConcatenateCommand,
-            EditShiftSubsWithGuiCommand,
-            EditSnapSubsStartToVideoCommand,
-            EditSnapSubsEndToVideoCommand,
-            EditPlaceSubsAtVideoCommand,
-            EditSnapSubsStartToPreviousSubtitleCommand,
-            EditSnapSubsEndToNextSubtitleCommand,
-            EditShiftSubsStartCommand,
-            EditShiftSubsEndCommand,
-            EditShiftSubsCommand,
+            UndoCommand,
+            RedoCommand,
+            InsertSubtitleAboveCommand,
+            InsertSubtitleBelowCommand,
+            MoveSubtitlesUpCommand,
+            MoveSubtitlesDownCommand,
+            MoveSubtitlesToCommand,
+            DuplicateSubtitlesCommand,
+            DeleteSubtitlesCommand,
+            SwapTextAndNotesCommand,
+            SplitSubtitleAtVideoCommand,
+            JoinSubtitlesKeepFirstCommand,
+            JoinSubtitlesConcatenateCommand,
+            ShiftSubtitlesWithGuiCommand,
+            SnapSubtitlesStartToVideoCommand,
+            SnapSubtitlesEndToVideoCommand,
+            PlaceSubtitlesAtVideoCommand,
+            SnapSubtitlesStartToPreviousSubtitleCommand,
+            SnapSubtitlesEndToNextSubtitleCommand,
+            ShiftSubtitlesStartCommand,
+            ShiftSubtitlesEndCommand,
+            ShiftSubtitlesCommand,
     ]:
         cmd_api.register_core_command(cls)

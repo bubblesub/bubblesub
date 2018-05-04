@@ -28,7 +28,7 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 
 
-class VideoPlayCurrentLineCommand(BaseCommand):
+class PlayCurrentSubtitleCommand(BaseCommand):
     """Plays the currently selected subtitle."""
 
     name = 'video/play-current-line'
@@ -49,7 +49,7 @@ class VideoPlayCurrentLineCommand(BaseCommand):
         self.api.media.play(sub.start, sub.end)
 
 
-class VideoPlayAroundSelectionCommand(BaseCommand):
+class PlayAroundSpectrogramSelectionCommand(BaseCommand):
     """Plays a region near the current spectrogram selection."""
 
     name = 'video/play-around-sel'
@@ -91,7 +91,7 @@ class VideoPlayAroundSelectionCommand(BaseCommand):
         )
 
 
-class VideoPlayAroundSelectionStartCommand(BaseCommand):
+class PlayAroundSpectrogramSelectionStartCommand(BaseCommand):
     """Plays a region near the current spectrogram selection start."""
 
     name = 'video/play-around-sel-start'
@@ -151,7 +151,7 @@ class VideoPlayAroundSelectionStartCommand(BaseCommand):
         )
 
 
-class VideoPlayAroundSelectionEndCommand(BaseCommand):
+class PlayAroundSpectrogramSelectionEndCommand(BaseCommand):
     """Plays a region near the current spectrogram selection end."""
 
     name = 'video/play-around-sel-end'
@@ -210,7 +210,7 @@ class VideoPlayAroundSelectionEndCommand(BaseCommand):
         )
 
 
-class VideoStepFrameCommand(BaseCommand):
+class StepFrameCommand(BaseCommand):
     """Seeks the video by the specified amount of frames."""
 
     name = 'video/step-frame'
@@ -267,7 +267,7 @@ class VideoStepFrameCommand(BaseCommand):
             )
 
 
-class VideoStepMillisecondsCommand(BaseCommand):
+class StepMillisecondsCommand(BaseCommand):
     """Seeks the video by the specified milliseconds."""
 
     name = 'video/step-ms'
@@ -318,7 +318,7 @@ class VideoStepMillisecondsCommand(BaseCommand):
         )
 
 
-class VideoSeekWithGuiCommand(BaseCommand):
+class SeekWithGuiCommand(BaseCommand):
     """
     Seeks the video to the desired place.
 
@@ -365,7 +365,7 @@ class VideoSeekWithGuiCommand(BaseCommand):
                 self.api.media.seek(value)
 
 
-class VideoSetPlaybackSpeed(BaseCommand):
+class SetPlaybackSpeedCommand(BaseCommand):
     """Adjusts the video playback speed."""
 
     name = 'video/set-playback-speed'
@@ -398,7 +398,38 @@ class VideoSetPlaybackSpeed(BaseCommand):
         )
 
 
-class VideoTogglePauseCommand(BaseCommand):
+class SetVolumeCommand(BaseCommand):
+    """Adjusts the video volume."""
+
+    name = 'video/set-volume'
+
+    def __init__(self, api: bubblesub.api.Api, expr: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param expr: expression to calculate new volume
+        """
+        super().__init__(api)
+        self._expr = expr
+
+    @property
+    def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        return '&Set volume to {}'.format(self._expr.format('current volume'))
+
+    async def run(self) -> None:
+        """Carry out the command."""
+        self.api.media.volume = bubblesub.util.eval_expr(
+            self._expr.format(self.api.media.volume)
+        )
+
+
+class TogglePauseCommand(BaseCommand):
     """Pauses or unpauses the video playback."""
 
     name = 'video/toggle-pause'
@@ -421,7 +452,7 @@ class VideoTogglePauseCommand(BaseCommand):
             self.api.media.pause()
 
 
-class VideoUnpauseCommand(BaseCommand):
+class UnpauseCommand(BaseCommand):
     """Unpauses the video playback."""
 
     name = 'video/unpause'
@@ -443,7 +474,7 @@ class VideoUnpauseCommand(BaseCommand):
         self.api.media.unpause()
 
 
-class VideoPauseCommand(BaseCommand):
+class PauseCommand(BaseCommand):
     """Pauses the video playback."""
 
     name = 'video/pause'
@@ -465,7 +496,7 @@ class VideoPauseCommand(BaseCommand):
         self.api.media.pause()
 
 
-class VideoScreenshotCommand(BaseCommand):
+class ScreenshotCommand(BaseCommand):
     """
     Makes a screenshot of the current video frame.
 
@@ -537,37 +568,6 @@ class VideoScreenshotCommand(BaseCommand):
             self.api.media.video.screenshot(path, self._include_subtitles)
 
 
-class VideoSetVolumeCommand(BaseCommand):
-    """Adjusts the video volume."""
-
-    name = 'video/set-volume'
-
-    def __init__(self, api: bubblesub.api.Api, expr: str) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param expr: expression to calculate new volume
-        """
-        super().__init__(api)
-        self._expr = expr
-
-    @property
-    def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        return '&Set volume to {}'.format(self._expr.format('current volume'))
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        self.api.media.volume = bubblesub.util.eval_expr(
-            self._expr.format(self.api.media.volume)
-        )
-
-
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     """
     Register commands in this file into the command API.
@@ -575,18 +575,18 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            VideoPlayCurrentLineCommand,
-            VideoPlayAroundSelectionCommand,
-            VideoPlayAroundSelectionStartCommand,
-            VideoPlayAroundSelectionEndCommand,
-            VideoStepFrameCommand,
-            VideoStepMillisecondsCommand,
-            VideoSeekWithGuiCommand,
-            VideoSetPlaybackSpeed,
-            VideoTogglePauseCommand,
-            VideoUnpauseCommand,
-            VideoPauseCommand,
-            VideoScreenshotCommand,
-            VideoSetVolumeCommand,
+            PlayCurrentSubtitleCommand,
+            PlayAroundSpectrogramSelectionCommand,
+            PlayAroundSpectrogramSelectionStartCommand,
+            PlayAroundSpectrogramSelectionEndCommand,
+            StepFrameCommand,
+            StepMillisecondsCommand,
+            SeekWithGuiCommand,
+            SetPlaybackSpeedCommand,
+            SetVolumeCommand,
+            TogglePauseCommand,
+            UnpauseCommand,
+            PauseCommand,
+            ScreenshotCommand,
     ]:
         cmd_api.register_core_command(cls)

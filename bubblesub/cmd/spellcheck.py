@@ -164,7 +164,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         self._replacement_text_edit.setText(event.data())
 
 
-class EditSpellCheckCommand(BaseCommand):
+class SpellCheckCommand(BaseCommand):
     """Opens up the spell check dialog."""
 
     name = 'edit/spell-check'
@@ -209,4 +209,4 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
 
     :param cmd_api: command API
     """
-    cmd_api.register_core_command(EditSpellCheckCommand)
+    cmd_api.register_core_command(SpellCheckCommand)

@@ -41,7 +41,7 @@ def _unpickle(text: str) -> T.Any:
     return pickle.loads(zlib.decompress(base64.b64decode(text.encode())))
 
 
-class GridJumpToLineCommand(BaseCommand):
+class JumpToSubtitleByLineCommand(BaseCommand):
     """
     Jumps to the specified line.
 
@@ -82,9 +82,9 @@ class GridJumpToLineCommand(BaseCommand):
             self.api.subs.selected_indexes = [value - 1]
 
 
-class GridJumpToTimeCommand(BaseCommand):
+class JumpToSubtitleByTimeCommand(BaseCommand):
     """
-    Jumps to the specified time.
+    Jumps to the subtitle at specified time.
 
     Prompts user for details with a GUI dialog.
     """
@@ -136,7 +136,7 @@ class GridJumpToTimeCommand(BaseCommand):
                 self.api.subs.selected_indexes = [best_idx]
 
 
-class GridSelectPrevSubtitleCommand(BaseCommand):
+class SelectPreviousSubtitleCommand(BaseCommand):
     """Selects the subtitle above the first currently selected subtitle."""
 
     name = 'grid/select-prev-sub'
@@ -160,7 +160,7 @@ class GridSelectPrevSubtitleCommand(BaseCommand):
                 max(0, self.api.subs.selected_indexes[0] - 1)]
 
 
-class GridSelectNextSubtitleCommand(BaseCommand):
+class SelectNextSubtitleCommand(BaseCommand):
     """Selects the subtitle below the last currently selected subtitle."""
 
     name = 'grid/select-next-sub'
@@ -188,7 +188,7 @@ class GridSelectNextSubtitleCommand(BaseCommand):
             ]
 
 
-class GridSelectAllCommand(BaseCommand):
+class SelectAllSubtitlesCommand(BaseCommand):
     """Selects all subtitles."""
 
     name = 'grid/select-all'
@@ -208,7 +208,7 @@ class GridSelectAllCommand(BaseCommand):
         self.api.subs.selected_indexes = list(range(len(self.api.subs.lines)))
 
 
-class GridSelectNothingCommand(BaseCommand):
+class ClearSubtitleSelectionCommand(BaseCommand):
     """Clears subtitle selection."""
 
     name = 'grid/select-nothing'
@@ -219,7 +219,7 @@ class GridSelectNothingCommand(BaseCommand):
         self.api.subs.selected_indexes = []
 
 
-class GridCopyTextToClipboardCommand(BaseCommand):
+class CopySubtitlesTextToClipboardCommand(BaseCommand):
     """Copies text from the subtitle selection."""
 
     name = 'grid/copy-text-to-clipboard'
@@ -241,7 +241,7 @@ class GridCopyTextToClipboardCommand(BaseCommand):
         ))
 
 
-class GridCopyTimesToClipboardCommand(BaseCommand):
+class CopySubtitlesTimesToClipboardCommand(BaseCommand):
     """Copies time boundaries from the subtitle selection."""
 
     name = 'grid/copy-times-to-clipboard'
@@ -267,7 +267,7 @@ class GridCopyTimesToClipboardCommand(BaseCommand):
         ))
 
 
-class GridPasteTimesFromClipboardCommand(BaseCommand):
+class PasteSubtitlesTimesFromClipboardCommand(BaseCommand):
     """Pastes time boundaries into the subtitle selection."""
 
     name = 'grid/paste-times-from-clipboard'
@@ -315,7 +315,7 @@ class GridPasteTimesFromClipboardCommand(BaseCommand):
                 sub.end = times[i][1]
 
 
-class GridCopyToClipboardCommand(BaseCommand):
+class CopySubtitlesToClipboardCommand(BaseCommand):
     """Copies the selected subtitles."""
 
     name = 'grid/copy-to-clipboard'
@@ -337,7 +337,7 @@ class GridCopyToClipboardCommand(BaseCommand):
         )
 
 
-class PasteFromClipboardBelowCommand(BaseCommand):
+class PasteSubtitlesFromClipboardBelowCommand(BaseCommand):
     """Pastes subtitles below the selection."""
 
     name = 'grid/paste-from-clipboard-below'
@@ -356,7 +356,7 @@ class PasteFromClipboardBelowCommand(BaseCommand):
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
-class PasteFromClipboardAboveCommand(BaseCommand):
+class PasteSubtitlesFromClipboardAboveCommand(BaseCommand):
     """Pastes subtitles above the selection."""
 
     name = 'grid/paste-from-clipboard-above'
@@ -375,7 +375,7 @@ class PasteFromClipboardAboveCommand(BaseCommand):
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
-class SaveAudioSampleCommand(BaseCommand):
+class SaveSubtitlesAsAudioSampleCommand(BaseCommand):
     """
     Saves current subtitle selection to a WAV file.
 
@@ -420,18 +420,18 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            GridJumpToLineCommand,
-            GridJumpToTimeCommand,
-            GridSelectPrevSubtitleCommand,
-            GridSelectNextSubtitleCommand,
-            GridSelectAllCommand,
-            GridSelectNothingCommand,
-            GridCopyTextToClipboardCommand,
-            GridCopyTimesToClipboardCommand,
-            GridPasteTimesFromClipboardCommand,
-            GridCopyToClipboardCommand,
-            PasteFromClipboardBelowCommand,
-            PasteFromClipboardAboveCommand,
-            SaveAudioSampleCommand,
+            JumpToSubtitleByLineCommand,
+            JumpToSubtitleByTimeCommand,
+            SelectPreviousSubtitleCommand,
+            SelectNextSubtitleCommand,
+            SelectAllSubtitlesCommand,
+            ClearSubtitleSelectionCommand,
+            CopySubtitlesTextToClipboardCommand,
+            CopySubtitlesTimesToClipboardCommand,
+            PasteSubtitlesTimesFromClipboardCommand,
+            CopySubtitlesToClipboardCommand,
+            PasteSubtitlesFromClipboardBelowCommand,
+            PasteSubtitlesFromClipboardAboveCommand,
+            SaveSubtitlesAsAudioSampleCommand,
     ]:
         cmd_api.register_core_command(cls)

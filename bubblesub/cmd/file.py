@@ -64,7 +64,7 @@ def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
     )
 
 
-class FileNewCommand(BaseCommand):
+class NewFileCommand(BaseCommand):
     """
     Opens a new file.
 
@@ -80,7 +80,7 @@ class FileNewCommand(BaseCommand):
             self.api.subs.unload()
 
 
-class FileOpenCommand(BaseCommand):
+class OpenFileCommand(BaseCommand):
     """
     Opens an existing subtitles file.
 
@@ -122,7 +122,7 @@ class FileOpenCommand(BaseCommand):
                 self.info('opened {}'.format(path))
 
 
-class FileLoadVideo(BaseCommand):
+class LoadVideoCommand(BaseCommand):
     """
     Loads a video file for the audio/video playback.
 
@@ -162,7 +162,7 @@ class FileLoadVideo(BaseCommand):
             self.info('loading {}'.format(path))
 
 
-class FileSaveCommand(BaseCommand):
+class SaveFileCommand(BaseCommand):
     """
     Saves the current subtitles to an ASS file.
 
@@ -187,7 +187,7 @@ class FileSaveCommand(BaseCommand):
         self.info('saved subtitles to {}'.format(path))
 
 
-class FileSaveAsCommand(BaseCommand):
+class SaveFileAsCommand(BaseCommand):
     """
     Saves the current subtitles to an ASS file.
 
@@ -227,7 +227,7 @@ class FileSaveAsCommand(BaseCommand):
             self.info('saved subtitles to {}'.format(path))
 
 
-class FileQuitCommand(BaseCommand):
+class QuitCommand(BaseCommand):
     """
     Quits the application.
 
@@ -249,11 +249,11 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            FileNewCommand,
-            FileOpenCommand,
-            FileLoadVideo,
-            FileSaveCommand,
-            FileSaveAsCommand,
-            FileQuitCommand,
+            NewFileCommand,
+            OpenFileCommand,
+            LoadVideoCommand,
+            SaveFileCommand,
+            SaveFileAsCommand,
+            QuitCommand,
     ]:
         cmd_api.register_core_command(cls)

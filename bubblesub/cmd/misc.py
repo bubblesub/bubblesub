@@ -20,7 +20,7 @@ import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 
 
-class ResetPluginsCommand(BaseCommand):
+class ReloadPluginsCommand(BaseCommand):
     """Reloads the user plugins."""
 
     name = 'misc/reload-plugins'
@@ -39,4 +39,4 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
 
     :param cmd_api: command API
     """
-    cmd_api.register_core_command(ResetPluginsCommand)
+    cmd_api.register_core_command(ReloadPluginsCommand)
