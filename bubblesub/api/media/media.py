@@ -17,23 +17,23 @@
 """Media API. Exposes audio/video player."""
 
 import argparse
-import locale
-import atexit
-import tempfile
 import fractions
+import io
+import locale
 import typing as T
 from pathlib import Path
 
 import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore
 
+import bubblesub.ass.writer
 import bubblesub.event
 import bubblesub.util
-from bubblesub.opt import Options
+from bubblesub.api.log import LogApi
 from bubblesub.api.media.audio import AudioApi
 from bubblesub.api.media.video import VideoApi
-from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.opt import Options
 
 
 class MediaApi:
@@ -66,9 +66,6 @@ class MediaApi:
         self._log_api = log_api
         self._subs_api = subs_api
         self._opt_api = opt_api
-
-        self._tmp_subs_path = Path(tempfile.mkstemp(suffix='.ass')[1])
-        atexit.register(self._tmp_subs_path.unlink)
 
         self._path: T.Optional[Path] = None
         self._playback_speed = fractions.Fraction(1.0)
@@ -323,7 +320,6 @@ class MediaApi:
 
     def _mpv_loaded(self) -> None:
         self._mpv_ready = True
-        self._mpv.command('sub_add', str(self._tmp_subs_path))
         self._refresh_subs()
         self.parsed.emit()
 
@@ -338,7 +334,6 @@ class MediaApi:
         self._need_subs_refresh = True
 
     def _reload_video(self) -> None:
-        self._subs_api.save_ass(self._tmp_subs_path)
         self._mpv_ready = False
         self._mpv.set_property('pause', True)
         if not self.path or not self.path.exists():
@@ -353,10 +348,12 @@ class MediaApi:
     def _refresh_subs(self) -> None:
         if not self._mpv_ready:
             return
-        self._subs_api.save_ass(self._tmp_subs_path)
         if self._mpv.get_property('sub'):
-            self._mpv.command('sub_reload')
-            self._need_subs_refresh = False
+            self._mpv.command('sub_remove')
+        with io.StringIO() as handle:
+            bubblesub.ass.writer.write_ass(self._subs_api.ass_file, handle)
+            self._mpv.command('sub_add', 'memory://' + handle.getvalue())
+        self._need_subs_refresh = False
 
     def _on_grid_selection_change(
             self,
