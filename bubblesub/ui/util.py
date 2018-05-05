@@ -253,7 +253,7 @@ def load_dialog(
         directory=T.cast(str, QtCore.QDir.homePath()) or str(directory),
         filter=file_filter
     )
-    return None if path is None else Path(path)
+    return Path(path) if path else None
 
 
 def save_dialog(
@@ -270,7 +270,7 @@ def save_dialog(
         directory=real_directory,
         filter=file_filter
     )
-    return Path(path)
+    return Path(path) if path else None
 
 
 def time_jump_dialog(
