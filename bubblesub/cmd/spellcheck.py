@@ -168,7 +168,7 @@ class SpellCheckCommand(BaseCommand):
     """Opens up the spell check dialog."""
 
     name = 'edit/spell-check'
-    menu_name = '&Spell check...'
+    menu_name = '&Check spelling...'
 
     @property
     def is_enabled(self) -> bool:

@@ -384,7 +384,7 @@ class SaveSubtitlesAsAudioSampleCommand(BaseCommand):
     """
 
     name = 'grid/create-audio-sample'
-    menu_name = 'Create audio sample...'
+    menu_name = 'Create audio sample'
 
     @property
     def is_enabled(self) -> bool:
