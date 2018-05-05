@@ -155,7 +155,7 @@ class CommandApi:
                 traceback.print_exc()
             end_time = time.time()
             took = end_time - start_time
-            self._api.log.info(f'cmd/{cmd.name}: ran in {took:.02f} s')
+            self._api.log.info(f'cmd/{cmd.name}: ran in {took:.04f} s')
 
         asyncio.ensure_future(run())
 
