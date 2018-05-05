@@ -152,9 +152,22 @@ class VideoApi:
             'subtitles' if include_subtitles else 'video'
         )
 
+    def align_pts_to_prev_frame(self, pts: int) -> int:
+        """
+        Align PTS to a frame immediately before given PTS.
+
+        :param pts: PTS to align
+        :return: aligned PTS
+        """
+        if self.timecodes:
+            for timecode in reversed(self.timecodes):
+                if timecode <= pts:
+                    return timecode
+        return pts
+
     def align_pts_to_next_frame(self, pts: int) -> int:
         """
-        Align PTS to the next frame.
+        Align PTS to a frame immediately after given PTS.
 
         :param pts: PTS to align
         :return: aligned PTS

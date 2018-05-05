@@ -83,14 +83,17 @@ class InsertSubtitleAboveCommand(BaseCommand):
             prev_sub = self.api.subs.lines.get(idx - 1)
             cur_sub = self.api.subs.lines[idx]
 
-        end = (
-            cur_sub.start
-            if cur_sub else
-            self.api.opt.general.subs.default_duration
-        )
-        start = end - self.api.opt.general.subs.default_duration
-        if start < 0:
+        if cur_sub:
+            end = cur_sub.start
+            start = self.api.media.video.align_pts_to_prev_frame(
+                max(0, end - self.api.opt.general.subs.default_duration)
+            )
+        else:
             start = 0
+            end = self.api.media.video.align_pts_to_next_frame(
+                self.api.opt.general.subs.default_duration
+            )
+
         if prev_sub and start < prev_sub.end:
             start = prev_sub.end
         if start > end:
@@ -123,6 +126,7 @@ class InsertSubtitleBelowCommand(BaseCommand):
 
         start = cur_sub.end if cur_sub else 0
         end = start + self.api.opt.general.subs.default_duration
+        end = self.api.media.video.align_pts_to_next_frame(end)
         if next_sub and end > next_sub.start:
             end = next_sub.start
         if end < start:
@@ -603,8 +607,8 @@ class PlaceSubtitlesAtVideoCommand(BaseCommand):
         with self.api.undo.capture():
             for sub in self.api.subs.selected_lines:
                 sub.start = self.api.media.current_pts
-                sub.end = (
-                    self.api.media.current_pts
+                sub.end = self.api.media.video.align_pts_to_next_frame(
+                    sub.start
                     + self.api.opt.general.subs.default_duration
                 )
 

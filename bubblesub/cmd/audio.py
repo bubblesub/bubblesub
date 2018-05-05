@@ -160,8 +160,10 @@ class PlaceSpectrogramSelectionAtVideoCommand(BaseCommand):
         """Carry out the command."""
         self.api.media.audio.select(
             self.api.media.current_pts,
-            self.api.media.current_pts
-            + self.api.opt.general.subs.default_duration
+            self.api.media.video.align_pts_to_next_frame(
+                self.api.media.current_pts
+                + self.api.opt.general.subs.default_duration
+            )
         )
 
 
