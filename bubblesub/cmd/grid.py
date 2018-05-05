@@ -407,10 +407,13 @@ class SaveSubtitlesAsAudioSampleCommand(BaseCommand):
             )
 
         path = await self.api.gui.exec(run_dialog)
-        if path is not None:
+        if path is None:
+            self.info('cancelled')
+        else:
             start_pts = self.api.subs.selected_lines[0].start
             end_pts = self.api.subs.selected_lines[-1].end
             self.api.media.audio.save_wav(path, start_pts, end_pts)
+            self.info(f'saved audio sample to {path}')
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

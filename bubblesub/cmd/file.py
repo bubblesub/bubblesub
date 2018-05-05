@@ -116,10 +116,10 @@ class OpenFileCommand(BaseCommand):
                     _get_load_file_name, SUBS_FILE_FILTER
                 )
             if not path:
-                self.info('opening cancelled.')
+                self.info('cancelled')
             else:
                 self.api.subs.load_ass(path)
-                self.info('opened {}'.format(path))
+                self.info(f'opened {path}')
 
 
 class LoadVideoCommand(BaseCommand):
@@ -156,10 +156,10 @@ class LoadVideoCommand(BaseCommand):
                 _get_load_file_name, VIDEO_FILE_FILTER
             )
         if not path:
-            self.info('loading video cancelled.')
+            self.info('cancelled')
         else:
             self.api.media.load(path)
-            self.info('loading {}'.format(path))
+            self.info(f'loading {path}')
 
 
 class SaveFileCommand(BaseCommand):
@@ -181,10 +181,10 @@ class SaveFileCommand(BaseCommand):
                 _get_save_file_name, SUBS_FILE_FILTER
             )
         if not path:
-            self.info('saving cancelled.')
+            self.info('cancelled')
             return
         self.api.subs.save_ass(path, remember_path=True)
-        self.info('saved subtitles to {}'.format(path))
+        self.info(f'saved subtitles to {path}')
 
 
 class SaveFileAsCommand(BaseCommand):
@@ -221,10 +221,10 @@ class SaveFileAsCommand(BaseCommand):
                 _get_save_file_name, SUBS_FILE_FILTER
             )
         if not path:
-            self.info('saving cancelled.')
+            self.info('cancelled')
         else:
             self.api.subs.save_ass(path, remember_path=True)
-            self.info('saved subtitles to {}'.format(path))
+            self.info(f'saved subtitles to {path}')
 
 
 class QuitCommand(BaseCommand):

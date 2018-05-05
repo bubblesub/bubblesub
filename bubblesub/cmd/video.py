@@ -564,8 +564,11 @@ class ScreenshotCommand(BaseCommand):
             )
 
         path = await self.api.gui.exec(_run_dialog)
-        if path is not None:
+        if path is None:
+            self.info('cancelled')
+        else:
             self.api.media.video.screenshot(path, self._include_subtitles)
+            self.info(f'saved screenshot to {path}')
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
