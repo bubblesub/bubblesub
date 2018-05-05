@@ -213,6 +213,8 @@ class SubsGrid(QtWidgets.QTableView):
         if self._collect_rows() == self._api.subs.selected_indexes:
             return
 
+        self.setUpdatesEnabled(False)
+
         self.selectionModel().selectionChanged.disconnect(
             self._widget_selection_changed
         )
@@ -240,3 +242,5 @@ class SubsGrid(QtWidgets.QTableView):
         self.selectionModel().selectionChanged.connect(
             self._widget_selection_changed
         )
+
+        self.setUpdatesEnabled(True)
