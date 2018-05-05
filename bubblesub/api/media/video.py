@@ -148,7 +148,7 @@ class VideoApi:
         """
         self._mpv.command(
             'screenshot-to-file',
-            path,
+            str(path),
             'subtitles' if include_subtitles else 'video'
         )
 
