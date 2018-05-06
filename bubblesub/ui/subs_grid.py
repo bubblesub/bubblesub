@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import base64
+import functools
 import re
 import typing as T
 
@@ -138,36 +140,51 @@ class SubsGrid(QtWidgets.QTableView):
             self._widget_selection_changed
         )
 
+        self._setup_subtitles_menu()
+        self._setup_header_menu()
+
+    def _setup_subtitles_menu(self) -> None:
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._open_menu)
-        self.menu = QtWidgets.QMenu(self)
+        self.customContextMenuRequested.connect(self._open_subtitles_menu)
+        self.subtitles_menu = QtWidgets.QMenu(self)
         bubblesub.ui.util.setup_cmd_menu(
-            self._api, self.menu, self._api.opt.menu.context
+            self._api, self.subtitles_menu, self._api.opt.menu.context
+        )
+
+    def _setup_header_menu(self) -> None:
+        header = self.horizontalHeader()
+        header.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        for column in SubsModelColumn:
+            action = QtWidgets.QAction(self)
+            action.setCheckable(True)
+            action.setData(column)
+            action.setChecked(not self.isColumnHidden(column))
+            action.changed.connect(
+                functools.partial(self.toggle_column, action)
+            )
+            action.setText(column.name)
+            header.addAction(action)
+
+    def toggle_column(self, action: QtWidgets.QAction) -> None:
+        column: SubsModelColumn = action.data()
+        self.horizontalHeader().setSectionHidden(
+            column.value,
+            not action.isChecked()
         )
 
     def restore_grid_columns(self) -> None:
         header = self.horizontalHeader()
-        for col in SubsModelColumn:
-            header.hideSection(col.value)
-        for new_col_idx, col_name in enumerate(
-                self._api.opt.general.grid_columns
-        ):
-            try:
-                col = SubsModelColumn[col_name]
-            except KeyError:
-                print(f'Unknown column "{col_name}"')
-            else:
-                old_col_idx = header.visualIndex(col.value)
-                header.swapSections(old_col_idx, new_col_idx)
-                header.showSection(new_col_idx)
+        data = self._api.opt.general.grid_columns
+        if data:
+            header.restoreState(base64.b64decode(data))
+        for action in header.actions():
+            column: SubsModelColumn = action.data()
+            action.setChecked(not header.isSectionHidden(column.value))
 
     def store_grid_columns(self) -> None:
-        header = self.horizontalHeader()
-        self._api.opt.general.grid_columns = [
-            SubsModelColumn(header.logicalIndex(i)).name
-            for i in SubsModelColumn
-            if not header.isSectionHidden(i)
-        ]
+        self._api.opt.general.grid_columns = base64.b64encode(
+            self.horizontalHeader().saveState()
+        ).decode('ascii')
 
     def keyboardSearch(self, _text: str) -> None:
         pass
@@ -176,8 +193,8 @@ class SubsGrid(QtWidgets.QTableView):
         self.model().wipe_cache()
         self._subs_grid_delegate.syntax_highlight.update_style_map()
 
-    def _open_menu(self, position: QtCore.QPoint) -> None:
-        self.menu.exec_(self.viewport().mapToGlobal(position))
+    def _open_subtitles_menu(self, position: QtCore.QPoint) -> None:
+        self.subtitles_menu.exec_(self.viewport().mapToGlobal(position))
 
     def _collect_rows(self) -> T.List[int]:
         rows = set()

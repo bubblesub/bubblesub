@@ -227,7 +227,7 @@ class GeneralConfig(BaseConfig):
         """Initialize self."""
         self.spell_check = 'en_US'
         self.convert_newlines = True
-        self.grid_columns = [col.name for col in SubsModelColumn]
+        self.grid_columns = None
         self.splitters: T.Dict[str, str] = {}
 
         self.current_palette = 'light'
@@ -264,9 +264,9 @@ class GeneralConfig(BaseConfig):
             'basic', 'convert_newlines', fallback=self.convert_newlines
         )
         if cfg.get('basic', 'grid_columns', fallback=None):
-            self.grid_columns = cfg.get('basic', 'grid_columns').split(',')
+            self.grid_columns = cfg.get('basic', 'grid_columns')
         else:
-            self.grid_columns = [col.name for col in SubsModelColumn]
+            self.grid_columns = None
         self.current_palette = (
             cfg.get('basic', 'current_palette', fallback=self.current_palette)
         )
@@ -352,7 +352,7 @@ class GeneralConfig(BaseConfig):
                 {
                     'spell_check': self.spell_check,
                     'convert_newlines': self.convert_newlines,
-                    'grid_columns': ','.join(self.grid_columns),
+                    'grid_columns': self.grid_columns,
                     'current_palette': self.current_palette,
                 },
 
