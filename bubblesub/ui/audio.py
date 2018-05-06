@@ -450,12 +450,19 @@ class AudioSliderWidget(BaseAudioWidget):
     ) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
+        api.media.current_pts_changed.connect(
+            self._on_video_current_pts_change
+        )
+
+    def _on_video_current_pts_change(self) -> None:
+        self.update()
 
     def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
         painter.begin(self)
         self._draw_subtitle_rects(painter)
         self._draw_slider(painter)
+        self._draw_video_pos(painter)
         self._draw_frame(painter)
         painter.end()
 
@@ -472,6 +479,18 @@ class AudioSliderWidget(BaseAudioWidget):
         distance = new_center - old_center
         self._audio.move_view(int(distance))
 
+    def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
+        if not self._api.media.current_pts:
+            return
+        x = self._pts_to_x(self._api.media.current_pts)
+        painter.setPen(QtGui.QPen(
+            get_color(self._api, 'spectrogram/video-marker'),
+            1,
+            QtCore.Qt.SolidLine
+        ))
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.drawLine(x, 0, x, self.height())
+
     def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
         h = self.height()
         painter.setPen(QtCore.Qt.NoPen)
@@ -485,12 +504,12 @@ class AudioSliderWidget(BaseAudioWidget):
 
     def _draw_slider(self, painter: QtGui.QPainter) -> None:
         h = self.height()
-        brush = QtGui.QBrush(self.palette().highlight())
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(brush)
+        painter.setBrush(QtGui.QBrush(self.palette().highlight()))
         x1 = self._pts_to_x(self._audio.view_start)
         x2 = self._pts_to_x(self._audio.view_end)
-        painter.drawRect(x1, 0, x2 - x1, h - 1)
+        painter.drawRect(x1, 0, x2 - x1, h / 4)
+        painter.drawRect(x1, h - 1 - h / 4, x2 - x1, h / 4)
 
     def _draw_frame(self, painter: QtGui.QPainter) -> None:
         w, h = self.width(), self.height()
