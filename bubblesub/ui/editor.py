@@ -180,7 +180,6 @@ class BottomBar(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Preferred
         ))
         self.actor_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
-        self.effect_edit = QtWidgets.QLineEdit(self)
         self.comment_checkbox = QtWidgets.QCheckBox('Comment', self)
 
         layout = QtWidgets.QHBoxLayout(self)
@@ -191,8 +190,6 @@ class BottomBar(QtWidgets.QWidget):
         layout.addWidget(QtWidgets.QLabel('Actor:', self))
         layout.addWidget(self.actor_edit)
         layout.addStretch()
-        layout.addWidget(QtWidgets.QLabel('Effect:', self))
-        layout.addWidget(self.effect_edit)
         layout.addWidget(self.comment_checkbox)
 
 
@@ -228,7 +225,6 @@ class Editor(QtWidgets.QWidget):
         self.top_bar.start_time_edit.set_value(subtitle.start)
         self.top_bar.end_time_edit.set_value(subtitle.end)
         self.top_bar.duration_edit.set_value(subtitle.duration)
-        self.bottom_bar.effect_edit.setText(subtitle.effect)
         self.top_bar.layer_edit.setValue(subtitle.layer)
         self.bottom_bar.comment_checkbox.setChecked(subtitle.is_comment)
         self.top_bar.margin_l_edit.setValue(subtitle.margin_left)
@@ -267,7 +263,6 @@ class Editor(QtWidgets.QWidget):
         self.top_bar.duration_edit.reset_text()
         self.bottom_bar.style_edit.lineEdit().setText('')
         self.bottom_bar.actor_edit.lineEdit().setText('')
-        self.bottom_bar.effect_edit.setText('')
         self.top_bar.layer_edit.setValue(0)
         self.bottom_bar.comment_checkbox.setChecked(False)
         self.top_bar.margin_l_edit.setValue(0)
@@ -296,7 +291,6 @@ class Editor(QtWidgets.QWidget):
             subtitle.note = (
                 self.center.note_edit.toPlainText().replace('\n', r'\N')
             )
-            subtitle.effect = self.bottom_bar.effect_edit.text()
             subtitle.layer = self.top_bar.layer_edit.value()
             subtitle.margin_left = self.top_bar.margin_l_edit.value()
             subtitle.margin_vertical = self.top_bar.margin_v_edit.value()
@@ -386,7 +380,6 @@ class Editor(QtWidgets.QWidget):
         )
         self.center.text_edit.textChanged.connect(self._on_generic_edit)
         self.center.note_edit.textChanged.connect(self._on_generic_edit)
-        self.bottom_bar.effect_edit.textChanged.connect(self._on_generic_edit)
         self.top_bar.layer_edit.valueChanged.connect(self._on_generic_edit)
         self.top_bar.margin_l_edit.valueChanged.connect(self._on_generic_edit)
         self.top_bar.margin_v_edit.valueChanged.connect(self._on_generic_edit)
@@ -413,9 +406,6 @@ class Editor(QtWidgets.QWidget):
         )
         self.center.text_edit.textChanged.disconnect(self._on_generic_edit)
         self.center.note_edit.textChanged.disconnect(self._on_generic_edit)
-        self.bottom_bar.effect_edit.textChanged.disconnect(
-            self._on_generic_edit
-        )
         self.top_bar.layer_edit.valueChanged.disconnect(self._on_generic_edit)
         self.top_bar.margin_l_edit.valueChanged.disconnect(
             self._on_generic_edit
