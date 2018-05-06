@@ -67,7 +67,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
         self._name = name
         self._api = api
         try:
-            font_def = self._api.opt.general.fonts[name]
+            font_def = self._api.opt.general.gui.fonts[name]
             if font_def:
                 font = QtGui.QFont()
                 font.fromString(font_def)
@@ -88,7 +88,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
             font = self.font()
             font.setPointSize(new_size)
             self.setFont(font)
-            self._api.opt.general.fonts[self._name] = (
+            self._api.opt.general.gui.fonts[self._name] = (
                 self.font().toString()
             )
 

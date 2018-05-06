@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import base64
 import functools
 import typing as T
 
@@ -34,20 +33,6 @@ from bubblesub.opt.hotkeys import Hotkey
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuSeparator
-
-
-def _load_splitter_state(
-        widget: QtWidgets.QWidget,
-        opt: T.Dict[str, str],
-        key: str
-) -> None:
-    data = opt.get(key, None)
-    if data:
-        widget.restoreState(base64.b64decode(data))
-
-
-def _get_splitter_state(widget: QtWidgets.QWidget) -> str:
-    return base64.b64encode(widget.saveState()).decode('ascii')
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -114,7 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
 
-        self.apply_palette(T.cast(str, api.opt.general.current_palette))
+        self.apply_palette(T.cast(str, api.opt.general.gui.current_palette))
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
@@ -136,7 +121,7 @@ class MainWindow(QtWidgets.QMainWindow):
             event.accept()
 
     def apply_palette(self, palette_name: str) -> None:
-        palette_def = self._api.opt.general.palettes[palette_name]
+        palette_def = self._api.opt.general.gui.palettes[palette_name]
         palette = QtGui.QPalette()
         for color_type, color_value in palette_def.items():
             if '+' in color_type:
@@ -242,20 +227,22 @@ class MainWindow(QtWidgets.QMainWindow):
         return shortcut
 
     def _restore_splitters(self) -> None:
-        opt = self._api.opt.general.splitters
-        if not opt:
-            return
-        _load_splitter_state(self.top_bar, opt, 'top')
-        _load_splitter_state(self.editor_splitter, opt, 'editor')
-        _load_splitter_state(self.main_splitter, opt, 'main')
-        _load_splitter_state(self.console_splitter, opt, 'console')
+        def _load(widget: QtWidgets.QWidget, key: str) -> None:
+            data = self._api.opt.general.gui.splitters.get(key, None)
+            if data:
+                widget.restoreState(data)
+
+        _load(self.top_bar, 'top')
+        _load(self.editor_splitter, 'editor')
+        _load(self.main_splitter, 'main')
+        _load(self.console_splitter, 'console')
 
     def _store_splitters(self) -> None:
-        self._api.opt.general.splitters = {
-            'top': _get_splitter_state(self.top_bar),
-            'editor': _get_splitter_state(self.editor_splitter),
-            'main': _get_splitter_state(self.main_splitter),
-            'console': _get_splitter_state(self.console_splitter),
+        self._api.opt.general.gui.splitters = {
+            'top': self.top_bar.saveState(),
+            'editor': self.editor_splitter.saveState(),
+            'main': self.main_splitter.saveState(),
+            'console': self.console_splitter.saveState(),
         }
 
     def _update_title(self) -> None:

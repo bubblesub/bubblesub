@@ -16,14 +16,28 @@
 
 """General config."""
 
+import base64
 import configparser
 import enum
 import io
 import json
 import re
 import typing as T
+import zlib
 
 from bubblesub.opt.base import BaseConfig
+
+
+def _decompress(data: T.Optional[str]) -> T.Optional[bytes]:
+    if data is None:
+        return None
+    return zlib.decompress(base64.b64decode(data))
+
+
+def _compress(data: T.Optional[bytes]) -> T.Optional[str]:
+    if data is None:
+        return None
+    return base64.b64encode(zlib.compress(data)).decode('ascii')
 
 
 class SubsModelColumn(enum.IntEnum):
@@ -180,6 +194,37 @@ class SubtitlesConfig:
         self.max_characters_per_second = 15
         self.default_duration = 2000
 
+    def loads(self, cfg: configparser.RawConfigParser) -> None:
+        """
+        Load internals from the specified config parser.
+
+        :param cfg: config parser
+        """
+        self.max_characters_per_second = cfg.getint(
+            'subs',
+            'max_characters_per_second',
+            fallback=self.max_characters_per_second
+        )
+        self.default_duration = cfg.getint(
+            'subs',
+            'default_duration',
+            fallback=self.default_duration
+        )
+
+    def dumps(self) -> T.Any:
+        """
+        Dump internals.
+
+        :return: config parser-compatible structure
+        """
+        return {
+            'subs':
+            {
+                'max_characters_per_second': self.max_characters_per_second,
+                'default_duration': self.default_duration
+            }
+        }
+
 
 class StylesConfig:
     """Config related to subtitle styles."""
@@ -189,6 +234,37 @@ class StylesConfig:
         self.preview_test_text = 'Test テスト\n0123456789'
         self.preview_background = 'transparency-grid.png'
 
+    def loads(self, cfg: configparser.RawConfigParser) -> None:
+        """
+        Load internals from the specified config parser.
+
+        :param cfg: config parser
+        """
+        self.preview_test_text = cfg.get(
+            'styles',
+            'preview_test_text',
+            fallback=self.preview_test_text
+        )
+        self.preview_background = cfg.get(
+            'styles',
+            'preview_background',
+            fallback=self.preview_background
+        )
+
+    def dumps(self) -> T.Any:
+        """
+        Dump internals.
+
+        :return: config parser-compatible structure
+        """
+        return {
+            'styles':
+            {
+                'preview_test_text': self.preview_test_text,
+                'preview_background': self.preview_background
+            }
+        }
+
 
 class VideoConfig:
     """Config related to video and playback."""
@@ -196,6 +272,31 @@ class VideoConfig:
     def __init__(self) -> None:
         """Initialize self."""
         self.subs_sync_interval = 65
+
+    def loads(self, cfg: configparser.RawConfigParser) -> None:
+        """
+        Load internals from the specified config parser.
+
+        :param cfg: config parser
+        """
+        self.subs_sync_interval = cfg.getint(
+            'video',
+            'subs_sync_interval',
+            fallback=self.subs_sync_interval
+        )
+
+    def dumps(self) -> T.Any:
+        """
+        Dump internals.
+
+        :return: config parser-compatible structure
+        """
+        return {
+            'video':
+            {
+                'subs_sync_interval': self.subs_sync_interval
+            }
+        }
 
 
 class AudioConfig:
@@ -205,6 +306,37 @@ class AudioConfig:
         """Initialize self."""
         self.spectrogram_resolution = 10
         self.spectrogram_sync_interval = 65
+
+    def loads(self, cfg: configparser.RawConfigParser) -> None:
+        """
+        Load internals from the specified config parser.
+
+        :param cfg: config parser
+        """
+        self.spectrogram_resolution = cfg.getint(
+            'audio',
+            'spectrogram_resolution',
+            fallback=self.spectrogram_resolution
+        )
+        self.spectrogram_sync_interval = cfg.getint(
+            'audio',
+            'spectrogram_sync_interval',
+            fallback=self.spectrogram_sync_interval
+        )
+
+    def dumps(self) -> T.Any:
+        """
+        Dump internals.
+
+        :return: config parser-compatible structure
+        """
+        return {
+            'audio':
+            {
+                'spectrogram_resolution': self.spectrogram_resolution,
+                'spectrogram_sync_interval': self.spectrogram_sync_interval
+            }
+        }
 
 
 class SearchConfig:
@@ -217,6 +349,118 @@ class SearchConfig:
         self.use_regexes = False
         self.mode = SearchMode.Text
 
+    def loads(self, cfg: configparser.RawConfigParser) -> None:
+        """
+        Load internals from the specified config parser.
+
+        :param cfg: config parser
+        """
+        self.case_sensitive = cfg.getboolean(
+            'search', 'case_sensitive', fallback=self.case_sensitive
+        )
+        self.use_regexes = cfg.getboolean(
+            'search', 'use_regexes', fallback=self.use_regexes
+        )
+        self.mode = SearchMode(
+            cfg.getint('search', 'mode', fallback=self.mode)
+        )
+        self.history = json.loads(
+            cfg.get('search', 'history', fallback='[]')
+        )
+
+    def dumps(self) -> T.Any:
+        """
+        Dump internals.
+
+        :return: config parser-compatible structure
+        """
+        return {
+            'search':
+            {
+                'history': json.dumps(self.history),
+                'case_sensitive': self.case_sensitive,
+                'use_regexes': self.use_regexes,
+                'mode': int(self.mode)
+            }
+        }
+
+
+class GuiConfig:
+    """Config related to GUI."""
+
+    def __init__(self) -> None:
+        """Initialize self."""
+        self.current_palette = 'light'
+        self.splitters: T.Dict[str, bytes] = {}
+        self.grid_columns: T.Optional[bytes] = None
+        self.fonts = {
+            'editor': '',
+            'notes': '',
+        }
+        self.palettes: T.Dict[str, T.Dict[str, T.Tuple[int, ...]]] = {
+            'dark': PALETTE_DARK,
+            'light': PALETTE_LIGHT,
+        }
+
+    def loads(self, cfg: configparser.RawConfigParser) -> None:
+        """
+        Load internals from the specified config parser.
+
+        :param cfg: config parser
+        """
+        if cfg.has_section('gui.splitters'):
+            for key, raw_value in cfg.items('gui.splitters'):
+                value = _decompress(raw_value)
+                if value is not None:
+                    self.splitters[key] = value
+
+        self.current_palette = (
+            cfg.get('gui', 'current_palette', fallback=self.current_palette)
+        )
+        if cfg.get('gui', 'grid_columns', fallback=None):
+            self.grid_columns = _decompress(cfg.get('gui', 'grid_columns'))
+        else:
+            self.grid_columns = None
+
+        for key, value in self.fonts.items():
+            self.fonts[key] = cfg.get('gui.fonts', key, fallback=value)
+
+        self.palettes.clear()
+        for section_name, section in cfg.items():
+            match = re.match(r'^gui.palette\.(\w+)$', section_name)
+            if match:
+                palette_name = match.group(1)
+                self.palettes[palette_name] = {
+                    key: _deserialize_color(value)
+                    for key, value in section.items()
+                }
+
+    def dumps(self) -> T.Any:
+        """
+        Dump internals.
+
+        :return: config parser-compatible structure
+        """
+        ret = {
+            'gui': {
+                'current_palette': self.current_palette,
+                'grid_columns': _compress(self.grid_columns)
+            },
+            'gui.splitters': {
+                key: _compress(value)
+                for key, value in self.splitters.items()
+            },
+            'gui.fonts': self.fonts
+        }
+
+        for palette_name, palette in self.palettes.items():
+            ret[f'gui.palette.{palette_name}'] = {
+                key: _serialize_color(color)
+                for key, color in palette.items()
+            }
+
+        return ret
+
 
 class GeneralConfig(BaseConfig):
     """General config."""
@@ -227,19 +471,7 @@ class GeneralConfig(BaseConfig):
         """Initialize self."""
         self.spell_check = 'en_US'
         self.convert_newlines = True
-        self.grid_columns = None
-        self.splitters: T.Dict[str, str] = {}
-
-        self.current_palette = 'light'
-        self.palettes: T.Dict[str, T.Dict[str, T.Tuple[int, ...]]] = {
-            'dark': PALETTE_DARK,
-            'light': PALETTE_LIGHT,
-        }
-
-        self.fonts = {
-            'editor': '',
-            'notes': '',
-        }
+        self.gui = GuiConfig()
 
         self.subs = SubtitlesConfig()
         self.styles = StylesConfig()
@@ -263,80 +495,13 @@ class GeneralConfig(BaseConfig):
         self.convert_newlines = cfg.getboolean(
             'basic', 'convert_newlines', fallback=self.convert_newlines
         )
-        if cfg.get('basic', 'grid_columns', fallback=None):
-            self.grid_columns = cfg.get('basic', 'grid_columns')
-        else:
-            self.grid_columns = None
-        self.current_palette = (
-            cfg.get('basic', 'current_palette', fallback=self.current_palette)
-        )
-        for key, value in cfg.items('splitters'):
-            self.splitters[key] = value
-        for key, value in self.fonts.items():
-            self.fonts[key] = cfg.get('fonts', key, fallback=value)
 
-        self.audio.spectrogram_resolution = cfg.getint(
-            'audio',
-            'spectrogram_resolution',
-            fallback=self.audio.spectrogram_resolution
-        )
-        self.audio.spectrogram_sync_interval = cfg.getint(
-            'audio',
-            'spectrogram_sync_interval',
-            fallback=self.audio.spectrogram_sync_interval
-        )
-
-        self.video.subs_sync_interval = cfg.getint(
-            'video',
-            'subs_sync_interval',
-            fallback=self.video.subs_sync_interval
-        )
-
-        self.subs.max_characters_per_second = cfg.getint(
-            'subs',
-            'max_characters_per_second',
-            fallback=self.subs.max_characters_per_second
-        )
-        self.subs.default_duration = cfg.getint(
-            'subs',
-            'default_duration',
-            fallback=self.subs.default_duration
-        )
-
-        self.styles.preview_test_text = cfg.get(
-            'styles',
-            'preview_test_text',
-            fallback=self.styles.preview_test_text
-        )
-        self.styles.preview_background = cfg.get(
-            'styles',
-            'preview_background',
-            fallback=self.styles.preview_background
-        )
-
-        self.search.case_sensitive = cfg.getboolean(
-            'search', 'case_sensitive', fallback=self.search.case_sensitive
-        )
-        self.search.use_regexes = cfg.getboolean(
-            'search', 'use_regexes', fallback=self.search.use_regexes
-        )
-        self.search.mode = SearchMode(
-            cfg.getint('search', 'mode', fallback=self.search.mode)
-        )
-        self.search.history = json.loads(
-            cfg.get('search', 'history', fallback='[]')
-        )
-
-        self.palettes.clear()
-        if any(section.startswith('palette.') for section in cfg.sections()):
-            for section_name, section in cfg.items():
-                match = re.match(r'^palette\.(\w+)$', section_name)
-                if match:
-                    palette_name = match.group(1)
-                    self.palettes[palette_name] = {
-                        key: _deserialize_color(value)
-                        for key, value in section.items()
-                    }
+        self.gui.loads(cfg)
+        self.audio.loads(cfg)
+        self.video.loads(cfg)
+        self.subs.loads(cfg)
+        self.styles.loads(cfg)
+        self.search.loads(cfg)
 
     def dumps(self) -> str:
         """
@@ -346,66 +511,21 @@ class GeneralConfig(BaseConfig):
         """
         cfg = configparser.RawConfigParser()
         cfg.optionxform = lambda option: option
-        cfg.read_dict(
+
+        cfg.read_dict({
+            'basic':
             {
-                'basic':
-                {
-                    'spell_check': self.spell_check,
-                    'convert_newlines': self.convert_newlines,
-                    'grid_columns': self.grid_columns,
-                    'current_palette': self.current_palette,
-                },
+                'spell_check': self.spell_check,
+                'convert_newlines': self.convert_newlines,
+            },
+        })
 
-                'splitters': self.splitters,
-
-                'fonts': self.fonts,
-
-                'audio':
-                {
-                    'spectrogram_resolution':
-                        self.audio.spectrogram_resolution,
-                    'spectrogram_sync_interval':
-                        self.audio.spectrogram_sync_interval,
-                },
-
-                'video':
-                {
-                    'subs_sync_interval': self.video.subs_sync_interval
-                },
-
-                'subs':
-                {
-                    'max_characters_per_second':
-                        self.subs.max_characters_per_second,
-                    'default_duration': self.subs.default_duration
-                },
-
-                'styles':
-                {
-                    'preview_test_text': self.styles.preview_test_text,
-                    'preview_background': self.styles.preview_background
-                },
-
-                'search':
-                {
-                    'history': json.dumps(self.search.history),
-                    'case_sensitive': self.search.case_sensitive,
-                    'use_regexes': self.search.use_regexes,
-                    'mode': int(self.search.mode),
-                }
-            }
-        )
-
-        cfg.read_dict(
-            {
-                f'palette.{palette_name}':
-                {
-                    key: _serialize_color(color)
-                    for key, color in palette.items()
-                }
-                for palette_name, palette in self.palettes.items()
-            }
-        )
+        cfg.read_dict(self.gui.dumps())
+        cfg.read_dict(self.audio.dumps())
+        cfg.read_dict(self.video.dumps())
+        cfg.read_dict(self.subs.dumps())
+        cfg.read_dict(self.styles.dumps())
+        cfg.read_dict(self.search.dumps())
 
         with io.StringIO() as handle:
             cfg.write(handle)

@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import base64
 import functools
 import re
 import typing as T
@@ -174,17 +173,17 @@ class SubsGrid(QtWidgets.QTableView):
 
     def restore_grid_columns(self) -> None:
         header = self.horizontalHeader()
-        data = self._api.opt.general.grid_columns
+        data = self._api.opt.general.gui.grid_columns
         if data:
-            header.restoreState(base64.b64decode(data))
+            header.restoreState(data)
         for action in header.actions():
             column: SubsModelColumn = action.data()
             action.setChecked(not header.isSectionHidden(column.value))
 
     def store_grid_columns(self) -> None:
-        self._api.opt.general.grid_columns = base64.b64encode(
+        self._api.opt.general.gui.grid_columns = (
             self.horizontalHeader().saveState()
-        ).decode('ascii')
+        )
 
     def keyboardSearch(self, _text: str) -> None:
         pass

@@ -237,8 +237,8 @@ def setup_cmd_menu(
 
 @functools.lru_cache(maxsize=None)
 def get_color(api: bubblesub.api.Api, color_name: str) -> QtGui.QColor:
-    current_palette = api.opt.general.current_palette
-    palette_def = api.opt.general.palettes[current_palette]
+    current_palette = api.opt.general.gui.current_palette
+    palette_def = api.opt.general.gui.palettes[current_palette]
     color_value = palette_def[color_name]
     return QtGui.QColor(*color_value)
 
