@@ -425,15 +425,20 @@ class GuiConfig:
         for key, value in self.fonts.items():
             self.fonts[key] = cfg.get('gui.fonts', key, fallback=value)
 
-        self.palettes.clear()
+        new_palettes = {}
         for section_name, section in cfg.items():
             match = re.match(r'^gui.palette\.(\w+)$', section_name)
             if match:
                 palette_name = match.group(1)
-                self.palettes[palette_name] = {
+                new_palettes[palette_name] = {
                     key: _deserialize_color(value)
                     for key, value in section.items()
                 }
+        if new_palettes:
+            self.palettes.clear()
+            self.palettes.update(new_palettes)
+        if self.current_palette not in self.palettes:
+            self.current_palette = self.palettes.keys()[0]
 
     def dumps(self) -> T.Any:
         """
