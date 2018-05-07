@@ -16,10 +16,18 @@
 
 """Menu config."""
 
+import enum
 import json
 import typing as T
 
 from bubblesub.opt.base import BaseConfig
+
+
+class MenuContext(enum.Enum):
+    """Which GUI widget the menu appears in."""
+
+    MainMenu = 'main'
+    SubtitlesGrid = 'subtitles_grid'
 
 
 class MenuItem:
@@ -76,10 +84,10 @@ class MenuConfig(BaseConfig):
 
     def __init__(self) -> None:
         """Initialize self."""
-        self.main: T.MutableSequence[MenuItem] = [
-            SubMenu(
-                '&File',
-                [
+        self._menu: T.Dict[MenuContext, T.MutableSequence[MenuItem]] = {
+            MenuContext.MainMenu:
+            [
+                SubMenu('&File', [
                     MenuCommand('file/new'),
                     MenuCommand('file/open'),
                     MenuCommand('file/save'),
@@ -88,12 +96,9 @@ class MenuConfig(BaseConfig):
                     MenuCommand('file/load-video'),
                     MenuSeparator(),
                     MenuCommand('file/quit'),
-                ]
-            ),
+                ]),
 
-            SubMenu(
-                '&Edit',
-                [
+                SubMenu('&Edit', [
                     MenuCommand('edit/undo'),
                     MenuCommand('edit/redo'),
                     MenuSeparator(),
@@ -124,12 +129,9 @@ class MenuConfig(BaseConfig):
                     MenuSeparator(),
                     MenuCommand('edit/spell-check'),
                     MenuCommand('edit/manage-styles'),
-                ]
-            ),
+                ]),
 
-            SubMenu(
-                '&Select',
-                [
+                SubMenu('&Select', [
                     MenuCommand('grid/jump-to-line'),
                     MenuCommand('grid/jump-to-time'),
                     MenuSeparator(),
@@ -137,12 +139,9 @@ class MenuConfig(BaseConfig):
                     MenuCommand('grid/select-prev-sub'),
                     MenuCommand('grid/select-next-sub'),
                     MenuCommand('grid/select-nothing'),
-                ]
-            ),
+                ]),
 
-            SubMenu(
-                '&View',
-                [
+                SubMenu('&View', [
                     MenuCommand('view/set-palette', 'light'),
                     MenuCommand('view/set-palette', 'dark'),
                     MenuSeparator(),
@@ -154,23 +153,15 @@ class MenuConfig(BaseConfig):
                     MenuCommand('view/focus-note-editor'),
                     MenuCommand('view/focus-grid'),
                     MenuCommand('view/focus-spectrogram'),
-                ]
-            ),
+                ]),
 
-            SubMenu(
-                '&Playback',
-                [
-                    SubMenu(
-                        'Play around selection',
-                        [
-                            MenuCommand(
-                                'video/play-around-sel-start', -500, 0
-                            ),
-                            MenuCommand('video/play-around-sel-start', 0, 500),
-                            MenuCommand('video/play-around-sel-end', -500, 0),
-                            MenuCommand('video/play-around-sel-end', 0, 500),
-                        ]
-                    ),
+                SubMenu('&Playback', [
+                    SubMenu('Play around selection', [
+                        MenuCommand('video/play-around-sel-start', -500, 0),
+                        MenuCommand('video/play-around-sel-start', 0, 500),
+                        MenuCommand('video/play-around-sel-end', -500, 0),
+                        MenuCommand('video/play-around-sel-end', 0, 500),
+                    ]),
                     MenuCommand('video/play-around-sel', 0, 0),
                     MenuCommand('video/play-current-line'),
                     MenuCommand('video/unpause'),
@@ -190,40 +181,32 @@ class MenuConfig(BaseConfig):
                     MenuSeparator(),
                     MenuCommand('video/set-playback-speed', '{}/1.5'),
                     MenuCommand('video/set-playback-speed', '{}*1.5'),
-                ]
-            ),
+                ]),
 
-            SubMenu(
-                '&Timing',
-                [
-                    SubMenu(
-                        'Snap selection to subtitles',
-                        [
-                            MenuCommand('audio/snap-sel-start-to-prev-sub'),
-                            MenuCommand('audio/snap-sel-end-to-next-sub'),
-                        ]
-                    ),
-                    SubMenu(
-                        'Snap selection to video frame',
-                        [
-                            MenuCommand('audio/snap-sel-start-to-video'),
-                            MenuCommand('audio/snap-sel-end-to-video'),
-                            MenuCommand('audio/place-sel-at-video'),
-                        ]
-                    ),
-                    SubMenu(
-                        'Shift selection',
-                        [
-                            MenuCommand('audio/shift-sel-start', -10),
-                            MenuCommand('audio/shift-sel-start', 10),
-                            MenuCommand('audio/shift-sel-end', -10),
-                            MenuCommand('audio/shift-sel-end', 10),
-                            MenuCommand('audio/shift-sel-start', -1),
-                            MenuCommand('audio/shift-sel-start', 1),
-                            MenuCommand('audio/shift-sel-end', -1),
-                            MenuCommand('audio/shift-sel-end', 1),
-                        ]
-                    ),
+                SubMenu('&Timing', [
+                    SubMenu('Snap selection to subtitles', [
+                        MenuCommand(
+                            'audio/snap-sel-start-to-prev-sub'
+                        ),
+                        MenuCommand(
+                            'audio/snap-sel-end-to-next-sub'
+                        ),
+                    ]),
+                    SubMenu('Snap selection to video frame', [
+                        MenuCommand('audio/snap-sel-start-to-video'),
+                        MenuCommand('audio/snap-sel-end-to-video'),
+                        MenuCommand('audio/place-sel-at-video'),
+                    ]),
+                    SubMenu('Shift selection', [
+                        MenuCommand('audio/shift-sel-start', -10),
+                        MenuCommand('audio/shift-sel-start', 10),
+                        MenuCommand('audio/shift-sel-end', -10),
+                        MenuCommand('audio/shift-sel-end', 10),
+                        MenuCommand('audio/shift-sel-start', -1),
+                        MenuCommand('audio/shift-sel-start', 1),
+                        MenuCommand('audio/shift-sel-end', -1),
+                        MenuCommand('audio/shift-sel-end', 1),
+                    ]),
                     MenuCommand('audio/commit-sel'),
                     MenuSeparator(),
                     MenuCommand('edit/shift-subs-with-gui'),
@@ -232,34 +215,35 @@ class MenuConfig(BaseConfig):
                     MenuCommand('audio/scroll', 0.05),
                     MenuCommand('audio/zoom', 1.1),
                     MenuCommand('audio/zoom', 0.9)
-                ]
-            )
-        ]
+                ])
+            ],
 
-        self.subtitles_grid: T.MutableSequence[MenuItem] = [
-            MenuCommand('grid/create-audio-sample'),
-            MenuSeparator(),
-            MenuCommand('edit/insert-above'),
-            MenuCommand('edit/insert-below'),
-            MenuSeparator(),
-            MenuCommand('grid/copy-to-clipboard'),
-            MenuCommand('grid/paste-from-clipboard-above'),
-            MenuCommand('grid/paste-from-clipboard-below'),
-            MenuSeparator(),
-            MenuCommand('edit/duplicate'),
-            MenuCommand('edit/split-sub-at-video'),
-            MenuSeparator(),
-            MenuCommand('edit/join-subs/keep-first'),
-            MenuCommand('edit/join-subs/concatenate'),
-            MenuCommand('edit/karaoke-join'),
-            MenuCommand('edit/transformation-join'),
-            MenuSeparator(),
-            MenuCommand('edit/karaoke-split'),
-            MenuCommand('edit/snap-subs-start-to-prev-sub'),
-            MenuCommand('edit/snap-subs-end-to-next-sub'),
-            MenuSeparator(),
-            MenuCommand('edit/delete')
-        ]
+            MenuContext.SubtitlesGrid:
+            [
+                MenuCommand('grid/create-audio-sample'),
+                MenuSeparator(),
+                MenuCommand('edit/insert-above'),
+                MenuCommand('edit/insert-below'),
+                MenuSeparator(),
+                MenuCommand('grid/copy-to-clipboard'),
+                MenuCommand('grid/paste-from-clipboard-above'),
+                MenuCommand('grid/paste-from-clipboard-below'),
+                MenuSeparator(),
+                MenuCommand('edit/duplicate'),
+                MenuCommand('edit/split-sub-at-video'),
+                MenuSeparator(),
+                MenuCommand('edit/join-subs/keep-first'),
+                MenuCommand('edit/join-subs/concatenate'),
+                MenuCommand('edit/karaoke-join'),
+                MenuCommand('edit/transformation-join'),
+                MenuSeparator(),
+                MenuCommand('edit/karaoke-split'),
+                MenuCommand('edit/snap-subs-start-to-prev-sub'),
+                MenuCommand('edit/snap-subs-end-to-next-sub'),
+                MenuSeparator(),
+                MenuCommand('edit/delete')
+            ]
+        }
 
     def loads(self, text: str) -> None:
         """
@@ -295,8 +279,8 @@ class MenuConfig(BaseConfig):
                     )
 
         obj = json.loads(text)
-        load_menu(self.main, obj.get('main', None))
-        load_menu(self.subtitles_grid, obj.get('subtitles_grid', None))
+        for context in MenuContext:
+            load_menu(self._menu[context], obj.get(context.value, None))
 
     def dumps(self) -> str:
         """
@@ -327,9 +311,28 @@ class MenuConfig(BaseConfig):
 
         return json.dumps(
             {
-                'main': self.main,
-                'subtitles_grid': self.subtitles_grid
+                context.value: self._menu[context]
+                for context in MenuContext
             },
             cls=MenuEncoder,
             indent=4
         )
+
+    def __getitem__(self, context: MenuContext) -> T.MutableSequence[MenuItem]:
+        """
+        Retrieve list of menu items by the specified context.
+
+        :param context: context
+        :return: contextual menu
+        """
+        return self._menu[context]
+
+    def __iter__(
+            self
+    ) -> T.Iterator[T.Tuple[str, T.MutableSequence[MenuItem]]]:
+        """
+        Let users iterate directly over this config.
+
+        :return: iterator
+        """
+        return iter(self._menu.items())

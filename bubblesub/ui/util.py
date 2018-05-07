@@ -24,6 +24,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.util
+from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import MenuSeparator
@@ -211,7 +212,7 @@ def setup_cmd_menu(
         api: bubblesub.api.Api,
         parent: QtWidgets.QWidget,
         menu_def: T.Sequence[MenuItem],
-        context: str,
+        context: HotkeyContext,
         hotkey_map: T.Optional[T.Dict[T.Any, str]] = None
 ) -> T.Any:
     if hotkey_map is None:

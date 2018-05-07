@@ -24,6 +24,8 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
+from bubblesub.opt.hotkeys import HotkeyContext
+from bubblesub.opt.menu import MenuContext
 from bubblesub.ui.model.subs import SubsModel, SubsModelColumn
 from bubblesub.ui.util import get_color
 
@@ -149,8 +151,8 @@ class SubsGrid(QtWidgets.QTableView):
         bubblesub.ui.util.setup_cmd_menu(
             self._api,
             self.subtitles_menu,
-            self._api.opt.menu.subtitles_grid,
-            'subtitles_grid'
+            self._api.opt.menu[MenuContext.SubtitlesGrid],
+            HotkeyContext.SubtitlesGrid
         )
 
     def _setup_header_menu(self) -> None:

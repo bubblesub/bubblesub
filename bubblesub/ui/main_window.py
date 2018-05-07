@@ -30,7 +30,9 @@ import bubblesub.ui.subs_grid
 import bubblesub.ui.util
 import bubblesub.ui.video
 from bubblesub.opt.hotkeys import Hotkey
+from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuCommand
+from bubblesub.opt.menu import MenuContext
 from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuSeparator
 
@@ -144,8 +146,8 @@ class MainWindow(QtWidgets.QMainWindow):
         return bubblesub.ui.util.setup_cmd_menu(
             self._api,
             self.menuBar(),
-            self._api.opt.menu.main,
-            'global'
+            self._api.opt.menu[MenuContext.MainMenu],
+            HotkeyContext.Global
         )
 
     def _setup_plugins_menu(self) -> None:
@@ -160,43 +162,48 @@ class MainWindow(QtWidgets.QMainWindow):
         plugins_menu = self.menuBar().addMenu('Pl&ugins')
         plugins_menu.setObjectName('plugins-menu')
         bubblesub.ui.util.setup_cmd_menu(
-            self._api, plugins_menu, plugins_menu_def, 'global'
+            self._api, plugins_menu, plugins_menu_def, HotkeyContext.Global
         )
 
     @property
-    def _context_to_widget_map(self) -> T.Dict[str, QtWidgets.QWidget]:
+    def _hotkey_context_to_widget_map(
+            self
+    ) -> T.Dict[HotkeyContext, QtWidgets.QWidget]:
         return {
-            'spectrogram': self.audio,
-            'subtitles_grid': self.subs_grid,
+            HotkeyContext.Spectrogram: self.audio,
+            HotkeyContext.SubtitlesGrid: self.subs_grid,
         }
 
-    def _widget_to_context(self, widget: QtWidgets.QWidget) -> T.Optional[str]:
+    def _widget_to_hotkey_context(
+            self, widget: QtWidgets.QWidget
+    ) -> T.Optional[HotkeyContext]:
         while widget:
-            for context, context_widget in self._context_to_widget_map.items():
+            for context, context_widget in \
+                    self._hotkey_context_to_widget_map.items():
                 if widget == context_widget:
                     return context
             widget = widget.parent()
         return None
 
     def _setup_hotkeys(self) -> None:
-        shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut] = {}
+        shortcuts: T.Dict[
+            T.Tuple[str, HotkeyContext], QtWidgets.QShortcut
+        ] = {}
 
         for context, hotkeys in self._api.opt.hotkeys:
             for hotkey in hotkeys:
-                shortcut = self._setup_hotkey(
-                    context, hotkey, shortcuts
-                )
+                shortcut = self._setup_hotkey(context, hotkey, shortcuts)
                 if shortcut:
                     shortcuts[(hotkey.shortcut, context)] = shortcut
 
     def _setup_hotkey(
             self,
-            context: str,
+            context: HotkeyContext,
             hotkey: Hotkey,
-            shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut]
+            shortcuts: T.Dict[T.Tuple[str, HotkeyContext], QtWidgets.QShortcut]
     ) -> QtWidgets.QShortcut:
         def resolve_ambiguity(keys: str) -> None:
-            context = self._widget_to_context(
+            context = self._widget_to_hotkey_context(
                 QtWidgets.QApplication.focusWidget()
             )
             if context and (keys, context) in shortcuts:
@@ -218,10 +225,10 @@ class MainWindow(QtWidgets.QMainWindow):
             functools.partial(self._api.cmd.run, command)
         )
 
-        if context in self._context_to_widget_map:
+        if context in self._hotkey_context_to_widget_map:
             shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
-            shortcut.setParent(self._context_to_widget_map[context])
-        elif context == 'global':
+            shortcut.setParent(self._hotkey_context_to_widget_map[context])
+        elif context == HotkeyContext.Global:
             shortcut.setContext(QtCore.Qt.ApplicationShortcut)
         else:
             raise RuntimeError(f'Invalid shortcut context "{context}"')

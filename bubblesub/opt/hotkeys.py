@@ -16,10 +16,19 @@
 
 """Hotkey config."""
 
+import enum
 import json
 import typing as T
 
 from bubblesub.opt.base import BaseConfig
+
+
+class HotkeyContext(enum.Enum):
+    """Which GUI widget the hotkey works in."""
+
+    Global = 'global'
+    Spectrogram = 'spectrogram'
+    SubtitlesGrid = 'subtitles_grid'
 
 
 class Hotkey:
@@ -51,8 +60,8 @@ class HotkeysConfig(BaseConfig):
 
     def __init__(self) -> None:
         """Initialize self."""
-        self.hotkeys: T.Dict[str, T.List[Hotkey]] = {
-            'global':
+        self.hotkeys: T.Dict[HotkeyContext, T.List[Hotkey]] = {
+            HotkeyContext.Global:
             [
                 Hotkey('Ctrl+Shift+N', 'file/new'),
                 Hotkey('Ctrl+O', 'file/open'),
@@ -108,7 +117,7 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Alt+Down', 'edit/move-down'),
             ],
 
-            'spectrogram':
+            HotkeyContext.Spectrogram:
             [
                 Hotkey('Shift+1', 'audio/shift-sel-start', -10),
                 Hotkey('Shift+2', 'audio/shift-sel-start', 10),
@@ -146,7 +155,7 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Alt+Right', 'audio/snap-sel-end-to-next-sub'),
             ],
 
-            'subtitles_grid':
+            HotkeyContext.SubtitlesGrid:
             [
                 Hotkey('Ctrl+C', 'grid/copy-to-clipboard'),
                 Hotkey('Ctrl+V', 'grid/paste-from-clipboard-below'),
@@ -160,10 +169,10 @@ class HotkeysConfig(BaseConfig):
         :param text: JSON
         """
         obj = json.loads(text)
-        for context_name in self.hotkeys:
-            self.hotkeys[context_name].clear()
-            for hotkey_obj in obj.get(context_name, []):
-                self.hotkeys[context_name].append(
+        for context in self.hotkeys:
+            self.hotkeys[context].clear()
+            for hotkey_obj in obj.get(context.value, []):
+                self.hotkeys[context].append(
                     Hotkey(
                         hotkey_obj['shortcut'],
                         hotkey_obj['command_name'],
@@ -179,7 +188,7 @@ class HotkeysConfig(BaseConfig):
         """
         return json.dumps(
             {
-                context_name:
+                context.value:
                 [
                     {
                         'shortcut': hotkey.shortcut,
@@ -188,12 +197,12 @@ class HotkeysConfig(BaseConfig):
                     }
                     for hotkey in hotkeys
                 ]
-                for context_name, hotkeys in self.__iter__()
+                for context, hotkeys in self.__iter__()
             },
             indent=4
         )
 
-    def __iter__(self) -> T.Iterator[T.Tuple[str, T.List[Hotkey]]]:
+    def __iter__(self) -> T.Iterator[T.Tuple[HotkeyContext, T.List[Hotkey]]]:
         """
         Let users iterate directly over this config.
 
