@@ -80,8 +80,8 @@ class InsertSubtitleAboveCommand(BaseCommand):
             cur_sub = None
         else:
             idx = self.api.subs.selected_indexes[0]
-            prev_sub = self.api.subs.lines.get(idx - 1)
-            cur_sub = self.api.subs.lines[idx]
+            prev_sub = self.api.subs.events.get(idx - 1)
+            cur_sub = self.api.subs.events[idx]
 
         if cur_sub:
             end = cur_sub.start
@@ -100,7 +100,7 @@ class InsertSubtitleAboveCommand(BaseCommand):
             start = end
 
         with self.api.undo.capture():
-            self.api.subs.lines.insert_one(
+            self.api.subs.events.insert_one(
                 idx, start=start, end=end, style='Default'
             )
             self.api.subs.selected_indexes = [idx]
@@ -117,12 +117,12 @@ class InsertSubtitleBelowCommand(BaseCommand):
         if not self.api.subs.selected_indexes:
             idx = 0
             cur_sub = None
-            next_sub = self.api.subs.lines.get(0)
+            next_sub = self.api.subs.events.get(0)
         else:
             idx = self.api.subs.selected_indexes[-1]
-            cur_sub = self.api.subs.lines[idx]
+            cur_sub = self.api.subs.events[idx]
             idx += 1
-            next_sub = self.api.subs.lines.get(idx)
+            next_sub = self.api.subs.events.get(idx)
 
         start = cur_sub.end if cur_sub else 0
         end = start + self.api.opt.general.subs.default_duration
@@ -133,7 +133,7 @@ class InsertSubtitleBelowCommand(BaseCommand):
             end = start
 
         with self.api.undo.capture():
-            self.api.subs.lines.insert_one(
+            self.api.subs.events.insert_one(
                 idx, start=start, end=end, style='Default'
             )
             self.api.subs.selected_indexes = [idx]
@@ -164,14 +164,14 @@ class MoveSubtitlesUpCommand(BaseCommand):
             for start_idx, count in bubblesub.util.make_ranges(
                     self.api.subs.selected_indexes
             ):
-                self.api.subs.lines.insert(
+                self.api.subs.events.insert(
                     start_idx - 1,
                     [
-                        copy(self.api.subs.lines[idx])
+                        copy(self.api.subs.events[idx])
                         for idx in range(start_idx, start_idx + count)
                     ]
                 )
-                self.api.subs.lines.remove(start_idx + count, count)
+                self.api.subs.events.remove(start_idx + count, count)
                 indexes += [start_idx + i - 1 for i in range(count)]
 
             self.api.subs.selected_indexes = indexes
@@ -194,7 +194,7 @@ class MoveSubtitlesDownCommand(BaseCommand):
             return False
         return (
             self.api.subs.selected_indexes[-1]
-            < len(self.api.subs.lines) - 1
+            < len(self.api.subs.events) - 1
         )
 
     async def run(self) -> None:
@@ -206,14 +206,14 @@ class MoveSubtitlesDownCommand(BaseCommand):
                     self.api.subs.selected_indexes,
                     reverse=True
             ):
-                self.api.subs.lines.insert(
+                self.api.subs.events.insert(
                     start_idx + count + 1,
                     [
-                        copy(self.api.subs.lines[idx])
+                        copy(self.api.subs.events[idx])
                         for idx in range(start_idx, start_idx + count)
                     ]
                 )
-                self.api.subs.lines.remove(start_idx, count)
+                self.api.subs.events.remove(start_idx, count)
                 indexes += [start_idx + i + 1 for i in range(count)]
 
             self.api.subs.selected_indexes = indexes
@@ -247,7 +247,7 @@ class MoveSubtitlesToCommand(BaseCommand):
             dialog = QtWidgets.QInputDialog(main_window)
             dialog.setLabelText('Line number to move selected subtitles to:')
             dialog.setIntMinimum(1)
-            dialog.setIntMaximum(len(api.subs.lines))
+            dialog.setIntMaximum(len(api.subs.events))
             if api.subs.has_selection:
                 dialog.setIntValue(api.subs.selected_indexes[0] + 1)
             dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
@@ -267,13 +267,13 @@ class MoveSubtitlesToCommand(BaseCommand):
                     reverse=True
             ):
                 sub_copies += list(reversed([
-                    copy(self.api.subs.lines[idx])
+                    copy(self.api.subs.events[idx])
                     for idx in range(start_idx, start_idx + count)
                 ]))
-                self.api.subs.lines.remove(start_idx, count)
+                self.api.subs.events.remove(start_idx, count)
 
             sub_copies.reverse()
-            self.api.subs.lines.insert(base_idx, sub_copies)
+            self.api.subs.events.insert(base_idx, sub_copies)
 
 
 class DuplicateSubtitlesCommand(BaseCommand):
@@ -302,8 +302,8 @@ class DuplicateSubtitlesCommand(BaseCommand):
             new_selection: T.List[int] = []
 
             for idx in reversed(self.api.subs.selected_indexes):
-                self.api.subs.lines.insert(
-                    idx + 1, [copy(self.api.subs.lines[idx])]
+                self.api.subs.events.insert(
+                    idx + 1, [copy(self.api.subs.events[idx])]
                 )
                 new_selection.append(
                     idx
@@ -337,7 +337,7 @@ class DeleteSubtitlesCommand(BaseCommand):
                     self.api.subs.selected_indexes,
                     reverse=True
             ):
-                self.api.subs.lines.remove(start_idx, count)
+                self.api.subs.events.remove(start_idx, count)
 
             self.api.subs.selected_indexes = []
 
@@ -360,7 +360,7 @@ class SwapTextAndNotesCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.begin_update()
                 sub.text, sub.note = sub.note, sub.text
                 sub.end_update()
@@ -384,15 +384,15 @@ class SplitSubtitleAtVideoCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         idx = self.api.subs.selected_indexes[0]
-        sub = self.api.subs.lines[idx]
+        sub = self.api.subs.events[idx]
         split_pos = self.api.media.current_pts
         if split_pos < sub.start or split_pos > sub.end:
             return
         self.api.gui.begin_update()
         with self.api.undo.capture():
-            self.api.subs.lines.insert(idx + 1, [copy(sub)])
-            self.api.subs.lines[idx].end = split_pos
-            self.api.subs.lines[idx + 1].start = split_pos
+            self.api.subs.events.insert(idx + 1, [copy(sub)])
+            self.api.subs.events[idx].end = split_pos
+            self.api.subs.events[idx + 1].start = split_pos
             self.api.subs.selected_indexes = [idx, idx + 1]
         self.api.gui.end_update()
 
@@ -419,7 +419,7 @@ class JoinSubtitlesKeepFirstCommand(BaseCommand):
         if len(self.api.subs.selected_indexes) == 1:
             return (
                 self.api.subs.selected_indexes[0] + 1
-                < len(self.api.subs.lines)
+                < len(self.api.subs.events)
             )
         return False
 
@@ -430,9 +430,9 @@ class JoinSubtitlesKeepFirstCommand(BaseCommand):
             if len(self.api.subs.selected_indexes) == 1:
                 self.api.subs.selected_indexes = [idx, idx + 1]
             last_idx = self.api.subs.selected_indexes[-1]
-            self.api.subs.lines[idx].end = self.api.subs.lines[last_idx].end
+            self.api.subs.events[idx].end = self.api.subs.events[last_idx].end
             for i in reversed(self.api.subs.selected_indexes[1:]):
-                self.api.subs.lines.remove(i, 1)
+                self.api.subs.events.remove(i, 1)
             self.api.subs.selected_indexes = [idx]
 
 
@@ -459,7 +459,7 @@ class JoinSubtitlesConcatenateCommand(BaseCommand):
         if len(self.api.subs.selected_indexes) == 1:
             return (
                 self.api.subs.selected_indexes[0] + 1
-                < len(self.api.subs.lines)
+                < len(self.api.subs.events)
             )
         return False
 
@@ -471,16 +471,16 @@ class JoinSubtitlesConcatenateCommand(BaseCommand):
                 self.api.subs.selected_indexes = [idx, idx + 1]
             last_idx = self.api.subs.selected_indexes[-1]
 
-            sub = self.api.subs.lines[idx]
+            sub = self.api.subs.events[idx]
             sub.begin_update()
-            sub.end = self.api.subs.lines[last_idx].end
+            sub.end = self.api.subs.events[last_idx].end
 
             new_text = ''
             new_note = ''
             for i in reversed(self.api.subs.selected_indexes[1:]):
-                new_text = self.api.subs.lines[i].text + new_text
-                new_note = self.api.subs.lines[i].note + new_note
-                self.api.subs.lines.remove(i, 1)
+                new_text = self.api.subs.events[i].text + new_text
+                new_note = self.api.subs.events[i].note + new_note
+                self.api.subs.events.remove(i, 1)
 
             sub.text += new_text
             sub.note += new_note
@@ -528,10 +528,10 @@ class ShiftSubtitlesWithGuiCommand(BaseCommand):
             delta, is_relative = ret
 
             if not is_relative:
-                delta -= self.api.subs.selected_lines[0].start
+                delta -= self.api.subs.selected_events[0].start
 
             with self.api.undo.capture():
-                for sub in self.api.subs.selected_lines:
+                for sub in self.api.subs.selected_events:
                     sub.begin_update()
                     sub.start += delta
                     sub.end += delta
@@ -556,7 +556,7 @@ class SnapSubtitlesStartToVideoCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.start = self.api.media.current_pts
 
 
@@ -578,7 +578,7 @@ class SnapSubtitlesEndToVideoCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.end = self.api.media.current_pts
 
 
@@ -605,7 +605,7 @@ class PlaceSubtitlesAtVideoCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.start = self.api.media.current_pts
                 sub.end = self.api.media.video.align_pts_to_next_frame(
                     sub.start
@@ -632,13 +632,13 @@ class SnapSubtitlesStartToPreviousSubtitleCommand(BaseCommand):
     def _prev_sub(self) -> T.Optional[Event]:
         if not self.api.subs.has_selection:
             return None
-        return self.api.subs.selected_lines[0].prev
+        return self.api.subs.selected_events[0].prev
 
     async def run(self) -> None:
         """Carry out the command."""
         assert self._prev_sub is not None
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.start = self._prev_sub.end
 
 
@@ -661,13 +661,13 @@ class SnapSubtitlesEndToNextSubtitleCommand(BaseCommand):
     def _next_sub(self) -> T.Optional[Event]:
         if not self.api.subs.has_selection:
             return None
-        return self.api.subs.selected_lines[-1].next
+        return self.api.subs.selected_events[-1].next
 
     async def run(self) -> None:
         """Carry out the command."""
         assert self._next_sub is not None
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.end = self._next_sub.start
 
 
@@ -707,7 +707,7 @@ class ShiftSubtitlesStartCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.start = max(0, sub.start + self._delta)
 
 
@@ -747,7 +747,7 @@ class ShiftSubtitlesEndCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.end = max(0, sub.end + self._delta)
 
 
@@ -787,7 +787,7 @@ class ShiftSubtitlesCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.start = max(0, sub.start + self._delta)
                 sub.end = max(0, sub.end + self._delta)
 

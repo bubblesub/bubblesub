@@ -188,7 +188,7 @@ class SnapSpectrogramSelectionStartToPreviousSubtitleCommand(BaseCommand):
     def _prev_sub(self) -> T.Optional[Event]:
         if not self.api.subs.has_selection:
             return None
-        return self.api.subs.selected_lines[0].prev
+        return self.api.subs.selected_events[0].prev
 
     async def run(self) -> None:
         """Carry out the command."""
@@ -220,7 +220,7 @@ class SnapSpectrogramSelectionEndToNextSubtitleCommand(BaseCommand):
     def _next_sub(self) -> T.Optional[Event]:
         if not self.api.subs.has_selection:
             return None
-        return self.api.subs.selected_lines[-1].next
+        return self.api.subs.selected_events[-1].next
 
     async def run(self) -> None:
         """Carry out the command."""
@@ -460,7 +460,7 @@ class CommitSpectrogramSelectionCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_lines:
+            for sub in self.api.subs.selected_events:
                 sub.begin_update()
                 sub.start = self.api.media.audio.selection_start
                 sub.end = self.api.media.audio.selection_end

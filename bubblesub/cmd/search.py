@@ -174,7 +174,7 @@ def _search(
         mode: SearchMode,
         direction: int
 ) -> bool:
-    num_lines = len(api.subs.lines)
+    num_lines = len(api.subs.events)
     if not api.subs.has_selection:
         selected_idx = None
         iterator = list(range(num_lines))
@@ -188,7 +188,7 @@ def _search(
         )
 
     for idx in iterator:
-        subject = _get_subject_text_by_mode(api.subs.lines[idx], mode)
+        subject = _get_subject_text_by_mode(api.subs.events[idx], mode)
         matches = list(re.finditer(regex, subject))
         if not matches:
             continue
@@ -237,7 +237,7 @@ def _replace_all(
 ) -> int:
     count = 0
     with api.undo.capture():
-        for sub in api.subs.lines:
+        for sub in api.subs.events:
             old_subject_text = _get_subject_text_by_mode(sub, mode)
             new_subject_text = re.sub(regex, new_text, old_subject_text)
             if old_subject_text != new_subject_text:
@@ -254,7 +254,7 @@ def _count(
         mode: SearchMode
 ) -> int:
     count = 0
-    for sub in api.subs.lines:
+    for sub in api.subs.events:
         subject_text = _get_subject_text_by_mode(sub, mode)
         count += len(re.findall(regex, subject_text))
     return count

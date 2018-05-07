@@ -45,14 +45,14 @@ class SubtitlesApi:
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
         self.ass_file = AssFile()
-        self.lines.items_removed.connect(self._on_items_removed)
+        self.events.items_removed.connect(self._on_items_removed)
 
     @property
-    def lines(self) -> EventList:
+    def events(self) -> EventList:
         """
-        Return list of ASS lines.
+        Return list of ASS events.
 
-        :return: list of lines
+        :return: list of events
         """
         return self.ass_file.events
 
@@ -123,25 +123,25 @@ class SubtitlesApi:
     @property
     def has_selection(self) -> bool:
         """
-        Return whether there are any selected lines.
+        Return whether there are any selected events.
 
-        :return: whether there are any selected lines
+        :return: whether there are any selected events
         """
         return len(self.selected_indexes) > 0
 
     @property
     def selected_indexes(self) -> T.List[int]:
         """
-        Return indexes of the selected lines.
+        Return indexes of the selected events.
 
-        :return: indexes of the selected lines
+        :return: indexes of the selected events
         """
         return self._selected_indexes
 
     @selected_indexes.setter
     def selected_indexes(self, new_selection: T.List[int]) -> None:
         """
-        Update line selection.
+        Update event selection.
 
         :param new_selection: new list of selected indexes
         """
@@ -151,13 +151,13 @@ class SubtitlesApi:
         self.selection_changed.emit(new_selection, changed)
 
     @property
-    def selected_lines(self) -> T.List[bubblesub.ass.event.Event]:
+    def selected_events(self) -> T.List[bubblesub.ass.event.Event]:
         """
-        Return list of selected lines.
+        Return list of selected events.
 
-        :return: list of selected lines
+        :return: list of selected events
         """
-        return [self.lines[idx] for idx in self.selected_indexes]
+        return [self.events[idx] for idx in self.selected_indexes]
 
     def unload(self) -> None:
         """Load empty ASS file."""

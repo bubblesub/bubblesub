@@ -41,7 +41,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         self._main_window = main_window
         self._api = api
         self._dictionary = dictionary
-        self._lines_to_spellcheck = api.subs.selected_lines
+        self._lines_to_spellcheck = api.subs.selected_events
 
         self._mispelt_text_edit = QtWidgets.QLineEdit(self)
         self._mispelt_text_edit.setReadOnly(True)

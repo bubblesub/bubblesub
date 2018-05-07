@@ -367,7 +367,7 @@ class _StyleList(QtWidgets.QWidget):
 
         with self._api.undo.capture():
             style.name = new_name
-            for line in self._api.subs.lines:
+            for line in self._api.subs.events:
                 if line.style == old_name:
                     line.style = new_name
 

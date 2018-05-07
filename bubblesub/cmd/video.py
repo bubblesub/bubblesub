@@ -45,7 +45,7 @@ class PlayCurrentSubtitleCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        sub = self.api.subs.selected_lines[0]
+        sub = self.api.subs.selected_events[0]
         self.api.media.play(sub.start, sub.end)
 
 

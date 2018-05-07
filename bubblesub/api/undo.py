@@ -32,29 +32,29 @@ class UndoState:
 
     def __init__(
             self,
-            lines: bubblesub.ass.event.EventList,
+            events: bubblesub.ass.event.EventList,
             styles: bubblesub.ass.style.StyleList,
             selected_indexes: T.List[int]
     ) -> None:
         """
         Initialize self.
 
-        :param lines: list of lines for the currently loaded ASS file
+        :param events: list of events for the currently loaded ASS file
         :param styles: list of styles for the currently loaded ASS file
         :param selected_indexes: current selection on the subtitle grid
         """
-        self._lines = _pickle(lines)
+        self._events = _pickle(events)
         self._styles = _pickle(styles)
         self.selected_indexes = selected_indexes
 
     @property
-    def lines(self) -> bubblesub.ass.event.EventList:
+    def events(self) -> bubblesub.ass.event.EventList:
         """
-        Return list of remembered lines.
+        Return list of remembered events.
 
-        :return: list of remembered lines
+        :return: list of remembered events
         """
-        return T.cast(bubblesub.ass.event.EventList, _unpickle(self._lines))
+        return T.cast(bubblesub.ass.event.EventList, _unpickle(self._events))
 
     @property
     def styles(self) -> bubblesub.ass.style.StyleList:
@@ -78,7 +78,7 @@ class UndoState:
         if isinstance(other, UndoState):
             # pylint: disable=protected-access
             return (
-                self._lines == other._lines
+                self._events == other._events
                 and self._styles == other._styles
             )
         return NotImplemented
@@ -167,7 +167,7 @@ class UndoApi:
 
         Doesn't push onto undo stack if nothing has changed.
         This function should wrap any operation that makes "undoable" changes
-        (such as changes to the ASS lines or styles), especially operations
+        (such as changes to the ASS events or styles), especially operations
         from within commands. Otherwise the undo may behave unpredictably.
         """
         old_state = self._make_state()
@@ -226,12 +226,12 @@ class UndoApi:
 
     def _make_state(self) -> UndoState:
         return UndoState(
-            lines=self._subs_api.lines,
+            events=self._subs_api.events,
             styles=self._subs_api.styles,
             selected_indexes=self._subs_api.selected_indexes
         )
 
     def _apply_state(self, state: UndoState) -> None:
-        self._subs_api.lines.replace(list(state.lines))
+        self._subs_api.events.replace(list(state.events))
         self._subs_api.styles.replace(list(state.styles))
         self._subs_api.selected_indexes = state.selected_indexes

@@ -54,9 +54,9 @@ class BaseAudioWidget(QtWidgets.QWidget):
 
         api.media.audio.selection_changed.connect(update)
         api.media.audio.view_changed.connect(update)
-        api.subs.lines.items_inserted.connect(update)
-        api.subs.lines.items_removed.connect(update)
-        api.subs.lines.item_changed.connect(update)
+        api.subs.events.items_inserted.connect(update)
+        api.subs.events.items_removed.connect(update)
+        api.subs.events.item_changed.connect(update)
 
     @property
     def _audio(self) -> bubblesub.api.media.audio.AudioApi:
@@ -328,7 +328,7 @@ class AudioPreviewWidget(BaseAudioWidget):
 
         painter.setFont(QtGui.QFont(self.font().family(), 10))
 
-        for i, line in enumerate(self._api.subs.lines):
+        for i, line in enumerate(self._api.subs.events):
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
             if x2 < 0 or x1 >= self.width():
@@ -497,7 +497,7 @@ class AudioSliderWidget(BaseAudioWidget):
         color = self.palette().highlight().color()
         color.setAlpha(40)
         painter.setBrush(QtGui.QBrush(color))
-        for line in self._api.subs.lines:
+        for line in self._api.subs.events:
             x1 = self._pts_to_x(line.start)
             x2 = self._pts_to_x(line.end)
             painter.drawRect(x1, 0, x2 - x1, h - 1)
@@ -548,15 +548,15 @@ class Audio(QtWidgets.QWidget):
         layout.addWidget(self.preview)
         layout.addWidget(self.slider)
 
-        api.subs.lines.items_inserted.connect(self._sync_selection)
-        api.subs.lines.items_removed.connect(self._sync_selection)
+        api.subs.events.items_inserted.connect(self._sync_selection)
+        api.subs.events.items_removed.connect(self._sync_selection)
         api.subs.selection_changed.connect(
             lambda _rows, _changed: self._sync_selection()
         )
 
     def _sync_selection(self) -> None:
         if len(self._api.subs.selected_indexes) == 1:
-            sub = self._api.subs.selected_lines[0]
+            sub = self._api.subs.selected_events[0]
             self._api.media.audio.view(sub.start - 10000, sub.end + 10000)
             self._api.media.audio.select(sub.start, sub.end)
         else:

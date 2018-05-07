@@ -76,9 +76,9 @@ class MediaApi:
         self._need_subs_refresh = False
 
         self._subs_api.loaded.connect(self._on_subs_load)
-        self._subs_api.lines.item_changed.connect(self._on_subs_change)
-        self._subs_api.lines.items_removed.connect(self._on_subs_change)
-        self._subs_api.lines.items_inserted.connect(self._on_subs_change)
+        self._subs_api.events.item_changed.connect(self._on_subs_change)
+        self._subs_api.events.items_removed.connect(self._on_subs_change)
+        self._subs_api.events.items_inserted.connect(self._on_subs_change)
         self._subs_api.styles.item_changed.connect(self._on_subs_change)
         self._subs_api.styles.items_removed.connect(self._on_subs_change)
         self._subs_api.styles.items_inserted.connect(self._on_subs_change)
@@ -362,7 +362,7 @@ class MediaApi:
     ) -> None:
         if len(rows) == 1:
             self.pause()
-            self.seek(self._subs_api.lines[rows[0]].start)
+            self.seek(self._subs_api.events[rows[0]].start)
 
     def _mpv_event_handler(self) -> None:
         while self._mpv:

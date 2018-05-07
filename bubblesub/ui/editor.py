@@ -213,7 +213,7 @@ class Editor(QtWidgets.QWidget):
 
     def _fetch_selection(self, index: int) -> None:
         self._index = index
-        subtitle = self._api.subs.lines[index]
+        subtitle = self._api.subs.events[index]
         self.bar1.layer_edit.setValue(subtitle.layer)
         self.bar1.margin_l_edit.setValue(subtitle.margin_left)
         self.bar1.margin_v_edit.setValue(subtitle.margin_vertical)
@@ -225,13 +225,13 @@ class Editor(QtWidgets.QWidget):
 
         self.bar1.actor_edit.clear()
         self.bar1.actor_edit.addItems(
-            sorted(list(set(sub.actor for sub in self._api.subs.lines)))
+            sorted(list(set(sub.actor for sub in self._api.subs.events)))
         )
         self.bar1.actor_edit.lineEdit().setText(subtitle.actor)
 
         self.bar1.style_edit.clear()
         self.bar1.style_edit.addItems(
-            sorted(list(set(sub.style for sub in self._api.subs.lines)))
+            sorted(list(set(sub.style for sub in self._api.subs.events)))
         )
         self.bar1.style_edit.lineEdit().setText(subtitle.style)
 
@@ -271,7 +271,7 @@ class Editor(QtWidgets.QWidget):
 
         self._disconnect_api_signals()
         with self._api.undo.capture():
-            subtitle = self._api.subs.lines[self._index]
+            subtitle = self._api.subs.events[self._index]
             subtitle.begin_update()
             subtitle.start = self.bar2.start_time_edit.get_value()
             subtitle.end = self.bar2.end_time_edit.get_value()
@@ -343,17 +343,17 @@ class Editor(QtWidgets.QWidget):
         self._push_selection()
 
     def _connect_api_signals(self) -> None:
-        self._api.subs.lines.items_inserted.connect(self._on_items_insert)
-        self._api.subs.lines.items_removed.connect(self._on_items_remove)
-        self._api.subs.lines.item_changed.connect(self._on_item_change)
+        self._api.subs.events.items_inserted.connect(self._on_items_insert)
+        self._api.subs.events.items_removed.connect(self._on_items_remove)
+        self._api.subs.events.item_changed.connect(self._on_item_change)
         self._api.subs.selection_changed.connect(
             self._on_grid_selection_change
         )
 
     def _disconnect_api_signals(self) -> None:
-        self._api.subs.lines.items_inserted.disconnect(self._on_items_insert)
-        self._api.subs.lines.items_removed.disconnect(self._on_items_remove)
-        self._api.subs.lines.item_changed.disconnect(self._on_item_change)
+        self._api.subs.events.items_inserted.disconnect(self._on_items_insert)
+        self._api.subs.events.items_removed.disconnect(self._on_items_remove)
+        self._api.subs.events.item_changed.disconnect(self._on_item_change)
         self._api.subs.selection_changed.disconnect(
             self._on_grid_selection_change
         )

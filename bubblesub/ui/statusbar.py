@@ -57,7 +57,7 @@ class StatusBar(QtWidgets.QStatusBar):
 
     def _on_subs_selection_change(self) -> None:
         count = len(self._api.subs.selected_indexes)
-        total = len(self._api.subs.lines)
+        total = len(self._api.subs.events)
 
         if count == 0:
             self._subs_label.setText(f'Subtitles: -/{total} (-%)')
@@ -103,9 +103,9 @@ class StatusBar(QtWidgets.QStatusBar):
             ret = ('\u2212', '+')[delta >= 0] + ret
             return ret
 
-        if len(self._api.subs.selected_lines) != 1:
+        if len(self._api.subs.selected_events) != 1:
             return
-        sub = self._api.subs.selected_lines[0]
+        sub = self._api.subs.selected_events[0]
         start_delta = self._api.media.audio.selection_start - sub.start
         end_delta = self._api.media.audio.selection_end - sub.end
 

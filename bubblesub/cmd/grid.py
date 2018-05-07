@@ -58,7 +58,7 @@ class JumpToSubtitleByLineCommand(BaseCommand):
 
         :return: whether the command can be executed
         """
-        return len(self.api.subs.lines) > 0
+        return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
         """Carry out the command."""
@@ -69,7 +69,7 @@ class JumpToSubtitleByLineCommand(BaseCommand):
             dialog = QtWidgets.QInputDialog(main_window)
             dialog.setLabelText('Line number to jump to:')
             dialog.setIntMinimum(1)
-            dialog.setIntMaximum(len(api.subs.lines))
+            dialog.setIntMaximum(len(api.subs.events))
             if api.subs.has_selection:
                 dialog.setIntValue(api.subs.selected_indexes[0] + 1)
             dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
@@ -99,7 +99,7 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
 
         :return: whether the command can be executed
         """
-        return len(self.api.subs.lines) > 0
+        return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
         """Carry out the command."""
@@ -113,7 +113,7 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
         ret = await self.api.gui.exec(
             _run_dialog,
             value=(
-                self.api.subs.selected_lines[0].start
+                self.api.subs.selected_events[0].start
                 if self.api.subs.has_selection else
                 0
             ),
@@ -126,7 +126,7 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
             target_pts, _is_relative = ret
             best_distance = None
             best_idx = None
-            for i, sub in enumerate(self.api.subs.lines):
+            for i, sub in enumerate(self.api.subs.events):
                 center = (sub.start + sub.end) / 2
                 distance = abs(target_pts - center)
                 if best_distance is None or distance < best_distance:
@@ -149,12 +149,12 @@ class SelectPreviousSubtitleCommand(BaseCommand):
 
         :return: whether the command can be executed
         """
-        return len(self.api.subs.lines) > 0
+        return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
         """Carry out the command."""
         if not self.api.subs.selected_indexes:
-            self.api.subs.selected_indexes = [len(self.api.subs.lines) - 1, 0]
+            self.api.subs.selected_indexes = [len(self.api.subs.events) - 1, 0]
         else:
             self.api.subs.selected_indexes = [
                 max(0, self.api.subs.selected_indexes[0] - 1)]
@@ -173,7 +173,7 @@ class SelectNextSubtitleCommand(BaseCommand):
 
         :return: whether the command can be executed
         """
-        return len(self.api.subs.lines) > 0
+        return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
         """Carry out the command."""
@@ -183,7 +183,7 @@ class SelectNextSubtitleCommand(BaseCommand):
             self.api.subs.selected_indexes = [
                 min(
                     self.api.subs.selected_indexes[-1] + 1,
-                    len(self.api.subs.lines) - 1
+                    len(self.api.subs.events) - 1
                 )
             ]
 
@@ -201,11 +201,11 @@ class SelectAllSubtitlesCommand(BaseCommand):
 
         :return: whether the command can be executed
         """
-        return len(self.api.subs.lines) > 0
+        return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
         """Carry out the command."""
-        self.api.subs.selected_indexes = list(range(len(self.api.subs.lines)))
+        self.api.subs.selected_indexes = list(range(len(self.api.subs.events)))
 
 
 class ClearSubtitleSelectionCommand(BaseCommand):
@@ -237,7 +237,7 @@ class CopySubtitlesTextToClipboardCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         QtWidgets.QApplication.clipboard().setText('\n'.join(
-            line.text for line in self.api.subs.selected_lines
+            line.text for line in self.api.subs.selected_events
         ))
 
 
@@ -263,7 +263,7 @@ class CopySubtitlesTimesToClipboardCommand(BaseCommand):
                 bubblesub.util.ms_to_str(line.start),
                 bubblesub.util.ms_to_str(line.end)
             )
-            for line in self.api.subs.selected_lines
+            for line in self.api.subs.selected_events
         ))
 
 
@@ -290,10 +290,10 @@ class PasteSubtitlesTimesFromClipboardCommand(BaseCommand):
             return
 
         lines = text.split('\n')
-        if len(lines) != len(self.api.subs.selected_lines):
+        if len(lines) != len(self.api.subs.selected_events):
             self.error(
                 'Size mismatch (selected {} lines, got {} lines in clipboard.'
-                .format(len(self.api.subs.selected_lines), len(lines))
+                .format(len(self.api.subs.selected_events), len(lines))
             )
             return
 
@@ -310,7 +310,7 @@ class PasteSubtitlesTimesFromClipboardCommand(BaseCommand):
                 return
 
         with self.api.undo.capture():
-            for i, sub in enumerate(self.api.subs.selected_lines):
+            for i, sub in enumerate(self.api.subs.selected_events):
                 sub.start = times[i][0]
                 sub.end = times[i][1]
 
@@ -333,7 +333,7 @@ class CopySubtitlesToClipboardCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         QtWidgets.QApplication.clipboard().setText(
-            _pickle(self.api.subs.selected_lines)
+            _pickle(self.api.subs.selected_events)
         )
 
 
@@ -352,7 +352,7 @@ class PasteSubtitlesFromClipboardBelowCommand(BaseCommand):
         idx = self.api.subs.selected_indexes[-1] + 1
         items = T.cast(T.List[Event], _unpickle(text))
         with self.api.undo.capture():
-            self.api.subs.lines.insert(idx, items)
+            self.api.subs.events.insert(idx, items)
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
@@ -371,7 +371,7 @@ class PasteSubtitlesFromClipboardAboveCommand(BaseCommand):
         idx = self.api.subs.selected_indexes[0]
         items = T.cast(T.List[Event], _unpickle(text))
         with self.api.undo.capture():
-            self.api.subs.lines.insert(idx, items)
+            self.api.subs.events.insert(idx, items)
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
@@ -410,8 +410,8 @@ class SaveSubtitlesAsAudioSampleCommand(BaseCommand):
         if path is None:
             self.info('cancelled')
         else:
-            start_pts = self.api.subs.selected_lines[0].start
-            end_pts = self.api.subs.selected_lines[-1].end
+            start_pts = self.api.subs.selected_events[0].start
+            end_pts = self.api.subs.selected_events[-1].end
             self.api.media.audio.save_wav(path, start_pts, end_pts)
             self.info(f'saved audio sample to {path}')
 

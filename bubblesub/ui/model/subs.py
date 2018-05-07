@@ -78,7 +78,7 @@ class SubsModel(ObservableListTableAdapter):
             parent: QtCore.QObject,
             api: bubblesub.api.Api
     ) -> None:
-        super().__init__(parent, api.subs.lines)
+        super().__init__(parent, api.subs.events)
         self._api = api
 
     def headerData(

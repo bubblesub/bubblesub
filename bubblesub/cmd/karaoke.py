@@ -45,20 +45,20 @@ class KaraokeSplitCommand(BaseCommand):
         """
         return (
             len(self.api.subs.selected_indexes) == 1
-            and '\\k' in self.api.subs.selected_lines[0].text
+            and '\\k' in self.api.subs.selected_events[0].text
         )
 
     async def run(self) -> None:
         """Carry out the command."""
         idx = self.api.subs.selected_indexes[0]
-        sub = self.api.subs.lines[idx]
+        sub = self.api.subs.events[idx]
         start = sub.start
         end = sub.end
         syllables = self._get_syllables(sub.text)
 
         self.api.gui.begin_update()
         with self.api.undo.capture():
-            self.api.subs.lines.remove(idx, 1)
+            self.api.subs.events.remove(idx, 1)
 
             new_subs: T.List[bubblesub.ass.event.Event] = []
             for syllable in syllables:
@@ -69,7 +69,7 @@ class KaraokeSplitCommand(BaseCommand):
                 start = sub_copy.end
                 new_subs.append(sub_copy)
 
-            self.api.subs.lines.insert(idx, new_subs)
+            self.api.subs.events.insert(idx, new_subs)
             self.api.subs.selected_indexes = list(
                 range(idx, idx + len(syllables))
             )
@@ -114,10 +114,10 @@ class KaraokeJoinCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        subs = self.api.subs.selected_lines
+        subs = self.api.subs.selected_events
         with self.api.undo.capture():
             for idx in reversed(self.api.subs.selected_indexes[1:]):
-                self.api.subs.lines.remove(idx, 1)
+                self.api.subs.events.remove(idx, 1)
 
             text = ''
             for sub in subs:
@@ -150,10 +150,10 @@ class TransformationJoinCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        subs = self.api.subs.selected_lines
+        subs = self.api.subs.selected_events
         with self.api.undo.capture():
             for idx in reversed(self.api.subs.selected_indexes[1:]):
-                self.api.subs.lines.remove(idx, 1)
+                self.api.subs.events.remove(idx, 1)
 
             text = ''
             note = ''
