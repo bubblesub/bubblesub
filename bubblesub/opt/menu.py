@@ -119,11 +119,8 @@ class MenuConfig(BaseConfig):
                     MenuCommand('edit/karaoke-split'),
                     MenuSeparator(),
                     MenuCommand('grid/copy-to-clipboard'),
-                    MenuCommand('grid/copy-times-to-clipboard'),
-                    MenuCommand('grid/copy-text-to-clipboard'),
                     MenuCommand('grid/paste-from-clipboard-above'),
                     MenuCommand('grid/paste-from-clipboard-below'),
-                    MenuCommand('grid/paste-times-from-clipboard'),
                     MenuSeparator(),
                     MenuCommand('edit/spell-check'),
                     MenuCommand('edit/manage-styles'),
@@ -239,11 +236,15 @@ class MenuConfig(BaseConfig):
             )
         ]
 
-        self.context: T.MutableSequence[MenuItem] = [
+        self.subtitles_grid: T.MutableSequence[MenuItem] = [
             MenuCommand('grid/create-audio-sample'),
             MenuSeparator(),
             MenuCommand('edit/insert-above'),
             MenuCommand('edit/insert-below'),
+            MenuSeparator(),
+            MenuCommand('grid/copy-to-clipboard'),
+            MenuCommand('grid/paste-from-clipboard-above'),
+            MenuCommand('grid/paste-from-clipboard-below'),
             MenuSeparator(),
             MenuCommand('edit/duplicate'),
             MenuCommand('edit/split-sub-at-video'),
@@ -324,7 +325,7 @@ class MenuConfig(BaseConfig):
         return json.dumps(
             {
                 'main': self.main,
-                'context': self.context
+                'subtitles_grid': self.subtitles_grid
             },
             cls=MenuEncoder,
             indent=4

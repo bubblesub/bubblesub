@@ -147,7 +147,7 @@ class SubsGrid(QtWidgets.QTableView):
         self.customContextMenuRequested.connect(self._open_subtitles_menu)
         self.subtitles_menu = QtWidgets.QMenu(self)
         bubblesub.ui.util.setup_cmd_menu(
-            self._api, self.subtitles_menu, self._api.opt.menu.context
+            self._api, self.subtitles_menu, self._api.opt.menu.subtitles_grid
         )
 
     def _setup_header_menu(self) -> None:
