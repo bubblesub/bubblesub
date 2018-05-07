@@ -160,6 +160,21 @@ class MainWindow(QtWidgets.QMainWindow):
             self._api, plugins_menu, plugins_menu_def
         )
 
+    @property
+    def _context_to_widget_map(self) -> T.Dict[str, QtWidgets.QWidget]:
+        return {
+            'spectrogram': self.audio,
+            'subtitles_grid': self.subs_grid,
+        }
+
+    def _widget_to_context(self, widget: QtWidgets.QWidget) -> T.Optional[str]:
+        while widget:
+            for context, context_widget in self._context_to_widget_map.items():
+                if widget == context_widget:
+                    return context
+            widget = widget.parent()
+        return None
+
     def _setup_hotkeys(self, action_map: T.Any) -> None:
         shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut] = {}
 
@@ -179,14 +194,11 @@ class MainWindow(QtWidgets.QMainWindow):
             shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut]
     ) -> QtWidgets.QShortcut:
         def resolve_ambiguity(keys: str) -> None:
-            widget = QtWidgets.QApplication.focusWidget()
-            while widget:
-                try:
-                    if widget == self.audio:
-                        shortcuts[(keys, 'spectrogram')].activated.emit()
-                except IndexError:
-                    break
-                widget = widget.parent()
+            context = self._widget_to_context(
+                QtWidgets.QApplication.focusWidget()
+            )
+            if context and (keys, context) in shortcuts:
+                shortcuts[(keys, context)].activated.emit()
 
         try:
             command = self._api.cmd.get(
@@ -212,9 +224,9 @@ class MainWindow(QtWidgets.QMainWindow):
             functools.partial(self._api.cmd.run, command)
         )
 
-        if context == 'spectrogram':
+        if context in self._context_to_widget_map:
             shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
-            shortcut.setParent(self.audio)
+            shortcut.setParent(self._context_to_widget_map[context])
         elif context == 'global':
             shortcut.setContext(QtCore.Qt.ApplicationShortcut)
         else:

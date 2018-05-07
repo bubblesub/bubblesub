@@ -145,6 +145,12 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Alt+Left', 'audio/snap-sel-start-to-prev-sub'),
                 Hotkey('Alt+Right', 'audio/snap-sel-end-to-next-sub'),
             ],
+
+            'subtitles_grid':
+            [
+                Hotkey('Ctrl+C', 'grid/copy-to-clipboard'),
+                Hotkey('Ctrl+V', 'grid/paste-from-clipboard-below'),
+            ],
         }
 
     def loads(self, text: str) -> None:
