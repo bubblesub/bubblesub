@@ -26,7 +26,7 @@ import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuContext
-from bubblesub.ui.model.subs import SubsModel, SubsModelColumn
+from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
 from bubblesub.ui.util import get_color
 
 # ????
@@ -120,7 +120,7 @@ class SubsGrid(QtWidgets.QTableView):
     ) -> None:
         super().__init__(parent)
         self._api = api
-        self.setModel(SubsModel(self, api))
+        self.setModel(SubtitlesModel(self, api))
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
         self.horizontalHeader().setSectionsMovable(True)
@@ -129,7 +129,10 @@ class SubsGrid(QtWidgets.QTableView):
         )
 
         self._subs_grid_delegate = SubsGridDelegate(self._api, self)
-        for column_idx in (SubsModelColumn.Text, SubsModelColumn.Note):
+        for column_idx in {
+                SubtitlesModelColumn.Text,
+                SubtitlesModelColumn.Note
+        }:
             self.setItemDelegateForColumn(column_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
                 column_idx, QtWidgets.QHeaderView.Stretch
@@ -158,7 +161,7 @@ class SubsGrid(QtWidgets.QTableView):
     def _setup_header_menu(self) -> None:
         header = self.horizontalHeader()
         header.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        for column in SubsModelColumn:
+        for column in SubtitlesModelColumn:
             action = QtWidgets.QAction(self)
             action.setCheckable(True)
             action.setData(column)
@@ -170,7 +173,7 @@ class SubsGrid(QtWidgets.QTableView):
             header.addAction(action)
 
     def toggle_column(self, action: QtWidgets.QAction) -> None:
-        column: SubsModelColumn = action.data()
+        column: SubtitlesModelColumn = action.data()
         self.horizontalHeader().setSectionHidden(
             column.value,
             not action.isChecked()
@@ -182,7 +185,7 @@ class SubsGrid(QtWidgets.QTableView):
         if data:
             header.restoreState(data)
         for action in header.actions():
-            column: SubsModelColumn = action.data()
+            column: SubtitlesModelColumn = action.data()
             action.setChecked(not header.isSectionHidden(column.value))
 
     def store_grid_columns(self) -> None:

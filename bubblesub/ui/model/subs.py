@@ -25,19 +25,19 @@ import bubblesub.ass.util
 import bubblesub.cache
 import bubblesub.ui.util
 import bubblesub.util
-from bubblesub.opt.general import SubsModelColumn
+from bubblesub.opt.general import SubtitlesModelColumn
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 
 
 _HEADERS = {
-    SubsModelColumn.Start: 'Start',
-    SubsModelColumn.End: 'End',
-    SubsModelColumn.Style: 'Style',
-    SubsModelColumn.Actor: 'Actor',
-    SubsModelColumn.Text: 'Text',
-    SubsModelColumn.Note: 'Note',
-    SubsModelColumn.Duration: 'Duration',
-    SubsModelColumn.CharsPerSec: 'CPS',
+    SubtitlesModelColumn.Start: 'Start',
+    SubtitlesModelColumn.End: 'End',
+    SubtitlesModelColumn.Style: 'Style',
+    SubtitlesModelColumn.Actor: 'Actor',
+    SubtitlesModelColumn.Text: 'Text',
+    SubtitlesModelColumn.Note: 'Note',
+    SubtitlesModelColumn.Duration: 'Duration',
+    SubtitlesModelColumn.CharsPerSec: 'CPS',
 }
 
 
@@ -52,27 +52,27 @@ def _get_cps(subtitle: bubblesub.ass.event.Event) -> str:
 
 
 _READER_MAP = {
-    SubsModelColumn.Start:
+    SubtitlesModelColumn.Start:
         lambda subtitle: bubblesub.util.ms_to_str(subtitle.start),
-    SubsModelColumn.End:
+    SubtitlesModelColumn.End:
         lambda subtitle: bubblesub.util.ms_to_str(subtitle.end),
-    SubsModelColumn.Style:
+    SubtitlesModelColumn.Style:
         lambda subtitle: subtitle.style,
-    SubsModelColumn.Actor:
+    SubtitlesModelColumn.Actor:
         lambda subtitle: subtitle.actor,
-    SubsModelColumn.Text:
+    SubtitlesModelColumn.Text:
         lambda subtitle: bubblesub.ass.util.ass_to_plaintext(
             subtitle.text, True),
-    SubsModelColumn.Note:
+    SubtitlesModelColumn.Note:
         lambda subtitle: bubblesub.ass.util.ass_to_plaintext(
             subtitle.note, True),
-    SubsModelColumn.Duration:
+    SubtitlesModelColumn.Duration:
         lambda subtitle: f'{subtitle.duration / 1000.0:.1f}',
-    SubsModelColumn.CharsPerSec: _get_cps,
+    SubtitlesModelColumn.CharsPerSec: _get_cps,
 }
 
 
-class SubsModel(ObservableListTableAdapter):
+class SubtitlesModel(ObservableListTableAdapter):
     def __init__(
             self,
             parent: QtCore.QObject,
@@ -95,9 +95,12 @@ class SubsModel(ObservableListTableAdapter):
 
         elif orientation == QtCore.Qt.Horizontal:
             if role == QtCore.Qt.DisplayRole:
-                return _HEADERS[SubsModelColumn(idx)]
+                return _HEADERS[SubtitlesModelColumn(idx)]
             elif role == QtCore.Qt.TextAlignmentRole:
-                if idx in (SubsModelColumn.Text, SubsModelColumn.Note):
+                if idx in {
+                        SubtitlesModelColumn.Text,
+                        SubtitlesModelColumn.Note
+                }:
                     return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
                 return QtCore.Qt.AlignCenter
 
@@ -111,7 +114,7 @@ class SubsModel(ObservableListTableAdapter):
 
     @property
     def _column_count(self) -> int:
-        return len(SubsModelColumn)
+        return len(SubtitlesModelColumn)
 
     @bubblesub.cache.Memoize
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
@@ -120,17 +123,20 @@ class SubsModel(ObservableListTableAdapter):
         if role == QtCore.Qt.BackgroundRole:
             if subtitle.is_comment:
                 return bubblesub.ui.util.get_color(self._api, 'grid/comment')
-            if col_idx == SubsModelColumn.CharsPerSec:
+            if col_idx == SubtitlesModelColumn.CharsPerSec:
                 return self._get_background_cps(subtitle)
             return QtCore.QVariant()
 
         elif role == QtCore.Qt.TextAlignmentRole:
-            if col_idx in {SubsModelColumn.Text, SubsModelColumn.Note}:
+            if col_idx in {
+                    SubtitlesModelColumn.Text,
+                    SubtitlesModelColumn.Note
+            }:
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
 
         elif role == QtCore.Qt.DisplayRole:
-            return _READER_MAP[SubsModelColumn(col_idx)](subtitle)
+            return _READER_MAP[SubtitlesModelColumn(col_idx)](subtitle)
 
         return QtCore.QVariant()
 

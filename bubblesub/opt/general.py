@@ -40,7 +40,7 @@ def _compress(data: T.Optional[bytes]) -> T.Optional[str]:
     return base64.b64encode(zlib.compress(data)).decode('ascii')
 
 
-class SubsModelColumn(enum.IntEnum):
+class SubtitlesModelColumn(enum.IntEnum):
     """Column indices in subtitles grid."""
 
     Start = 0
