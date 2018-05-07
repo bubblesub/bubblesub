@@ -81,7 +81,6 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Ctrl+Y', 'edit/redo'),
                 Hotkey('Ctrl+F', 'edit/search'),
                 Hotkey('Ctrl+H', 'edit/search-and-replace'),
-                Hotkey('Alt+C', 'grid/copy-text-to-clipboard'),
                 Hotkey('Ctrl+Return', 'edit/insert-below'),
                 Hotkey('Ctrl+Delete', 'edit/delete'),
                 Hotkey('Ctrl+Shift+1', 'audio/shift-sel-start', -10),
