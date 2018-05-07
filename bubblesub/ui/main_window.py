@@ -92,8 +92,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_splitter.setStretchFactor(0, 1)
         self.main_splitter.setStretchFactor(1, 5)
 
-        action_map = self._setup_menu()
-        self._setup_hotkeys(action_map)
+        self._setup_menu()
+        self._setup_hotkeys()
         self._setup_plugins_menu()
 
         self.setCentralWidget(self.main_splitter)
@@ -142,7 +142,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _setup_menu(self) -> T.Any:
         return bubblesub.ui.util.setup_cmd_menu(
-            self._api, self.menuBar(), self._api.opt.menu.main
+            self._api,
+            self.menuBar(),
+            self._api.opt.menu.main,
+            'global'
         )
 
     def _setup_plugins_menu(self) -> None:
@@ -157,7 +160,7 @@ class MainWindow(QtWidgets.QMainWindow):
         plugins_menu = self.menuBar().addMenu('Pl&ugins')
         plugins_menu.setObjectName('plugins-menu')
         bubblesub.ui.util.setup_cmd_menu(
-            self._api, plugins_menu, plugins_menu_def
+            self._api, plugins_menu, plugins_menu_def, 'global'
         )
 
     @property
@@ -175,20 +178,19 @@ class MainWindow(QtWidgets.QMainWindow):
             widget = widget.parent()
         return None
 
-    def _setup_hotkeys(self, action_map: T.Any) -> None:
+    def _setup_hotkeys(self) -> None:
         shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut] = {}
 
         for context, hotkeys in self._api.opt.hotkeys:
             for hotkey in hotkeys:
                 shortcut = self._setup_hotkey(
-                    action_map, context, hotkey, shortcuts
+                    context, hotkey, shortcuts
                 )
                 if shortcut:
                     shortcuts[(hotkey.shortcut, context)] = shortcut
 
     def _setup_hotkey(
             self,
-            action_map: T.Any,
             context: str,
             hotkey: Hotkey,
             shortcuts: T.Dict[T.Tuple[str, str], QtWidgets.QShortcut]
@@ -207,14 +209,6 @@ class MainWindow(QtWidgets.QMainWindow):
         except KeyError:
             self._api.log.error(f'Unknown command {hotkey.command_name}')
             return None
-
-        action = action_map.get((hotkey.command_name, *hotkey.command_args))
-        if action and context == 'global':
-            action.setText(
-                action.text()
-                + '\t'
-                + QtGui.QKeySequence(hotkey.shortcut).toString()
-            )
 
         shortcut = QtWidgets.QShortcut(
             QtGui.QKeySequence(hotkey.shortcut), self

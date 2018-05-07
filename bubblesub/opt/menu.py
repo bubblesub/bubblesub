@@ -42,7 +42,7 @@ class MenuCommand(MenuItem):
         :param command_args: arguments for the command
         """
         self.command_name = command_name
-        self.command_args = command_args
+        self.command_args = list(command_args)
 
 
 class MenuSeparator(MenuItem):

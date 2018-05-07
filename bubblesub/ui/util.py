@@ -197,12 +197,26 @@ class _CommandAction(QtWidgets.QAction):
         self.triggered.connect(lambda: api.cmd.run(self.cmd))
 
 
+def _build_hotkey_map(api: bubblesub.api.Api) -> T.Dict[T.Any, str]:
+    ret = {}
+    for context, hotkeys in api.opt.hotkeys:
+        for hotkey in hotkeys:
+            ret[context, hotkey.command_name, tuple(hotkey.command_args)] = (
+                hotkey.shortcut
+            )
+    return ret
+
+
 def setup_cmd_menu(
         api: bubblesub.api.Api,
         parent: QtWidgets.QWidget,
-        menu_def: T.Sequence[MenuItem]
+        menu_def: T.Sequence[MenuItem],
+        context: str,
+        hotkey_map: T.Optional[T.Dict[T.Any, str]] = None
 ) -> T.Any:
-    action_map: T.Any = {}
+    if hotkey_map is None:
+        hotkey_map = _build_hotkey_map(api)
+
     if hasattr(parent, 'aboutToShow'):
         parent.aboutToShow.connect(
             functools.partial(_on_menu_about_to_show, parent)
@@ -215,7 +229,7 @@ def setup_cmd_menu(
             parent.addSeparator()
         elif isinstance(item, SubMenu):
             submenu = parent.addMenu(item.name)
-            action_map.update(setup_cmd_menu(api, submenu, item.children))
+            setup_cmd_menu(api, submenu, item.children, context, hotkey_map)
         elif isinstance(item, MenuCommand):
             try:
                 action = _CommandAction(
@@ -227,12 +241,18 @@ def setup_cmd_menu(
             except KeyError:
                 api.log.error(f'Unknown command {item.command_name}')
                 continue
+
             action.setText(action.cmd.menu_name)
+            shortcut = hotkey_map.get(
+                (context, item.command_name, tuple(item.command_args)),
+                None
+            )
+            if shortcut is not None:
+                action.setText(action.text() + '\t' + shortcut)
+
             parent.addAction(action)
-            action_map[(item.command_name, *item.command_args)] = action
         else:
             api.log.error(f'Unexpected menu item {item}')
-    return action_map
 
 
 @functools.lru_cache(maxsize=None)
