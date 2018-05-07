@@ -271,6 +271,9 @@ class MenuConfig(BaseConfig):
                 target: T.MutableSequence[MenuItem],
                 source: T.Any
         ) -> None:
+            if source is None:
+                return
+
             target.clear()
             for item in source:
                 if item['type'] == 'command':
@@ -292,8 +295,8 @@ class MenuConfig(BaseConfig):
                     )
 
         obj = json.loads(text)
-        load_menu(self.main, obj['main'])
-        load_menu(self.context, obj['context'])
+        load_menu(self.main, obj.get('main', None))
+        load_menu(self.subtitles_grid, obj.get('subtitles_grid', None))
 
     def dumps(self) -> str:
         """
