@@ -99,7 +99,7 @@ class Bar1(QtWidgets.QWidget):
 
         self.style_edit = QtWidgets.QComboBox(self)
         self.style_edit.setEditable(True)
-        self.style_edit.setMinimumWidth(250)
+        self.style_edit.setMinimumWidth(200)
         self.style_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
 
         self.actor_edit = QtWidgets.QComboBox(self)
