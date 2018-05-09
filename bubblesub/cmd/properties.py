@@ -19,6 +19,7 @@
 from collections import OrderedDict
 import typing as T
 
+import ass_tag_parser
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -31,6 +32,49 @@ from bubblesub.api.cmd import BaseCommand
 def _rescale_styles(api: bubblesub.api.Api, factor: float) -> None:
     for style in api.subs.styles:
         style.scale(factor)
+
+
+def _rescale_ass_tags(
+        api: bubblesub.api.Api,
+        x_factor: float,
+        y_factor: float
+) -> None:
+    for event in api.subs.events:
+        try:
+            ass_struct = ass_tag_parser.parse_ass(event.text)
+        except ass_tag_parser.ParsingError:
+            return
+        for item in ass_struct:
+            if item['type'] != 'tags':
+                continue
+            for subitem in item['children']:
+                if subitem['type'] in {
+                        'border',
+                        'border-x',
+                        'border-y',
+                        'shadow',
+                        'shadow-x',
+                        'shadow-y',
+                        'rotation-x',
+                        'rotation-y',
+                        'rotation-z',
+                }:
+                    subitem['size'] *= y_factor
+
+                if subitem['type'] in {'rotation-origin', 'position'}:
+                    subitem['x'] = int(subitem['x'] * x_factor)
+                    subitem['y'] = int(subitem['y'] * y_factor)
+
+                if subitem['type'] == 'movement':
+                    subitem['x1'] = int(subitem['x1'] * x_factor)
+                    subitem['y1'] = int(subitem['y1'] * y_factor)
+                    subitem['x2'] = int(subitem['x2'] * x_factor)
+                    subitem['y2'] = int(subitem['y2'] * y_factor)
+
+                if subitem['type'] == 'font-size':
+                    subitem['size'] = int(subitem['size'] * y_factor)
+
+        event.text = ass_tag_parser.serialize_ass(ass_struct)
 
 
 class _OptionsGropuBox(QtWidgets.QGroupBox):
@@ -240,7 +284,10 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
                 ])
 
     def _commit(self) -> None:
-        old_res = int(self._api.subs.info.get('PlayResY', 0))
+        old_res = (
+            int(self._api.subs.info.get('PlayResX', 0)),
+            int(self._api.subs.info.get('PlayResY', 0))
+        )
 
         self._api.subs.info.clear()
 
@@ -262,13 +309,21 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
         self._api.subs.info.update(self._metadata_group_box.get_data())
 
-        new_res = int(self._api.subs.info.get('PlayResY', 0))
-        if old_res != new_res and old_res and new_res and \
-                bubblesub.ui.util.ask(
+        new_res = (
+            int(self._api.subs.info.get('PlayResX', 0)),
+            int(self._api.subs.info.get('PlayResY', 0))
+        )
+        if old_res != new_res \
+                and old_res[0] and old_res[1] \
+                and new_res[0] and new_res[1] \
+                and bubblesub.ui.util.ask(
                         'The resolution was changed. '
                         'Do you want to rescale all the styles now?'
                 ):
-            _rescale_styles(self._api, new_res / old_res)
+            x_factor = new_res[0] / old_res[0]
+            y_factor = new_res[1] / old_res[1]
+            _rescale_styles(self._api, y_factor)
+            _rescale_ass_tags(self._api, x_factor, y_factor)
 
 
 class FilePropertiesCommand(BaseCommand):
