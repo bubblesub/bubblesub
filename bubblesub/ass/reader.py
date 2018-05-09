@@ -64,7 +64,7 @@ def _info_section_handler(
     if line.startswith(';'):
         return
     key, value = line.split(': ', 1)
-    ass_file.info[key] = value
+    ass_file.info.set(key, value)
 
 
 def _styles_section_handler(

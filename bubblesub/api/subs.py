@@ -22,8 +22,9 @@ from pathlib import Path
 import bubblesub.ass.reader
 import bubblesub.ass.writer
 import bubblesub.event
-from bubblesub.ass.file import AssFile
 from bubblesub.ass.event import EventList
+from bubblesub.ass.file import AssFile
+from bubblesub.ass.info import Metadata
 from bubblesub.ass.style import StyleList
 
 
@@ -45,6 +46,7 @@ class SubtitlesApi:
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
         self.ass_file = AssFile()
+        self.info_changed = self.ass_file.info.changed
         self.events.items_removed.connect(self._on_items_removed)
 
     @property
@@ -66,7 +68,7 @@ class SubtitlesApi:
         return self.ass_file.styles
 
     @property
-    def info(self) -> T.Dict[str, str]:
+    def info(self) -> Metadata:
         """
         Return additional information associated with the ASS file.
 
@@ -97,8 +99,10 @@ class SubtitlesApi:
 
         :param path: path to the video file
         """
-        self.info['Video File'] = str(path)
-        self.info['Audio File'] = str(path)
+        self.info.update({
+            'Video File': str(path),
+            'Audio File': str(path)
+        })
 
     @property
     def path(self) -> T.Optional[Path]:

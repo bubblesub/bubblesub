@@ -22,6 +22,7 @@ import typing as T
 import zlib
 
 import bubblesub.ass.event
+import bubblesub.ass.info
 import bubblesub.ass.style
 import bubblesub.util
 from bubblesub.api.subs import SubtitlesApi
@@ -34,7 +35,7 @@ class UndoState:
             self,
             events: bubblesub.ass.event.EventList,
             styles: bubblesub.ass.style.StyleList,
-            info: dict,
+            info: bubblesub.ass.info.Metadata,
             selected_indexes: T.List[int]
     ) -> None:
         """
@@ -47,7 +48,7 @@ class UndoState:
         """
         self._events = _pickle(events)
         self._styles = _pickle(styles)
-        self._info = _pickle(info)
+        self._info = _pickle(dict(info.items()))
         self.selected_indexes = selected_indexes
 
     @property
@@ -69,13 +70,13 @@ class UndoState:
         return T.cast(bubblesub.ass.style.StyleList, _unpickle(self._styles))
 
     @property
-    def info(self) -> T.Any:
+    def info(self) -> T.Dict[str, str]:
         """
         Return remembered info dict.
 
         :return: info dict
         """
-        return _unpickle(self._info)
+        return T.cast(T.Dict[str, str], _unpickle(self._info))
 
     def __eq__(self, other: T.Any) -> T.Any:
         """

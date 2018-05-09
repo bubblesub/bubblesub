@@ -16,9 +16,7 @@
 
 """ASS file."""
 
-import typing as T
-from collections import OrderedDict
-
+from bubblesub.ass.info import Metadata
 from bubblesub.ass.event import EventList
 from bubblesub.ass.style import StyleList
 
@@ -31,4 +29,4 @@ class AssFile:
         self.styles = StyleList()
         self.styles.insert_one(name='Default')
         self.events = EventList()
-        self.info: T.Dict[str, str] = OrderedDict()
+        self.info = Metadata()

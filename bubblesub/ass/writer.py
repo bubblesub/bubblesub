@@ -39,9 +39,9 @@ def _ms_to_timestamp(milliseconds: int) -> str:
 
 
 def _write_info(ass_file: AssFile, handle: T.IO) -> None:
-    info = OrderedDict()
+    info: T.Dict[str, str] = OrderedDict()
     info['ScriptType'] = 'sentinel'  # make sure script type is the first entry
-    info.update(ass_file.info)
+    info.update(ass_file.info.items())
     info['ScriptType'] = 'v4.00+'
     for key, value in info.items():
         print(key, value, sep=': ', file=handle)
