@@ -27,8 +27,6 @@ import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 
-# TODO: observe this in undo
-
 
 class _OptionsGropuBox(QtWidgets.QGroupBox):
     def __init__(
