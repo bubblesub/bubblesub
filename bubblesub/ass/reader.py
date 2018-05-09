@@ -83,7 +83,7 @@ def _styles_section_handler(
     ass_file.styles.insert_one(
         name=field_dict['Name'],
         font_name=field_dict['Fontname'],
-        font_size=float(field_dict['Fontsize']),
+        font_size=int(field_dict['Fontsize']),
         primary_color=_deserialize_color(field_dict['PrimaryColour']),
         secondary_color=_deserialize_color(field_dict['SecondaryColour']),
         outline_color=_deserialize_color(field_dict['OutlineColour']),

@@ -65,7 +65,7 @@ def _write_style(style: Style, handle: T.IO) -> None:
     print('Style: ' + ','.join([
         style.name,
         style.font_name,
-        f'{style.font_size:}',
+        f'{style.font_size:d}',
         _serialize_color(style.primary_color),
         _serialize_color(style.secondary_color),
         _serialize_color(style.outline_color),
