@@ -240,22 +240,10 @@ class MoveSubtitlesToCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run_dialog(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> T.Optional[int]:
-            dialog = QtWidgets.QInputDialog(main_window)
-            dialog.setLabelText('Line number to move selected subtitles to:')
-            dialog.setIntMinimum(1)
-            dialog.setIntMaximum(len(api.subs.events))
-            if api.subs.has_selection:
-                dialog.setIntValue(api.subs.selected_indexes[0] + 1)
-            dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-            if dialog.exec_():
-                return T.cast(int, dialog.intValue()) - 1
-            return None
+        await self.api.gui.exec(self._run_with_gui)
 
-        base_idx = await self.api.gui.exec(run_dialog)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        base_idx = self._show_dialog(main_window)
         if base_idx is None:
             return
 
@@ -274,6 +262,21 @@ class MoveSubtitlesToCommand(BaseCommand):
 
             sub_copies.reverse()
             self.api.subs.events.insert(base_idx, sub_copies)
+
+    def _show_dialog(
+            self,
+            main_window: QtWidgets.QMainWindow
+    ) -> T.Optional[int]:
+        dialog = QtWidgets.QInputDialog(main_window)
+        dialog.setLabelText('Line number to move selected subtitles to:')
+        dialog.setIntMinimum(1)
+        dialog.setIntMaximum(len(self.api.subs.events))
+        if self.api.subs.has_selection:
+            dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
+        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+        if dialog.exec_():
+            return T.cast(int, dialog.intValue()) - 1
+        return None
 
 
 class DuplicateSubtitlesCommand(BaseCommand):
@@ -510,32 +513,30 @@ class ShiftSubtitlesWithGuiCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def _run_dialog(
-                _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
-                **kwargs: T.Any
-        ) -> T.Optional[T.Tuple[int, bool]]:
-            return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
+        await self.api.gui.exec(self._run_with_gui)
 
-        ret = await self.api.gui.exec(
-            _run_dialog,
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        ret = bubblesub.ui.util.time_jump_dialog(
+            main_window,
             absolute_label='Time to move to:',
             relative_label='Time to add:',
             relative_checked=True
         )
 
-        if ret is not None:
-            delta, is_relative = ret
+        if ret is None:
+            return
 
-            if not is_relative:
-                delta -= self.api.subs.selected_events[0].start
+        delta, is_relative = ret
 
-            with self.api.undo.capture():
-                for sub in self.api.subs.selected_events:
-                    sub.begin_update()
-                    sub.start += delta
-                    sub.end += delta
-                    sub.end_update()
+        if not is_relative:
+            delta -= self.api.subs.selected_events[0].start
+
+        with self.api.undo.capture():
+            for sub in self.api.subs.selected_events:
+                sub.begin_update()
+                sub.start += delta
+                sub.end += delta
+                sub.end_update()
 
 
 class SnapSubtitlesStartToVideoCommand(BaseCommand):

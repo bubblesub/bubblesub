@@ -756,14 +756,11 @@ class StylesManagerCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            with self.api.undo.capture():
-                _StylesManagerDialog(api, main_window).exec_()
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        with self.api.undo.capture():
+            _StylesManagerDialog(self.api, main_window).exec_()
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

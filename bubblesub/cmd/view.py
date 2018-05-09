@@ -48,14 +48,11 @@ class SetPaletteCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            api.opt.general.gui.current_palette = self._palette_name
-            main_window.apply_palette(self._palette_name)
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        self.api.opt.general.gui.current_palette = self._palette_name
+        main_window.apply_palette(self._palette_name)
 
 
 class FocusTextEditorCommand(BaseCommand):
@@ -66,14 +63,11 @@ class FocusTextEditorCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            main_window.editor.center.text_edit.setFocus()
-            main_window.editor.center.text_edit.selectAll()
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        main_window.editor.center.text_edit.setFocus()
+        main_window.editor.center.text_edit.selectAll()
 
 
 class FocusNoteEditorCommand(BaseCommand):
@@ -84,14 +78,11 @@ class FocusNoteEditorCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            main_window.editor.center.note_edit.setFocus()
-            main_window.editor.center.note_edit.selectAll()
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        main_window.editor.center.note_edit.setFocus()
+        main_window.editor.center.note_edit.selectAll()
 
 
 class FocusSubtitlesGridCommand(BaseCommand):
@@ -102,13 +93,10 @@ class FocusSubtitlesGridCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            main_window.subs_grid.setFocus()
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        main_window.subs_grid.setFocus()
 
 
 class FocusSpectrogramCommand(BaseCommand):
@@ -119,13 +107,10 @@ class FocusSpectrogramCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            main_window.audio.setFocus()
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        main_window.audio.setFocus()
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

@@ -20,7 +20,6 @@ import base64
 import pickle
 import typing as T
 import zlib
-from pathlib import Path
 
 from PyQt5 import QtWidgets
 
@@ -62,24 +61,27 @@ class JumpToSubtitleByLineCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run_dialog(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> T.Optional[int]:
-            dialog = QtWidgets.QInputDialog(main_window)
-            dialog.setLabelText('Line number to jump to:')
-            dialog.setIntMinimum(1)
-            dialog.setIntMaximum(len(api.subs.events))
-            if api.subs.has_selection:
-                dialog.setIntValue(api.subs.selected_indexes[0] + 1)
-            dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-            if dialog.exec_():
-                return T.cast(int, dialog.intValue())
-            return None
+        await self.api.gui.exec(self._run_with_gui)
 
-        value = await self.api.gui.exec(run_dialog)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        value = self._show_dialog(main_window)
         if value is not None:
             self.api.subs.selected_indexes = [value - 1]
+
+    def _show_dialog(
+            self,
+            main_window: QtWidgets.QMainWindow
+    ) -> T.Optional[int]:
+        dialog = QtWidgets.QInputDialog(main_window)
+        dialog.setLabelText('Line number to jump to:')
+        dialog.setIntMinimum(1)
+        dialog.setIntMaximum(len(self.api.subs.events))
+        if self.api.subs.has_selection:
+            dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
+        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+        if dialog.exec_():
+            return T.cast(int, dialog.intValue())
+        return None
 
 
 class JumpToSubtitleByTimeCommand(BaseCommand):
@@ -103,15 +105,11 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def _run_dialog(
-                _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
-                **kwargs: T.Any
-        ) -> T.Optional[T.Tuple[int, bool]]:
-            return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
+        await self.api.gui.exec(self._run_with_gui)
 
-        ret = await self.api.gui.exec(
-            _run_dialog,
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        ret = bubblesub.ui.util.time_jump_dialog(
+            main_window,
             value=(
                 self.api.subs.selected_events[0].start
                 if self.api.subs.has_selection else
@@ -121,19 +119,20 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
             relative_checked=False,
             show_radio=False
         )
+        if ret is None:
+            return
 
-        if ret is not None:
-            target_pts, _is_relative = ret
-            best_distance = None
-            best_idx = None
-            for i, sub in enumerate(self.api.subs.events):
-                center = (sub.start + sub.end) / 2
-                distance = abs(target_pts - center)
-                if best_distance is None or distance < best_distance:
-                    best_distance = distance
-                    best_idx = i
-            if best_idx is not None:
-                self.api.subs.selected_indexes = [best_idx]
+        target_pts, _is_relative = ret
+        best_distance = None
+        best_idx = None
+        for i, sub in enumerate(self.api.subs.events):
+            center = (sub.start + sub.end) / 2
+            distance = abs(target_pts - center)
+            if best_distance is None or distance < best_distance:
+                best_distance = distance
+                best_idx = i
+        if best_idx is not None:
+            self.api.subs.selected_indexes = [best_idx]
 
 
 class SelectPreviousSubtitleCommand(BaseCommand):
@@ -398,15 +397,12 @@ class SaveSubtitlesAsAudioSampleCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run_dialog(
-                _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> T.Optional[Path]:
-            return bubblesub.ui.util.save_dialog(
-                main_window, 'Waveform Audio File (*.wav)'
-            )
+        await self.api.gui.exec(self._run_with_gui)
 
-        path = await self.api.gui.exec(run_dialog)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        path = bubblesub.ui.util.save_dialog(
+            main_window, 'Waveform Audio File (*.wav)'
+        )
         if path is None:
             self.info('cancelled')
         else:

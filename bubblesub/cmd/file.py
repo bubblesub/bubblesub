@@ -35,26 +35,6 @@ def _get_dialog_dir(api: bubblesub.api.Api) -> T.Optional[Path]:
     return None
 
 
-async def _get_save_file_name(
-        api: bubblesub.api.Api,
-        main_window: QtWidgets.QMainWindow,
-        file_filter: str
-) -> T.Optional[Path]:
-    return bubblesub.ui.util.save_dialog(
-        main_window, file_filter, directory=_get_dialog_dir(api)
-    )
-
-
-async def _get_load_file_name(
-        api: bubblesub.api.Api,
-        main_window: QtWidgets.QMainWindow,
-        file_filter: str
-) -> T.Optional[Path]:
-    return bubblesub.ui.util.load_dialog(
-        main_window, file_filter, directory=_get_dialog_dir(api)
-    )
-
-
 def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
     if not api.undo.needs_save:
         return True
@@ -108,12 +88,17 @@ class OpenFileCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
+        await self.api.gui.exec(self._run_with_gui)
+
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         if _ask_about_unsaved_changes(self.api):
             if self._path:
                 path = self._path
             else:
-                path = await self.api.gui.exec(
-                    _get_load_file_name, SUBS_FILE_FILTER
+                path = bubblesub.ui.util.load_dialog(
+                    main_window,
+                    SUBS_FILE_FILTER,
+                    directory=_get_dialog_dir(self.api)
                 )
             if not path:
                 self.info('cancelled')
@@ -149,11 +134,16 @@ class LoadVideoCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
+        await self.api.gui.exec(self._run_with_gui)
+
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         if self._path:
             path = self._path
         else:
-            path = await self.api.gui.exec(
-                _get_load_file_name, VIDEO_FILE_FILTER
+            path = bubblesub.ui.util.load_dialog(
+                main_window,
+                VIDEO_FILE_FILTER,
+                directory=_get_dialog_dir(self.api)
             )
         if not path:
             self.info('cancelled')
@@ -175,10 +165,15 @@ class SaveFileCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
+        await self.api.gui.exec(self._run_with_gui)
+
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         path = self.api.subs.path
         if not path:
-            path = await self.api.gui.exec(
-                _get_save_file_name, SUBS_FILE_FILTER
+            path = bubblesub.ui.util.save_dialog(
+                main_window,
+                SUBS_FILE_FILTER,
+                directory=_get_dialog_dir(self.api)
             )
         if not path:
             self.info('cancelled')
@@ -214,11 +209,16 @@ class SaveFileAsCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
+        await self.api.gui.exec(self._run_with_gui)
+
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         if self._path:
             path = self._path
         else:
-            path = await self.api.gui.exec(
-                _get_save_file_name, SUBS_FILE_FILTER
+            path = bubblesub.ui.util.save_dialog(
+                main_window,
+                SUBS_FILE_FILTER,
+                directory=_get_dialog_dir(self.api)
             )
         if not path:
             self.info('cancelled')

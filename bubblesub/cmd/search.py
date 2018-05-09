@@ -500,15 +500,12 @@ class SearchCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            _SearchDialog(
-                api, main_window, show_replace_controls=False
-            ).exec_()
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        _SearchDialog(
+            self.api, main_window, show_replace_controls=False
+        ).exec_()
 
 
 class SearchAndReplaceCommand(BaseCommand):
@@ -519,13 +516,12 @@ class SearchAndReplaceCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            _SearchDialog(api, main_window, show_replace_controls=True).exec_()
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        _SearchDialog(
+            self.api, main_window, show_replace_controls=True
+        ).exec_()
 
 
 class SearchRepeatCommand(BaseCommand):
@@ -563,25 +559,22 @@ class SearchRepeatCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            result = _search(
-                api,
-                main_window,
-                _create_search_regex(
-                    self.api.opt.general.search.history[0],
-                    self.api.opt.general.search.case_sensitive,
-                    self.api.opt.general.search.use_regexes
-                ),
-                self.api.opt.general.search.mode,
-                self._direction
-            )
-            if not result:
-                bubblesub.ui.util.notice('No occurences found.')
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        result = _search(
+            self.api,
+            main_window,
+            _create_search_regex(
+                self.api.opt.general.search.history[0],
+                self.api.opt.general.search.case_sensitive,
+                self.api.opt.general.search.use_regexes
+            ),
+            self.api.opt.general.search.mode,
+            self._direction
+        )
+        if not result:
+            bubblesub.ui.util.notice('No occurences found.')
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

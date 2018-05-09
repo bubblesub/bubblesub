@@ -339,15 +339,11 @@ class SeekWithGuiCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def _run_dialog(
-                _api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow,
-                **kwargs: T.Any
-        ) -> T.Optional[T.Tuple[int, bool]]:
-            return bubblesub.ui.util.time_jump_dialog(main_window, **kwargs)
+        await self.api.gui.exec(self._run_with_gui)
 
-        ret = await self.api.gui.exec(
-            _run_dialog,
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        ret = bubblesub.ui.util.time_jump_dialog(
+            main_window,
             absolute_label='Time to jump to:',
             relative_label='Time to jump by:',
             relative_checked=False,
@@ -542,33 +538,36 @@ class ScreenshotCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def _run_dialog(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> T.Optional[Path]:
-            assert api.media.path is not None
+        await self.api.gui.exec(self._run_with_gui)
 
-            file_name = 'shot-{}-{}.png'.format(
-                api.media.path.name,
-                bubblesub.util.ms_to_str(api.media.current_pts)
-            )
-
-            file_name = file_name.replace(':', '.')
-            file_name = file_name.replace(' ', '_')
-            file_name = re.sub(r'(?u)[^-\w.]', '', file_name)
-
-            return bubblesub.ui.util.save_dialog(
-                main_window,
-                'Portable Network Graphics (*.png)',
-                file_name=file_name
-            )
-
-        path = await self.api.gui.exec(_run_dialog)
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        path = self._show_dialog(main_window)
         if path is None:
             self.info('cancelled')
         else:
             self.api.media.video.screenshot(path, self._include_subtitles)
             self.info(f'saved screenshot to {path}')
+
+    def _show_dialog(
+            self,
+            main_window: QtWidgets.QMainWindow
+    ) -> T.Optional[Path]:
+        assert self.api.media.path is not None
+
+        file_name = 'shot-{}-{}.png'.format(
+            self.api.media.path.name,
+            bubblesub.util.ms_to_str(self.api.media.current_pts)
+        )
+
+        file_name = file_name.replace(':', '.')
+        file_name = file_name.replace(' ', '_')
+        file_name = re.sub(r'(?u)[^-\w.]', '', file_name)
+
+        return bubblesub.ui.util.save_dialog(
+            main_window,
+            'Portable Network Graphics (*.png)',
+            file_name=file_name
+        )
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

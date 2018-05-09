@@ -181,6 +181,9 @@ class SpellCheckCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
+        await self.api.gui.exec(self._run_with_gui)
+
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         spell_check_lang = self.api.opt.general.spell_check
         if not spell_check_lang:
             bubblesub.ui.util.error('Spell check was disabled in config.')
@@ -194,13 +197,7 @@ class SpellCheckCommand(BaseCommand):
             )
             return
 
-        async def run(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            _SpellCheckDialog(api, main_window, dictionary)
-
-        await self.api.gui.exec(run)
+        _SpellCheckDialog(self.api, main_window, dictionary)
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

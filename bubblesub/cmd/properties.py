@@ -271,21 +271,17 @@ class FilePropertiesCommand(BaseCommand):
         """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(
-            self,
-            api: bubblesub.api.Api,
-            main_window: QtWidgets.QMainWindow
-    ) -> None:
-        with api.undo.capture():
-            old_res = int(api.subs.info.get('PlayResY', 0))
-            _FilePropertiesDialog(api, main_window)
-            new_res = int(api.subs.info.get('PlayResY', 0))
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        with self.api.undo.capture():
+            old_res = int(self.api.subs.info.get('PlayResY', 0))
+            _FilePropertiesDialog(self.api, main_window)
+            new_res = int(self.api.subs.info.get('PlayResY', 0))
             if old_res != new_res and old_res and new_res and \
                     bubblesub.ui.util.ask(
                             'The resolution was changed. '
                             'Do you want to rescale all the styles now?'
                     ):
-                _rescale_styles(api, new_res / old_res)
+                _rescale_styles(self.api, new_res / old_res)
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

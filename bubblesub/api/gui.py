@@ -23,8 +23,6 @@ from PyQt5 import QtWidgets
 import bubblesub.api.api  # pylint: disable=unused-import
 import bubblesub.event
 
-TResult = T.TypeVar('TResult')  # pylint: disable=invalid-name
-
 
 class GuiApi:
     """The GUI API."""
@@ -53,10 +51,8 @@ class GuiApi:
 
     async def exec(
             self,
-            func: T.Callable[..., T.Awaitable[TResult]],
-            *args: T.Any,
-            **kwargs: T.Any
-    ) -> TResult:
+            func: T.Callable[[QtWidgets.QMainWindow], T.Awaitable[None]],
+    ) -> None:
         """
         Execute function in GUI thread.
 
@@ -64,7 +60,7 @@ class GuiApi:
         :param args: arguments passed to the function
         :param kwargs: keyword arguments passed to the function
         """
-        return await func(self._api, self._main_window, *args, **kwargs)
+        await func(self._main_window)
 
     def quit(self) -> None:
         """Exit the application."""
