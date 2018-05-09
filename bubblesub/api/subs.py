@@ -155,8 +155,10 @@ class SubtitlesApi:
     def unload(self) -> None:
         """Load empty ASS file."""
         self._path = None
-        self.ass_file = AssFile()
         self.selected_indexes = []
+        self.ass_file.info.clear()
+        self.ass_file.events.clear()
+        self.ass_file.styles.clear()
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:
