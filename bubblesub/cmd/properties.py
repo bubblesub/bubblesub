@@ -28,6 +28,11 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 
 
+def _rescale_styles(api: bubblesub.api.Api, factor: float) -> None:
+    for style in api.subs.styles:
+        style.scale(factor)
+
+
 class _OptionsGropuBox(QtWidgets.QGroupBox):
     def __init__(
             self,
@@ -264,14 +269,23 @@ class FilePropertiesCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        async def run(
-                api: bubblesub.api.Api,
-                main_window: QtWidgets.QMainWindow
-        ) -> None:
-            with api.undo.capture():
-                _FilePropertiesDialog(api, main_window)
+        await self.api.gui.exec(self._run_with_gui)
 
-        await self.api.gui.exec(run)
+    async def _run_with_gui(
+            self,
+            api: bubblesub.api.Api,
+            main_window: QtWidgets.QMainWindow
+    ) -> None:
+        with api.undo.capture():
+            old_res = int(api.subs.info.get('PlayResY', 0))
+            _FilePropertiesDialog(api, main_window)
+            new_res = int(api.subs.info.get('PlayResY', 0))
+            if old_res != new_res and old_res and new_res and \
+                    bubblesub.ui.util.ask(
+                            'The resolution was changed. '
+                            'Do you want to rescale all the styles now?'
+                    ):
+                _rescale_styles(api, new_res / old_res)
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

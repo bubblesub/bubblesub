@@ -110,6 +110,19 @@ class Style(bubblesub.model.ObservableObject):
         self.margin_vertical = margin_vertical
         self.encoding = encoding
 
+    def scale(self, factor: float) -> None:
+        """
+        Scale self by the given factor.
+
+        :param factor: scale to scale self by
+        """
+        self.font_size = int(self.font_size * factor)
+        self.outline *= factor
+        self.shadow *= factor
+        self.margin_left = int(self.margin_left * factor)
+        self.margin_right = int(self.margin_right * factor)
+        self.margin_vertical = int(self.margin_vertical * factor)
+
     @property
     def index(self) -> T.Optional[int]:
         """
