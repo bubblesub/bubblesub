@@ -102,16 +102,22 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
         self._table_view = QtWidgets.QTableView(self)
         self._table_view.setModel(self.model)
         self._table_view.setTabKeyNavigation(False)
+
         self._table_view.horizontalHeader().setSectionResizeMode(
             0, QtWidgets.QHeaderView.ResizeToContents
         )
         self._table_view.horizontalHeader().setSectionResizeMode(
             1, QtWidgets.QHeaderView.Stretch
         )
+
         self._table_view.verticalHeader().setSectionsMovable(True)
         self._table_view.verticalHeader().setDragEnabled(True)
         self._table_view.verticalHeader().setDragDropMode(
             QtWidgets.QAbstractItemView.InternalMove
+        )
+
+        self._table_view.verticalHeader().setDefaultSectionSize(
+            self._table_view.fontMetrics().height() * 1.8
         )
 
         strip = QtWidgets.QWidget(self)
@@ -187,7 +193,7 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
         self._load()
         self.setWindowTitle('File properties')
-        self.resize(500, 500)
+        self.resize(600, 600)
         self.exec_()
 
     def _load(self) -> None:
