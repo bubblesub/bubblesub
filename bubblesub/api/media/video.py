@@ -179,6 +179,30 @@ class VideoApi:
         return pts
 
     @property
+    def width(self) -> T.Optional[int]:
+        """
+        Return horizontal video resolution.
+
+        :return: video width in pixels
+        """
+        try:
+            return self._mpv.get_property('width')
+        except mpv.MPVError:
+            return 0
+
+    @property
+    def height(self) -> T.Optional[int]:
+        """
+        Return vertical video resolution.
+
+        :return: video height in pixels
+        """
+        try:
+            return self._mpv.get_property('height')
+        except mpv.MPVError:
+            return 0
+
+    @property
     def timecodes(self) -> T.List[int]:
         """
         Return video frames' PTS.

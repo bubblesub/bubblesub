@@ -94,6 +94,7 @@ class MenuConfig(BaseConfig):
                     MenuCommand('file/save-as'),
                     MenuSeparator(),
                     MenuCommand('file/load-video'),
+                    MenuCommand('file/properties'),
                     MenuSeparator(),
                     MenuCommand('file/quit'),
                 ]),

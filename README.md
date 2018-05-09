@@ -22,10 +22,6 @@ Simple extensible ASS subtitle editor for Linux
 - Style editor with realistic preview
 - No bloat
 
-**Planned features**
-
-- Meta data editor
-
 ## Installation
 
 - Install system dependencies

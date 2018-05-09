@@ -115,6 +115,7 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Alt+J', 'edit/join-subs/concatenate'),
                 Hotkey('Alt+Up', 'edit/move-up'),
                 Hotkey('Alt+Down', 'edit/move-down'),
+                Hotkey('Alt+Return', 'file/properties'),
             ],
 
             HotkeyContext.Spectrogram:
