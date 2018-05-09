@@ -47,12 +47,6 @@ def _write_info(ass_file: AssFile, handle: T.IO) -> None:
         print(key, value, sep=': ', file=handle)
 
 
-def _write_meta(ass_file: AssFile, handle: T.IO) -> None:
-    print('\n[Aegisub Project Garbage]', file=handle)
-    for key, value in ass_file.meta.items():
-        print(key, value, sep=': ', file=handle)
-
-
 def _write_styles(ass_file: AssFile, handle: T.IO) -> None:
     print('\n[V4+ Styles]', file=handle)
     print(
@@ -142,7 +136,5 @@ def write_ass(ass_file: AssFile, handle: T.IO) -> None:
         print(";", line, file=handle)
 
     _write_info(ass_file, handle)
-    if ass_file.meta:
-        _write_meta(ass_file, handle)
     _write_styles(ass_file, handle)
     _write_events(ass_file, handle)

@@ -56,7 +56,7 @@ class _ReadContext:
     field_names: T.List[str] = []
 
 
-def _inside_info_section(
+def _info_section_handler(
         line: str,
         ass_file: AssFile,
         _context: _ReadContext
@@ -67,18 +67,7 @@ def _inside_info_section(
     ass_file.info[key] = value
 
 
-def _inside_meta_section(
-        line: str,
-        ass_file: AssFile,
-        _context: _ReadContext
-) -> None:
-    if line.startswith(';'):
-        return
-    key, value = line.split(': ', 1)
-    ass_file.meta[key] = value
-
-
-def _inside_styles_section(
+def _styles_section_handler(
         line: str,
         ass_file: AssFile,
         ctx: _ReadContext
@@ -118,7 +107,7 @@ def _inside_styles_section(
     )
 
 
-def _inside_events_section(
+def _events_section_handler(
         line: str,
         ass_file: AssFile,
         ctx: _ReadContext
@@ -166,6 +155,14 @@ def _inside_events_section(
     )
 
 
+def _dummy_handler(
+        _line: str,
+        _ass_file: AssFile,
+        _context: _ReadContext
+) -> None:
+    pass
+
+
 def load_ass(handle: T.IO, ass_file: AssFile) -> None:
     """
     Load ASS from the specified source.
@@ -177,7 +174,6 @@ def load_ass(handle: T.IO, ass_file: AssFile) -> None:
 
     ass_file.events.clear()
     ass_file.styles.clear()
-    ass_file.meta.clear()
     ass_file.info.clear()
 
     handler: T.Optional[T.Callable[[str, AssFile, _ReadContext], None]] = None
@@ -192,13 +188,13 @@ def load_ass(handle: T.IO, ass_file: AssFile) -> None:
             if match:
                 section = match.group(1)
                 if section == 'Script Info':
-                    handler = _inside_info_section
-                elif section == 'Aegisub Project Garbage':
-                    handler = _inside_meta_section
+                    handler = _info_section_handler
                 elif section == 'V4+ Styles':
-                    handler = _inside_styles_section
+                    handler = _styles_section_handler
                 elif section == 'Events':
-                    handler = _inside_events_section
+                    handler = _events_section_handler
+                elif section == 'Aegisub Project Garbage':
+                    handler = _dummy_handler
                 else:
                     raise ValueError(f'Unrecognized section: "{section}"')
             elif not handler:

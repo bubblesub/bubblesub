@@ -68,24 +68,13 @@ class SubtitlesApi:
     @property
     def info(self) -> T.Dict[str, str]:
         """
-        Return info dict.
+        Return additional information associated with the ASS file.
 
         This holds basic information about ASS version, video resolution etc.
 
-        :return: info dict
+        :return: additional information
         """
         return self.ass_file.info
-
-    @property
-    def meta(self) -> T.Dict[str, str]:
-        """
-        Return meta dict.
-
-        This holds extra user information not part of the usual ASS spec.
-
-        :return: meta dict
-        """
-        return self.ass_file.meta
 
     @property
     def remembered_video_path(self) -> T.Optional[Path]:
@@ -94,7 +83,7 @@ class SubtitlesApi:
 
         :return: path of the associated video file or None if no video
         """
-        path: str = self.meta.get('Video File', '')
+        path: str = self.info.get('Video File', '')
         if not path:
             return None
         if not self._path:
@@ -104,12 +93,12 @@ class SubtitlesApi:
     @remembered_video_path.setter
     def remembered_video_path(self, path: Path) -> None:
         """
-        Set path of the associated video file, updating meta dict.
+        Set path of the associated video file, updating info dict.
 
         :param path: path to the video file
         """
-        self.meta['Video File'] = str(path)
-        self.meta['Audio File'] = str(path)
+        self.info['Video File'] = str(path)
+        self.info['Audio File'] = str(path)
 
     @property
     def path(self) -> T.Optional[Path]:

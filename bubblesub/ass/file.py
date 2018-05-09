@@ -31,5 +31,4 @@ class AssFile:
         self.styles = StyleList()
         self.styles.insert_one(name='Default')
         self.events = EventList()
-        self.meta: T.Dict[str, str] = OrderedDict()
         self.info: T.Dict[str, str] = OrderedDict()
