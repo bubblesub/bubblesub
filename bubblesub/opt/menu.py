@@ -132,7 +132,7 @@ class MenuConfig(BaseConfig):
                     MenuCommand('edit/manage-styles'),
                 ]),
 
-                SubMenu('&Select', [
+                SubMenu('Select', [
                     MenuCommand('grid/jump-to-line'),
                     MenuCommand('grid/jump-to-time'),
                     MenuSeparator(),
