@@ -240,6 +240,8 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
                 ])
 
     def _commit(self) -> None:
+        old_res = int(self._api.subs.info.get('PlayResY', 0))
+
         self._api.subs.info.clear()
 
         self._api.subs.info.update({
@@ -260,6 +262,14 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
         self._api.subs.info.update(self._metadata_group_box.get_data())
 
+        new_res = int(self._api.subs.info.get('PlayResY', 0))
+        if old_res != new_res and old_res and new_res and \
+                bubblesub.ui.util.ask(
+                        'The resolution was changed. '
+                        'Do you want to rescale all the styles now?'
+                ):
+            _rescale_styles(self._api, new_res / old_res)
+
 
 class FilePropertiesCommand(BaseCommand):
     """Opens up the metadata editor dialog."""
@@ -273,15 +283,7 @@ class FilePropertiesCommand(BaseCommand):
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         with self.api.undo.capture():
-            old_res = int(self.api.subs.info.get('PlayResY', 0))
             _FilePropertiesDialog(self.api, main_window)
-            new_res = int(self.api.subs.info.get('PlayResY', 0))
-            if old_res != new_res and old_res and new_res and \
-                    bubblesub.ui.util.ask(
-                            'The resolution was changed. '
-                            'Do you want to rescale all the styles now?'
-                    ):
-                _rescale_styles(self.api, new_res / old_res)
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
