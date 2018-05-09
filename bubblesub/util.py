@@ -23,8 +23,6 @@ import re
 import time
 import typing as T
 
-MAX_REPRESENTABLE_TIME = 3599990
-
 
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
     """
@@ -35,8 +33,6 @@ def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
     """
     if milliseconds < 0:
         milliseconds = 0
-    if milliseconds > MAX_REPRESENTABLE_TIME:
-        milliseconds = MAX_REPRESENTABLE_TIME
 
     milliseconds = int(round(milliseconds))
     hours, milliseconds = divmod(milliseconds, 3600000)
