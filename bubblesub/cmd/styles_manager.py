@@ -81,24 +81,24 @@ class _StylePreview(QtWidgets.QGroupBox):
         layout.addWidget(self._background_combobox)
         layout.addWidget(self._preview_box)
 
-        self._update_preview()
+        self.update_preview()
         self._editor.textChanged.connect(self._on_text_change)
         self._background_combobox.currentIndexChanged.connect(
             self._on_background_change
         )
-        api.subs.styles.item_changed.connect(self._update_preview)
-        api.subs.styles.items_inserted.connect(self._update_preview)
-        api.subs.styles.items_removed.connect(self._update_preview)
-        selection_model.selectionChanged.connect(self._update_preview)
+        api.subs.styles.item_changed.connect(self.update_preview)
+        api.subs.styles.items_inserted.connect(self.update_preview)
+        api.subs.styles.items_removed.connect(self.update_preview)
+        selection_model.selectionChanged.connect(self.update_preview)
 
     def _on_background_change(self) -> None:
-        self._update_preview()
+        self.update_preview()
         self._api.opt.general.styles.preview_background = (
             self._background_combobox.currentData().name
         )
 
     def _on_text_change(self) -> None:
-        self._update_preview()
+        self.update_preview()
         self._api.opt.general.styles.preview_test_text = (
             self._editor.toPlainText()
         )
@@ -112,13 +112,16 @@ class _StylePreview(QtWidgets.QGroupBox):
         else:
             return self._api.subs.styles[idx]
 
-    def _update_preview(self) -> None:
+    def update_preview(self) -> None:
         selected_style = self._selected_style
         if not selected_style:
             self._preview_box.clear()
             return
 
         resolution = (self._preview_box.width(), self._preview_box.height())
+        if resolution[0] <= 0 or resolution[1] <= 0:
+            self._preview_box.clear()
+            return
 
         fake_style = copy(selected_style)
         fake_style.name = 'Default'
@@ -731,6 +734,9 @@ class _StylesManagerDialog(QtWidgets.QDialog):
         layout.addWidget(self._style_list)
         layout.addWidget(self._style_editor)
         layout.addWidget(self._preview_box)
+
+    def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
+        self._preview_box.update_preview()
 
 
 class StylesManagerCommand(BaseCommand):

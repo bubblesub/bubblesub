@@ -12,6 +12,7 @@ good-names=
     mousePressEvent,
     mouseMoveEvent,
     mouseReleaseEvent,
+    resizeEvent,
     paintEvent,
     wheelEvent,
     changeEvent,
