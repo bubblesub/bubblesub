@@ -71,10 +71,10 @@ class _StylePreview(QtWidgets.QGroupBox):
         self._preview_box.setLineWidth(1)
         self._preview_box.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self._preview_box.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self._preview_box.setSizePolicy(QtWidgets.QSizePolicy(
+        self._preview_box.setSizePolicy(
             QtWidgets.QSizePolicy.Ignored,
             QtWidgets.QSizePolicy.Ignored
-        ))
+        )
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(self._editor)
@@ -393,10 +393,10 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         super().__init__('Font', parent)
         self.font_name_edit = QtWidgets.QComboBox(self)
         self.font_name_edit.setEditable(False)
-        self.font_name_edit.setSizePolicy(QtWidgets.QSizePolicy(
+        self.font_name_edit.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Preferred
-        ))
+            QtWidgets.QSizePolicy.Maximum
+        )
         self.font_name_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
         self.font_size_edit = QtWidgets.QSpinBox(self)
         self.font_size_edit.setMinimum(0)

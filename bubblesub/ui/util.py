@@ -72,12 +72,17 @@ class ColorPicker(QtWidgets.QWidget):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._label = QtWidgets.QLabel(self)
+        self._label.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Maximum
+        )
         self._button = QtWidgets.QPushButton('Change', self)
         self._button.clicked.connect(self._on_button_click)
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._label)
         layout.addWidget(self._button)
+        self._label.setMinimumHeight(self._button.height())
         self._color = QtGui.QColor(0, 0, 0, 0)
         self.set_color(self._color)
 

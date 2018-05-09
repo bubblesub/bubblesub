@@ -290,10 +290,10 @@ class _SearchTextEdit(QtWidgets.QComboBox):
         self.setEditable(True)
         self.setMaxCount(MAX_HISTORY_ENTRIES)
         self.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
-        self.setSizePolicy(QtWidgets.QSizePolicy(
+        self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
             QtWidgets.QSizePolicy.Preferred
-        ))
+        )
         completer = self.completer()
         completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
         self.setCompleter(completer)
