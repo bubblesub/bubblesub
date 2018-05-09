@@ -120,9 +120,13 @@ class _StylePreview(QtWidgets.QGroupBox):
 
         resolution = (self._preview_box.width(), self._preview_box.height())
 
+        fake_style = copy(selected_style)
+        fake_style.name = 'Default'
+        if self._api.media.is_loaded:
+            fake_style.scale(resolution[1] / self._api.media.video.height)
+
         fake_style_list = bubblesub.ass.style.StyleList()
-        fake_style_list.insert(0, [copy(selected_style)])
-        fake_style_list.get(0).name = 'Default'
+        fake_style_list.insert(0, [fake_style])
 
         fake_event_list = bubblesub.ass.event.EventList()
         fake_event_list.insert_one(
@@ -130,7 +134,7 @@ class _StylePreview(QtWidgets.QGroupBox):
             start=0,
             end=1000,
             text=self._editor.toPlainText().replace('\n', '\\N'),
-            style='Default'
+            style=fake_style.name
         )
 
         track = self._ctx.make_track()
