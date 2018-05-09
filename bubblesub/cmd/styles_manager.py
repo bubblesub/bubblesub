@@ -735,6 +735,8 @@ class _StylesManagerDialog(QtWidgets.QDialog):
         layout.addWidget(self._style_editor)
         layout.addWidget(self._preview_box)
 
+        self.setWindowTitle('Styles manager')
+
     def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
         self._preview_box.update_preview()
 

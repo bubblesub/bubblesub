@@ -362,6 +362,11 @@ class _SearchDialog(QtWidgets.QDialog):
         layout.addWidget(settings_box)
         layout.addWidget(strip)
 
+        if show_replace_controls:
+            self.setWindowTitle('Search and replace...')
+        else:
+            self.setWindowTitle('Search...')
+
         self._load_opt()
         self._update_replacement_enabled()
         self.search_text_edit.lineEdit().selectAll()

@@ -33,6 +33,7 @@ from bubblesub.opt.menu import SubMenu
 
 def error(msg: str) -> None:
     box = QtWidgets.QMessageBox()
+    box.setWindowTitle('Error')
     box.setIcon(QtWidgets.QMessageBox.Critical)
     box.setText(msg)
     box.exec_()
@@ -40,6 +41,7 @@ def error(msg: str) -> None:
 
 def notice(msg: str) -> None:
     box = QtWidgets.QMessageBox()
+    box.setWindowTitle('Information')
     box.setIcon(QtWidgets.QMessageBox.Information)
     box.setText(msg)
     box.exec_()
@@ -47,6 +49,7 @@ def notice(msg: str) -> None:
 
 def ask(msg: str) -> bool:
     box = QtWidgets.QMessageBox()
+    box.setWindowTitle('Question')
     box.setText(msg)
     box.setIcon(QtWidgets.QMessageBox.Question)
     box.addButton('Yes', QtWidgets.QMessageBox.YesRole)
@@ -310,6 +313,7 @@ def time_jump_dialog(
     class TimeJumpDialog(QtWidgets.QDialog):
         def __init__(self, parent: QtWidgets.QWidget = None) -> None:
             super().__init__(parent)
+            self.setWindowTitle('Select time...')
 
             self._label = QtWidgets.QLabel('', self)
             self._time_edit = TimeEdit(self)

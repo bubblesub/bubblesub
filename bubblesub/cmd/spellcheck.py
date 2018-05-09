@@ -75,6 +75,8 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         layout.addWidget(box)
         layout.addWidget(strip)
 
+        self.setWindowTitle('Spell checker')
+
         if self._next():
             self.exec_()
 
