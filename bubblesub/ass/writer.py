@@ -17,6 +17,7 @@
 """ASS file writer."""
 
 import typing as T
+from collections import OrderedDict
 
 from bubblesub.ass.event import Event
 from bubblesub.ass.file import AssFile
@@ -38,7 +39,9 @@ def _ms_to_timestamp(milliseconds: int) -> str:
 
 
 def _write_info(ass_file: AssFile, handle: T.IO) -> None:
-    info = {key: value for key, value in ass_file.info.items()}
+    info = OrderedDict()
+    info['ScriptType'] = 'sentinel'  # make sure script type is the first entry
+    info.update(ass_file.info)
     info['ScriptType'] = 'v4.00+'
     for key, value in info.items():
         print(key, value, sep=': ', file=handle)
