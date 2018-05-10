@@ -177,6 +177,13 @@ class CommandApi:
             self._api.log.error(f'Error creating command "{name}"')
             raise
 
+    def get_all(self) -> T.List[BaseCommand]:
+        """
+        Return list of all registered command types.
+
+        :return: list of types"""
+        return self._command_registry.values()
+
     def load_commands(self, path: Path) -> None:
         """
         Load commands from the specified path.

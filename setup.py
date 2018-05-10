@@ -42,6 +42,7 @@ class GenerateDocumentationCommand(Command):
             self._generate_commands_documentation(handle=handle)
 
     def _generate_hotkeys_documentation(self, handle):
+        import re
         import bubblesub.opt
 
         opt = bubblesub.opt.Options()
@@ -53,7 +54,7 @@ class GenerateDocumentationCommand(Command):
                 cmd_anchor = self._get_anchor_name('cmd', cmd_name)
                 row = [
                     f'<kbd>{hotkey.shortcut}</kbd>',
-                    context,
+                    re.sub('([A-Z])', r' \1', context.name).strip().lower(),
                     f'<a href="#user-content-{cmd_anchor}">`{cmd_name}`</a>',
                     ', '.join(f'`{arg}`' for arg in hotkey.command_args)
                 ]
@@ -72,14 +73,23 @@ class GenerateDocumentationCommand(Command):
         )
 
     def _generate_commands_documentation(self, handle):
-        import bubblesub.api.cmd
-        import bubblesub.cmd
+        import argparse
         import inspect
+
+        import bubblesub.opt
+        import bubblesub.api.cmd
         import docstring_parser
 
         table = []
 
-        for cls in bubblesub.api.cmd.CoreCommand.__subclasses__():
+        args = argparse.Namespace()
+        setattr(args, 'no_video', True)
+
+        opt = bubblesub.opt.Options()
+        api = bubblesub.api.Api(opt, args)
+        api.cmd.load_commands(Path(__file__).parent / 'bubblesub' / 'cmd')
+
+        for cls in sorted(api.cmd.get_all(), key=lambda cls: cls.name):
             signature = inspect.signature(cls.__init__)
             cls_docstring = docstring_parser.parse(cls.__doc__)
             init_docstring = docstring_parser.parse(cls.__init__.__doc__)
