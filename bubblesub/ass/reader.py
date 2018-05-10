@@ -18,6 +18,7 @@
 
 import re
 import typing as T
+from pathlib import Path
 
 from bubblesub.ass.file import AssFile
 from bubblesub.ass.style import Color
@@ -203,3 +204,19 @@ def load_ass(handle: T.IO, ass_file: AssFile) -> None:
                 handler(line, ass_file, ctx)  # pylint: disable=not-callable
         except (ValueError, IndexError):
             raise ValueError(f'Corrupt ASS file at line #{i+1}: "{line}"')
+
+
+def read_ass(source: T.Union[Path, T.IO]) -> AssFile:
+    """
+    Read ASS from the specified source.
+
+    :param source: readable stream or a path
+    :return: read ass file
+    """
+    ass_file = AssFile()
+    if isinstance(source, Path):
+        with source.open('r') as handle:
+            load_ass(handle, ass_file)
+    else:
+        load_ass(handle, ass_file)
+    return ass_file
