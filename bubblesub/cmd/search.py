@@ -84,9 +84,9 @@ def _get_subject_widget_by_mode(
     elif mode == SearchMode.Note:
         return main_window.editor.center.note_edit
     elif mode == SearchMode.Actor:
-        return main_window.editor.bottom_bar.actor_edit.lineEdit()
+        return main_window.editor.bar1.actor_edit.lineEdit()
     elif mode == SearchMode.Style:
-        return main_window.editor.bottom_bar.style_edit.lineEdit()
+        return main_window.editor.bar1.style_edit.lineEdit()
     raise RuntimeError('Invalid search mode')
 
 
