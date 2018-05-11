@@ -49,7 +49,7 @@ class BaseCommand(abc.ABC):
     @bubblesub.model.classproperty
     @abc.abstractproperty
     def name(  # pylint: disable=no-self-argument
-            cls: T.Type['BaseCommand']
+            cls: T.Any
     ) -> str:
         """
         Return command name.
@@ -132,7 +132,7 @@ class CommandApi:
         super().__init__()
         self._api = api
         self._thread = None
-        self._command_registry: T.Dict[str, T.Type] = {}
+        self._command_registry: T.Dict[str, T.Type[BaseCommand]] = {}
         self._plugin_menu: T.List[MenuItem] = []
 
     def run(self, cmd: BaseCommand) -> None:

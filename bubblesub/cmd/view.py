@@ -16,6 +16,8 @@
 
 """General GUI commands."""
 
+import typing as T
+
 from PyQt5 import QtWidgets
 
 import bubblesub.api
@@ -126,4 +128,4 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             FocusSubtitlesGridCommand,
             FocusSpectrogramCommand,
     ]:
-        cmd_api.register_core_command(cls)
+        cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

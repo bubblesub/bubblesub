@@ -408,12 +408,6 @@ class GuiConfig:
 
         :param cfg: config parser
         """
-        if cfg.has_section('gui.splitters'):
-            for key, raw_value in cfg.items('gui.splitters'):
-                value = _decompress(raw_value)
-                if value is not None:
-                    self.splitters[key] = value
-
         self.current_palette = (
             cfg.get('gui', 'current_palette', fallback=self.current_palette)
         )
@@ -422,9 +416,22 @@ class GuiConfig:
         else:
             self.grid_columns = None
 
+        self._load_fonts(cfg)
+        self._load_splitters(cfg)
+        self._load_palettes(cfg)
+
+    def _load_fonts(self, cfg: configparser.RawConfigParser) -> None:
         for key, value in self.fonts.items():
             self.fonts[key] = cfg.get('gui.fonts', key, fallback=value)
 
+    def _load_splitters(self, cfg: configparser.RawConfigParser) -> None:
+        if cfg.has_section('gui.splitters'):
+            for key, raw_value in cfg.items('gui.splitters'):
+                value = _decompress(raw_value)
+                if value is not None:
+                    self.splitters[key] = value
+
+    def _load_palettes(self, cfg: configparser.RawConfigParser) -> None:
         new_palettes = {}
         for section_name, section in cfg.items():
             match = re.match(r'^gui.palette\.(\w+)$', section_name)
@@ -438,7 +445,7 @@ class GuiConfig:
             self.palettes.clear()
             self.palettes.update(new_palettes)
         if self.current_palette not in self.palettes:
-            self.current_palette = self.palettes.keys()[0]
+            self.current_palette = list(self.palettes.keys())[0]
 
     def dumps(self) -> T.Any:
         """

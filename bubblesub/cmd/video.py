@@ -389,9 +389,11 @@ class SetPlaybackSpeedCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        self.api.media.playback_speed = bubblesub.util.eval_expr(
+        new_value = bubblesub.util.eval_expr(
             self._expr.format(self.api.media.playback_speed)
         )
+        assert isinstance(new_value, type(self.api.media.playback_speed))
+        self.api.media.playback_speed = new_value
 
 
 class SetVolumeCommand(BaseCommand):
@@ -420,9 +422,11 @@ class SetVolumeCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        self.api.media.volume = bubblesub.util.eval_expr(
+        new_value = bubblesub.util.eval_expr(
             self._expr.format(self.api.media.volume)
         )
+        assert isinstance(new_value, type(self.api.media.volume))
+        self.api.media.volume = new_value
 
 
 class TogglePauseCommand(BaseCommand):
@@ -591,4 +595,4 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             PauseCommand,
             ScreenshotCommand,
     ]:
-        cmd_api.register_core_command(cls)
+        cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

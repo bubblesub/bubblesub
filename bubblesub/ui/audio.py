@@ -29,7 +29,7 @@ from bubblesub.ui.spectrogram import SpectrumWorker, DERIVATION_SIZE
 from bubblesub.ui.util import blend_colors, get_color
 
 NOT_CACHED = object()
-CACHING = object()
+CACHING: T.List[int] = []
 SLIDER_SIZE = 20
 
 

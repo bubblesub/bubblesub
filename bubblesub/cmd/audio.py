@@ -486,4 +486,4 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             ShiftSpectrogramSelectionCommand,
             CommitSpectrogramSelectionCommand,
     ]:
-        cmd_api.register_core_command(cls)
+        cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

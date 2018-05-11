@@ -330,10 +330,10 @@ class MenuConfig(BaseConfig):
 
     def __iter__(
             self
-    ) -> T.Iterator[T.Tuple[str, T.MutableSequence[MenuItem]]]:
+    ) -> T.Iterator[T.Tuple[MenuContext, T.MutableSequence[MenuItem]]]:
         """
         Let users iterate directly over this config.
 
         :return: iterator
         """
-        return iter(self._menu.items())
+        return ((context, items) for context, items in self._menu.items())
