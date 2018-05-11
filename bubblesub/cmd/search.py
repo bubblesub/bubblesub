@@ -16,7 +16,9 @@
 
 """Commands for searching/searching and replacing."""
 
+import abc
 import re
+import traceback
 import typing as T
 
 from PyQt5 import QtCore
@@ -24,9 +26,9 @@ from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 import bubblesub.api
-import bubblesub.ass.event
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ass.event import Event
 from bubblesub.opt.general import SearchMode
 
 MAX_HISTORY_ENTRIES = 25
@@ -43,109 +45,130 @@ def _create_search_regex(
     )
 
 
-def _get_subject_text_by_mode(
-        sub: bubblesub.ass.event.Event,
-        mode: SearchMode
-) -> str:
-    if mode == SearchMode.Text:
+class _SearchModeHandler(abc.ABC):
+    def __init__(self, main_window: QtWidgets.QMainWindow) -> None:
+        self.main_window = main_window
+
+    @abc.abstractmethod
+    def get_subject_text(self, sub: Event) -> str:
+        raise NotImplementedError('Not implemented')
+
+    @abc.abstractmethod
+    def set_subject_text(self, sub: Event, value: str) -> None:
+        raise NotImplementedError('Not implemented')
+
+    @abc.abstractmethod
+    def get_subject_widget(self) -> QtWidgets.QWidget:
+        raise NotImplementedError('Not implemented')
+
+    def select_text_on_widget(
+            self, selection_start: int, selection_end: int
+    ) -> None:
+        widget = self.get_subject_widget()
+        if isinstance(widget, QtWidgets.QPlainTextEdit):
+            cursor = widget.textCursor()
+            cursor.setPosition(selection_start)
+            cursor.setPosition(selection_end, QtGui.QTextCursor.KeepAnchor)
+            widget.setTextCursor(cursor)
+        elif isinstance(widget, QtWidgets.QLineEdit):
+            widget.setSelection(
+                selection_start, selection_end - selection_start
+            )
+        else:
+            raise RuntimeError('Unknown search widget type')
+        widget.setFocus()
+
+    def get_selection_from_widget(self) -> T.Tuple[int, int]:
+        widget = self.get_subject_widget()
+        if isinstance(widget, QtWidgets.QPlainTextEdit):
+            cursor = widget.textCursor()
+            return (cursor.selectionStart(), cursor.selectionEnd())
+        elif isinstance(widget, QtWidgets.QLineEdit):
+            return (
+                widget.selectionStart(),
+                widget.selectionStart() + len(widget.selectedText())
+            )
+        raise RuntimeError(f'Unknown search widget type ({type(widget)})')
+
+    def get_widget_text(self) -> str:
+        widget = self.get_subject_widget()
+        if isinstance(widget, QtWidgets.QPlainTextEdit):
+            return T.cast(str, widget.toPlainText())
+        elif isinstance(widget, QtWidgets.QLineEdit):
+            return widget.text()
+        raise RuntimeError(f'Unknown search widget type ({type(widget)})')
+
+    def set_widget_text(self, text: str) -> None:
+        widget = self.get_subject_widget()
+        if isinstance(widget, QtWidgets.QPlainTextEdit):
+            widget.document().setPlainText(text)
+        elif isinstance(widget, QtWidgets.QLineEdit):
+            widget.setText(text)
+        else:
+            raise RuntimeError(f'Unknown search widget type ({type(widget)})')
+
+
+class _TextSearchModeHandler(_SearchModeHandler):
+    def get_subject_text(self, sub: Event) -> str:
         return sub.text.replace('\\N', '\n')
-    elif mode == SearchMode.Note:
-        return sub.note.replace('\\N', '\n')
-    elif mode == SearchMode.Actor:
-        return sub.actor
-    elif mode == SearchMode.Style:
-        return sub.style
-    raise RuntimeError('Invalid search mode')
 
-
-def _set_subject_text_by_mode(
-        sub: bubblesub.ass.event.Event,
-        mode: SearchMode,
-        value: str
-) -> None:
-    if mode == SearchMode.Text:
+    def set_subject_text(self, sub: Event, value: str) -> None:
         sub.text = value.replace('\n', '\\N')
-    elif mode == SearchMode.Note:
+
+    def get_subject_widget(self) -> QtWidgets.QWidget:
+        return self.main_window.editor.center.text_edit
+
+
+class _NoteSearchModeHandler(_SearchModeHandler):
+    def get_subject_text(self, sub: Event) -> str:
+        return sub.note.replace('\\N', '\n')
+
+    def set_subject_text(self, sub: Event, value: str) -> None:
         sub.note = value.replace('\n', '\\N')
-    elif mode == SearchMode.Actor:
+
+    def get_subject_widget(self) -> QtWidgets.QWidget:
+        return self.main_window.editor.center.note_edit
+
+
+class _ActorSearchModeHandler(_SearchModeHandler):
+    def get_subject_text(self, sub: Event) -> str:
+        return sub.actor
+
+    def set_subject_text(self, sub: Event, value: str) -> None:
         sub.actor = value
-    elif mode == SearchMode.Style:
+
+    def get_subject_widget(self) -> QtWidgets.QWidget:
+        return self.main_window.editor.bar1.actor_edit.lineEdit()
+
+
+class _StyleSearchModeHandler(_SearchModeHandler):
+    def get_subject_text(self, sub: Event) -> str:
+        return sub.style
+
+    def set_subject_text(self, sub: Event, value: str) -> None:
         sub.style = value
-    else:
-        raise RuntimeError('Invalid search mode')
+
+    def get_subject_widget(self) -> QtWidgets.QWidget:
+        return self.main_window.editor.bar1.style_edit.lineEdit()
 
 
-def _get_subject_widget_by_mode(
-        main_window: QtWidgets.QMainWindow,
-        mode: SearchMode
-) -> QtWidgets.QWidget:
-    if mode == SearchMode.Text:
-        return main_window.editor.center.text_edit
-    elif mode == SearchMode.Note:
-        return main_window.editor.center.note_edit
-    elif mode == SearchMode.Actor:
-        return main_window.editor.bar1.actor_edit.lineEdit()
-    elif mode == SearchMode.Style:
-        return main_window.editor.bar1.style_edit.lineEdit()
-    raise RuntimeError('Invalid search mode')
-
-
-def _select_text_on_widget(
-        widget: QtWidgets.QWidget,
-        selection_start: int,
-        selection_end: int
-) -> None:
-    if isinstance(widget, QtWidgets.QPlainTextEdit):
-        cursor = widget.textCursor()
-        cursor.setPosition(selection_start)
-        cursor.setPosition(selection_end, QtGui.QTextCursor.KeepAnchor)
-        widget.setTextCursor(cursor)
-    elif isinstance(widget, QtWidgets.QLineEdit):
-        widget.setSelection(selection_start, selection_end - selection_start)
-    else:
-        raise RuntimeError('Unknown search widget type')
-    widget.setFocus()
-
-
-def _get_selection_from_widget(widget: QtWidgets.QWidget) -> T.Tuple[int, int]:
-    if isinstance(widget, QtWidgets.QPlainTextEdit):
-        cursor = widget.textCursor()
-        return (cursor.selectionStart(), cursor.selectionEnd())
-    elif isinstance(widget, QtWidgets.QLineEdit):
-        return (
-            widget.selectionStart(),
-            widget.selectionStart() + len(widget.selectedText())
-        )
-    raise RuntimeError('Unknown search widget type')
-
-
-def _get_widget_text(widget: QtWidgets.QWidget) -> str:
-    if isinstance(widget, QtWidgets.QPlainTextEdit):
-        return T.cast(str, widget.toPlainText())
-    elif isinstance(widget, QtWidgets.QLineEdit):
-        return widget.text()
-    raise RuntimeError('Unknown search widget type')
-
-
-def _set_widget_text(widget: QtWidgets.QWidget, text: str) -> None:
-    if isinstance(widget, QtWidgets.QPlainTextEdit):
-        widget.document().setPlainText(text)
-    elif isinstance(widget, QtWidgets.QLineEdit):
-        widget.setText(text)
-    raise RuntimeError('Unknown search widget type')
+_HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
+    SearchMode.Text: _TextSearchModeHandler,
+    SearchMode.Note: _NoteSearchModeHandler,
+    SearchMode.Actor: _ActorSearchModeHandler,
+    SearchMode.Style: _StyleSearchModeHandler,
+}
 
 
 def _narrow_match(
+        handler: _SearchModeHandler,
         matches: T.List[T.Match[str]],
         idx: int,
         selected_idx: T.Optional[int],
-        direction: int,
-        subject_widget: QtWidgets.QWidget
+        direction: int
 ) -> T.Optional[T.Match[str]]:
     if idx == selected_idx:
-        selection_start, selection_end = (
-            _get_selection_from_widget(subject_widget)
-        )
+        selection_start, selection_end = handler.get_selection_from_widget()
         if selection_end == selection_start:
             if direction > 0:
                 return matches[0]
@@ -169,9 +192,8 @@ def _narrow_match(
 
 def _search(
         api: bubblesub.api.Api,
-        main_window: QtWidgets.QMainWindow,
+        handler: _SearchModeHandler,
         regex: T.Pattern[str],
-        mode: SearchMode,
         direction: int
 ) -> bool:
     num_lines = len(api.subs.events)
@@ -188,14 +210,13 @@ def _search(
         )
 
     for idx in iterator:
-        subject = _get_subject_text_by_mode(api.subs.events[idx], mode)
+        subject = handler.get_subject_text(api.subs.events[idx])
         matches = list(re.finditer(regex, subject))
         if not matches:
             continue
 
-        subject_widget = _get_subject_widget_by_mode(main_window, mode)
         final_match = _narrow_match(
-            matches, idx, selected_idx, direction, subject_widget
+            handler, matches, idx, selected_idx, direction
         )
 
         if not final_match:
@@ -203,45 +224,36 @@ def _search(
 
         api.subs.selected_indexes = [idx]
 
-        _select_text_on_widget(
-            subject_widget,
-            final_match.start(),
-            final_match.end()
-        )
+        handler.select_text_on_widget(final_match.start(), final_match.end())
         return True
 
     return False
 
 
-def _replace_selection(
-        main_window: QtWidgets.QMainWindow,
-        new_text: str,
-        mode: SearchMode
-) -> None:
-    subject_widget = _get_subject_widget_by_mode(main_window, mode)
-    selection_start, selection_end = _get_selection_from_widget(subject_widget)
-    old_subject = _get_widget_text(subject_widget)
+def _replace_selection(handler: _SearchModeHandler, new_text: str) -> None:
+    selection_start, selection_end = handler.get_selection_from_widget()
+    old_subject = handler.get_widget_text()
     new_subject = (
         old_subject[:selection_start]
         + new_text
         + old_subject[selection_end:]
     )
-    _set_widget_text(subject_widget, new_subject)
+    handler.set_widget_text(new_subject)
 
 
 def _replace_all(
         api: bubblesub.api.Api,
+        handler: _SearchModeHandler,
         regex: T.Pattern[str],
-        new_text: str,
-        mode: SearchMode
+        new_text: str
 ) -> int:
     count = 0
     with api.undo.capture():
         for sub in api.subs.events:
-            old_subject_text = _get_subject_text_by_mode(sub, mode)
+            old_subject_text = handler.get_subject_text(sub)
             new_subject_text = re.sub(regex, new_text, old_subject_text)
             if old_subject_text != new_subject_text:
-                _set_subject_text_by_mode(sub, mode, new_subject_text)
+                handler.set_subject_text(sub, new_subject_text)
                 count += len(re.findall(regex, old_subject_text))
         if count:
             api.subs.selected_indexes = []
@@ -250,12 +262,12 @@ def _replace_all(
 
 def _count(
         api: bubblesub.api.Api,
-        regex: T.Pattern[str],
-        mode: SearchMode
+        handler: _SearchModeHandler,
+        regex: T.Pattern[str]
 ) -> int:
     count = 0
     for sub in api.subs.events:
-        subject_text = _get_subject_text_by_mode(sub, mode)
+        subject_text = handler.get_subject_text(sub)
         count += len(re.findall(regex, subject_text))
     return count
 
@@ -390,18 +402,16 @@ class _SearchDialog(QtWidgets.QDialog):
                 self._count()
         except Exception as ex:  # pylint: disable=broad-except
             self._api.log.error(str(ex))
+            traceback.print_exc()
 
     def _replace_selection(self) -> None:
-        _replace_selection(self._main_window, self._target_text, self._mode)
+        _replace_selection(self._handler, self._target_text)
         self._update_replacement_enabled()
 
     def _replace_all(self) -> None:
         self._push_search_history()
         count = _replace_all(
-            self._api,
-            self._search_regex,
-            self._target_text,
-            self._mode
+            self._api, self._handler, self._search_regex, self._target_text
         )
         bubblesub.ui.util.notice(
             f'Replaced {count} occurences.'
@@ -412,11 +422,7 @@ class _SearchDialog(QtWidgets.QDialog):
     def _search(self, direction: int) -> None:
         self._push_search_history()
         result = _search(
-            self._api,
-            self._main_window,
-            self._search_regex,
-            self._mode,
-            direction
+            self._api, self._handler, self._search_regex, direction
         )
         if not result:
             bubblesub.ui.util.notice('No occurences found.')
@@ -424,7 +430,7 @@ class _SearchDialog(QtWidgets.QDialog):
 
     def _count(self) -> None:
         self._push_search_history()
-        count = _count(self._api, self._search_regex, self._mode)
+        count = _count(self._api, self._handler, self._search_regex)
         bubblesub.ui.util.notice(
             f'Found {count} occurences.'
             if count else
@@ -432,11 +438,8 @@ class _SearchDialog(QtWidgets.QDialog):
         )
 
     def _update_replacement_enabled(self) -> None:
-        subject_widget = _get_subject_widget_by_mode(
-            self._main_window, self._mode
-        )
-        selection_start, selection_end = _get_selection_from_widget(
-            subject_widget
+        selection_start, selection_end = (
+            self._handler.get_selection_from_widget()
         )
         self.replace_sel_btn.setEnabled(selection_start != selection_end)
 
@@ -489,6 +492,10 @@ class _SearchDialog(QtWidgets.QDialog):
     @property
     def _mode(self) -> SearchMode:
         return self.search_mode_group_box.get_value()
+
+    @property
+    def _handler(self) -> _SearchModeHandler:
+        return _HANDLERS[self._mode](self._main_window)
 
     @property
     def _search_regex(self) -> T.Pattern[str]:
@@ -567,15 +574,15 @@ class SearchRepeatCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        handler = _HANDLERS[self.api.opt.general.search.mode](main_window)
         result = _search(
             self.api,
-            main_window,
+            handler,
             _create_search_regex(
                 self.api.opt.general.search.history[0],
                 self.api.opt.general.search.case_sensitive,
                 self.api.opt.general.search.use_regexes
             ),
-            self.api.opt.general.search.mode,
             self._direction
         )
         if not result:
@@ -588,9 +595,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
 
     :param cmd_api: command API
     """
-    for cls in [
-            SearchCommand,
-            SearchAndReplaceCommand,
-            SearchRepeatCommand,
-    ]:
-        cmd_api.register_core_command(cls)
+    cmd_api.register_core_command(SearchCommand)
+    cmd_api.register_core_command(SearchAndReplaceCommand)
+    cmd_api.register_core_command(SearchRepeatCommand)
