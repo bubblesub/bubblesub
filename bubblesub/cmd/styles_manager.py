@@ -16,6 +16,7 @@
 
 """Styles manager command."""
 
+import re
 import typing as T
 from copy import copy
 
@@ -405,7 +406,10 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         self.underline_checkbox = QtWidgets.QCheckBox('Underline', self)
         self.strike_out_checkbox = QtWidgets.QCheckBox('Strike-out', self)
 
-        all_fonts = QtGui.QFontDatabase().families()
+        all_fonts = sorted(set(
+            re.sub(r' \[.*\]', '', font_name)
+            for font_name in QtGui.QFontDatabase().families()
+        ))
         self.font_name_edit.addItems(all_fonts)
 
         layout = QtWidgets.QGridLayout(self)
