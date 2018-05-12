@@ -27,6 +27,5 @@ class AssFile:
     def __init__(self) -> None:
         """Initialize self."""
         self.styles = StyleList()
-        self.styles.insert_one(name='Default')
         self.events = EventList()
         self.info = Metadata()
