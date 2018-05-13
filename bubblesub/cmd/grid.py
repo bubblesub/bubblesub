@@ -23,6 +23,7 @@ import zlib
 
 from PyQt5 import QtWidgets
 
+import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
@@ -336,6 +337,17 @@ class CopySubtitlesToClipboardCommand(BaseCommand):
         )
 
 
+def _paste_from_clipboard(cmd: BaseCommand, idx: int) -> None:
+    text = QtWidgets.QApplication.clipboard().text()
+    if not text:
+        cmd.error('Clipboard is empty, aborting.')
+        return
+    items = T.cast(T.List[Event], _unpickle(text))
+    with cmd.api.undo.capture():
+        cmd.api.subs.events.insert(idx, items)
+        cmd.api.subs.selected_indexes = list(range(idx, idx + len(items)))
+
+
 class PasteSubtitlesFromClipboardBelowCommand(BaseCommand):
     """Pastes subtitles below the selection."""
 
@@ -344,15 +356,10 @@ class PasteSubtitlesFromClipboardBelowCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        text = QtWidgets.QApplication.clipboard().text()
-        if not text:
-            self.error('Clipboard is empty, aborting.')
-            return
-        idx = self.api.subs.selected_indexes[-1] + 1
-        items = T.cast(T.List[Event], _unpickle(text))
-        with self.api.undo.capture():
-            self.api.subs.events.insert(idx, items)
-            self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
+        _paste_from_clipboard(self, (
+            self.api.subs.selected_indexes[-1] + 1
+            if self.api.subs.has_selection else 0
+        ))
 
 
 class PasteSubtitlesFromClipboardAboveCommand(BaseCommand):
@@ -363,15 +370,10 @@ class PasteSubtitlesFromClipboardAboveCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        text = QtWidgets.QApplication.clipboard().text()
-        if not text:
-            self.error('Clipboard is empty, aborting.')
-            return
-        idx = self.api.subs.selected_indexes[0]
-        items = T.cast(T.List[Event], _unpickle(text))
-        with self.api.undo.capture():
-            self.api.subs.events.insert(idx, items)
-            self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
+        _paste_from_clipboard(self, (
+            self.api.subs.selected_indexes[0]
+            if self.api.subs.has_selection else 0
+        ))
 
 
 class SaveSubtitlesAsAudioSampleCommand(BaseCommand):
