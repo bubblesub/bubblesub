@@ -64,7 +64,7 @@ def ass_to_plaintext(text: str, mask: bool = False) -> str:
     return str(
         regex.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}' if mask else '', text)
         .replace('\\h', ' ')
-        .replace('\\N', '\N{SYMBOL FOR NEWLINE}')
+        .replace('\\N', '\N{SYMBOL FOR NEWLINE}' if mask else '\n')
     )
 
 
