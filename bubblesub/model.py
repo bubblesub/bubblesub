@@ -60,11 +60,10 @@ class classproperty(property):
 class ObservableObject:
     """Class capable of observing changes to its properties."""
 
-    _dirty = False
-
     def __init__(self) -> None:
         """Initialize self."""
         self._setattr_impl = self._setattr_normal
+        self._dirty = False
 
     def __setattr__(self, prop: str, new_value: T.Any) -> None:
         """
