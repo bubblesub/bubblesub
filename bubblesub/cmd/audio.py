@@ -17,11 +17,32 @@
 """Commands related to audio and audio selection."""
 
 import bisect
+import enum
+import operator
 import typing as T
 
 import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
+
+
+class SelectionMode(enum.IntEnum):
+    """Spectrogram selection origin."""
+
+    Start = 1
+    End = 2
+    Both = 3
+
+
+class Direction(enum.IntEnum):
+    """Direction for commands."""
+
+    Left = 1
+    Prev = 1
+    Previous = 1
+
+    Right = 2
+    Next = 2
 
 
 class ScrollSpectrogramCommand(BaseCommand):
@@ -165,6 +186,113 @@ class PlaceSpectrogramSelectionAtVideoCommand(BaseCommand):
                 + self.api.opt.general.subs.default_duration
             )
         )
+
+
+class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
+    """Snaps the spectrogram selection to the nearest keyframe."""
+
+    name = 'audio/snap-sel-to-keyframe'
+
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            selection_mode: str,
+            snap_direction: str
+    ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param selection_mode: what part of selection to snap
+        :param snap_direction: direction to stap into
+        """
+        super().__init__(api)
+        self._selection_mode = SelectionMode[selection_mode.title()]
+        self._direction = Direction[snap_direction.title()]
+
+    @property
+    def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
+        return (
+            self.api.media.audio.has_selection
+            and bool(self.api.media.video.keyframes)
+        )
+
+    @property
+    def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        ret = '&Snap selection '
+        ret += {
+            SelectionMode.Start: 'start ',
+            SelectionMode.End: 'end ',
+            SelectionMode.Both: '',
+        }[self._selection_mode]
+
+        ret += 'to '
+        ret += {
+            Direction.Previous: 'previous ',
+            Direction.Next: 'next ',
+        }[self._direction]
+
+        ret += 'keyframe'
+
+        return ret
+
+    async def run(self) -> None:
+        """Carry out the command."""
+        origin = self._get_origin()
+        new_start, new_end = self._get_new_pos(origin)
+        self.api.media.audio.select(new_start, new_end)
+
+    def _get_possible_pts(self) -> T.Iterable[int]:
+        return [
+            self.api.media.video.timecodes[i]
+            for i in self.api.media.video.keyframes
+        ]
+
+    def _get_origin(self) -> int:
+        possible_pts = self._get_possible_pts()
+
+        if self._direction == Direction.Previous:
+            possible_pts.reverse()
+            func = operator.__lt__
+            not_found_pts = 0
+        elif self._direction == Direction.Next:
+            func = operator.__gt__
+            not_found_pts = self.api.media.max_pts
+        else:
+            raise AssertionError
+
+        if self._selection_mode == SelectionMode.End:
+            current_origin = self.api.media.audio.selection_end
+        elif self._selection_mode in {SelectionMode.Start, SelectionMode.Both}:
+            current_origin = self.api.media.audio.selection_start
+        else:
+            raise AssertionError
+
+        for pts in possible_pts:
+            if func(pts, current_origin):
+                return pts
+        return not_found_pts
+
+    def _get_new_pos(self, origin: int) -> T.Tuple[int, int]:
+        old_start = self.api.media.audio.selection_start
+        old_end = self.api.media.audio.selection_end
+        if self._selection_mode == SelectionMode.Start:
+            return origin, old_end
+        elif self._selection_mode == SelectionMode.End:
+            return old_start, origin
+        elif self._selection_mode == SelectionMode.Both:
+            return origin, origin
+        raise AssertionError
 
 
 class SnapSpectrogramSelectionStartToPreviousSubtitleCommand(BaseCommand):
@@ -476,6 +604,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             ScrollSpectrogramCommand,
             ZoomSpectrogramCommand,
+            SnapSpectrogramSelectionToKeyframeCommand,
             SnapSpectrogramSelectionStartToVideoCommand,
             SnapSpectrogramSelectionEndToVideoCommand,
             PlaceSpectrogramSelectionAtVideoCommand,

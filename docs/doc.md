@@ -91,6 +91,8 @@ Context refers to the currently focused widget.
 |<kbd>]</kbd> | spectrogram | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}*1.5` |
 |<kbd>Alt+Left</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-start-to-prev-sub">`audio/snap-sel-start-to-prev-sub`</a> |  |
 |<kbd>Alt+Right</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-end-to-next-sub">`audio/snap-sel-end-to-next-sub`</a> |  |
+|<kbd>Alt+Shift+Left</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-keyframe">`audio/snap-sel-to-keyframe`</a> | `start`, `prev` |
+|<kbd>Alt+Shift+Right</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-keyframe">`audio/snap-sel-to-keyframe`</a> | `end`, `next` |
 |<kbd>Ctrl+C</kbd> | subtitles grid | <a href="#user-content-cmd-grid-copy-to-clipboard">`grid/copy-to-clipboard`</a> |  |
 |<kbd>Ctrl+V</kbd> | subtitles grid | <a href="#user-content-cmd-grid-paste-from-clipboard-below">`grid/paste-from-clipboard-below`</a> |  |
 
@@ -107,6 +109,7 @@ Context refers to the currently focused widget.
 |`audio/snap‑sel‑end‑to‑video` | <a name="cmd-audio-snap-sel-end-to-video"></a>Snaps the spectrogram selection end to nearest video frame. |
 |`audio/snap‑sel‑start‑to‑prev‑sub` | <a name="cmd-audio-snap-sel-start-to-prev-sub"></a>Snaps the spectrogram selection start to the subtitle above. |
 |`audio/snap‑sel‑start‑to‑video` | <a name="cmd-audio-snap-sel-start-to-video"></a>Snaps the spectrogram selection start to nearest video frame. |
+|`audio/snap‑sel‑to‑keyframe` | <a name="cmd-audio-snap-sel-to-keyframe"></a>Snaps the spectrogram selection to the nearest keyframe.<br>Parameters:<br><ol><li>selection_mode (string): what part of selection to snap</li><li>snap_direction (string): direction to stap into</li></ol> |
 |`audio/zoom` | <a name="cmd-audio-zoom"></a>Zooms the spectrogram in or out by the specified factor.<br>Parameters:<br><ol><li>delta (integer): factor to zoom the view by</li></ol> |
 |`edit/delete` | <a name="cmd-edit-delete"></a>Deletes the selected subtitles. |
 |`edit/duplicate` | <a name="cmd-edit-duplicate"></a>Duplicates the selected subtitles.<br>The newly created subtitles are interleaved with the current selection. |

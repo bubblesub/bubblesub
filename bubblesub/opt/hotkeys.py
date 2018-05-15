@@ -154,6 +154,14 @@ class HotkeysConfig(BaseConfig):
                 Hotkey(']', 'video/set-playback-speed', '{}*1.5'),
                 Hotkey('Alt+Left', 'audio/snap-sel-start-to-prev-sub'),
                 Hotkey('Alt+Right', 'audio/snap-sel-end-to-next-sub'),
+                Hotkey(
+                    'Alt+Shift+Left', 'audio/snap-sel-to-keyframe',
+                    'start', 'prev'
+                ),
+                Hotkey(
+                    'Alt+Shift+Right', 'audio/snap-sel-to-keyframe',
+                    'end', 'next'
+                ),
             ],
 
             HotkeyContext.SubtitlesGrid:
