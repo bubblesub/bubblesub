@@ -41,9 +41,9 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+2</kbd> | global | <a href="#user-content-cmd-audio-shift-sel-start">`audio/shift-sel-start`</a> | `1` |
 |<kbd>Ctrl+3</kbd> | global | <a href="#user-content-cmd-audio-shift-sel-end">`audio/shift-sel-end`</a> | `-1` |
 |<kbd>Ctrl+4</kbd> | global | <a href="#user-content-cmd-audio-shift-sel-end">`audio/shift-sel-end`</a> | `1` |
-|<kbd>Ctrl+B</kbd> | global | <a href="#user-content-cmd-audio-snap-sel-start-to-video">`audio/snap-sel-start-to-video`</a> |  |
+|<kbd>Ctrl+B</kbd> | global | <a href="#user-content-cmd-audio-snap-sel-to-video">`audio/snap-sel-to-video`</a> | `start` |
 |<kbd>Ctrl+N</kbd> | global | <a href="#user-content-cmd-audio-place-sel-at-video">`audio/place-sel-at-video`</a> |  |
-|<kbd>Ctrl+M</kbd> | global | <a href="#user-content-cmd-audio-snap-sel-end-to-video">`audio/snap-sel-end-to-video`</a> |  |
+|<kbd>Ctrl+M</kbd> | global | <a href="#user-content-cmd-audio-snap-sel-to-video">`audio/snap-sel-to-video`</a> | `end` |
 |<kbd>Ctrl+[</kbd> | global | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}/1.5` |
 |<kbd>Ctrl+]</kbd> | global | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}*1.5` |
 |<kbd>F3</kbd> | global | <a href="#user-content-cmd-edit-search-repeat">`edit/search-repeat`</a> | `1` |
@@ -84,9 +84,9 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Shift+.</kbd> | spectrogram | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `1500`, `False` |
 |<kbd>Shift+,</kbd> | spectrogram | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `-500`, `False` |
 |<kbd>Shift+.</kbd> | spectrogram | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `500`, `False` |
-|<kbd>B</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-start-to-video">`audio/snap-sel-start-to-video`</a> |  |
+|<kbd>B</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-video">`audio/snap-sel-to-video`</a> | `start` |
 |<kbd>N</kbd> | spectrogram | <a href="#user-content-cmd-audio-place-sel-at-video">`audio/place-sel-at-video`</a> |  |
-|<kbd>M</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-end-to-video">`audio/snap-sel-end-to-video`</a> |  |
+|<kbd>M</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-video">`audio/snap-sel-to-video`</a> | `end` |
 |<kbd>[</kbd> | spectrogram | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}/1.5` |
 |<kbd>]</kbd> | spectrogram | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}*1.5` |
 |<kbd>Alt+Left</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-start-to-prev-sub">`audio/snap-sel-start-to-prev-sub`</a> |  |
@@ -106,10 +106,9 @@ Context refers to the currently focused widget.
 |`audio/shift‑sel‑end` | <a name="cmd-audio-shift-sel-end"></a>Shifts the spectrogram selection end by the specified distance.<br>Parameters:<br><ol><li>delta (integer): amount to shift the selection</li><li>frames (boolean): if true, shift by frames; otherwise by milliseconds</li></ol> |
 |`audio/shift‑sel‑start` | <a name="cmd-audio-shift-sel-start"></a>Shifts the spectrogram selection start by the specified distance.<br>Parameters:<br><ol><li>delta (integer): amount to shift the selection by</li><li>frames (boolean): if true, shift by frames; otherwise by milliseconds</li></ol> |
 |`audio/snap‑sel‑end‑to‑next‑sub` | <a name="cmd-audio-snap-sel-end-to-next-sub"></a>Snaps the spectrogram selection end to the subtitle below. |
-|`audio/snap‑sel‑end‑to‑video` | <a name="cmd-audio-snap-sel-end-to-video"></a>Snaps the spectrogram selection end to nearest video frame. |
 |`audio/snap‑sel‑start‑to‑prev‑sub` | <a name="cmd-audio-snap-sel-start-to-prev-sub"></a>Snaps the spectrogram selection start to the subtitle above. |
-|`audio/snap‑sel‑start‑to‑video` | <a name="cmd-audio-snap-sel-start-to-video"></a>Snaps the spectrogram selection start to nearest video frame. |
 |`audio/snap‑sel‑to‑keyframe` | <a name="cmd-audio-snap-sel-to-keyframe"></a>Snaps the spectrogram selection to the nearest keyframe.<br>Parameters:<br><ol><li>selection_mode (string): what part of selection to snap</li><li>snap_direction (string): direction to stap into</li></ol> |
+|`audio/snap‑sel‑to‑video` | <a name="cmd-audio-snap-sel-to-video"></a>Snaps the spectrogram selection to nearest video frame.<br>Parameters:<br><ol><li>selection_mode (string): what part of selection to snap</li></ol> |
 |`audio/zoom` | <a name="cmd-audio-zoom"></a>Zooms the spectrogram in or out by the specified factor.<br>Parameters:<br><ol><li>delta (integer): factor to zoom the view by</li></ol> |
 |`edit/delete` | <a name="cmd-edit-delete"></a>Deletes the selected subtitles. |
 |`edit/duplicate` | <a name="cmd-edit-duplicate"></a>Duplicates the selected subtitles.<br>The newly created subtitles are interleaved with the current selection. |

@@ -202,8 +202,8 @@ class MenuConfig(BaseConfig):
                         ),
                     ]),
                     SubMenu('Snap selection to video frame', [
-                        MenuCommand('audio/snap-sel-start-to-video'),
-                        MenuCommand('audio/snap-sel-end-to-video'),
+                        MenuCommand('audio/snap-sel-to-video', 'start'),
+                        MenuCommand('audio/snap-sel-to-video', 'end'),
                         MenuCommand('audio/place-sel-at-video'),
                     ]),
                     SubMenu('Shift selection', [

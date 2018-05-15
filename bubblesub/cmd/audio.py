@@ -33,6 +33,20 @@ class SelectionMode(enum.IntEnum):
     End = 2
     Both = 3
 
+    def __str__(self) -> str:
+        """
+        Human readable representation.
+
+        :return: human readable representation
+        """
+        if self == SelectionMode.Start:
+            return 'selection start'
+        elif self == SelectionMode.End:
+            return 'selection end'
+        elif self == SelectionMode.Both:
+            return 'selection'
+        return super().__str__(self)
+
 
 class Direction(enum.IntEnum):
     """Direction for commands."""
@@ -108,11 +122,29 @@ class ZoomSpectrogramCommand(BaseCommand):
         self.api.media.audio.zoom_view(new_factor, mouse_x)
 
 
-class SnapSpectrogramSelectionStartToVideoCommand(BaseCommand):
-    """Snaps the spectrogram selection start to nearest video frame."""
+class SnapSpectrogramSelectionToVideoCommand(BaseCommand):
+    """Snaps the spectrogram selection to nearest video frame."""
 
-    name = 'audio/snap-sel-start-to-video'
-    menu_name = '&Snap selection start to video'
+    name = 'audio/snap-sel-to-video'
+
+    @property
+    def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        return f'&Snap {self._selection_mode!s} to video'
+
+    def __init__(self, api: bubblesub.api.Api, selection_mode: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param selection_mode: what part of selection to snap
+        """
+        super().__init__(api)
+        self._selection_mode = SelectionMode[selection_mode.title()]
 
     @property
     def is_enabled(self) -> bool:
@@ -122,38 +154,21 @@ class SnapSpectrogramSelectionStartToVideoCommand(BaseCommand):
         :return: whether the command can be executed
         """
         return self.api.media.audio.has_selection \
-            and self.api.subs.has_selection
+            and self.api.media.is_loaded
 
     async def run(self) -> None:
         """Carry out the command."""
-        self.api.media.audio.select(
-            self.api.media.current_pts,
-            self.api.media.audio.selection_end
-        )
-
-
-class SnapSpectrogramSelectionEndToVideoCommand(BaseCommand):
-    """Snaps the spectrogram selection end to nearest video frame."""
-
-    name = 'audio/snap-sel-end-to-video'
-    menu_name = '&Snap selection end to video'
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        return self.api.media.audio.has_selection \
-            and self.api.subs.has_selection
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        self.api.media.audio.select(
-            self.api.media.audio.selection_start,
-            self.api.media.current_pts
-        )
+        old_end = self.api.media.audio.selection_end
+        old_start = self.api.media.audio.selection_start
+        target = self.api.media.current_pts
+        if self._selection_mode == SelectionMode.Start:
+            self.api.media.audio.select(target, old_end)
+        elif self._selection_mode == SelectionMode.End:
+            self.api.media.audio.select(old_start, target)
+        elif self._selection_mode == SelectionMode.Both:
+            self.api.media.audio.select(target, target)
+        else:
+            raise AssertionError
 
 
 class PlaceSpectrogramSelectionAtVideoCommand(BaseCommand):
@@ -229,19 +244,11 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
 
         :return: name shown in GUI menu
         """
-        ret = '&Snap selection '
-        ret += {
-            SelectionMode.Start: 'start ',
-            SelectionMode.End: 'end ',
-            SelectionMode.Both: '',
-        }[self._selection_mode]
-
-        ret += 'to '
+        ret = f'&Snap {self._selection_mode!s} to '
         ret += {
             Direction.Previous: 'previous ',
             Direction.Next: 'next ',
         }[self._direction]
-
         ret += 'keyframe'
 
         return ret
@@ -605,8 +612,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             ScrollSpectrogramCommand,
             ZoomSpectrogramCommand,
             SnapSpectrogramSelectionToKeyframeCommand,
-            SnapSpectrogramSelectionStartToVideoCommand,
-            SnapSpectrogramSelectionEndToVideoCommand,
+            SnapSpectrogramSelectionToVideoCommand,
             PlaceSpectrogramSelectionAtVideoCommand,
             SnapSpectrogramSelectionStartToPreviousSubtitleCommand,
             SnapSpectrogramSelectionEndToNextSubtitleCommand,
