@@ -181,7 +181,8 @@ class CommandApi:
         """
         Return list of all registered command types.
 
-        :return: list of types"""
+        :return: list of types
+        """
         return self._command_registry.values()
 
     def load_commands(self, path: Path) -> None:
