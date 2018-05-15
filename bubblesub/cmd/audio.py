@@ -366,149 +366,15 @@ class SnapSpectrogramSelectionEndToNextSubtitleCommand(BaseCommand):
         )
 
 
-class ShiftSpectrogramSelectionStartCommand(BaseCommand):
-    """Shifts the spectrogram selection start by the specified distance."""
-
-    name = 'audio/shift-sel-start'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            delta: int,
-            frames: bool = True
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param delta: amount to shift the selection by
-        :param frames: if true, shift by frames; otherwise by milliseconds
-        """
-        super().__init__(api)
-        self._delta = delta
-        self._frames = frames
-
-    @property
-    def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        return '&Shift selection start ({:+} {})'.format(
-            self._delta,
-            'frames' if self._frames else 'ms'
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        return self.api.media.audio.has_selection and bool(
-            not self._frames or self.api.media.video.timecodes
-        )
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        if self._frames:
-            idx = bisect.bisect_left(
-                self.api.media.video.timecodes,
-                self.api.media.audio.selection_start
-            )
-            idx += self._delta
-            idx = max(0, min(idx, len(self.api.media.video.timecodes) - 1))
-            self.api.media.audio.select(
-                self.api.media.video.timecodes[idx],
-                self.api.media.audio.selection_end
-            )
-        else:
-            self.api.media.audio.select(
-                min(
-                    self.api.media.audio.selection_end,
-                    self.api.media.audio.selection_start + self._delta
-                ),
-                self.api.media.audio.selection_end
-            )
-
-
-class ShiftSpectrogramSelectionEndCommand(BaseCommand):
-    """Shifts the spectrogram selection end by the specified distance."""
-
-    name = 'audio/shift-sel-end'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            delta: int,
-            frames: bool = True
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param delta: amount to shift the selection
-        :param frames: if true, shift by frames; otherwise by milliseconds
-        """
-        super().__init__(api)
-        self._delta = delta
-        self._frames = frames
-
-    @property
-    def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        return '&Shift selection end ({:+} {})'.format(
-            self._delta, 'frames' if self._frames else 'ms'
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        return self.api.media.audio.has_selection and bool(
-            not self._frames or self.api.media.video.timecodes
-        )
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        if self._frames:
-            idx = bisect.bisect_left(
-                self.api.media.video.timecodes,
-                self.api.media.audio.selection_end
-            )
-            idx += self._delta
-            idx = max(0, min(idx, len(self.api.media.video.timecodes) - 1))
-            self.api.media.audio.select(
-                self.api.media.audio.selection_start,
-                self.api.media.video.timecodes[idx]
-            )
-        else:
-            self.api.media.audio.select(
-                self.api.media.audio.selection_start,
-                max(
-                    self.api.media.audio.selection_start,
-                    self.api.media.audio.selection_end + self._delta
-                )
-            )
-
-
 class ShiftSpectrogramSelectionCommand(BaseCommand):
-    """Shifts the spectrogram selection start/end by the specified distance."""
+    """Shifts the spectrogram selection by the specified distance."""
 
     name = 'audio/shift-sel'
 
     def __init__(
             self,
             api: bubblesub.api.Api,
+            selection_mode: str,
             delta: int,
             frames: bool = True
     ) -> None:
@@ -516,10 +382,12 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
         Initialize self.
 
         :param api: core API
-        :param delta: amount to shift the selection
+        :param selection_mode: what part of selection to shift
+        :param delta: amount to shift the selection by
         :param frames: if true, shift by frames; otherwise by milliseconds
         """
         super().__init__(api)
+        self._selection_mode = SelectionMode[selection_mode.title()]
         self._delta = delta
         self._frames = frames
 
@@ -530,9 +398,8 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
 
         :return: name shown in GUI menu
         """
-        return '&Shift selection ({:+} {})'.format(
-            self._delta, 'frames' if self._frames else 'ms'
-        )
+        unit = 'frames' if self._frames else 'ms'
+        return f'&Shift {self._selection_mode!s} ({self._delta:+} {unit})'
 
     @property
     def is_enabled(self) -> bool:
@@ -547,6 +414,9 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
+        old_start = self.api.media.audio.selection_start
+        old_end = self.api.media.audio.selection_end
+
         if self._frames:
             idx1 = bisect.bisect_left(
                 self.api.media.video.timecodes,
@@ -560,15 +430,34 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
             idx2 += self._delta
             idx1 = max(0, min(idx1, len(self.api.media.video.timecodes) - 1))
             idx2 = max(0, min(idx2, len(self.api.media.video.timecodes) - 1))
-            self.api.media.audio.select(
-                self.api.media.video.timecodes[idx1],
-                self.api.media.video.timecodes[idx2]
-            )
+
+            new_start = self.api.media.video.timecodes[idx1]
+            new_end = self.api.media.video.timecodes[idx2]
+
+            if self._selection_mode == SelectionMode.Start:
+                self.api.media.audio.select(new_start, old_end)
+            elif self._selection_mode == SelectionMode.End:
+                self.api.media.audio.select(old_start, new_end)
+            elif self._selection_mode == SelectionMode.Both:
+                self.api.media.audio.select(new_start, new_end)
+            else:
+                raise AssertionError
+
         else:
-            self.api.media.audio.select(
-                self.api.media.audio.selection_start + self._delta,
-                self.api.media.audio.selection_end + self._delta
-            )
+            if self._selection_mode == SelectionMode.Start:
+                self.api.media.audio.select(
+                    min(old_end, old_start + self._delta), old_end
+                )
+            elif self._selection_mode == SelectionMode.End:
+                self.api.media.audio.select(
+                    old_start, max(old_start, old_end + self._delta)
+                )
+            elif self._selection_mode == SelectionMode.Both:
+                self.api.media.audio.select(
+                    old_start + self._delta, old_end + self._delta
+                )
+            else:
+                raise AssertionError
 
 
 class CommitSpectrogramSelectionCommand(BaseCommand):
@@ -616,8 +505,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             PlaceSpectrogramSelectionAtVideoCommand,
             SnapSpectrogramSelectionStartToPreviousSubtitleCommand,
             SnapSpectrogramSelectionEndToNextSubtitleCommand,
-            ShiftSpectrogramSelectionStartCommand,
-            ShiftSpectrogramSelectionEndCommand,
             ShiftSpectrogramSelectionCommand,
             CommitSpectrogramSelectionCommand,
     ]:
