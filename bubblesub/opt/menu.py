@@ -187,10 +187,10 @@ class MenuConfig(BaseConfig):
                 SubMenu('&Timing', [
                     SubMenu('Snap selection to nearest subtitle', [
                         MenuCommand(
-                            'audio/snap-sel-start-to-prev-sub'
+                            'audio/snap-sel-to-sub', 'start', 'prev'
                         ),
                         MenuCommand(
-                            'audio/snap-sel-end-to-next-sub'
+                            'audio/snap-sel-to-sub', 'end', 'next'
                         ),
                     ]),
                     SubMenu('Snap selection to nearest keyframe', [

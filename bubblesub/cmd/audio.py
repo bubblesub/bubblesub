@@ -203,6 +203,95 @@ class PlaceSpectrogramSelectionAtVideoCommand(BaseCommand):
         )
 
 
+class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
+    """Snaps the spectrogram selection to the nearest subtitle."""
+
+    name = 'audio/snap-sel-to-sub'
+
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            selection_mode: str,
+            snap_direction: str
+    ) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param selection_mode: what part of selection to snap
+        :param snap_direction: direction to stap into
+        """
+        super().__init__(api)
+        self._selection_mode = SelectionMode[selection_mode.title()]
+        self._direction = Direction[snap_direction.title()]
+
+    @property
+    def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        ret = f'&Snap {self._selection_mode!s} to '
+        ret += {
+            Direction.Left: 'previous',
+            Direction.Right: 'next',
+        }[self._direction]
+        ret += ' subtitle'
+        return ret
+
+    @property
+    def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
+        if not self.api.media.audio.has_selection:
+            return False
+        return self._nearest_sub is not None
+
+    @property
+    def _nearest_sub(self) -> T.Optional[Event]:
+        if not self.api.subs.has_selection:
+            return None
+        if self._direction == Direction.Left:
+            return self.api.subs.selected_events[0].prev
+        elif self._direction == Direction.Right:
+            return self.api.subs.selected_events[-1].next
+        else:
+            raise AssertionError
+
+    async def run(self) -> None:
+        """Carry out the command."""
+        assert self._nearest_sub is not None
+        if self._selection_mode == SelectionMode.Start:
+            self.api.media.audio.select(
+                self._nearest_sub.end,
+                self.api.media.audio.selection_end
+            )
+        elif self._selection_mode == SelectionMode.End:
+            self.api.media.audio.select(
+                self.api.media.audio.selection_start,
+                self._nearest_sub.start
+            )
+        elif self._selection_mode == SelectionMode.Both:
+            if self._direction == Direction.Left:
+                self.api.media.audio.select(
+                    self._nearest_sub.end,
+                    self._nearest_sub.end
+                )
+            elif self._direction == Direction.Right:
+                self.api.media.audio.select(
+                    self._nearest_sub.start,
+                    self._nearest_sub.start
+                )
+            else:
+                raise AssertionError
+        else:
+            raise AssertionError
+
+
 class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
     """Snaps the spectrogram selection to the nearest keyframe."""
 
@@ -300,70 +389,6 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
         elif self._selection_mode == SelectionMode.Both:
             return origin, origin
         raise AssertionError
-
-
-class SnapSpectrogramSelectionStartToPreviousSubtitleCommand(BaseCommand):
-    """Snaps the spectrogram selection start to the subtitle above."""
-
-    name = 'audio/snap-sel-start-to-prev-sub'
-    menu_name = '&Snap selection start to previous subtitle'
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        if not self.api.media.audio.has_selection:
-            return False
-        return self._prev_sub is not None
-
-    @property
-    def _prev_sub(self) -> T.Optional[Event]:
-        if not self.api.subs.has_selection:
-            return None
-        return self.api.subs.selected_events[0].prev
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        assert self._prev_sub is not None
-        self.api.media.audio.select(
-            self._prev_sub.end,
-            self.api.media.audio.selection_end
-        )
-
-
-class SnapSpectrogramSelectionEndToNextSubtitleCommand(BaseCommand):
-    """Snaps the spectrogram selection end to the subtitle below."""
-
-    name = 'audio/snap-sel-end-to-next-sub'
-    menu_name = '&Snap selection start to next subtitle'
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        if not self.api.media.audio.has_selection:
-            return False
-        return self._next_sub is not None
-
-    @property
-    def _next_sub(self) -> T.Optional[Event]:
-        if not self.api.subs.has_selection:
-            return None
-        return self.api.subs.selected_events[-1].next
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        assert self._next_sub is not None
-        self.api.media.audio.select(
-            self.api.media.audio.selection_start,
-            self._next_sub.start
-        )
 
 
 class ShiftSpectrogramSelectionCommand(BaseCommand):
@@ -500,11 +525,10 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             ScrollSpectrogramCommand,
             ZoomSpectrogramCommand,
+            SnapSpectrogramSelectionToSubtitleCommand,
             SnapSpectrogramSelectionToKeyframeCommand,
             SnapSpectrogramSelectionToVideoCommand,
             PlaceSpectrogramSelectionAtVideoCommand,
-            SnapSpectrogramSelectionStartToPreviousSubtitleCommand,
-            SnapSpectrogramSelectionEndToNextSubtitleCommand,
             ShiftSpectrogramSelectionCommand,
             CommitSpectrogramSelectionCommand,
     ]:

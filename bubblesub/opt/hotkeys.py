@@ -152,8 +152,8 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('M', 'audio/snap-sel-to-video', 'end'),
                 Hotkey('[', 'video/set-playback-speed', '{}/1.5'),
                 Hotkey(']', 'video/set-playback-speed', '{}*1.5'),
-                Hotkey('Alt+Left', 'audio/snap-sel-start-to-prev-sub'),
-                Hotkey('Alt+Right', 'audio/snap-sel-end-to-next-sub'),
+                Hotkey('Alt+Left', 'audio/snap-sel-to-sub', 'start', 'prev'),
+                Hotkey('Alt+Right', 'audio/snap-sel-to-sub', 'end', 'next'),
                 Hotkey(
                     'Alt+Shift+Left', 'audio/snap-sel-to-keyframe',
                     'start', 'prev'
