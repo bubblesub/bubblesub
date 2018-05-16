@@ -219,6 +219,7 @@ class CommandApi:
                 mod.register(self)
             except Exception as ex:  # pylint: disable=broad-except
                 self._api.log.error(str(ex))
+                traceback.print_exc()
         self.commands_loaded.emit()
 
     def unload_plugin_commands(self) -> None:
