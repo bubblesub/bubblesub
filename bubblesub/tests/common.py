@@ -14,9 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import argparse
 import typing as T
 from pathlib import Path
 
+import pytest
+
+import bubblesub.api
+import bubblesub.opt
 
 ROOT_DIR = Path(__file__).parent.parent
 
@@ -27,3 +32,13 @@ def collect_source_files(root: Path = ROOT_DIR) -> T.Iterable[Path]:
             yield from collect_source_files(path)
         elif path.is_file() and path.suffix == '.py':
             yield path
+
+
+@pytest.fixture
+def api_fixture() -> bubblesub.api.Api:
+    args = argparse.Namespace()
+    setattr(args, 'no_video', True)
+
+    opt = bubblesub.opt.Options()
+    api = bubblesub.api.Api(opt, args)
+    return api
