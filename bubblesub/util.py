@@ -16,12 +16,32 @@
 
 """Miscellaneous functions and classes for general purpose usage."""
 
+import enum
 import fractions
 import hashlib
 import itertools
 import re
 import time
 import typing as T
+
+
+class ShiftTarget(enum.IntEnum):
+    """What parts to shift in a target that has a start and an end point."""
+
+    Start = 1
+    End = 2
+    Both = 3
+
+
+class Direction(enum.IntEnum):
+    """Generic direction on a horizontal 1D axis."""
+
+    Left = 1
+    Prev = 1
+    Previous = 1
+
+    Right = 2
+    Next = 2
 
 
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:

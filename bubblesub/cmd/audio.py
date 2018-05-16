@@ -17,46 +17,28 @@
 """Commands related to audio and audio selection."""
 
 import bisect
-import enum
 import operator
 import typing as T
 
 import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
+from bubblesub.util import Direction, ShiftTarget
 
 
-class SelectionMode(enum.IntEnum):
-    """Spectrogram selection origin."""
-
-    Start = 1
-    End = 2
-    Both = 3
-
-    def __str__(self) -> str:
-        """
-        Human readable representation.
-
-        :return: human readable representation
-        """
-        if self == SelectionMode.Start:
-            return 'selection start'
-        elif self == SelectionMode.End:
-            return 'selection end'
-        elif self == SelectionMode.Both:
-            return 'selection'
-        return super().__str__(self)
+def _fmt_shift_target(shift_target: ShiftTarget) -> str:
+    return {
+        ShiftTarget.Start: 'selection start',
+        ShiftTarget.End: 'selection end',
+        ShiftTarget.Both: 'selection'
+    }[shift_target]
 
 
-class Direction(enum.IntEnum):
-    """Direction for commands."""
-
-    Left = 1
-    Prev = 1
-    Previous = 1
-
-    Right = 2
-    Next = 2
+def _fmt_direction(direction: Direction) -> str:
+    return {
+        Direction.Left: 'previous',
+        Direction.Right: 'next',
+    }[direction]
 
 
 class ScrollSpectrogramCommand(BaseCommand):
@@ -134,17 +116,20 @@ class SnapSpectrogramSelectionToVideoCommand(BaseCommand):
 
         :return: name shown in GUI menu
         """
-        return f'&Snap {self._selection_mode!s} to video'
+        return (
+            '&Snap '
+            f'{_fmt_shift_target(self._shift_target)} to current video frame'
+        )
 
-    def __init__(self, api: bubblesub.api.Api, selection_mode: str) -> None:
+    def __init__(self, api: bubblesub.api.Api, shift_target: str) -> None:
         """
         Initialize self.
 
         :param api: core API
-        :param selection_mode: what part of selection to snap
+        :param shift_target: how to snap the selection
         """
         super().__init__(api)
-        self._selection_mode = SelectionMode[selection_mode.title()]
+        self._shift_target = ShiftTarget[shift_target.title()]
 
     @property
     def is_enabled(self) -> bool:
@@ -161,11 +146,11 @@ class SnapSpectrogramSelectionToVideoCommand(BaseCommand):
         old_end = self.api.media.audio.selection_end
         old_start = self.api.media.audio.selection_start
         target = self.api.media.current_pts
-        if self._selection_mode == SelectionMode.Start:
+        if self._shift_target == ShiftTarget.Start:
             self.api.media.audio.select(target, old_end)
-        elif self._selection_mode == SelectionMode.End:
+        elif self._shift_target == ShiftTarget.End:
             self.api.media.audio.select(old_start, target)
-        elif self._selection_mode == SelectionMode.Both:
+        elif self._shift_target == ShiftTarget.Both:
             self.api.media.audio.select(target, target)
         else:
             raise AssertionError
@@ -211,18 +196,18 @@ class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            selection_mode: str,
+            shift_target: str,
             snap_direction: str
     ) -> None:
         """
         Initialize self.
 
         :param api: core API
-        :param selection_mode: what part of selection to snap
+        :param shift_target: how to snap the selection
         :param snap_direction: direction to stap into
         """
         super().__init__(api)
-        self._selection_mode = SelectionMode[selection_mode.title()]
+        self._shift_target = ShiftTarget[shift_target.title()]
         self._direction = Direction[snap_direction.title()]
 
     @property
@@ -232,13 +217,11 @@ class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
 
         :return: name shown in GUI menu
         """
-        ret = f'&Snap {self._selection_mode!s} to '
-        ret += {
-            Direction.Left: 'previous',
-            Direction.Right: 'next',
-        }[self._direction]
-        ret += ' subtitle'
-        return ret
+        return (
+            f'&Snap '
+            f'{_fmt_shift_target(self._shift_target)} to '
+            f'{_fmt_direction(self._direction)} subtitle'
+        )
 
     @property
     def is_enabled(self) -> bool:
@@ -265,17 +248,17 @@ class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         assert self._nearest_sub is not None
-        if self._selection_mode == SelectionMode.Start:
+        if self._shift_target == ShiftTarget.Start:
             self.api.media.audio.select(
                 self._nearest_sub.end,
                 self.api.media.audio.selection_end
             )
-        elif self._selection_mode == SelectionMode.End:
+        elif self._shift_target == ShiftTarget.End:
             self.api.media.audio.select(
                 self.api.media.audio.selection_start,
                 self._nearest_sub.start
             )
-        elif self._selection_mode == SelectionMode.Both:
+        elif self._shift_target == ShiftTarget.Both:
             if self._direction == Direction.Left:
                 self.api.media.audio.select(
                     self._nearest_sub.end,
@@ -300,18 +283,18 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            selection_mode: str,
+            shift_target: str,
             snap_direction: str
     ) -> None:
         """
         Initialize self.
 
         :param api: core API
-        :param selection_mode: what part of selection to snap
+        :param shift_target: how to snap the selection
         :param snap_direction: direction to stap into
         """
         super().__init__(api)
-        self._selection_mode = SelectionMode[selection_mode.title()]
+        self._shift_target = ShiftTarget[shift_target.title()]
         self._direction = Direction[snap_direction.title()]
 
     @property
@@ -333,14 +316,11 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
 
         :return: name shown in GUI menu
         """
-        ret = f'&Snap {self._selection_mode!s} to '
-        ret += {
-            Direction.Previous: 'previous ',
-            Direction.Next: 'next ',
-        }[self._direction]
-        ret += 'keyframe'
-
-        return ret
+        return (
+            '&Snap '
+            f'{_fmt_shift_target(self._shift_target)} '
+            f'to {_fmt_direction(self._direction)} keyframe'
+        )
 
     async def run(self) -> None:
         """Carry out the command."""
@@ -367,9 +347,9 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
         else:
             raise AssertionError
 
-        if self._selection_mode == SelectionMode.End:
+        if self._shift_target == ShiftTarget.End:
             current_origin = self.api.media.audio.selection_end
-        elif self._selection_mode in {SelectionMode.Start, SelectionMode.Both}:
+        elif self._shift_target in {ShiftTarget.Start, ShiftTarget.Both}:
             current_origin = self.api.media.audio.selection_start
         else:
             raise AssertionError
@@ -382,11 +362,11 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
     def _get_new_pos(self, origin: int) -> T.Tuple[int, int]:
         old_start = self.api.media.audio.selection_start
         old_end = self.api.media.audio.selection_end
-        if self._selection_mode == SelectionMode.Start:
+        if self._shift_target == ShiftTarget.Start:
             return origin, old_end
-        elif self._selection_mode == SelectionMode.End:
+        elif self._shift_target == ShiftTarget.End:
             return old_start, origin
-        elif self._selection_mode == SelectionMode.Both:
+        elif self._shift_target == ShiftTarget.Both:
             return origin, origin
         raise AssertionError
 
@@ -399,7 +379,7 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            selection_mode: str,
+            shift_target: str,
             delta: int,
             frames: bool = True
     ) -> None:
@@ -407,12 +387,12 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
         Initialize self.
 
         :param api: core API
-        :param selection_mode: what part of selection to shift
+        :param shift_target: how to shift the selection
         :param delta: amount to shift the selection by
         :param frames: if true, shift by frames; otherwise by milliseconds
         """
         super().__init__(api)
-        self._selection_mode = SelectionMode[selection_mode.title()]
+        self._shift_target = ShiftTarget[shift_target.title()]
         self._delta = delta
         self._frames = frames
 
@@ -424,7 +404,11 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
         :return: name shown in GUI menu
         """
         unit = 'frames' if self._frames else 'ms'
-        return f'&Shift {self._selection_mode!s} ({self._delta:+} {unit})'
+        return (
+            '&Shift '
+            f'{_fmt_shift_target(self._shift_target)} '
+            f'({self._delta:+} {unit})'
+        )
 
     @property
     def is_enabled(self) -> bool:
@@ -459,25 +443,25 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
             new_start = self.api.media.video.timecodes[idx1]
             new_end = self.api.media.video.timecodes[idx2]
 
-            if self._selection_mode == SelectionMode.Start:
+            if self._shift_target == ShiftTarget.Start:
                 self.api.media.audio.select(new_start, old_end)
-            elif self._selection_mode == SelectionMode.End:
+            elif self._shift_target == ShiftTarget.End:
                 self.api.media.audio.select(old_start, new_end)
-            elif self._selection_mode == SelectionMode.Both:
+            elif self._shift_target == ShiftTarget.Both:
                 self.api.media.audio.select(new_start, new_end)
             else:
                 raise AssertionError
 
         else:
-            if self._selection_mode == SelectionMode.Start:
+            if self._shift_target == ShiftTarget.Start:
                 self.api.media.audio.select(
                     min(old_end, old_start + self._delta), old_end
                 )
-            elif self._selection_mode == SelectionMode.End:
+            elif self._shift_target == ShiftTarget.End:
                 self.api.media.audio.select(
                     old_start, max(old_start, old_end + self._delta)
                 )
-            elif self._selection_mode == SelectionMode.Both:
+            elif self._shift_target == ShiftTarget.Both:
                 self.api.media.audio.select(
                     old_start + self._delta, old_end + self._delta
                 )
