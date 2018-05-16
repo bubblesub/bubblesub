@@ -23,7 +23,7 @@ import typing as T
 import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
-from bubblesub.util import Direction, ShiftTarget
+from bubblesub.util import VerticalDirection, ShiftTarget
 
 
 def _fmt_shift_target(shift_target: ShiftTarget) -> str:
@@ -34,17 +34,10 @@ def _fmt_shift_target(shift_target: ShiftTarget) -> str:
     }[shift_target]
 
 
-def _fmt_direction(direction: Direction) -> str:
-    return {
-        Direction.Left: 'previous',
-        Direction.Right: 'next',
-    }[direction]
-
-
 class ScrollSpectrogramCommand(BaseCommand):
     """Scrolls the spectrogram horizontally by its width's percentage."""
 
-    name = 'audio/scroll'
+    name = 'audio/scroll-spectrogram'
 
     @property
     def menu_name(self) -> str:
@@ -75,7 +68,7 @@ class ScrollSpectrogramCommand(BaseCommand):
 class ZoomSpectrogramCommand(BaseCommand):
     """Zooms the spectrogram in or out by the specified factor."""
 
-    name = 'audio/zoom'
+    name = 'audio/zoom-spectrogram'
 
     @property
     def menu_name(self) -> str:
@@ -104,10 +97,10 @@ class ZoomSpectrogramCommand(BaseCommand):
         self.api.media.audio.zoom_view(new_factor, mouse_x)
 
 
-class SnapSpectrogramSelectionToVideoCommand(BaseCommand):
-    """Snaps the spectrogram selection to nearest video frame."""
+class SnapSpectrogramSelectionToCurrentVideoFrameCommand(BaseCommand):
+    """Snaps the spectrogram selection to the current video frame."""
 
-    name = 'audio/snap-sel-to-video'
+    name = 'audio/snap-sel-to-current-video-frame'
 
     @property
     def menu_name(self) -> str:
@@ -156,7 +149,7 @@ class SnapSpectrogramSelectionToVideoCommand(BaseCommand):
             raise AssertionError
 
 
-class PlaceSpectrogramSelectionAtVideoCommand(BaseCommand):
+class PlaceSpectrogramSelectionAtCurrentVideoFrameCommand(BaseCommand):
     """
     Realigns the selection to the current video frame.
 
@@ -164,7 +157,7 @@ class PlaceSpectrogramSelectionAtVideoCommand(BaseCommand):
     and the selection size is set to the default subtitle duration.
     """
 
-    name = 'audio/place-sel-at-video'
+    name = 'audio/place-sel-at-current-video-frame'
     menu_name = '&Place selection at current video frame'
 
     @property
@@ -188,10 +181,10 @@ class PlaceSpectrogramSelectionAtVideoCommand(BaseCommand):
         )
 
 
-class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
+class SnapSpectrogramSelectionToNearSubtitleCommand(BaseCommand):
     """Snaps the spectrogram selection to the nearest subtitle."""
 
-    name = 'audio/snap-sel-to-sub'
+    name = 'audio/snap-sel-to-near-sub'
 
     def __init__(
             self,
@@ -204,11 +197,11 @@ class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
 
         :param api: core API
         :param shift_target: how to snap the selection
-        :param snap_direction: direction to stap into
+        :param snap_direction: direction to snap into
         """
         super().__init__(api)
         self._shift_target = ShiftTarget[shift_target.title()]
-        self._direction = Direction[snap_direction.title()]
+        self._direction = VerticalDirection[snap_direction.title()]
 
     @property
     def menu_name(self) -> str:
@@ -219,8 +212,8 @@ class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
         """
         return (
             f'&Snap '
-            f'{_fmt_shift_target(self._shift_target)} to '
-            f'{_fmt_direction(self._direction)} subtitle'
+            f'{_fmt_shift_target(self._shift_target)} to subtitle '
+            f'{self._direction.name.lower()}'
         )
 
     @property
@@ -238,9 +231,9 @@ class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
     def _nearest_sub(self) -> T.Optional[Event]:
         if not self.api.subs.has_selection:
             return None
-        if self._direction == Direction.Left:
+        if self._direction == VerticalDirection.Above:
             return self.api.subs.selected_events[0].prev
-        elif self._direction == Direction.Right:
+        elif self._direction == VerticalDirection.Below:
             return self.api.subs.selected_events[-1].next
         else:
             raise AssertionError
@@ -259,12 +252,12 @@ class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
                 self._nearest_sub.start
             )
         elif self._shift_target == ShiftTarget.Both:
-            if self._direction == Direction.Left:
+            if self._direction == VerticalDirection.Above:
                 self.api.media.audio.select(
                     self._nearest_sub.end,
                     self._nearest_sub.end
                 )
-            elif self._direction == Direction.Right:
+            elif self._direction == VerticalDirection.Below:
                 self.api.media.audio.select(
                     self._nearest_sub.start,
                     self._nearest_sub.start
@@ -275,10 +268,10 @@ class SnapSpectrogramSelectionToSubtitleCommand(BaseCommand):
             raise AssertionError
 
 
-class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
+class SnapSpectrogramSelectionToNearKeyframeCommand(BaseCommand):
     """Snaps the spectrogram selection to the nearest keyframe."""
 
-    name = 'audio/snap-sel-to-keyframe'
+    name = 'audio/snap-sel-to-near-keyframe'
 
     def __init__(
             self,
@@ -291,11 +284,11 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
 
         :param api: core API
         :param shift_target: how to snap the selection
-        :param snap_direction: direction to stap into
+        :param snap_direction: direction to snap into
         """
         super().__init__(api)
         self._shift_target = ShiftTarget[shift_target.title()]
-        self._direction = Direction[snap_direction.title()]
+        self._direction = VerticalDirection[snap_direction.title()]
 
     @property
     def is_enabled(self) -> bool:
@@ -318,8 +311,8 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
         """
         return (
             '&Snap '
-            f'{_fmt_shift_target(self._shift_target)} '
-            f'to {_fmt_direction(self._direction)} keyframe'
+            f'{_fmt_shift_target(self._shift_target)} to keyframe '
+            f'{self._direction.name.lower()}'
         )
 
     async def run(self) -> None:
@@ -328,7 +321,7 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
         new_start, new_end = self._get_new_pos(origin)
         self.api.media.audio.select(new_start, new_end)
 
-    def _get_possible_pts(self) -> T.Iterable[int]:
+    def _get_possible_pts(self) -> T.List[int]:
         return [
             self.api.media.video.timecodes[i]
             for i in self.api.media.video.keyframes
@@ -337,11 +330,11 @@ class SnapSpectrogramSelectionToKeyframeCommand(BaseCommand):
     def _get_origin(self) -> int:
         possible_pts = self._get_possible_pts()
 
-        if self._direction == Direction.Previous:
+        if self._direction == VerticalDirection.Above:
             possible_pts.reverse()
             func = operator.__lt__
             not_found_pts = 0
-        elif self._direction == Direction.Next:
+        elif self._direction == VerticalDirection.Below:
             func = operator.__gt__
             not_found_pts = self.api.media.max_pts
         else:
@@ -509,10 +502,10 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             ScrollSpectrogramCommand,
             ZoomSpectrogramCommand,
-            SnapSpectrogramSelectionToSubtitleCommand,
-            SnapSpectrogramSelectionToKeyframeCommand,
-            SnapSpectrogramSelectionToVideoCommand,
-            PlaceSpectrogramSelectionAtVideoCommand,
+            SnapSpectrogramSelectionToNearSubtitleCommand,
+            SnapSpectrogramSelectionToNearKeyframeCommand,
+            SnapSpectrogramSelectionToCurrentVideoFrameCommand,
+            PlaceSpectrogramSelectionAtCurrentVideoFrameCommand,
             ShiftSpectrogramSelectionCommand,
             CommitSpectrogramSelectionCommand,
     ]:

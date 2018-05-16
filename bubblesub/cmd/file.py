@@ -44,7 +44,7 @@ def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
     )
 
 
-class NewFileCommand(BaseCommand):
+class NewCommand(BaseCommand):
     """
     Opens a new file.
 
@@ -60,7 +60,7 @@ class NewFileCommand(BaseCommand):
             self.api.subs.unload()
 
 
-class OpenFileCommand(BaseCommand):
+class OpenCommand(BaseCommand):
     """
     Opens an existing subtitles file.
 
@@ -152,7 +152,7 @@ class LoadVideoCommand(BaseCommand):
             self.info(f'loading {path}')
 
 
-class SaveFileCommand(BaseCommand):
+class SaveCommand(BaseCommand):
     """
     Saves the current subtitles to an ASS file.
 
@@ -182,7 +182,7 @@ class SaveFileCommand(BaseCommand):
         self.info(f'saved subtitles to {path}')
 
 
-class SaveFileAsCommand(BaseCommand):
+class SaveAsCommand(BaseCommand):
     """
     Saves the current subtitles to an ASS file.
 
@@ -249,11 +249,11 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            NewFileCommand,
-            OpenFileCommand,
+            NewCommand,
+            OpenCommand,
             LoadVideoCommand,
-            SaveFileCommand,
-            SaveFileAsCommand,
+            SaveCommand,
+            SaveAsCommand,
             QuitCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

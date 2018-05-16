@@ -745,7 +745,7 @@ class _StylesManagerDialog(QtWidgets.QDialog):
         self._preview_box.update_preview()
 
 
-class StylesManagerCommand(BaseCommand):
+class ManageStylesCommand(BaseCommand):
     """Opens up the style manager."""
 
     name = 'edit/manage-styles'
@@ -775,4 +775,4 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
 
     :param cmd_api: command API
     """
-    cmd_api.register_core_command(StylesManagerCommand)
+    cmd_api.register_core_command(ManageStylesCommand)

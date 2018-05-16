@@ -33,15 +33,18 @@ class ShiftTarget(enum.IntEnum):
     Both = 3
 
 
-class Direction(enum.IntEnum):
+class HorizontalDirection(enum.IntEnum):
     """Generic direction on a horizontal 1D axis."""
 
     Left = 1
-    Prev = 1
-    Previous = 1
-
     Right = 2
-    Next = 2
+
+
+class VerticalDirection(enum.IntEnum):
+    """Generic direction on a vertical 1D axis."""
+
+    Above = 1
+    Below = 2
 
 
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:

@@ -26,13 +26,22 @@ from PyQt5 import QtWidgets
 import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.util import ShiftTarget
+
+
+def _fmt_shift_target(shift_target: ShiftTarget) -> str:
+    return {
+        ShiftTarget.Start: 'selection start',
+        ShiftTarget.End: 'selection end',
+        ShiftTarget.Both: 'selection'
+    }[shift_target]
 
 
 class PlayCurrentSubtitleCommand(BaseCommand):
     """Plays the currently selected subtitle."""
 
-    name = 'video/play-current-line'
-    menu_name = '&Play current line'
+    name = 'video/play-current-sub'
+    menu_name = '&Play current subtitle'
 
     @property
     def is_enabled(self) -> bool:
@@ -53,11 +62,11 @@ class PlayAroundSpectrogramSelectionCommand(BaseCommand):
     """Plays a region near the current spectrogram selection."""
 
     name = 'video/play-around-sel'
-    menu_name = '&Play selection'
 
     def __init__(
             self,
             api: bubblesub.api.Api,
+            shift_target: str,
             delta_start: int,
             delta_end: int
     ) -> None:
@@ -65,52 +74,13 @@ class PlayAroundSpectrogramSelectionCommand(BaseCommand):
         Initialize self.
 
         :param api: core API
+        :param shift_target: part of selection to play around
         :param delta_start: delta relative to the selection start in
             milliseconds
         :param delta_end: delta relative to the selection end in milliseconds
         """
         super().__init__(api)
-        self._delta_start = delta_start
-        self._delta_end = delta_end
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        return self.api.media.is_loaded \
-            and self.api.media.audio.has_selection
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        self.api.media.play(
-            self.api.media.audio.selection_start + self._delta_start,
-            self.api.media.audio.selection_end + self._delta_end
-        )
-
-
-class PlayAroundSpectrogramSelectionStartCommand(BaseCommand):
-    """Plays a region near the current spectrogram selection start."""
-
-    name = 'video/play-around-sel-start'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            delta_start: int,
-            delta_end: int
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param delta_start: delta relative to the selection start in
-            milliseconds
-        :param delta_end: delta relative to the selection start in milliseconds
-        """
-        super().__init__(api)
+        self._shift_target = ShiftTarget[shift_target.title()]
         self._delta_start = delta_start
         self._delta_end = delta_end
 
@@ -121,17 +91,15 @@ class PlayAroundSpectrogramSelectionStartCommand(BaseCommand):
 
         :return: name shown in GUI menu
         """
+        ret = '&Play '
         if self._delta_start < 0 and self._delta_end == 0:
-            return 'Play {} ms &before selection start'.format(
-                abs(self._delta_start)
-            )
-        if self._delta_start == 0 and self._delta_end > 0:
-            return 'Play {} ms &after selection start'.format(
-                self._delta_end
-            )
-        return '&Play {:+} ms / {:+} ms around selection start'.format(
-            self._delta_start, self._delta_end
-        )
+            ret += f'{-self._delta_start} ms before '
+        elif self._delta_start == 0 and self._delta_end > 0:
+            ret += '{self._delta_end} ms after '
+        elif self._delta_start != 0 or self._delta_end != 0:
+            ret += '{self._delta_start:+} ms / {self._delta_end:+} ms around '
+        ret += _fmt_shift_target(self._shift_target)
+        return ret
 
     @property
     def is_enabled(self) -> bool:
@@ -145,69 +113,21 @@ class PlayAroundSpectrogramSelectionStartCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        self.api.media.play(
-            self.api.media.audio.selection_start + self._delta_start,
-            self.api.media.audio.selection_start + self._delta_end
-        )
-
-
-class PlayAroundSpectrogramSelectionEndCommand(BaseCommand):
-    """Plays a region near the current spectrogram selection end."""
-
-    name = 'video/play-around-sel-end'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            delta_start: int,
-            delta_end: int
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param delta_start: delta relative to the selection end in milliseconds
-        :param delta_end: delta relative to the selection end in milliseconds
-        """
-        super().__init__(api)
-        self._delta_start = delta_start
-        self._delta_end = delta_end
-
-    @property
-    def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        if self._delta_start < 0 and self._delta_end == 0:
-            return 'Play {} ms &before selection end'.format(
-                abs(self._delta_start)
+        if self._shift_target == ShiftTarget.Start:
+            self.api.media.play(
+                self.api.media.audio.selection_start + self._delta_start,
+                self.api.media.audio.selection_start + self._delta_end
             )
-        if self._delta_start == 0 and self._delta_end > 0:
-            return 'Play {} ms &after selection end'.format(
-                self._delta_end
+        elif self._shift_target == ShiftTarget.End:
+            self.api.media.play(
+                self.api.media.audio.selection_end + self._delta_start,
+                self.api.media.audio.selection_end + self._delta_end
             )
-        return '&Play {:+} ms / {:+} ms around selection end'.format(
-            self._delta_start, self._delta_end
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        return self.api.media.is_loaded \
-            and self.api.media.audio.has_selection
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        self.api.media.play(
-            self.api.media.audio.selection_end + self._delta_start,
-            self.api.media.audio.selection_end + self._delta_end
-        )
+        elif self._shift_target == ShiftTarget.Both:
+            self.api.media.play(
+                self.api.media.audio.selection_start + self._delta_start,
+                self.api.media.audio.selection_end + self._delta_end
+            )
 
 
 class StepFrameCommand(BaseCommand):
@@ -583,8 +503,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             PlayCurrentSubtitleCommand,
             PlayAroundSpectrogramSelectionCommand,
-            PlayAroundSpectrogramSelectionStartCommand,
-            PlayAroundSpectrogramSelectionEndCommand,
             StepFrameCommand,
             StepMillisecondsCommand,
             SeekWithGuiCommand,

@@ -90,7 +90,7 @@ class FocusNoteEditorCommand(BaseCommand):
 class FocusSubtitlesGridCommand(BaseCommand):
     """Focuses the subtitles grid."""
 
-    name = 'view/focus-grid'
+    name = 'view/focus-subs-grid'
     menu_name = '&Focus subtitles grid'
 
     async def run(self) -> None:

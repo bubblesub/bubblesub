@@ -27,6 +27,7 @@ import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
+from bubblesub.util import VerticalDirection
 
 
 def _pickle(data: T.Any) -> str:
@@ -41,15 +42,15 @@ def _unpickle(text: str) -> T.Any:
     return pickle.loads(zlib.decompress(base64.b64decode(text.encode())))
 
 
-class JumpToSubtitleByLineCommand(BaseCommand):
+class JumpToSubtitleByNumberCommand(BaseCommand):
     """
-    Jumps to the specified line.
+    Jumps to the specified number.
 
     Prompts user for the line number with a GUI dialog.
     """
 
-    name = 'grid/jump-to-line'
-    menu_name = 'Jump to line by number...'
+    name = 'grid/jump-to-sub-by-number'
+    menu_name = 'Jump to subtitle by number...'
 
     @property
     def is_enabled(self) -> bool:
@@ -92,8 +93,8 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
     Prompts user for details with a GUI dialog.
     """
 
-    name = 'grid/jump-to-time'
-    menu_name = 'Jump to line by time...'
+    name = 'grid/jump-to-sub-by-time'
+    menu_name = 'Jump to subtitle by time...'
 
     @property
     def is_enabled(self) -> bool:
@@ -136,11 +137,29 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
             self.api.subs.selected_indexes = [best_idx]
 
 
-class SelectPreviousSubtitleCommand(BaseCommand):
-    """Selects the subtitle above the first currently selected subtitle."""
+class SelectNearSubtitleCommand(BaseCommand):
+    """Selects nearest subtitle in given direction to the current selection."""
 
-    name = 'grid/select-prev-sub'
-    menu_name = 'Select previous subtitle'
+    name = 'grid/select-near-sub'
+
+    def __init__(self, api: bubblesub.api.Api, direction: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param direction: direction to look in
+        """
+        super().__init__(api)
+        self._direction = VerticalDirection[direction.title()]
+
+    @property
+    def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        return f'Select {self._direction.name.lower()} subtitle'
 
     @property
     def is_enabled(self) -> bool:
@@ -153,45 +172,29 @@ class SelectPreviousSubtitleCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        if not self.api.subs.selected_indexes:
-            self.api.subs.selected_indexes = [len(self.api.subs.events) - 1, 0]
+        max_idx = len(self.api.subs.events) - 1
+        if self._direction == VerticalDirection.Above:
+            if not self.api.subs.selected_indexes:
+                self.api.subs.selected_indexes = [max_idx]
+            else:
+                self.api.subs.selected_indexes = [
+                    max(0, self.api.subs.selected_indexes[0] - 1)
+                ]
+        elif self._direction == VerticalDirection.Below:
+            if not self.api.subs.selected_indexes:
+                self.api.subs.selected_indexes = [0]
+            else:
+                self.api.subs.selected_indexes = [
+                    min(self.api.subs.selected_indexes[-1] + 1, max_idx)
+                ]
         else:
-            self.api.subs.selected_indexes = [
-                max(0, self.api.subs.selected_indexes[0] - 1)]
-
-
-class SelectNextSubtitleCommand(BaseCommand):
-    """Selects the subtitle below the last currently selected subtitle."""
-
-    name = 'grid/select-next-sub'
-    menu_name = 'Select next subtitle'
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        return len(self.api.subs.events) > 0
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        if not self.api.subs.selected_indexes:
-            self.api.subs.selected_indexes = [0]
-        else:
-            self.api.subs.selected_indexes = [
-                min(
-                    self.api.subs.selected_indexes[-1] + 1,
-                    len(self.api.subs.events) - 1
-                )
-            ]
+            raise AssertionError
 
 
 class SelectAllSubtitlesCommand(BaseCommand):
     """Selects all subtitles."""
 
-    name = 'grid/select-all'
+    name = 'grid/select-all-subs'
     menu_name = 'Select all subtitles'
 
     @property
@@ -211,7 +214,7 @@ class SelectAllSubtitlesCommand(BaseCommand):
 class ClearSubtitleSelectionCommand(BaseCommand):
     """Clears subtitle selection."""
 
-    name = 'grid/select-nothing'
+    name = 'grid/clear-sub-sel'
     menu_name = 'Clear subtitle selection'
 
     async def run(self) -> None:
@@ -219,10 +222,10 @@ class ClearSubtitleSelectionCommand(BaseCommand):
         self.api.subs.selected_indexes = []
 
 
-class CopySubtitlesTextToClipboardCommand(BaseCommand):
+class CopySubtitlesTextCommand(BaseCommand):
     """Copies text from the subtitle selection."""
 
-    name = 'grid/copy-text-to-clipboard'
+    name = 'grid/copy-subs/text'
     menu_name = 'Copy selected subtitles text to clipboard'
 
     @property
@@ -241,10 +244,10 @@ class CopySubtitlesTextToClipboardCommand(BaseCommand):
         ))
 
 
-class CopySubtitlesTimesToClipboardCommand(BaseCommand):
+class CopySubtitlesTimesCommand(BaseCommand):
     """Copies time boundaries from the subtitle selection."""
 
-    name = 'grid/copy-times-to-clipboard'
+    name = 'grid/copy-subs/times'
     menu_name = 'Copy selected subtitles times to clipboard'
 
     @property
@@ -267,10 +270,10 @@ class CopySubtitlesTimesToClipboardCommand(BaseCommand):
         ))
 
 
-class PasteSubtitlesTimesFromClipboardCommand(BaseCommand):
+class PasteSubtitlesTimesCommand(BaseCommand):
     """Pastes time boundaries into the subtitle selection."""
 
-    name = 'grid/paste-times-from-clipboard'
+    name = 'grid/paste-subs/times'
     menu_name = 'Paste times to selected subtitles from clipboard'
 
     @property
@@ -315,10 +318,10 @@ class PasteSubtitlesTimesFromClipboardCommand(BaseCommand):
                 sub.end = times[i][1]
 
 
-class CopySubtitlesToClipboardCommand(BaseCommand):
+class CopySubtitlesCommand(BaseCommand):
     """Copies the selected subtitles."""
 
-    name = 'grid/copy-to-clipboard'
+    name = 'grid/copy-subs'
     menu_name = 'Copy selected subtitles to clipboard'
 
     @property
@@ -348,35 +351,49 @@ def _paste_from_clipboard(cmd: BaseCommand, idx: int) -> None:
         cmd.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
 
-class PasteSubtitlesFromClipboardBelowCommand(BaseCommand):
-    """Pastes subtitles below the selection."""
+class PasteSubtitlesCommand(BaseCommand):
+    """Pastes subtitles near the selection."""
 
-    name = 'grid/paste-from-clipboard-below'
-    menu_name = 'Paste subtitles from clipboard (below)'
+    name = 'grid/paste-subs'
+
+    def __init__(self, api: bubblesub.api.Api, direction: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param direction: direction to paste into
+        """
+        super().__init__(api)
+        self._direction = VerticalDirection[direction.title()]
+
+    @property
+    def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        return (
+            f'Paste subtitles from clipboard ({self._direction.name.lower()})'
+        )
 
     async def run(self) -> None:
         """Carry out the command."""
-        _paste_from_clipboard(self, (
-            self.api.subs.selected_indexes[-1] + 1
-            if self.api.subs.has_selection else 0
-        ))
+        if self._direction == VerticalDirection.Below:
+            _paste_from_clipboard(self, (
+                self.api.subs.selected_indexes[-1] + 1
+                if self.api.subs.has_selection else 0
+            ))
+        elif self._direction == VerticalDirection.Above:
+            _paste_from_clipboard(self, (
+                self.api.subs.selected_indexes[0]
+                if self.api.subs.has_selection else 0
+            ))
+        else:
+            raise AssertionError
 
 
-class PasteSubtitlesFromClipboardAboveCommand(BaseCommand):
-    """Pastes subtitles above the selection."""
-
-    name = 'grid/paste-from-clipboard-above'
-    menu_name = 'Paste subtitles from clipboard (above)'
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        _paste_from_clipboard(self, (
-            self.api.subs.selected_indexes[0]
-            if self.api.subs.has_selection else 0
-        ))
-
-
-class SaveSubtitlesAsAudioSampleCommand(BaseCommand):
+class CreateAudioSampleCommand(BaseCommand):
     """
     Saves current subtitle selection to a WAV file.
 
@@ -421,18 +438,16 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            JumpToSubtitleByLineCommand,
+            JumpToSubtitleByNumberCommand,
             JumpToSubtitleByTimeCommand,
-            SelectPreviousSubtitleCommand,
-            SelectNextSubtitleCommand,
+            SelectNearSubtitleCommand,
             SelectAllSubtitlesCommand,
             ClearSubtitleSelectionCommand,
-            CopySubtitlesTextToClipboardCommand,
-            CopySubtitlesTimesToClipboardCommand,
-            PasteSubtitlesTimesFromClipboardCommand,
-            CopySubtitlesToClipboardCommand,
-            PasteSubtitlesFromClipboardBelowCommand,
-            PasteSubtitlesFromClipboardAboveCommand,
-            SaveSubtitlesAsAudioSampleCommand,
+            CopySubtitlesTextCommand,
+            CopySubtitlesTimesCommand,
+            PasteSubtitlesTimesCommand,
+            CopySubtitlesCommand,
+            PasteSubtitlesCommand,
+            CreateAudioSampleCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

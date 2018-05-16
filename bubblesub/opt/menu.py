@@ -108,38 +108,38 @@ class MenuConfig(BaseConfig):
                     MenuCommand('edit/search-repeat', 1),
                     MenuCommand('edit/search-repeat', -1),
                     MenuSeparator(),
-                    MenuCommand('edit/insert-above'),
-                    MenuCommand('edit/insert-below'),
-                    MenuCommand('edit/move-up'),
-                    MenuCommand('edit/move-down'),
-                    MenuCommand('edit/move-to'),
-                    MenuCommand('edit/duplicate'),
-                    MenuCommand('edit/delete'),
+                    MenuCommand('edit/insert-sub', 'above'),
+                    MenuCommand('edit/insert-sub', 'below'),
+                    MenuCommand('edit/move-subs', 'above'),
+                    MenuCommand('edit/move-subs', 'below'),
+                    MenuCommand('edit/move-subs-to'),
+                    MenuCommand('edit/duplicate-subs'),
+                    MenuCommand('edit/delete-subs'),
                     MenuSeparator(),
-                    MenuCommand('edit/swap-text-and-notes'),
-                    MenuCommand('edit/split-sub-at-video'),
-                    MenuCommand('edit/join-subs/keep-first'),
-                    MenuCommand('edit/join-subs/concatenate'),
-                    MenuCommand('edit/karaoke-join'),
-                    MenuCommand('edit/transformation-join'),
-                    MenuCommand('edit/karaoke-split'),
+                    MenuCommand('edit/swap-subs-text-and-notes'),
+                    MenuCommand('edit/split-sub-at-current-video-frame'),
+                    MenuCommand('edit/join-subs-keep-first'),
+                    MenuCommand('edit/join-subs-concatenate'),
+                    MenuCommand('edit/join-subs-as-karaoke'),
+                    MenuCommand('edit/join-subs-as-transformation'),
+                    MenuCommand('edit/split-sub-by-karaoke'),
                     MenuSeparator(),
-                    MenuCommand('grid/copy-to-clipboard'),
-                    MenuCommand('grid/paste-from-clipboard-above'),
-                    MenuCommand('grid/paste-from-clipboard-below'),
+                    MenuCommand('grid/copy-subs'),
+                    MenuCommand('grid/paste-subs', 'above'),
+                    MenuCommand('grid/paste-subs', 'below'),
                     MenuSeparator(),
                     MenuCommand('edit/spell-check'),
                     MenuCommand('edit/manage-styles'),
                 ]),
 
                 SubMenu('Select', [
-                    MenuCommand('grid/jump-to-line'),
-                    MenuCommand('grid/jump-to-time'),
+                    MenuCommand('grid/jump-to-sub-by-number'),
+                    MenuCommand('grid/jump-to-sub-by-time'),
                     MenuSeparator(),
-                    MenuCommand('grid/select-all'),
-                    MenuCommand('grid/select-prev-sub'),
-                    MenuCommand('grid/select-next-sub'),
-                    MenuCommand('grid/select-nothing'),
+                    MenuCommand('grid/select-all-subs'),
+                    MenuCommand('grid/select-near-sub', 'above'),
+                    MenuCommand('grid/select-near-sub', 'below'),
+                    MenuCommand('grid/clear-sub-sel'),
                 ]),
 
                 SubMenu('&View', [
@@ -152,19 +152,19 @@ class MenuConfig(BaseConfig):
                     MenuSeparator(),
                     MenuCommand('view/focus-text-editor'),
                     MenuCommand('view/focus-note-editor'),
-                    MenuCommand('view/focus-grid'),
+                    MenuCommand('view/focus-subs-grid'),
                     MenuCommand('view/focus-spectrogram'),
                 ]),
 
                 SubMenu('&Playback', [
                     SubMenu('Play around selection', [
-                        MenuCommand('video/play-around-sel-start', -500, 0),
-                        MenuCommand('video/play-around-sel-start', 0, 500),
-                        MenuCommand('video/play-around-sel-end', -500, 0),
-                        MenuCommand('video/play-around-sel-end', 0, 500),
+                        MenuCommand('video/play-around-sel', 'start', -500, 0),
+                        MenuCommand('video/play-around-sel', 'start', 0, 500),
+                        MenuCommand('video/play-around-sel', 'end', -500, 0),
+                        MenuCommand('video/play-around-sel', 'end', 0, 500),
                     ]),
-                    MenuCommand('video/play-around-sel', 0, 0),
-                    MenuCommand('video/play-current-line'),
+                    MenuCommand('video/play-around-sel', 'both', 0, 0),
+                    MenuCommand('video/play-current-sub'),
                     MenuCommand('video/unpause'),
                     MenuSeparator(),
                     MenuCommand('video/seek-with-gui'),
@@ -185,28 +185,48 @@ class MenuConfig(BaseConfig):
                 ]),
 
                 SubMenu('&Timing', [
-                    SubMenu('Snap selection to nearest subtitle', [
+                    SubMenu('Snap to nearest subtitle', [
                         MenuCommand(
-                            'audio/snap-sel-to-sub', 'start', 'prev'
+                            'audio/snap-sel-to-near-sub', 'start', 'above'
                         ),
                         MenuCommand(
-                            'audio/snap-sel-to-sub', 'end', 'next'
-                        ),
-                    ]),
-                    SubMenu('Snap selection to nearest keyframe', [
-                        MenuCommand(
-                            'audio/snap-sel-to-keyframe', 'start', 'prev'
+                            'audio/snap-sel-to-near-sub', 'end', 'below'
                         ),
                         MenuCommand(
-                            'audio/snap-sel-to-keyframe', 'end', 'next'
+                            'edit/snap-subs-to-near-sub', 'start', 'above'
+                        ),
+                        MenuCommand(
+                            'edit/snap-subs-to-near-sub', 'end', 'below'
                         ),
                     ]),
-                    SubMenu('Snap selection to video frame', [
-                        MenuCommand('audio/snap-sel-to-video', 'start'),
-                        MenuCommand('audio/snap-sel-to-video', 'end'),
-                        MenuCommand('audio/place-sel-at-video'),
+
+                    SubMenu('Snap to nearest keyframe', [
+                        MenuCommand(
+                            'audio/snap-sel-to-near-keyframe', 'start', 'above'
+                        ),
+                        MenuCommand(
+                            'audio/snap-sel-to-near-keyframe', 'end', 'below'
+                        ),
                     ]),
-                    SubMenu('Shift selection', [
+
+                    SubMenu('Snap to current video frame', [
+                        MenuCommand(
+                            'audio/snap-sel-to-current-video-frame', 'start'
+                        ),
+                        MenuCommand(
+                            'audio/snap-sel-to-current-video-frame', 'end'
+                        ),
+                        MenuCommand('audio/place-sel-at-current-video-frame'),
+                        MenuCommand(
+                            'edit/snap-subs-to-current-video-frame', 'start'
+                        ),
+                        MenuCommand(
+                            'edit/snap-subs-to-current-video-frame', 'end'
+                        ),
+                        MenuCommand('edit/place-subs-at-current-video-frame'),
+                    ]),
+
+                    SubMenu('Shift', [
                         MenuCommand('audio/shift-sel', 'start', -10),
                         MenuCommand('audio/shift-sel', 'start', 10),
                         MenuCommand('audio/shift-sel', 'end', -10),
@@ -215,15 +235,20 @@ class MenuConfig(BaseConfig):
                         MenuCommand('audio/shift-sel', 'start', 1),
                         MenuCommand('audio/shift-sel', 'end', -1),
                         MenuCommand('audio/shift-sel', 'end', 1),
+                        MenuCommand('edit/shift-subs', 'start', -1000),
+                        MenuCommand('edit/shift-subs', 'start', 1000),
+                        MenuCommand('edit/shift-subs', 'end', -1000),
+                        MenuCommand('edit/shift-subs', 'end', 1000),
                     ]),
+
                     MenuCommand('audio/commit-sel'),
                     MenuSeparator(),
                     MenuCommand('edit/shift-subs-with-gui'),
                     MenuSeparator(),
-                    MenuCommand('audio/scroll', -0.05),
-                    MenuCommand('audio/scroll', 0.05),
-                    MenuCommand('audio/zoom', 1.1),
-                    MenuCommand('audio/zoom', 0.9)
+                    MenuCommand('audio/scroll-spectrogram', -0.05),
+                    MenuCommand('audio/scroll-spectrogram', 0.05),
+                    MenuCommand('audio/zoom-spectrogram', 1.1),
+                    MenuCommand('audio/zoom-spectrogram', 0.9)
                 ])
             ],
 
@@ -231,26 +256,26 @@ class MenuConfig(BaseConfig):
             [
                 MenuCommand('grid/create-audio-sample'),
                 MenuSeparator(),
-                MenuCommand('edit/insert-above'),
-                MenuCommand('edit/insert-below'),
+                MenuCommand('edit/insert-sub', 'above'),
+                MenuCommand('edit/insert-sub', 'below'),
                 MenuSeparator(),
-                MenuCommand('grid/copy-to-clipboard'),
-                MenuCommand('grid/paste-from-clipboard-above'),
-                MenuCommand('grid/paste-from-clipboard-below'),
+                MenuCommand('grid/copy-subs'),
+                MenuCommand('grid/paste-subs', 'above'),
+                MenuCommand('grid/paste-subs', 'below'),
                 MenuSeparator(),
-                MenuCommand('edit/duplicate'),
-                MenuCommand('edit/split-sub-at-video'),
+                MenuCommand('edit/duplicate-subs'),
+                MenuCommand('edit/split-sub-at-current-video-frame'),
+                MenuCommand('edit/split-sub-by-karaoke'),
                 MenuSeparator(),
-                MenuCommand('edit/join-subs/keep-first'),
-                MenuCommand('edit/join-subs/concatenate'),
-                MenuCommand('edit/karaoke-join'),
-                MenuCommand('edit/transformation-join'),
+                MenuCommand('edit/join-subs-keep-first'),
+                MenuCommand('edit/join-subs-concatenate'),
+                MenuCommand('edit/join-subs-as-karaoke'),
+                MenuCommand('edit/join-subs-as-transformation'),
                 MenuSeparator(),
-                MenuCommand('edit/karaoke-split'),
-                MenuCommand('edit/snap-subs-start-to-prev-sub'),
-                MenuCommand('edit/snap-subs-end-to-next-sub'),
+                MenuCommand('edit/snap-subs-to-near-sub', 'start', 'above'),
+                MenuCommand('edit/snap-subs-to-near-sub', 'end', 'below'),
                 MenuSeparator(),
-                MenuCommand('edit/delete')
+                MenuCommand('edit/delete-subs')
             ]
         }
 
