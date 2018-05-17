@@ -77,6 +77,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.top_bar.addWidget(self.editor_splitter)
         self.top_bar.setStretchFactor(0, 1)
         self.top_bar.setStretchFactor(1, 1)
+        self.video.layout().setContentsMargins(0, 0, 2, 0)
+        self.editor_splitter.setContentsMargins(2, 0, 0, 0)
 
         self.console_splitter = QtWidgets.QSplitter(self)
         console.setParent(self.console_splitter)
