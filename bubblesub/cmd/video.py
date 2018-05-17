@@ -399,56 +399,35 @@ class MuteCommand(BaseCommand):
             raise AssertionError
 
 
-class TogglePauseCommand(BaseCommand):
+class PauseCommand(BaseCommand):
     """Pauses or unpauses the video playback."""
 
-    name = 'video/toggle-pause'
-    menu_name = '&Toggle pause'
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        return self.api.media.is_loaded
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        if self.api.media.is_paused:
-            self.api.media.unpause()
-        else:
-            self.api.media.pause()
-
-
-class UnpauseCommand(BaseCommand):
-    """Unpauses the video playback."""
-
-    name = 'video/unpause'
-    menu_name = '&Play until end of the file'
-
-    @property
-    def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
-        return self.api.media.is_loaded
-
-    async def run(self) -> None:
-        """Carry out the command."""
-        if not self.api.media.is_paused:
-            return
-        self.api.media.unpause()
-
-
-class PauseCommand(BaseCommand):
-    """Pauses the video playback."""
-
     name = 'video/pause'
-    menu_name = '&Pause playback'
+
+    def __init__(self, api: bubblesub.api.Api, op: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param op: whether to enable, disable, or toggle
+        """
+        super().__init__(api)
+        self._operation = BooleanOperation[op.title()]
+
+    @property
+    def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        if self._operation == BooleanOperation.Enable:
+            return '&Pause playback'
+        elif self._operation == BooleanOperation.Disable:
+            return '&Play until end of the file'
+        elif self._operation == BooleanOperation.Toggle:
+            return '&Toggle pause'
+        raise AssertionError
 
     @property
     def is_enabled(self) -> bool:
@@ -461,9 +440,19 @@ class PauseCommand(BaseCommand):
 
     async def run(self) -> None:
         """Carry out the command."""
-        if self.api.media.is_paused:
-            return
-        self.api.media.pause()
+        if self._operation == BooleanOperation.Enable:
+            if not self.api.media.is_paused:
+                self.api.media.pause()
+        elif self._operation == BooleanOperation.Disable:
+            if self.api.media.is_paused:
+                self.api.media.unpause()
+        elif self._operation == BooleanOperation.Toggle:
+            if self.api.media.is_paused:
+                self.api.media.unpause()
+            else:
+                self.api.media.pause()
+        else:
+            raise AssertionError
 
 
 class ScreenshotCommand(BaseCommand):
@@ -557,8 +546,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SetPlaybackSpeedCommand,
             SetVolumeCommand,
             MuteCommand,
-            TogglePauseCommand,
-            UnpauseCommand,
             PauseCommand,
             ScreenshotCommand,
     ]:

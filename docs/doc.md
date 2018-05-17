@@ -26,7 +26,7 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Shift+,</kbd> | global | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `-500`, `False` |
 |<kbd>Ctrl+Shift+.</kbd> | global | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `500`, `False` |
 |<kbd>Ctrl+T</kbd> | global | <a href="#user-content-cmd-video-play-current-sub">`video/play-current-sub`</a> |  |
-|<kbd>Ctrl+P</kbd> | global | <a href="#user-content-cmd-video-toggle-pause">`video/toggle-pause`</a> |  |
+|<kbd>Ctrl+P</kbd> | global | <a href="#user-content-cmd-video-pause">`video/pause`</a> | `toggle` |
 |<kbd>Ctrl+Z</kbd> | global | <a href="#user-content-cmd-edit-undo">`edit/undo`</a> |  |
 |<kbd>Ctrl+Y</kbd> | global | <a href="#user-content-cmd-edit-redo">`edit/redo`</a> |  |
 |<kbd>Ctrl+F</kbd> | global | <a href="#user-content-cmd-edit-search">`edit/search`</a> |  |
@@ -70,7 +70,7 @@ Context refers to the currently focused widget.
 |<kbd>J</kbd> | spectrogram | <a href="#user-content-cmd-edit-insert-sub">`edit/insert-sub`</a> | `below` |
 |<kbd>R</kbd> | spectrogram | <a href="#user-content-cmd-video-play-around-sel">`video/play-around-sel`</a> | `both`, `0`, `0` |
 |<kbd>T</kbd> | spectrogram | <a href="#user-content-cmd-video-play-current-sub">`video/play-current-sub`</a> |  |
-|<kbd>P</kbd> | spectrogram | <a href="#user-content-cmd-video-toggle-pause">`video/toggle-pause`</a> |  |
+|<kbd>P</kbd> | spectrogram | <a href="#user-content-cmd-video-pause">`video/pause`</a> | `toggle` |
 |<kbd>Shift+K</kbd> | spectrogram | <a href="#user-content-cmd-grid-select-near-sub">`grid/select-near-sub`</a> | `above` |
 |<kbd>Shift+J</kbd> | spectrogram | <a href="#user-content-cmd-grid-select-near-sub">`grid/select-near-sub`</a> | `below` |
 |<kbd>A</kbd> | spectrogram | <a href="#user-content-cmd-audio-scroll-spectrogram">`audio/scroll-spectrogram`</a> | `-0.05` |
@@ -151,7 +151,7 @@ Context refers to the currently focused widget.
 |`grid/select‑near‑sub` | <a name="cmd-grid-select-near-sub"></a>Selects nearest subtitle in given direction to the current selection.<br>Parameters:<br><ol><li>direction (string): direction to look in</li></ol> |
 |`misc/reload‑plugins` | <a name="cmd-misc-reload-plugins"></a>Reloads the user plugins. |
 |`video/mute` | <a name="cmd-video-mute"></a>Mutes or unmutes the video audio.<br>Parameters:<br><ol><li>op (string): whether to enable, disable, or toggle</li></ol> |
-|`video/pause` | <a name="cmd-video-pause"></a>Pauses the video playback. |
+|`video/pause` | <a name="cmd-video-pause"></a>Pauses or unpauses the video playback.<br>Parameters:<br><ol><li>op (string): whether to enable, disable, or toggle</li></ol> |
 |`video/play‑around‑sel` | <a name="cmd-video-play-around-sel"></a>Plays a region near the current spectrogram selection.<br>Parameters:<br><ol><li>shift_target (string): part of selection to play around</li><li>delta_start (integer): delta relative to the selection start inmilliseconds</li><li>delta_end (integer): delta relative to the selection end in milliseconds</li></ol> |
 |`video/play‑current‑sub` | <a name="cmd-video-play-current-sub"></a>Plays the currently selected subtitle. |
 |`video/screenshot` | <a name="cmd-video-screenshot"></a>Makes a screenshot of the current video frame.<br>Prompts user for the path where to save the screenshot to.<br>Parameters:<br><ol><li>include_subtitles (boolean): whether to "burn" the subtitles intothe screenshot</li></ol> |
@@ -160,8 +160,6 @@ Context refers to the currently focused widget.
 |`video/set‑volume` | <a name="cmd-video-set-volume"></a>Adjusts the video volume.<br>Parameters:<br><ol><li>expr (string): expression to calculate new volume</li></ol> |
 |`video/step‑frame` | <a name="cmd-video-step-frame"></a>Seeks the video by the specified amount of frames.<br>Parameters:<br><ol><li>delta (integer): how many frames to step</li></ol> |
 |`video/step‑ms` | <a name="cmd-video-step-ms"></a>Seeks the video by the specified milliseconds.<br>Parameters:<br><ol><li>delta (integer): how many milliseconds to step</li><li>precise (boolean): whether to use precise seekingat the expense of performance</li></ol> |
-|`video/toggle‑pause` | <a name="cmd-video-toggle-pause"></a>Pauses or unpauses the video playback. |
-|`video/unpause` | <a name="cmd-video-unpause"></a>Unpauses the video playback. |
 |`view/focus‑note‑editor` | <a name="cmd-view-focus-note-editor"></a>Focuses the subtitle note edit field. |
 |`view/focus‑spectrogram` | <a name="cmd-view-focus-spectrogram"></a>Focuses the audio spectrogram. |
 |`view/focus‑subs‑grid` | <a name="cmd-view-focus-subs-grid"></a>Focuses the subtitles grid. |
