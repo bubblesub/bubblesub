@@ -39,7 +39,6 @@ class AssSyntaxHighlight(QtGui.QSyntaxHighlighter):
     def __init__(self, api: bubblesub.api.Api, *args: T.Any) -> None:
         super().__init__(*args)
         self._api = api
-        self._style_map: T.Dict[str, ] = {}
         self._format = self._create_format()
 
     def update_style_map(self) -> None:
