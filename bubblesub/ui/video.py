@@ -49,15 +49,29 @@ class Video(QtWidgets.QWidget):
         self._volume_slider = QtWidgets.QSlider()
         self._volume_slider.setMinimum(0)
         self._volume_slider.setMaximum(200)
+        self._volume_slider.setToolTip('Volume')
+
+        self._mute_chkbox = QtWidgets.QCheckBox(self)
+        self._mute_chkbox.setToolTip('Mute')
+        self._mute_chkbox.setSizePolicy(
+            QtWidgets.QSizePolicy.Maximum,
+            QtWidgets.QSizePolicy.Maximum
+        )
+
+        sublayout = QtWidgets.QVBoxLayout()
+        sublayout.addWidget(self._volume_slider)
+        sublayout.addWidget(self._mute_chkbox)
+        sublayout.setAlignment(self._volume_slider, QtCore.Qt.AlignHCenter)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(4)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._volume_slider)
+        layout.addLayout(sublayout)
         layout.addWidget(self._video_preview)
 
         self._connect_signals()
         self._on_video_volume_change()
+        self._on_video_mute_change()
 
         # TODO: buttons for play/pause like aegisub
 
@@ -69,12 +83,16 @@ class Video(QtWidgets.QWidget):
             self._on_volume_slider_value_change
         )
         self._api.media.volume_changed.connect(self._on_video_volume_change)
+        self._mute_chkbox.clicked.connect(self._on_mute_checkbox_click)
+        self._api.media.mute_changed.connect(self._on_video_mute_change)
 
     def _disconnect_signals(self) -> None:
         self._volume_slider.valueChanged.disconnect(
             self._on_volume_slider_value_change
         )
         self._api.media.volume_changed.disconnect(self._on_video_volume_change)
+        self._mute_chkbox.clicked.disconnect(self._on_mute_checkbox_click)
+        self._api.media.mute_changed.disconnect(self._on_video_mute_change)
 
     def _on_video_volume_change(self) -> None:
         self._disconnect_signals()
@@ -83,3 +101,9 @@ class Video(QtWidgets.QWidget):
 
     def _on_volume_slider_value_change(self) -> None:
         self._api.media.volume = self._volume_slider.value()
+
+    def _on_video_mute_change(self) -> None:
+        self._mute_chkbox.setChecked(self._api.media.mute)
+
+    def _on_mute_checkbox_click(self) -> None:
+        self._api.media.mute = self._mute_chkbox.isChecked()
