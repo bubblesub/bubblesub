@@ -23,7 +23,7 @@ import bubblesub.api
 from bubblesub.ui.mpv import MpvWidget
 
 
-class VideoPreview(MpvWidget):
+class _VideoPreview(MpvWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
@@ -35,18 +35,16 @@ class VideoPreview(MpvWidget):
         return QtCore.QSize(400, 300)
 
 
-class Video(QtWidgets.QWidget):
+class _VideoVolumeControl(QtWidgets.QWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
             parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
-
         self._api = api
 
-        self._video_preview = VideoPreview(api, self)
-        self._volume_slider = QtWidgets.QSlider()
+        self._volume_slider = QtWidgets.QSlider(self)
         self._volume_slider.setMinimum(0)
         self._volume_slider.setMaximum(200)
         self._volume_slider.setToolTip('Volume')
@@ -54,30 +52,21 @@ class Video(QtWidgets.QWidget):
         self._mute_btn = QtWidgets.QPushButton(self)
         self._mute_btn.setCheckable(True)
         self._mute_btn.setToolTip('Mute')
-        self._mute_btn.setSizePolicy(
-            QtWidgets.QSizePolicy.Maximum,
-            QtWidgets.QSizePolicy.Maximum
-        )
 
-        sublayout = QtWidgets.QVBoxLayout()
-        sublayout.addWidget(self._volume_slider)
-        sublayout.addWidget(self._mute_btn)
-        sublayout.setAlignment(self._volume_slider, QtCore.Qt.AlignHCenter)
-
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.setSpacing(4)
+        layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addLayout(sublayout)
-        layout.addWidget(self._video_preview)
+        layout.addWidget(self._volume_slider)
+        layout.addWidget(self._mute_btn)
+        layout.setAlignment(self._volume_slider, QtCore.Qt.AlignHCenter)
+
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Maximum,
+            QtWidgets.QSizePolicy.Minimum
+        )
 
         self._connect_signals()
         self._on_video_volume_change()
         self._on_video_mute_change()
-
-        # TODO: buttons for play/pause like aegisub
-
-    def shutdown(self) -> None:
-        self._video_preview.shutdown()
 
     def _connect_signals(self) -> None:
         self._volume_slider.valueChanged.connect(
@@ -104,6 +93,7 @@ class Video(QtWidgets.QWidget):
         self._api.media.volume = self._volume_slider.value()
 
     def _on_video_mute_change(self) -> None:
+        self._disconnect_signals()
         self._mute_btn.setChecked(self._api.media.mute)
         self._mute_btn.setIcon(
             self.style().standardIcon(
@@ -112,6 +102,29 @@ class Video(QtWidgets.QWidget):
                 QtWidgets.QStyle.SP_MediaVolume
             )
         )
+        self._connect_signals()
 
     def _on_mute_checkbox_click(self) -> None:
         self._api.media.mute = self._mute_btn.isChecked()
+
+
+class Video(QtWidgets.QWidget):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget = None
+    ) -> None:
+        super().__init__(parent)
+        self._api = api
+
+        self._video_preview = _VideoPreview(api, self)
+        self._volume_control = _VideoVolumeControl(api, self)
+
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setSpacing(4)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self._volume_control)
+        layout.addWidget(self._video_preview)
+
+    def shutdown(self) -> None:
+        self._video_preview.shutdown()
