@@ -53,18 +53,18 @@ def unescape_ass_tag(text: str) -> str:
     )
 
 
-def ass_to_plaintext(text: str, mask: bool = False) -> str:
+def ass_to_plaintext(text: str) -> str:
     """
     Strip ASS tags from an ASS line.
 
     :param text: input ASS line
-    :param mask: whether to mark ASS tags with special characters
     :return: plain text
     """
     return str(
-        regex.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}' if mask else '', text)
+        regex.sub('{[^}]+}', '', text)
         .replace('\\h', ' ')
-        .replace('\\N', '\N{SYMBOL FOR NEWLINE}' if mask else '\n')
+        .replace('\\n', ' ')
+        .replace('\\N', '\n')
     )
 
 

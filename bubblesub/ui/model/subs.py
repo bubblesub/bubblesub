@@ -61,11 +61,9 @@ _READER_MAP = {
     SubtitlesModelColumn.Actor:
         lambda subtitle: subtitle.actor,
     SubtitlesModelColumn.Text:
-        lambda subtitle: bubblesub.ass.util.ass_to_plaintext(
-            subtitle.text, True),
+        lambda subtitle: subtitle.text,
     SubtitlesModelColumn.Note:
-        lambda subtitle: bubblesub.ass.util.ass_to_plaintext(
-            subtitle.note, True),
+        lambda subtitle: subtitle.note,
     SubtitlesModelColumn.Duration:
         lambda subtitle: f'{subtitle.duration / 1000.0:.1f}',
     SubtitlesModelColumn.CharsPerSec: _get_cps,

@@ -39,28 +39,25 @@ class AssSyntaxHighlight(QtGui.QSyntaxHighlighter):
     def __init__(self, api: bubblesub.api.Api, *args: T.Any) -> None:
         super().__init__(*args)
         self._api = api
-        self._style_map: T.Dict[str, QtGui.QTextCharFormat] = {}
-        self.update_style_map()
+        self._style_map: T.Dict[str, ] = {}
+        self._format = self._create_format()
 
     def update_style_map(self) -> None:
-        ass_fmt = QtGui.QTextCharFormat()
-        ass_fmt.setForeground(get_color(self._api, 'grid/ass-mark'))
+        self._format = self._create_format()
 
-        nonprinting_fmt = QtGui.QTextCharFormat()
-        # nonprinting_fmt.setFontWeight(QtGui.QFont.Bold)
-        nonprinting_fmt.setBackground(
-            get_color(self._api, 'grid/non-printing-mark')
-        )
-
-        self._style_map = {
-            '\N{FULLWIDTH ASTERISK}': ass_fmt,
-            '\N{SYMBOL FOR NEWLINE}': nonprinting_fmt,
-        }
+    def _create_format(self) -> QtGui.QTextCharFormat:
+        fmt = QtGui.QTextCharFormat()
+        fmt.setForeground(get_color(self._api, 'grid/ass-mark'))
+        return fmt
 
     def highlightBlock(self, text: str) -> None:
-        for regex, fmt in self._style_map.items():
-            for match in re.finditer(regex, text):
-                self.setFormat(match.start(), match.end() - match.start(), fmt)
+        for key in {'\N{FULLWIDTH ASTERISK}', r'\\N', r'\\h', r'\\n'}:
+            for match in re.finditer(key, text):
+                self.setFormat(
+                    match.start(),
+                    match.end() - match.start(),
+                    self._format
+                )
 
 
 class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
@@ -80,13 +77,9 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
             option: QtWidgets.QStyleOptionViewItem,
             index: QtCore.QModelIndex
     ) -> None:
-        if option.state & QtWidgets.QStyle.State_Selected:
-            super().paint(painter, option, index)
-            return
-
         item = QtWidgets.QStyleOptionViewItem(option)
         self.initStyleOption(item, index)
-        self._doc.setPlainText(item.text)
+        self._doc.setPlainText(self._process_text(item.text))
         item.text = ''
 
         style = option.widget.style()
@@ -94,7 +87,10 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
         ctx = QtGui.QAbstractTextDocumentLayout.PaintContext()
         ctx.palette.setColor(
-            QtGui.QPalette.Text, option.palette.color(QtGui.QPalette.Text)
+            QtGui.QPalette.Text,
+            option.palette.color(QtGui.QPalette.HighlightedText)
+            if option.state & QtWidgets.QStyle.State_Selected else
+            option.palette.color(QtGui.QPalette.Text)
         )
 
         text_rect = style.subElementRect(
@@ -110,6 +106,9 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
         painter.translate(MAGIC_MARGIN1, MAGIC_MARGIN2)
         self._doc.documentLayout().draw(painter, ctx)
         painter.restore()
+
+    def _process_text(self, text: str) -> str:
+        return re.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}', text)
 
 
 class SubsGrid(QtWidgets.QTableView):
