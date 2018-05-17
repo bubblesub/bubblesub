@@ -146,9 +146,12 @@ class SubtitlesModel(ObservableListTableAdapter):
     def _get_background_cps(
             self, subtitle: bubblesub.ass.event.Event
     ) -> T.Any:
+        if subtitle.duration == 0:
+            return QtCore.QVariant()
+
         ratio = (
             bubblesub.ass.util.character_count(subtitle.text) /
-            max(1, subtitle.duration / 1000.0)
+            (abs(subtitle.duration) / 1000.0)
         )
         character_limit = self._api.opt.general.subs.max_characters_per_second
 
