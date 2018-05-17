@@ -250,6 +250,11 @@ def setup_cmd_menu(
             except KeyError:
                 api.log.error(f'Unknown command {item.command_name}')
                 continue
+            except TypeError as ex:
+                api.log.error(
+                    f'Error instantiating action {item.command_name}: {ex}'
+                )
+                continue
 
             action.setText(action.cmd.menu_name)
             shortcut = hotkey_map.get(
