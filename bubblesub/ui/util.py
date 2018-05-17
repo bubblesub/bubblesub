@@ -284,7 +284,11 @@ def load_dialog(
 ) -> T.Optional[Path]:
     path, _ = QtWidgets.QFileDialog.getOpenFileName(
         parent,
-        directory=T.cast(str, QtCore.QDir.homePath()) or str(directory),
+        directory=(
+            str(directory)
+            if directory is not None else
+            T.cast(str, QtCore.QDir.homePath())
+        ),
         filter=file_filter
     )
     return Path(path) if path else None
@@ -296,7 +300,11 @@ def save_dialog(
         directory: T.Optional[Path] = None,
         file_name: T.Optional[str] = None
 ) -> T.Optional[Path]:
-    real_directory = T.cast(str, QtCore.QDir.homePath()) or str(directory)
+    real_directory = (
+        str(directory)
+        if directory is not None else
+        T.cast(str, QtCore.QDir.homePath())
+    )
     if file_name:
         real_directory += '/' + file_name
     path, _ = QtWidgets.QFileDialog.getSaveFileName(
