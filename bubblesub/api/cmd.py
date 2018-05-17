@@ -32,11 +32,14 @@ from pathlib import Path
 import bubblesub.api.api
 import bubblesub.event
 import bubblesub.model
+from bubblesub.api.log import LogLevel
 from bubblesub.opt.menu import MenuItem
 
 
 class BaseCommand(abc.ABC):
     """Base class for all commands."""
+
+    args: T.List[T.Any] = []
 
     def __init__(self, api: 'bubblesub.api.api.Api') -> None:
         """
@@ -91,7 +94,7 @@ class BaseCommand(abc.ABC):
 
         :param text: text to log
         """
-        self.api.log.debug(f'cmd/{self.name}: {text}')
+        self.log(LogLevel.Debug, text)
 
     def info(self, text: str) -> None:
         """
@@ -99,7 +102,7 @@ class BaseCommand(abc.ABC):
 
         :param text: text to log
         """
-        self.api.log.info(f'cmd/{self.name}: {text}')
+        self.log(LogLevel.Info, text)
 
     def warn(self, text: str) -> None:
         """
@@ -107,7 +110,7 @@ class BaseCommand(abc.ABC):
 
         :param text: text to log
         """
-        self.api.log.warn(f'cmd/{self.name}: {text}')
+        self.log(LogLevel.Warning, text)
 
     def error(self, text: str) -> None:
         """
@@ -115,7 +118,18 @@ class BaseCommand(abc.ABC):
 
         :param text: text to log
         """
-        self.api.log.error(f'cmd/{self.name}: {text}')
+        self.log(LogLevel.Error, text)
+
+    def log(self, level: LogLevel, text: str) -> None:
+        """
+        Log a message.
+
+        :param level: level to log the message with
+        :param text: text to log
+        """
+        invocation: str = self.name
+        invocation += '(' + ', '.join(map(str, self.args)) + ')'
+        self.api.log.log(level, f'cmd/{invocation}: {text}')
 
 
 class CommandApi:
@@ -142,20 +156,20 @@ class CommandApi:
         :param cmd: command to run
         """
         if not cmd.is_enabled:
-            self._api.log.info(f'cmd/{cmd.name}: not available right now')
+            cmd.info('not available right now')
             return
 
         async def run() -> None:
-            self._api.log.info(f'cmd/{cmd.name}: running...')
+            cmd.info('running...')
             start_time = time.time()
             try:
                 await cmd.run()
             except Exception as ex:  # pylint: disable=broad-except
-                self._api.log.error(f'cmd/{cmd.name}: {ex}')
+                cmd.error(f'{ex}')
                 traceback.print_exc()
             end_time = time.time()
             took = end_time - start_time
-            self._api.log.info(f'cmd/{cmd.name}: ran in {took:.04f} s')
+            cmd.info(f'ran in {took:.04f} s')
 
         asyncio.ensure_future(run())
 
@@ -172,6 +186,7 @@ class CommandApi:
             raise KeyError(f'No command named "{name}"')
         try:
             instance = cls(self._api, *args)
+            setattr(instance, 'args', args)
             return T.cast(BaseCommand, instance)
         except Exception:  # pylint: disable=broad-except
             self._api.log.error(f'Error creating command "{name}"')
