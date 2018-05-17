@@ -215,44 +215,6 @@ def make_ranges(
         yield (start_idx, end_idx + 1 - start_idx)
 
 
-class ScopedCounter:
-    """
-    Tracks number of occurrences.
-
-    x = ScopedCounter()
-    with x:
-        assert x.num == 1
-        with x:
-            assert x.num == 2
-        assert x.num == 1
-    """
-
-    def __init__(self) -> None:
-        """Initialize self."""
-        self.num = 0
-
-    def __enter__(self) -> None:
-        """Increments the counter."""
-        self.num += 1
-
-    def __exit__(
-            self,
-            _exc_type: T.Optional[T.Type[BaseException]],
-            _exc_val: T.Optional[Exception],
-            _exc_tb: T.Any
-    ) -> bool:
-        """
-        Decrements the counter.
-
-        :param _exc_type: exception type
-        :param _exc_val: exception value
-        :param _exc_tb: exception traceback
-        :return: whether to suppress the exception
-        """
-        self.num -= 1
-        return False
-
-
 def sanitize_file_name(file_name: str) -> str:
     """
     Remove unusable characters from a file name.

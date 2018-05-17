@@ -145,7 +145,8 @@ class UndoApi:
         self._stack_pos_when_saved = -1
         self._subs_api.loaded.connect(self._on_subtitles_load)
         self._subs_api.saved.connect(self._on_subtitles_save)
-        self._ignore = bubblesub.util.ScopedCounter()
+        self._prev_state: T.Optional[UndoState] = None
+        self._ignore = False
 
     @property
     def needs_save(self) -> bool:
@@ -184,32 +185,48 @@ class UndoApi:
         (such as changes to the ASS events or styles), especially operations
         from within commands. Otherwise the undo may behave unpredictably.
         """
-        old_state = self._make_state()
-        with self._ignore:
+        if self._ignore:
             yield
-        new_state = self._make_state()
-        if not self._ignore.num and new_state != old_state:
-            self._trim_stack_and_push(old_state, new_state)
+            return
+
+        # if called recursively, split recorded changes into separate
+        # undo point at the entrance point
+        is_nested = self._prev_state is not None
+        if is_nested:
+            cur_state = self._make_state()
+            self._trim_stack_and_push(self._prev_state, cur_state)
+
+        self._prev_state = self._make_state()
+        yield
+        cur_state = self._make_state()
+        self._trim_stack_and_push(self._prev_state, cur_state)
+
+        if is_nested:
+            self._prev_state = cur_state
+        else:
+            self._prev_state = None
 
     def undo(self) -> None:
         """Restore previous application state."""
         if not self.has_undo:
             raise RuntimeError('No more undo.')
 
-        with self._ignore:
-            old_state, _new_state = self._stack[self._stack_pos]
-            self._stack_pos -= 1
-            self._apply_state(old_state)
+        self._ignore = True
+        old_state, _new_state = self._stack[self._stack_pos]
+        self._stack_pos -= 1
+        self._apply_state(old_state)
+        self._ignore = False
 
     def redo(self) -> None:
         """Reapply undone application state."""
         if not self.has_redo:
             raise RuntimeError('No more redo.')
 
-        with self._ignore:
-            self._stack_pos += 1
-            _old_state, new_state = self._stack[self._stack_pos]
-            self._apply_state(new_state)
+        self._ignore = True
+        self._stack_pos += 1
+        _old_state, new_state = self._stack[self._stack_pos]
+        self._apply_state(new_state)
+        self._ignore = False
 
     def _trim_stack(self) -> None:
         """Discard any redo information."""
@@ -225,6 +242,8 @@ class UndoApi:
         :param old_state: state before change
         :param new_state: state after change
         """
+        if old_state == new_state:
+            return
         self._trim_stack()
         self._stack.append((old_state, new_state))
         self._stack_pos = len(self._stack) - 1
