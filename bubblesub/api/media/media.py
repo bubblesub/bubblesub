@@ -20,6 +20,7 @@ import argparse
 import fractions
 import io
 import locale
+import traceback
 import typing as T
 from pathlib import Path
 
@@ -44,6 +45,7 @@ class MediaApi:
     current_pts_changed = bubblesub.event.EventHandler()
     max_pts_changed = bubblesub.event.EventHandler()
     volume_changed = bubblesub.event.EventHandler()
+    mute_changed = bubblesub.event.EventHandler()
     playback_speed_changed = bubblesub.event.EventHandler()
 
     def __init__(
@@ -117,6 +119,7 @@ class MediaApi:
 
         self._mpv.observe_property('time-pos')
         self._mpv.observe_property('duration')
+        self._mpv.observe_property('muted')
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
 
@@ -249,6 +252,32 @@ class MediaApi:
         self._volume = value
         self._mpv.set_property('volume', float(self._volume))
         self.volume_changed.emit()
+
+    @property
+    def mute(self) -> bool:
+        """
+        Return whether the video is muted.
+
+        :return: whether the video is muted
+        """
+        try:
+            return self._mpv.get_property('mute')
+        except mpv.MPVError:
+            traceback.print_exc()
+            return False
+
+    @mute.setter
+    def mute(self, value: bool) -> None:
+        """
+        Mute or unmute the video.
+
+        :param value: whether to mute the video
+        """
+        try:
+            self._mpv.set_property('mute', value)
+            self.mute_changed.emit()
+        except mpv.MPVError as ex:
+            traceback.print_exc()
 
     @property
     def current_pts(self) -> int:
@@ -385,3 +414,5 @@ class MediaApi:
                 elif event_prop.name == 'duration':
                     self._max_pts = event_prop.data * 1000
                     self.max_pts_changed.emit()
+                elif event_prop.name == 'muted':
+                    self.mute_changed.emit()
