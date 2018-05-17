@@ -141,8 +141,6 @@ class MediaApi:
 
     def unload(self) -> None:
         """Unload currently loaded video."""
-        self._playback_speed = fractions.Fraction(1.0)
-        self._volume = fractions.Fraction(100.0)
         self._current_pts = 0
         self._max_pts = 0
         self._path = None
