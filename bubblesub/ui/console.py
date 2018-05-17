@@ -34,21 +34,25 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
     ) -> None:
         super().__init__(parent)
         self._api = api
+
+        self._font = QtGui.QFontDatabase.systemFont(
+            QtGui.QFontDatabase.FixedFont
+        )
         self._style_map: T.Dict[str, QtGui.QTextCharFormat] = {}
-        self.update_style_map()
 
         self._invisible_fmt = QtGui.QTextCharFormat()
         self._invisible_fmt.setFontStretch(1)
         self._invisible_fmt.setFontPointSize(1)
         self._invisible_fmt.setForeground(QtCore.Qt.transparent)
 
-    def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
-        fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(bubblesub.ui.util.get_color(self._api, color_name))
-        fmt.setFont(
-            QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
-        )
-        return fmt
+        self.update_style_map()
+
+    def get_font(self) -> QtGui.QFont:
+        return self._font
+
+    def set_font(self, font: QtGui.QFont) -> None:
+        self._font = font
+        self.update_style_map()
 
     def update_style_map(self) -> None:
         self._style_map = {
@@ -57,6 +61,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
             'i': self._get_format('console/info'),
             'd': self._get_format('console/debug'),
         }
+        self.rehighlight()
 
     def highlightBlock(self, text: str) -> None:
         for match in re.finditer(r'^(\[([ewid])\] )(.*)$', text):
@@ -71,6 +76,12 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
                 self._style_map[match.group(2)]
             )
 
+    def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
+        fmt = QtGui.QTextCharFormat()
+        fmt.setForeground(bubblesub.ui.util.get_color(self._api, color_name))
+        fmt.setFont(self._font)
+        return fmt
+
 
 class Console(QtWidgets.QTextEdit):
     def __init__(
@@ -79,6 +90,8 @@ class Console(QtWidgets.QTextEdit):
             parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
+        self._api = api
+
         self.syntax_highlight = ConsoleSyntaxHighlight(api, self)
         self.setReadOnly(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
@@ -99,4 +112,17 @@ class Console(QtWidgets.QTextEdit):
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         self.syntax_highlight.update_style_map()
-        self.syntax_highlight.rehighlight()
+
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        if not event.modifiers() & QtCore.Qt.ControlModifier:
+            super().wheelEvent(event)
+            return
+
+        distance = 1 if event.angleDelta().y() > 0 else -1
+        font = self.syntax_highlight.get_font()
+        new_size = font.pointSize() + distance
+        if new_size < 5:
+            return
+        font.setPointSize(new_size)
+        self.syntax_highlight.set_font(font)
+        self._api.opt.general.gui.fonts['console'] = font.toString()

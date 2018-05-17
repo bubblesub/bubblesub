@@ -396,6 +396,7 @@ class GuiConfig:
         self.fonts = {
             'editor': '',
             'notes': '',
+            'console': ''
         }
         self.palettes: T.Dict[str, T.Dict[str, T.Tuple[int, ...]]] = {
             'dark': PALETTE_DARK,
