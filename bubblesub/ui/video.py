@@ -35,6 +35,56 @@ class _VideoPreview(MpvWidget):
         return QtCore.QSize(400, 300)
 
 
+class _VideoButtons(QtWidgets.QWidget):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget = None
+    ) -> None:
+        super().__init__(parent)
+        self._api = api
+
+        self._play_btn = QtWidgets.QPushButton('Play', self)
+        self._play_btn.setIcon(
+            self.style().standardIcon(QtWidgets.QStyle.SP_MediaPlay)
+        )
+        self._play_btn.setCheckable(True)
+
+        self._pause_btn = QtWidgets.QPushButton('Pause', self)
+        self._pause_btn.setIcon(
+            self.style().standardIcon(QtWidgets.QStyle.SP_MediaPause)
+        )
+        self._pause_btn.setCheckable(True)
+
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self._play_btn)
+        layout.addWidget(self._pause_btn)
+        layout.addStretch()
+
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Maximum
+        )
+
+        self._play_btn.clicked.connect(self._on_play_btn_click)
+        self._pause_btn.clicked.connect(self._on_pause_btn_click)
+        self._api.media.pause_changed.connect(self._on_video_pause_change)
+        self._on_video_pause_change()
+
+    def _on_play_btn_click(self) -> None:
+        self._api.media.is_paused = False
+        self._on_video_pause_change()
+
+    def _on_pause_btn_click(self) -> None:
+        self._api.media.is_paused = True
+        self._on_video_pause_change()
+
+    def _on_video_pause_change(self) -> None:
+        self._play_btn.setChecked(not self._api.media.is_paused)
+        self._pause_btn.setChecked(self._api.media.is_paused)
+
+
 class _VideoVolumeControl(QtWidgets.QWidget):
     def __init__(
             self,
@@ -119,12 +169,17 @@ class Video(QtWidgets.QWidget):
 
         self._video_preview = _VideoPreview(api, self)
         self._volume_control = _VideoVolumeControl(api, self)
+        self._buttons = _VideoButtons(api, self)
+
+        right_layout = QtWidgets.QVBoxLayout()
+        right_layout.addWidget(self._video_preview)
+        right_layout.addWidget(self._buttons)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(4)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._volume_control)
-        layout.addWidget(self._video_preview)
+        layout.addLayout(right_layout)
 
     def shutdown(self) -> None:
         self._video_preview.shutdown()
