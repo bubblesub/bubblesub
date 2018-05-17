@@ -441,16 +441,11 @@ class PauseCommand(BaseCommand):
     async def run(self) -> None:
         """Carry out the command."""
         if self._operation == BooleanOperation.Enable:
-            if not self.api.media.is_paused:
-                self.api.media.pause()
+            self.api.media.is_paused = True
         elif self._operation == BooleanOperation.Disable:
-            if self.api.media.is_paused:
-                self.api.media.unpause()
+            self.api.media.is_paused = False
         elif self._operation == BooleanOperation.Toggle:
-            if self.api.media.is_paused:
-                self.api.media.unpause()
-            else:
-                self.api.media.pause()
+            self.api.media.is_paused = not self.api.media.is_paused
         else:
             raise AssertionError
 

@@ -45,6 +45,7 @@ class MediaApi:
     current_pts_changed = bubblesub.event.EventHandler()
     max_pts_changed = bubblesub.event.EventHandler()
     volume_changed = bubblesub.event.EventHandler()
+    pause_changed = bubblesub.event.EventHandler()
     mute_changed = bubblesub.event.EventHandler()
     playback_speed_changed = bubblesub.event.EventHandler()
 
@@ -119,7 +120,8 @@ class MediaApi:
 
         self._mpv.observe_property('time-pos')
         self._mpv.observe_property('duration')
-        self._mpv.observe_property('muted')
+        self._mpv.observe_property('mute')
+        self._mpv.observe_property('pause')
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
 
@@ -205,14 +207,6 @@ class MediaApi:
         """
         self._play(start, end)
 
-    def unpause(self) -> None:
-        """Unpause the currently loaded video."""
-        self._play(None, None)
-
-    def pause(self) -> None:
-        """Pause the currently loaded video."""
-        self._mpv.set_property('pause', True)
-
     @property
     def playback_speed(self) -> fractions.Fraction:
         """
@@ -276,7 +270,7 @@ class MediaApi:
         try:
             self._mpv.set_property('mute', value)
             self.mute_changed.emit()
-        except mpv.MPVError as ex:
+        except mpv.MPVError:
             traceback.print_exc()
 
     @property
@@ -306,7 +300,27 @@ class MediaApi:
         """
         if not self._mpv_ready:
             return True
-        return bool(self._mpv.get_property('pause'))
+        try:
+            return bool(self._mpv.get_property('pause'))
+        except mpv.MPVError:
+            traceback.print_exc()
+            return False
+
+    @is_paused.setter
+    def is_paused(self, value: bool) -> None:
+        """
+        Pause or unpause the video.
+
+        :param value: whether to pause the video
+        """
+        if not self._mpv_ready:
+            return
+        try:
+            self._set_end(None)
+            self._mpv.set_property('pause', value)
+            self.pause_changed.emit()
+        except mpv.MPVError:
+            traceback.print_exc()
 
     @property
     def path(self) -> T.Optional[Path]:
@@ -389,7 +403,7 @@ class MediaApi:
             _changed: bool
     ) -> None:
         if len(rows) == 1:
-            self.pause()
+            self.is_paused = True
             self.seek(self._subs_api.events[rows[0]].start)
 
     def _mpv_event_handler(self) -> None:
@@ -414,5 +428,7 @@ class MediaApi:
                 elif event_prop.name == 'duration':
                     self._max_pts = event_prop.data * 1000
                     self.max_pts_changed.emit()
-                elif event_prop.name == 'muted':
+                elif event_prop.name == 'mute':
                     self.mute_changed.emit()
+                elif event_prop.name == 'pause':
+                    self.pause_changed.emit()
