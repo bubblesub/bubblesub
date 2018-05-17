@@ -51,16 +51,17 @@ class Video(QtWidgets.QWidget):
         self._volume_slider.setMaximum(200)
         self._volume_slider.setToolTip('Volume')
 
-        self._mute_chkbox = QtWidgets.QCheckBox(self)
-        self._mute_chkbox.setToolTip('Mute')
-        self._mute_chkbox.setSizePolicy(
+        self._mute_btn = QtWidgets.QPushButton(self)
+        self._mute_btn.setCheckable(True)
+        self._mute_btn.setToolTip('Mute')
+        self._mute_btn.setSizePolicy(
             QtWidgets.QSizePolicy.Maximum,
             QtWidgets.QSizePolicy.Maximum
         )
 
         sublayout = QtWidgets.QVBoxLayout()
         sublayout.addWidget(self._volume_slider)
-        sublayout.addWidget(self._mute_chkbox)
+        sublayout.addWidget(self._mute_btn)
         sublayout.setAlignment(self._volume_slider, QtCore.Qt.AlignHCenter)
 
         layout = QtWidgets.QHBoxLayout(self)
@@ -83,7 +84,7 @@ class Video(QtWidgets.QWidget):
             self._on_volume_slider_value_change
         )
         self._api.media.volume_changed.connect(self._on_video_volume_change)
-        self._mute_chkbox.clicked.connect(self._on_mute_checkbox_click)
+        self._mute_btn.clicked.connect(self._on_mute_checkbox_click)
         self._api.media.mute_changed.connect(self._on_video_mute_change)
 
     def _disconnect_signals(self) -> None:
@@ -91,7 +92,7 @@ class Video(QtWidgets.QWidget):
             self._on_volume_slider_value_change
         )
         self._api.media.volume_changed.disconnect(self._on_video_volume_change)
-        self._mute_chkbox.clicked.disconnect(self._on_mute_checkbox_click)
+        self._mute_btn.clicked.disconnect(self._on_mute_checkbox_click)
         self._api.media.mute_changed.disconnect(self._on_video_mute_change)
 
     def _on_video_volume_change(self) -> None:
@@ -103,7 +104,14 @@ class Video(QtWidgets.QWidget):
         self._api.media.volume = self._volume_slider.value()
 
     def _on_video_mute_change(self) -> None:
-        self._mute_chkbox.setChecked(self._api.media.mute)
+        self._mute_btn.setChecked(self._api.media.mute)
+        self._mute_btn.setIcon(
+            self.style().standardIcon(
+                QtWidgets.QStyle.SP_MediaVolumeMuted
+                if self._mute_btn.isChecked() else
+                QtWidgets.QStyle.SP_MediaVolume
+            )
+        )
 
     def _on_mute_checkbox_click(self) -> None:
-        self._api.media.mute = self._mute_chkbox.isChecked()
+        self._api.media.mute = self._mute_btn.isChecked()
