@@ -195,7 +195,6 @@ class SubsGrid(QtWidgets.QTableView):
         pass
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
-        self.model().wipe_cache()
         self._subs_grid_delegate.syntax_highlight.update_style_map()
 
     def _open_subtitles_menu(self, position: QtCore.QPoint) -> None:

@@ -114,7 +114,6 @@ class SubtitlesModel(ObservableListTableAdapter):
     def _column_count(self) -> int:
         return len(SubtitlesModelColumn)
 
-    @bubblesub.cache.Memoize
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
         subtitle = self._list[row_idx]
 

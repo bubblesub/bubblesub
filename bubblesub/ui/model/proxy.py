@@ -104,31 +104,10 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
             return self._set_data(row_idx, col_idx, role, value)
         return False
 
-    def wipe_cache(self, row_idx: T.Optional[int] = None) -> None:
-        """
-        Delete .data() cache values.
-
-        :param row_idx: row position to delete the cache for
-        """
-        if row_idx is not None:
-            for role in [
-                    QtCore.Qt.DisplayRole,
-                    QtCore.Qt.EditRole,
-                    QtCore.Qt.BackgroundRole,
-                    QtCore.Qt.TextAlignmentRole
-            ]:
-                for col_idx in range(self.columnCount()):
-                    # pylint: disable=no-member
-                    self._get_data.wipe_cache_at(row_idx, col_idx, role)
-                    # pylint: enable=no-member
-        else:
-            self._get_data.wipe_cache()  # pylint: disable=no-member
-
     @property
     def _column_count(self) -> int:
         raise NotImplementedError('Not implemented')
 
-    @bubblesub.cache.Memoize
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
         raise NotImplementedError('Not implemented')
 
@@ -138,7 +117,6 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         raise NotImplementedError('Not implemented')
 
     def _proxy_data_changed(self, row_idx: int) -> None:
-        self.wipe_cache(row_idx)
         # XXX: this causes qt to call .data() for EVERY VISIBLE CELL. really.
         # self.dataChanged.emit(
         #     self.index(row_idx, 0),
@@ -154,7 +132,6 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
 
     def _proxy_items_inserted(self, row_idx: int, count: int) -> None:
         if count:
-            self.wipe_cache()
             self.rowsInserted.emit(
                 QtCore.QModelIndex(),
                 row_idx, row_idx + count - 1
@@ -162,7 +139,6 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
 
     def _proxy_items_removed(self, row_idx: int, count: int) -> None:
         if count:
-            self.wipe_cache()
             self.rowsRemoved.emit(
                 QtCore.QModelIndex(),
                 row_idx, row_idx + count - 1

@@ -154,7 +154,6 @@ class StylesModel(ObservableListTableAdapter):
     def _column_count(self) -> int:
         return len(StylesModelColumn)
 
-    @bubblesub.cache.Memoize
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
         if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
             style = self._list[row_idx]
