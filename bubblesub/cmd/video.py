@@ -25,7 +25,7 @@ from PyQt5 import QtWidgets
 import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.util import ShiftTarget
+from bubblesub.util import ShiftTarget, BooleanOperation
 
 
 def _fmt_shift_target(shift_target: ShiftTarget) -> str:
@@ -348,6 +348,57 @@ class SetVolumeCommand(BaseCommand):
         self.api.media.volume = new_value
 
 
+class MuteCommand(BaseCommand):
+    """Mutes or unmutes the video audio."""
+
+    name = 'video/mute'
+
+    def __init__(self, api: bubblesub.api.Api, op: str) -> None:
+        """
+        Initialize self.
+
+        :param api: core API
+        :param op: whether to enable, disable, or toggle
+        """
+        super().__init__(api)
+        self._operation = BooleanOperation[op.title()]
+
+    @property
+    def menu_name(self) -> str:
+        """
+        Return name shown in the GUI menus.
+
+        :return: name shown in GUI menu
+        """
+        if self._operation == BooleanOperation.Enable:
+            return 'Mute'
+        elif self._operation == BooleanOperation.Disable:
+            return 'Unmute'
+        elif self._operation == BooleanOperation.Toggle:
+            return 'Toggle mute'
+        raise AssertionError
+
+    @property
+    def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
+        return self.api.media.is_loaded
+
+    async def run(self) -> None:
+        """Carry out the command."""
+        if self._operation == BooleanOperation.Enable:
+            self.api.media.mute = True
+        elif self._operation == BooleanOperation.Disable:
+            self.api.media.mute = False
+        elif self._operation == BooleanOperation.Toggle:
+            self.api.media.mute = not self.api.media.mute
+        else:
+            raise AssertionError
+
+
 class TogglePauseCommand(BaseCommand):
     """Pauses or unpauses the video playback."""
 
@@ -505,6 +556,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SeekWithGuiCommand,
             SetPlaybackSpeedCommand,
             SetVolumeCommand,
+            MuteCommand,
             TogglePauseCommand,
             UnpauseCommand,
             PauseCommand,

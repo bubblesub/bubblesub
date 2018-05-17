@@ -150,6 +150,7 @@ Context refers to the currently focused widget.
 |`grid/select‑all‑subs` | <a name="cmd-grid-select-all-subs"></a>Selects all subtitles. |
 |`grid/select‑near‑sub` | <a name="cmd-grid-select-near-sub"></a>Selects nearest subtitle in given direction to the current selection.<br>Parameters:<br><ol><li>direction (string): direction to look in</li></ol> |
 |`misc/reload‑plugins` | <a name="cmd-misc-reload-plugins"></a>Reloads the user plugins. |
+|`video/mute` | <a name="cmd-video-mute"></a>Mutes or unmutes the video audio.<br>Parameters:<br><ol><li>op (string): whether to enable, disable, or toggle</li></ol> |
 |`video/pause` | <a name="cmd-video-pause"></a>Pauses the video playback. |
 |`video/play‑around‑sel` | <a name="cmd-video-play-around-sel"></a>Plays a region near the current spectrogram selection.<br>Parameters:<br><ol><li>shift_target (string): part of selection to play around</li><li>delta_start (integer): delta relative to the selection start inmilliseconds</li><li>delta_end (integer): delta relative to the selection end in milliseconds</li></ol> |
 |`video/play‑current‑sub` | <a name="cmd-video-play-current-sub"></a>Plays the currently selected subtitle. |
