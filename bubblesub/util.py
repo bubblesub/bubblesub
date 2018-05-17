@@ -73,7 +73,7 @@ def ms_to_str(milliseconds: int) -> str:
     """
     sgn = '-' if milliseconds < 0 else ''
     hours, minutes, seconds, milliseconds = ms_to_times(abs(milliseconds))
-    return f'{sgn}{hours:01d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}'
+    return f'{sgn}{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}'
 
 
 def str_to_ms(text: str) -> int:

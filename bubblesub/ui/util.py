@@ -126,22 +126,22 @@ class TimeEdit(QtWidgets.QLineEdit):
     def set_allow_negative(self, allow: bool) -> None:
         self._allow_negative = allow
         if allow:
-            self.setInputMask('X9:99:99.999')
+            self.setInputMask('X99:99:99.999')
             self.setValidator(
                 QtGui.QRegExpValidator(
-                    QtCore.QRegExp(r'[+-]\d:\d\d:\d\d\.\d\d\d'),
+                    QtCore.QRegExp(r'[+-]\d\d:\d\d:\d\d\.\d\d\d'),
                     self.parent()
                 )
             )
         else:
-            self.setInputMask('9:99:99.999')
+            self.setInputMask('99:99:99.999')
         self.reset_text()
 
     def reset_text(self) -> None:
         if self._allow_negative:
-            self.setText('+0:00:00.000')
+            self.setText('+00:00:00.000')
         else:
-            self.setText('0:00:00.000')
+            self.setText('00:00:00.000')
         self.setCursorPosition(0)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
