@@ -243,3 +243,16 @@ class ScopedCounter:
         """
         self.num -= 1
         return False
+
+
+def sanitize_file_name(file_name: str) -> str:
+    """
+    Remove unusable characters from a file name.
+
+    :param file_name: file name to sanitize
+    :return: sanitized file name
+    """
+    file_name = file_name.replace(':', '.')
+    file_name = file_name.replace(' ', '_')
+    file_name = re.sub(r'(?u)[^-\w.]', '', file_name)
+    return file_name

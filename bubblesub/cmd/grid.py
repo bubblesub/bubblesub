@@ -419,14 +419,23 @@ class CreateAudioSampleCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        start_pts = self.api.subs.selected_events[0].start
+        end_pts = self.api.subs.selected_events[-1].end
+
+        file_name = bubblesub.util.sanitize_file_name(
+            'audio-{}-{}..{}.png'.format(
+                self.api.media.path.name,
+                bubblesub.util.ms_to_str(start_pts),
+                bubblesub.util.ms_to_str(end_pts)
+            )
+        )
+
         path = bubblesub.ui.util.save_dialog(
-            main_window, 'Waveform Audio File (*.wav)'
+            main_window, 'Waveform Audio File (*.wav)', file_name=file_name
         )
         if path is None:
             self.info('cancelled')
         else:
-            start_pts = self.api.subs.selected_events[0].start
-            end_pts = self.api.subs.selected_events[-1].end
             self.api.media.audio.save_wav(path, start_pts, end_pts)
             self.info(f'saved audio sample to {path}')
 

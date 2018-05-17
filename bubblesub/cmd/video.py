@@ -17,7 +17,6 @@
 """Commands related to video and playback."""
 
 import bisect
-import re
 import typing as T
 from pathlib import Path
 
@@ -478,14 +477,12 @@ class ScreenshotCommand(BaseCommand):
     ) -> T.Optional[Path]:
         assert self.api.media.path is not None
 
-        file_name = 'shot-{}-{}.png'.format(
-            self.api.media.path.name,
-            bubblesub.util.ms_to_str(self.api.media.current_pts)
+        file_name = bubblesub.util.sanitize_file_name(
+            'shot-{}-{}.png'.format(
+                self.api.media.path.name,
+                bubblesub.util.ms_to_str(self.api.media.current_pts)
+            )
         )
-
-        file_name = file_name.replace(':', '.')
-        file_name = file_name.replace(' ', '_')
-        file_name = re.sub(r'(?u)[^-\w.]', '', file_name)
 
         return bubblesub.ui.util.save_dialog(
             main_window,
