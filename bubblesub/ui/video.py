@@ -56,11 +56,17 @@ class _VideoButtons(QtWidgets.QWidget):
         )
         self._pause_btn.setCheckable(True)
 
+        self._playback_speed_spinbox = QtWidgets.QDoubleSpinBox()
+        self._playback_speed_spinbox.setMinimum(0.1)
+        self._playback_speed_spinbox.setMaximum(10.0)
+
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._play_btn)
         layout.addWidget(self._pause_btn)
         layout.addStretch()
+        layout.addWidget(QtWidgets.QLabel('Playback speed:', self))
+        layout.addWidget(self._playback_speed_spinbox)
 
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Minimum,
@@ -69,8 +75,17 @@ class _VideoButtons(QtWidgets.QWidget):
 
         self._play_btn.clicked.connect(self._on_play_btn_click)
         self._pause_btn.clicked.connect(self._on_pause_btn_click)
+        self._playback_speed_spinbox.valueChanged.connect(
+            self._on_playback_speed_spinbox_change
+        )
+
         self._api.media.pause_changed.connect(self._on_video_pause_change)
+        self._api.media.playback_speed_changed.connect(
+            self._on_video_playback_speed_change
+        )
+
         self._on_video_pause_change()
+        self._on_video_playback_speed_change()
 
     def _on_play_btn_click(self) -> None:
         self._api.media.is_paused = False
@@ -80,9 +95,16 @@ class _VideoButtons(QtWidgets.QWidget):
         self._api.media.is_paused = True
         self._on_video_pause_change()
 
+    def _on_playback_speed_spinbox_change(self) -> None:
+        self._api.media.playback_speed = self._playback_speed_spinbox.value()
+        self._on_video_playback_speed_change()
+
     def _on_video_pause_change(self) -> None:
         self._play_btn.setChecked(not self._api.media.is_paused)
         self._pause_btn.setChecked(self._api.media.is_paused)
+
+    def _on_video_playback_speed_change(self) -> None:
+        self._playback_speed_spinbox.setValue(self._api.media.playback_speed)
 
 
 class _VideoVolumeControl(QtWidgets.QWidget):
