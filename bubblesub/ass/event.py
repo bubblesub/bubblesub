@@ -243,3 +243,14 @@ class EventList(bubblesub.model.ObservableList[Event]):
             assert item.event_list is None, 'Event belongs to another list'
             item.event_list = self
         super().insert(idx, items)
+
+    def remove(self, idx: int, count: int) -> None:
+        """
+        Remove events at the specified position.
+
+        :param idx: where to start the removal
+        :param count: how many elements to remove
+        """
+        for item in self._items[idx:idx + count]:
+            item.event_list = None
+        super().remove(idx, count)
