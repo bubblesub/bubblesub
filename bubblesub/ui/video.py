@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fractions
 from math import floor
 
 from PyQt5 import QtCore
@@ -73,11 +74,7 @@ class _VideoButtons(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Maximum
         )
 
-        self._play_btn.clicked.connect(self._on_play_btn_click)
-        self._pause_btn.clicked.connect(self._on_pause_btn_click)
-        self._playback_speed_spinbox.valueChanged.connect(
-            self._on_playback_speed_spinbox_change
-        )
+        self._connect_ui_signals()
 
         self._api.media.pause_changed.connect(self._on_video_pause_change)
         self._api.media.playback_speed_changed.connect(
@@ -86,6 +83,20 @@ class _VideoButtons(QtWidgets.QWidget):
 
         self._on_video_pause_change()
         self._on_video_playback_speed_change()
+
+    def _connect_ui_signals(self) -> None:
+        self._play_btn.clicked.connect(self._on_play_btn_click)
+        self._pause_btn.clicked.connect(self._on_pause_btn_click)
+        self._playback_speed_spinbox.valueChanged.connect(
+            self._on_playback_speed_spinbox_change
+        )
+
+    def _disconnect_ui_signals(self) -> None:
+        self._play_btn.clicked.disconnect(self._on_play_btn_click)
+        self._pause_btn.clicked.disconnect(self._on_pause_btn_click)
+        self._playback_speed_spinbox.valueChanged.disconnect(
+            self._on_playback_speed_spinbox_change
+        )
 
     def _on_play_btn_click(self) -> None:
         self._api.media.is_paused = False
@@ -96,15 +107,21 @@ class _VideoButtons(QtWidgets.QWidget):
         self._on_video_pause_change()
 
     def _on_playback_speed_spinbox_change(self) -> None:
-        self._api.media.playback_speed = self._playback_speed_spinbox.value()
+        self._api.media.playback_speed = (
+            fractions.Fraction(self._playback_speed_spinbox.value())
+        )
         self._on_video_playback_speed_change()
 
     def _on_video_pause_change(self) -> None:
+        self._disconnect_ui_signals()
         self._play_btn.setChecked(not self._api.media.is_paused)
         self._pause_btn.setChecked(self._api.media.is_paused)
+        self._connect_ui_signals()
 
     def _on_video_playback_speed_change(self) -> None:
+        self._disconnect_ui_signals()
         self._playback_speed_spinbox.setValue(self._api.media.playback_speed)
+        self._connect_ui_signals()
 
 
 class _VideoVolumeControl(QtWidgets.QWidget):
@@ -136,36 +153,39 @@ class _VideoVolumeControl(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Minimum
         )
 
-        self._connect_signals()
+        self._connect_ui_signals()
+
+        self._api.media.volume_changed.connect(self._on_video_volume_change)
+        self._api.media.mute_changed.connect(self._on_video_mute_change)
+
         self._on_video_volume_change()
         self._on_video_mute_change()
 
-    def _connect_signals(self) -> None:
+    def _connect_ui_signals(self) -> None:
         self._volume_slider.valueChanged.connect(
             self._on_volume_slider_value_change
         )
-        self._api.media.volume_changed.connect(self._on_video_volume_change)
         self._mute_btn.clicked.connect(self._on_mute_checkbox_click)
-        self._api.media.mute_changed.connect(self._on_video_mute_change)
 
-    def _disconnect_signals(self) -> None:
+    def _disconnect_ui_signals(self) -> None:
         self._volume_slider.valueChanged.disconnect(
             self._on_volume_slider_value_change
         )
-        self._api.media.volume_changed.disconnect(self._on_video_volume_change)
         self._mute_btn.clicked.disconnect(self._on_mute_checkbox_click)
-        self._api.media.mute_changed.disconnect(self._on_video_mute_change)
-
-    def _on_video_volume_change(self) -> None:
-        self._disconnect_signals()
-        self._volume_slider.setValue(floor(float(self._api.media.volume)))
-        self._connect_signals()
 
     def _on_volume_slider_value_change(self) -> None:
         self._api.media.volume = self._volume_slider.value()
 
+    def _on_mute_checkbox_click(self) -> None:
+        self._api.media.mute = self._mute_btn.isChecked()
+
+    def _on_video_volume_change(self) -> None:
+        self._disconnect_ui_signals()
+        self._volume_slider.setValue(floor(float(self._api.media.volume)))
+        self._connect_ui_signals()
+
     def _on_video_mute_change(self) -> None:
-        self._disconnect_signals()
+        self._disconnect_ui_signals()
         self._mute_btn.setChecked(self._api.media.mute)
         self._mute_btn.setIcon(
             self.style().standardIcon(
@@ -174,10 +194,7 @@ class _VideoVolumeControl(QtWidgets.QWidget):
                 QtWidgets.QStyle.SP_MediaVolume
             )
         )
-        self._connect_signals()
-
-    def _on_mute_checkbox_click(self) -> None:
-        self._api.media.mute = self._mute_btn.isChecked()
+        self._connect_ui_signals()
 
 
 class Video(QtWidgets.QWidget):
