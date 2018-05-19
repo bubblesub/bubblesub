@@ -30,33 +30,8 @@ from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
 from bubblesub.ui.util import get_color
 
 # ????
-MAGIC_MARGIN1 = 3
-MAGIC_MARGIN2 = 1
-MAGIC_MARGIN3 = 2
-
-
-class AssSyntaxHighlight(QtGui.QSyntaxHighlighter):
-    def __init__(self, api: bubblesub.api.Api, *args: T.Any) -> None:
-        super().__init__(*args)
-        self._api = api
-        self._format = self._create_format()
-
-    def update_style_map(self) -> None:
-        self._format = self._create_format()
-
-    def _create_format(self) -> QtGui.QTextCharFormat:
-        fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(get_color(self._api, 'grid/ass-mark'))
-        return fmt
-
-    def highlightBlock(self, text: str) -> None:
-        for key in {'\N{FULLWIDTH ASTERISK}', r'\\N', r'\\h', r'\\n'}:
-            for match in re.finditer(key, text):
-                self.setFormat(
-                    match.start(),
-                    match.end() - match.start(),
-                    self._format
-                )
+MAGIC_MARGIN = 2
+HIGHLIGHTABLE_CHUNKS = {'\N{FULLWIDTH ASTERISK}', '\\N', '\\h', '\\n'}
 
 
 class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
@@ -66,9 +41,16 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
             parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
-        self._doc = QtGui.QTextDocument(self)
-        self._doc.setDocumentMargin(0)  # ?
-        self.syntax_highlight = AssSyntaxHighlight(api, self._doc)
+        self._api = api
+        self._format = self._create_format()
+
+    def on_palette_change(self) -> None:
+        self._format = self._create_format()
+
+    def _create_format(self) -> QtGui.QTextCharFormat:
+        fmt = QtGui.QTextCharFormat()
+        fmt.setForeground(get_color(self._api, 'grid/ass-mark'))
+        return fmt
 
     def paint(
             self,
@@ -76,38 +58,67 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
             option: QtWidgets.QStyleOptionViewItem,
             index: QtCore.QModelIndex
     ) -> None:
-        item = QtWidgets.QStyleOptionViewItem(option)
-        self.initStyleOption(item, index)
-        self._doc.setPlainText(self._process_text(item.text))
-        item.text = ''
-
-        style = option.widget.style()
-        style.drawControl(QtWidgets.QStyle.CE_ItemViewItem, item, painter)
-
-        ctx = QtGui.QAbstractTextDocumentLayout.PaintContext()
-        ctx.palette.setColor(
-            QtGui.QPalette.Text,
-            option.palette.color(QtGui.QPalette.HighlightedText)
-            if option.state & QtWidgets.QStyle.State_Selected else
-            option.palette.color(QtGui.QPalette.Text)
-        )
-
-        text_rect = style.subElementRect(
-            QtWidgets.QStyle.SE_ItemViewItemText, option
-        )
-        doc_height = self._doc.documentLayout().documentSize().height()
-        vertical_offset = (text_rect.height() - doc_height) // 2
+        model = self.parent().model()
+        text = self._process_text(model.data(index, QtCore.Qt.DisplayRole))
+        alignment = model.data(index, QtCore.Qt.TextAlignmentRole)
+        background = model.data(index, QtCore.Qt.BackgroundRole)
 
         painter.save()
-        painter.translate(text_rect.topLeft())
-        painter.setClipRect(text_rect.translated(-text_rect.topLeft()))
-        painter.translate(0, vertical_offset)
-        painter.translate(MAGIC_MARGIN1, MAGIC_MARGIN2)
-        self._doc.documentLayout().draw(painter, ctx)
+        if option.state & QtWidgets.QStyle.State_Selected:
+            self._paint_selected(painter, option, text, alignment)
+        else:
+            self._paint_regular(painter, option, text, alignment, background)
         painter.restore()
 
     def _process_text(self, text: str) -> str:
         return re.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}', text)
+
+    def _paint_selected(
+        self,
+        painter: QtGui.QPainter,
+        option: QtWidgets.QStyleOptionViewItem,
+        text: str,
+        alignment: int
+    ) -> None:
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(option.palette.color(QtGui.QPalette.Highlight))
+        painter.drawRect(option.rect)
+
+        painter.setPen(option.palette.color(QtGui.QPalette.HighlightedText))
+        painter.drawText(option.rect, alignment, text)
+
+    def _paint_regular(
+        self,
+        painter: QtGui.QPainter,
+        option: QtWidgets.QStyleOptionViewItem,
+        text: str,
+        alignment: int,
+        background: QtGui.QColor
+    ) -> None:
+        if not isinstance(background, QtCore.QVariant):
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setBrush(QtGui.QBrush(background))
+            painter.drawRect(option.rect)
+
+        rect = option.rect
+        metrics = painter.fontMetrics()
+        regex = '({})'.format('|'.join(
+            re.escape(sep) for sep in HIGHLIGHTABLE_CHUNKS
+        ))
+
+        for chunk in re.split(regex, text):
+            painter.setPen(
+                get_color(self._api, 'grid/ass-mark')
+                if chunk in HIGHLIGHTABLE_CHUNKS else
+                option.palette.color(QtGui.QPalette.Text)
+            )
+
+            # chunk = metrics.elidedText(
+            #     chunk, QtCore.Qt.ElideRight, rect.width()
+            # )
+
+            painter.drawText(rect, alignment, chunk)
+            rect = rect.adjusted(metrics.width(chunk), 0, 0, 0)
 
 
 class SubsGrid(QtWidgets.QTableView):
@@ -123,7 +134,7 @@ class SubsGrid(QtWidgets.QTableView):
         self.setTabKeyNavigation(False)
         self.horizontalHeader().setSectionsMovable(True)
         self.verticalHeader().setDefaultSectionSize(
-            self.fontMetrics().height() + MAGIC_MARGIN3
+            self.fontMetrics().height() + MAGIC_MARGIN
         )
 
         self._subs_grid_delegate = SubsGridDelegate(self._api, self)
@@ -195,7 +206,7 @@ class SubsGrid(QtWidgets.QTableView):
         pass
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
-        self._subs_grid_delegate.syntax_highlight.update_style_map()
+        self._subs_grid_delegate.on_palette_change()
 
     def _open_subtitles_menu(self, position: QtCore.QPoint) -> None:
         self.subtitles_menu.exec_(self.viewport().mapToGlobal(position))
