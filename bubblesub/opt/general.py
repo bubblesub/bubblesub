@@ -95,7 +95,6 @@ PALETTE_DARK: T.Dict[str, T.Tuple[int, ...]] = {
     'spectrogram/unfocused-sel-line':  (144, 160, 0, 110),
     'spectrogram/unfocused-sel-fill':  (160, 255, 0, 30),
     'grid/ass-mark':                   (255, 100, 100),
-    'grid/non-printing-mark':          (100, 70, 40),
     'grid/comment':                    (53, 53, 53),
     'console/error':                   (255, 0, 0),
     'console/warning':                 (200, 100, 0),
@@ -153,7 +152,6 @@ PALETTE_LIGHT: T.Dict[str, T.Tuple[int, ...]] = {
     'spectrogram/unfocused-sel-line':  (144, 160, 0, 110),
     'spectrogram/unfocused-sel-fill':  (160, 255, 0, 30),
     'grid/ass-mark':                   (230, 0, 0),
-    'grid/non-printing-mark':          (230, 200, 170),
     'grid/comment':                    (239, 235, 231),
 
     'console/error':                   (255, 0, 0),
