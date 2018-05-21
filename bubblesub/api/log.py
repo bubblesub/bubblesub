@@ -18,7 +18,7 @@
 
 import enum
 
-import bubblesub.event
+from PyQt5 import QtCore
 
 
 class LogLevel(enum.Enum):
@@ -30,10 +30,10 @@ class LogLevel(enum.Enum):
     Debug = 4
 
 
-class LogApi:
+class LogApi(QtCore.QObject):
     """The logging API."""
 
-    logged = bubblesub.event.EventHandler(LogLevel, str)
+    logged = QtCore.pyqtSignal(LogLevel, str)
 
     def debug(self, text: str) -> None:
         """

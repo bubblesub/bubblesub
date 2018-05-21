@@ -19,16 +19,17 @@
 import typing as T
 from collections import OrderedDict
 
-import bubblesub.event
+from PyQt5 import QtCore
 
 
-class Metadata:
+class Metadata(QtCore.QObject):
     """ASS file metadata."""
 
-    changed = bubblesub.event.EventHandler()
+    changed = QtCore.pyqtSignal()
 
     def __init__(self) -> None:
         """Initialize self."""
+        super().__init__()
         self._data: T.Dict[str, str] = OrderedDict()
 
     def clear(self) -> None:

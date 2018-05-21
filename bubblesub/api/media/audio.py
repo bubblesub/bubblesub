@@ -24,11 +24,11 @@ from pathlib import Path
 import ffms
 import scipy.io.wavfile
 import numpy as np
+from PyQt5 import QtCore
 
 import bubblesub.api.log
 import bubblesub.api.media.media
 import bubblesub.cache
-import bubblesub.event
 import bubblesub.util
 import bubblesub.worker
 
@@ -92,12 +92,12 @@ class AudioSourceWorker(bubblesub.worker.Worker):
         return audio_source
 
 
-class AudioApi:
+class AudioApi(QtCore.QObject):
     """The audio API."""
 
-    view_changed = bubblesub.event.EventHandler()
-    selection_changed = bubblesub.event.EventHandler()
-    parsed = bubblesub.event.EventHandler()
+    view_changed = QtCore.pyqtSignal()
+    selection_changed = QtCore.pyqtSignal()
+    parsed = QtCore.pyqtSignal()
 
     def __init__(
             self,

@@ -29,8 +29,9 @@ import traceback
 import typing as T
 from pathlib import Path
 
+from PyQt5 import QtCore
+
 import bubblesub.api.api
-import bubblesub.event
 import bubblesub.model
 from bubblesub.api.log import LogLevel
 from bubblesub.opt.menu import MenuItem
@@ -132,10 +133,10 @@ class BaseCommand(abc.ABC):
         self.api.log.log(level, f'cmd/{invocation}: {text}')
 
 
-class CommandApi:
+class CommandApi(QtCore.QObject):
     """The command API."""
 
-    commands_loaded = bubblesub.event.EventHandler()
+    commands_loaded = QtCore.pyqtSignal()
 
     def __init__(self, api: 'bubblesub.api.Api') -> None:
         """
@@ -155,23 +156,31 @@ class CommandApi:
 
         :param cmd: command to run
         """
+        asyncio.ensure_future(self.run_async(cmd))
+
+    async def run_async(self, cmd: BaseCommand) -> bool:
+        """
+        Execute given command asynchronously.
+
+        :param cmd: command to run
+        :return: whether the command was executed without problems
+        """
         if not cmd.is_enabled:
             cmd.info('not available right now')
-            return
+            return False
 
-        async def run() -> None:
-            cmd.info('running...')
-            start_time = time.time()
-            try:
-                await cmd.run()
-            except Exception as ex:  # pylint: disable=broad-except
-                cmd.error(f'{ex}')
-                traceback.print_exc()
-            end_time = time.time()
-            took = end_time - start_time
-            cmd.info(f'ran in {took:.04f} s')
-
-        asyncio.ensure_future(run())
+        cmd.info('running...')
+        start_time = time.time()
+        try:
+            await cmd.run()
+        except Exception as ex:  # pylint: disable=broad-except
+            cmd.error(f'{ex}')
+            traceback.print_exc()
+            return False
+        end_time = time.time()
+        took = end_time - start_time
+        cmd.info(f'ran in {took:.04f} s')
+        return True
 
     def get(self, name: str, args: T.List[T.Any]) -> BaseCommand:
         """

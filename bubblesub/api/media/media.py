@@ -28,7 +28,6 @@ import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore
 
 import bubblesub.ass.writer
-import bubblesub.event
 import bubblesub.util
 from bubblesub.api.log import LogApi
 from bubblesub.api.media.audio import AudioApi
@@ -37,17 +36,17 @@ from bubblesub.api.subs import SubtitlesApi
 from bubblesub.opt import Options
 
 
-class MediaApi:
+class MediaApi(QtCore.QObject):
     """The media API."""
 
-    loaded = bubblesub.event.EventHandler()
-    parsed = bubblesub.event.EventHandler()
-    current_pts_changed = bubblesub.event.EventHandler()
-    max_pts_changed = bubblesub.event.EventHandler()
-    volume_changed = bubblesub.event.EventHandler()
-    pause_changed = bubblesub.event.EventHandler()
-    mute_changed = bubblesub.event.EventHandler()
-    playback_speed_changed = bubblesub.event.EventHandler()
+    loaded = QtCore.pyqtSignal()
+    parsed = QtCore.pyqtSignal()
+    current_pts_changed = QtCore.pyqtSignal()
+    max_pts_changed = QtCore.pyqtSignal()
+    volume_changed = QtCore.pyqtSignal()
+    pause_changed = QtCore.pyqtSignal()
+    mute_changed = QtCore.pyqtSignal()
+    playback_speed_changed = QtCore.pyqtSignal()
 
     def __init__(
             self,
@@ -65,7 +64,6 @@ class MediaApi:
         :param args: CLI arguments
         """
         super().__init__()
-
         self._log_api = log_api
         self._subs_api = subs_api
         self._opt_api = opt_api
@@ -86,6 +84,7 @@ class MediaApi:
         self._subs_api.styles.item_changed.connect(self._on_subs_change)
         self._subs_api.styles.items_removed.connect(self._on_subs_change)
         self._subs_api.styles.items_inserted.connect(self._on_subs_change)
+
         self._subs_api.selection_changed.connect(
             self._on_grid_selection_change
         )

@@ -21,10 +21,10 @@ from pathlib import Path
 
 import ffms
 import mpv  # pylint: disable=wrong-import-order
+from PyQt5 import QtCore
 
 import bubblesub.api.log
 import bubblesub.api.media.media
-import bubblesub.event
 import bubblesub.cache
 import bubblesub.util
 import bubblesub.worker
@@ -93,10 +93,10 @@ class TimecodesWorker(bubblesub.worker.Worker):
         return TimecodesWorkerResult(path, timecodes, keyframes)
 
 
-class VideoApi:
+class VideoApi(QtCore.QObject):
     """The video API."""
 
-    timecodes_updated = bubblesub.event.EventHandler()
+    timecodes_updated = QtCore.pyqtSignal()
 
     def __init__(
             self,
