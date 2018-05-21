@@ -74,11 +74,11 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
         return re.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}', text)
 
     def _paint_selected(
-        self,
-        painter: QtGui.QPainter,
-        option: QtWidgets.QStyleOptionViewItem,
-        text: str,
-        alignment: int
+            self,
+            painter: QtGui.QPainter,
+            option: QtWidgets.QStyleOptionViewItem,
+            text: str,
+            alignment: int
     ) -> None:
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(option.palette.color(QtGui.QPalette.Highlight))
@@ -88,12 +88,12 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
         painter.drawText(option.rect, alignment, text)
 
     def _paint_regular(
-        self,
-        painter: QtGui.QPainter,
-        option: QtWidgets.QStyleOptionViewItem,
-        text: str,
-        alignment: int,
-        background: QtGui.QColor
+            self,
+            painter: QtGui.QPainter,
+            option: QtWidgets.QStyleOptionViewItem,
+            text: str,
+            alignment: int,
+            background: QtGui.QColor
     ) -> None:
         if not isinstance(background, QtCore.QVariant):
             painter.setPen(QtCore.Qt.NoPen)
