@@ -218,6 +218,11 @@ class MainWindow(QtWidgets.QMainWindow):
         except KeyError:
             self._api.log.error(f'Unknown command {hotkey.command_name}')
             return None
+        except TypeError as ex:
+            self._api.log.error(
+                f'Error instantiating action {hotkey.command_name}: {ex}'
+            )
+            return None
 
         shortcut = QtWidgets.QShortcut(
             QtGui.QKeySequence(hotkey.shortcut), self
