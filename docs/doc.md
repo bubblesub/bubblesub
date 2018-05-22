@@ -146,6 +146,7 @@ Context refers to the currently focused widget.
 |`grid/jump‑to‑sub‑by‑number` | <a name="cmd-grid-jump-to-sub-by-number"></a>Jumps to the specified number.<br>Prompts user for the line number with a GUI dialog. |
 |`grid/jump‑to‑sub‑by‑time` | <a name="cmd-grid-jump-to-sub-by-time"></a>Jumps to the subtitle at specified time.<br>Prompts user for details with a GUI dialog. |
 |`grid/paste‑subs` | <a name="cmd-grid-paste-subs"></a>Pastes subtitles near the selection.<br>Parameters:<br><ol><li>direction (string): direction to paste into</li></ol> |
+|`grid/paste‑subs/text` | <a name="cmd-grid-paste-subs-text"></a>Pastes teext into the subtitle selection. |
 |`grid/paste‑subs/times` | <a name="cmd-grid-paste-subs-times"></a>Pastes time boundaries into the subtitle selection. |
 |`grid/select‑all‑subs` | <a name="cmd-grid-select-all-subs"></a>Selects all subtitles. |
 |`grid/select‑near‑sub` | <a name="cmd-grid-select-near-sub"></a>Selects nearest subtitle in given direction to the current selection.<br>Parameters:<br><ol><li>direction (string): direction to look in</li></ol> |

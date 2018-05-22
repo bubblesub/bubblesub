@@ -130,6 +130,7 @@ class MenuConfig(BaseConfig):
                     MenuCommand('grid/paste-subs', 'above'),
                     MenuCommand('grid/paste-subs', 'below'),
                     MenuCommand('grid/paste-subs/times'),
+                    MenuCommand('grid/paste-subs/text'),
                     MenuSeparator(),
                     MenuCommand('edit/spell-check'),
                     MenuCommand('edit/manage-styles'),

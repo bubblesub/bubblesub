@@ -244,6 +244,41 @@ class CopySubtitlesTextCommand(BaseCommand):
         ))
 
 
+class PasteSubtitlesTextCommand(BaseCommand):
+    """Pastes teext into the subtitle selection."""
+
+    name = 'grid/paste-subs/text'
+    menu_name = 'Paste text to selected subtitles from clipboard'
+
+    @property
+    def is_enabled(self) -> bool:
+        """
+        Return whether the command can be executed.
+
+        :return: whether the command can be executed
+        """
+        return self.api.subs.has_selection
+
+    async def run(self) -> None:
+        """Carry out the command."""
+        text = QtWidgets.QApplication.clipboard().text()
+        if not text:
+            self.error('Clipboard is empty, aborting.')
+            return
+
+        lines = text.split('\n')
+        if len(lines) != len(self.api.subs.selected_events):
+            self.error(
+                'Size mismatch (selected {} lines, got {} lines in clipboard.'
+                .format(len(self.api.subs.selected_events), len(lines))
+            )
+            return
+
+        with self.api.undo.capture():
+            for i, sub in enumerate(self.api.subs.selected_events):
+                sub.text = lines[i]
+
+
 class CopySubtitlesTimesCommand(BaseCommand):
     """Copies time boundaries from the subtitle selection."""
 
@@ -453,6 +488,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SelectAllSubtitlesCommand,
             ClearSubtitleSelectionCommand,
             CopySubtitlesTextCommand,
+            PasteSubtitlesTextCommand,
             CopySubtitlesTimesCommand,
             PasteSubtitlesTimesCommand,
             CopySubtitlesCommand,
