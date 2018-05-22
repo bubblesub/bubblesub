@@ -225,8 +225,10 @@ class VideoApi(QtCore.QObject):
         self._keyframes = []
 
         self.timecodes_updated.emit()
-
-        if self._media_api.is_loaded:
+        if self._media_api.state in {
+                bubblesub.api.media.media.MediaState.Loading,
+                bubblesub.api.media.media.MediaState.Loaded
+        }:
             self._timecodes_worker.schedule_task(self._media_api.path)
 
     def _got_timecodes(

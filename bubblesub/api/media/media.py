@@ -17,6 +17,7 @@
 """Media API. Exposes audio/video player."""
 
 import argparse
+import enum
 import fractions
 import io
 import locale
@@ -34,6 +35,14 @@ from bubblesub.api.media.audio import AudioApi
 from bubblesub.api.media.video import VideoApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.opt import Options
+
+
+class MediaState(enum.IntEnum):
+    """State of media player."""
+
+    NotLoaded = 0
+    Loading = 1
+    Loaded = 2
 
 
 class MediaApi(QtCore.QObject):
@@ -331,13 +340,26 @@ class MediaApi(QtCore.QObject):
         return self._path
 
     @property
+    def state(self) -> MediaState:
+        """
+        Return if the internal media player's finished loading.
+
+        :return: state of internal media player
+        """
+        if self._path:
+            if self._mpv_ready:
+                return MediaState.Loaded
+            return MediaState.Loading
+        return MediaState.NotLoaded
+
+    @property
     def is_loaded(self) -> bool:
         """
         Return whether there's video loaded.
 
         :return: whether there's video loaded
         """
-        return self._path is not None
+        return self.state == MediaState.Loaded
 
     def _play(self, start: T.Optional[int], end: T.Optional[int]) -> None:
         if not self._mpv_ready:
