@@ -16,10 +16,10 @@
 
 import re
 import typing as T
-from pathlib import Path
 
 import bubblesub.api
-from .common import api_fixture as api  # pylint: disable=unused-import
+from bubblesub.tests.common import api  # pylint: disable=unused-import
+from bubblesub.tests.common import APP_ROOT_DIR
 
 
 def normalize_class_name(name: str) -> T.List[str]:
@@ -61,7 +61,7 @@ def verify_name(class_name: str, command_name: str) -> None:
 def test_command_naming(  # pylint: disable=redefined-outer-name
         api: bubblesub.api.Api
 ) -> None:
-    api.cmd.load_commands(Path(__file__).parent.with_name('cmd'))
+    api.cmd.load_commands(APP_ROOT_DIR / 'cmd')
 
     assert len(api.cmd.get_all()) >= 1
     for cls in api.cmd.get_all():

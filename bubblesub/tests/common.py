@@ -23,10 +23,11 @@ import pytest
 import bubblesub.api
 import bubblesub.opt
 
-ROOT_DIR = Path(__file__).parent.parent
+APP_ROOT_DIR = Path(__file__).parent.parent
+TESTS_ROOT_DIR = APP_ROOT_DIR / 'tests'
 
 
-def collect_source_files(root: Path = ROOT_DIR) -> T.Iterable[Path]:
+def collect_source_files(root: Path = APP_ROOT_DIR) -> T.Iterable[Path]:
     for path in root.iterdir():
         if path.is_dir():
             yield from collect_source_files(path)
@@ -35,10 +36,9 @@ def collect_source_files(root: Path = ROOT_DIR) -> T.Iterable[Path]:
 
 
 @pytest.fixture
-def api_fixture() -> bubblesub.api.Api:
+def api() -> bubblesub.api.Api:
     args = argparse.Namespace()
     setattr(args, 'no_video', True)
 
     opt = bubblesub.opt.Options()
-    api = bubblesub.api.Api(opt, args)
-    return api
+    return bubblesub.api.Api(opt, args)
