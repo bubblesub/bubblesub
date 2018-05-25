@@ -138,10 +138,15 @@ class Benchmark:
         self._msg = msg
         self._time = time.time()
 
-    def __enter__(self) -> None:
-        """Start counting time."""
+    def __enter__(self) -> 'Benchmark':
+        """
+        Start counting time.
+
+        :return: self
+        """
         self._time = time.time()
         print('{}: started'.format(self._msg))
+        return self
 
     def __exit__(self, *args: T.Any, **kwargs: T.Any) -> None:
         """Stop counting time."""
