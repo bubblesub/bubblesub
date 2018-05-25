@@ -155,28 +155,28 @@ class VideoApi(QtCore.QObject):
         return pts
 
     @property
-    def width(self) -> T.Optional[int]:
+    def width(self) -> int:
         """
         Return horizontal video resolution.
 
         :return: video width in pixels
         """
-        try:
-            return self._mpv.get_property('width')
-        except mpv.MPVError:
-            return 0
+        if self.has_video_source:
+            with _SAMPLER_LOCK:
+                return self._video_source.get_frame(0).EncodedWidth
+        return 0
 
     @property
-    def height(self) -> T.Optional[int]:
+    def height(self) -> int:
         """
         Return vertical video resolution.
 
         :return: video height in pixels
         """
-        try:
-            return self._mpv.get_property('height')
-        except mpv.MPVError:
-            return 0
+        if self.has_video_source:
+            with _SAMPLER_LOCK:
+                return self._video_source.get_frame(0).EncodedHeight
+        return 0
 
     @property
     def has_video_source(self) -> bool:
