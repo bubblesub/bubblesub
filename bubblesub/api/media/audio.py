@@ -16,8 +16,8 @@
 
 """Audio API."""
 
-import time
 import threading
+import time
 import typing as T
 from pathlib import Path
 
@@ -31,7 +31,7 @@ import bubblesub.api.media.media
 import bubblesub.cache
 import bubblesub.util
 import bubblesub.worker
-
+from bubblesub.api.media.state import MediaState
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
@@ -89,7 +89,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
         )
         audio_source = ffms.AudioSource(str(path), track_number, index)
         self._log_api.info('audio/sampler: loaded')
-        return audio_source
+        return (path, audio_source)
 
 
 class AudioApi(QtCore.QObject):
@@ -120,7 +120,7 @@ class AudioApi(QtCore.QObject):
 
         self._log_api = log_api
         self._media_api = media_api
-        self._media_api.parsed.connect(self._on_video_parse)
+        self._media_api.state_changed.connect(self._on_media_state_change)
         self._media_api.max_pts_changed.connect(self._on_max_pts_change)
         self._audio_source: T.Union[None, ffms.AudioSource] = None
         self._audio_source_worker = AudioSourceWorker(log_api)
@@ -243,8 +243,7 @@ class AudioApi(QtCore.QObject):
 
         :return: channel count or 0 if no audio source
         """
-        self._wait_for_audio_source()
-        if not self._audio_source:
+        if not self._wait_for_audio_source():
             return 0
         return T.cast(int, self._audio_source.properties.Channels)
 
@@ -255,8 +254,7 @@ class AudioApi(QtCore.QObject):
 
         :return: bits per sample or 0 if no audio source
         """
-        self._wait_for_audio_source()
-        if not self._audio_source:
+        if not self._wait_for_audio_source():
             return 0
         return T.cast(int, self._audio_source.properties.BitsPerSample)
 
@@ -267,8 +265,7 @@ class AudioApi(QtCore.QObject):
 
         :return: sample rate or 0 if no audio source
         """
-        self._wait_for_audio_source()
-        if not self._audio_source:
+        if not self._wait_for_audio_source():
             return 0
         # other properties:
         # - BitsPerSample
@@ -285,8 +282,7 @@ class AudioApi(QtCore.QObject):
 
         :return: sample format or None if no audio source
         """
-        self._wait_for_audio_source()
-        if not self._audio_source:
+        if not self._wait_for_audio_source():
             return None
         return T.cast(
             T.Optional[int],
@@ -300,8 +296,7 @@ class AudioApi(QtCore.QObject):
 
         :return: sample count or 0 if no audio source
         """
-        self._wait_for_audio_source()
-        if not self._audio_source:
+        if not self._wait_for_audio_source():
             return 0
         return T.cast(int, self._audio_source.properties.NumSamples)
 
@@ -413,27 +408,40 @@ class AudioApi(QtCore.QObject):
             samples
         )
 
-    def _on_video_parse(self) -> None:
-        self._min = 0
-        self._max = 0
-        self.zoom_view(1, 0.5)  # emits view_changed
-        self._audio_source = _LOADING
-        if self._media_api.path:
-            self._audio_source_worker.schedule_task(self._media_api.path)
+    def _on_media_state_change(self, state: MediaState) -> None:
+        if state == MediaState.Unloaded:
+            self._audio_source = None
+        elif state == MediaState.Loading:
+            self._min = 0
+            self._max = 0
+            self.zoom_view(1, 0.5)  # emits view_changed
+            self._audio_source = _LOADING
+            if self._media_api.path:
+                self._audio_source_worker.schedule_task(self._media_api.path)
+        else:
+            assert state == MediaState.Loaded
 
     def _on_max_pts_change(self) -> None:
         self._min = 0
         self._max = self._media_api.max_pts
         self.zoom_view(1, 0.5)  # emits view_changed
 
-    def _got_audio_source(self, result: T.Optional[ffms.AudioSource]) -> None:
+    def _got_audio_source(
+            self,
+            result: T.Optional[T.Tuple[Path, ffms.AudioSource]]
+    ) -> None:
         if result is not None:
-            self._audio_source = result
-            self.parsed.emit()
+            path, audio_source = result
+            if path == self._media_api.path:
+                self._audio_source = audio_source
+                self.parsed.emit()
 
-    def _wait_for_audio_source(self) -> None:
+    def _wait_for_audio_source(self) -> bool:
+        if self._audio_source is None:
+            return False
         while self._audio_source is _LOADING:
             time.sleep(0.01)
+        return True
 
     def _clip(self, value: T.Union[int, float]) -> int:
         return max(min(self._max, int(value)), self._min)

@@ -14,7 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Media APIs."""
+"""State of media player."""
 
-from .media import MediaApi
-from .state import MediaState
+import enum
+
+
+class MediaState(enum.IntEnum):
+    """State of media player."""
+
+    Unloaded = 0
+    Loading = 1
+    Loaded = 2

@@ -16,6 +16,7 @@
 
 """Video API."""
 
+import time
 import typing as T
 from pathlib import Path
 
@@ -28,31 +29,13 @@ import bubblesub.api.media.media
 import bubblesub.cache
 import bubblesub.util
 import bubblesub.worker
+from bubblesub.api.media.state import MediaState
+
+_LOADING = object()
 
 
-class TimecodesWorkerResult:
-    """Timecodes."""
-
-    def __init__(
-            self,
-            path: Path,
-            timecodes: T.List[int],
-            keyframes: T.List[int]
-    ) -> None:
-        """
-        Initialize self.
-
-        :param path: path to video
-        :param timecodes: list of video frames' PTS
-        :param keyframes: list of video keyframes' PTS
-        """
-        self.path = path
-        self.timecodes = timecodes
-        self.keyframes = keyframes
-
-
-class TimecodesWorker(bubblesub.worker.Worker):
-    """Detached timecodes provider."""
+class VideoSourceWorker(bubblesub.worker.Worker):
+    """Detached video source provider."""
 
     def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
         """
@@ -65,38 +48,27 @@ class TimecodesWorker(bubblesub.worker.Worker):
 
     def _do_work(self, task: T.Any) -> T.Any:
         """
-        Load video timecodes and keyframes.
+        Create video source.
 
         :param task: path to the video file
-        :return: timecodes and keyframes
+        :return: video source
         """
         path = T.cast(Path, task)
-        self._log_api.info(f'video/timecodes: loading... ({path})')
+        self._log_api.info(f'video/sampler: loading... ({path})')
 
-        path_hash = bubblesub.util.hash_digest(path)
-        cache_name = f'index-{path_hash}-video'
+        if not path.exists():
+            self._log_api.error('video/sampler: video file not found')
+            return None
 
-        result = bubblesub.cache.load_cache(cache_name)
-        if result:
-            timecodes, keyframes = result
-        else:
-            if not path.exists():
-                self._log_api.error('video/timecodes: video file not found')
-                return None
-
-            video = ffms.VideoSource(str(path))
-            timecodes = video.track.timecodes
-            keyframes = video.track.keyframes
-            bubblesub.cache.save_cache(cache_name, (timecodes, keyframes))
-
-        self._log_api.info('video/timecodes: loaded')
-        return TimecodesWorkerResult(path, timecodes, keyframes)
+        video_source = ffms.VideoSource(str(path))
+        self._log_api.info('video/sampler: loaded')
+        return (path, video_source)
 
 
 class VideoApi(QtCore.QObject):
     """The video API."""
 
-    timecodes_updated = QtCore.pyqtSignal()
+    parsed = QtCore.pyqtSignal()
 
     def __init__(
             self,
@@ -114,22 +86,20 @@ class VideoApi(QtCore.QObject):
         super().__init__()
 
         self._media_api = media_api
-        self._media_api.loaded.connect(self._on_media_load)
+        self._media_api.state_changed.connect(self._on_media_state_change)
         self._mpv = mpv_
 
-        self._timecodes: T.List[int] = []
-        self._keyframes: T.List[int] = []
-
-        self._timecodes_worker = TimecodesWorker(log_api)
-        self._timecodes_worker.task_finished.connect(self._got_timecodes)
+        self._video_source: T.Union[None, ffms.VideoSource] = None
+        self._video_source_worker = VideoSourceWorker(log_api)
+        self._video_source_worker.task_finished.connect(self._got_video_source)
 
     def start(self) -> None:
         """Start internal worker threads."""
-        self._timecodes_worker.start()
+        self._video_source_worker.start()
 
     def stop(self) -> None:
         """Stop internal worker threads."""
-        self._timecodes_worker.stop()
+        self._video_source_worker.stop()
 
     def get_opengl_context(self) -> T.Any:
         """
@@ -203,13 +173,29 @@ class VideoApi(QtCore.QObject):
             return 0
 
     @property
+    def has_video_source(self) -> bool:
+        """
+        Return whether video source is available.
+
+        :return: whether video source is available
+        """
+        return (
+            self._video_source is not None
+            and self._video_source is not _LOADING
+        )
+
+    @property
     def timecodes(self) -> T.List[int]:
         """
         Return video frames' PTS.
 
         :return: video frames' PTS
         """
-        return self._timecodes
+        if not self.has_video_source:
+            return []
+        if not self._wait_for_video_source():
+            return []
+        return self._video_source.track.timecodes
 
     @property
     def keyframes(self) -> T.List[int]:
@@ -218,24 +204,31 @@ class VideoApi(QtCore.QObject):
 
         :return: video keyframes' PTS
         """
-        return self._keyframes
+        if not self.has_video_source:
+            return []
+        if not self._wait_for_video_source():
+            return []
+        return self._video_source.track.keyframes
 
-    def _on_media_load(self) -> None:
-        self._timecodes = []
-        self._keyframes = []
+    def _wait_for_video_source(self) -> bool:
+        if self._video_source is None:
+            return False
+        while self._video_source is _LOADING:
+            time.sleep(0.01)
+        return True
 
-        self.timecodes_updated.emit()
-        if self._media_api.state in {
-                bubblesub.api.media.media.MediaState.Loading,
-                bubblesub.api.media.media.MediaState.Loaded
-        }:
-            self._timecodes_worker.schedule_task(self._media_api.path)
+    def _on_media_state_change(self, state: MediaState) -> None:
+        if state == MediaState.Unloaded:
+            self._video_source = None
+        elif state == MediaState.Loading:
+            self._video_source = _LOADING
+            self._video_source_worker.schedule_task(self._media_api.path)
+        else:
+            assert state == MediaState.Loaded
 
-    def _got_timecodes(
-            self,
-            result: T.Optional[TimecodesWorkerResult]
-    ) -> None:
-        if result is not None and result.path == self._media_api.path:
-            self._timecodes = result.timecodes
-            self._keyframes = result.keyframes
-            self.timecodes_updated.emit()
+    def _got_video_source(self, result: T.Optional[ffms.VideoSource]) -> None:
+        if result is not None:
+            path, video_source = result
+            if path == self._media_api.path:
+                self._video_source = video_source
+                self.parsed.emit()

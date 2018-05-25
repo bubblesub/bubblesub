@@ -17,7 +17,6 @@
 """Media API. Exposes audio/video player."""
 
 import argparse
-import enum
 import fractions
 import io
 import locale
@@ -32,24 +31,16 @@ import bubblesub.ass.writer
 import bubblesub.util
 from bubblesub.api.log import LogApi
 from bubblesub.api.media.audio import AudioApi
+from bubblesub.api.media.state import MediaState
 from bubblesub.api.media.video import VideoApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.opt import Options
 
 
-class MediaState(enum.IntEnum):
-    """State of media player."""
-
-    NotLoaded = 0
-    Loading = 1
-    Loaded = 2
-
-
 class MediaApi(QtCore.QObject):
     """The media API."""
 
-    loaded = QtCore.pyqtSignal()
-    parsed = QtCore.pyqtSignal()
+    state_changed = QtCore.pyqtSignal(MediaState)
     current_pts_changed = QtCore.pyqtSignal()
     max_pts_changed = QtCore.pyqtSignal()
     volume_changed = QtCore.pyqtSignal()
@@ -73,6 +64,8 @@ class MediaApi(QtCore.QObject):
         :param args: CLI arguments
         """
         super().__init__()
+        self.state = MediaState.Unloaded
+
         self._log_api = log_api
         self._subs_api = subs_api
         self._opt_api = opt_api
@@ -154,11 +147,17 @@ class MediaApi(QtCore.QObject):
 
     def unload(self) -> None:
         """Unload currently loaded video."""
+        self.state = MediaState.Unloaded
+        self.state_changed.emit(self.state)
         self._current_pts = 0
         self._max_pts = 0
         self._path = None
-        self.loaded.emit()
-        self._reload_video()
+        self._mpv_ready = False
+        self._mpv.set_property('pause', True)
+        try:
+            self._mpv.command('playlist-remove', 'current')
+        except mpv.MPVError:
+            pass
 
     def load(self, path: T.Union[str, Path]) -> None:
         """
@@ -167,11 +166,16 @@ class MediaApi(QtCore.QObject):
         :param path: path where to load the video from
         """
         assert path is not None
+
+        self.unload()
+
+        self.state = MediaState.Loading
         self._path = Path(path)
         if str(self._subs_api.remembered_video_path) != str(self._path):
             self._subs_api.remembered_video_path = self._path
-        self._reload_video()
-        self.loaded.emit()
+
+        self._mpv.command('loadfile', str(self.path))
+        self.state_changed.emit(self.state)
 
     def seek(self, pts: int, precise: bool = True) -> None:
         """
@@ -340,19 +344,6 @@ class MediaApi(QtCore.QObject):
         return self._path
 
     @property
-    def state(self) -> MediaState:
-        """
-        Return if the internal media player's finished loading.
-
-        :return: state of internal media player
-        """
-        if self._path:
-            if self._mpv_ready:
-                return MediaState.Loaded
-            return MediaState.Loading
-        return MediaState.NotLoaded
-
-    @property
     def is_loaded(self) -> bool:
         """
         Return whether there's video loaded.
@@ -379,12 +370,12 @@ class MediaApi(QtCore.QObject):
 
     def _mpv_unloaded(self) -> None:
         self._mpv_ready = False
-        self.parsed.emit()
 
     def _mpv_loaded(self) -> None:
         self._mpv_ready = True
         self._refresh_subs()
-        self.parsed.emit()
+        self.state = MediaState.Loaded
+        self.state_changed.emit(self.state)
 
     def _on_subs_load(self) -> None:
         if self._subs_api.remembered_video_path:
@@ -395,14 +386,6 @@ class MediaApi(QtCore.QObject):
 
     def _on_subs_change(self) -> None:
         self._need_subs_refresh = True
-
-    def _reload_video(self) -> None:
-        self._mpv_ready = False
-        self._mpv.set_property('pause', True)
-        if not self.path or not self.path.exists():
-            self._mpv.command('loadfile', '')
-        else:
-            self._mpv.command('loadfile', str(self.path))
 
     def _refresh_subs_if_needed(self) -> None:
         if self._need_subs_refresh:
@@ -444,10 +427,10 @@ class MediaApi(QtCore.QObject):
             elif event.id == mpv.Events.property_change:
                 event_prop = event.data
                 if event_prop.name == 'time-pos':
-                    self._current_pts = event_prop.data * 1000
+                    self._current_pts = (event_prop.data or 0) * 1000
                     self.current_pts_changed.emit()
                 elif event_prop.name == 'duration':
-                    self._max_pts = event_prop.data * 1000
+                    self._max_pts = (event_prop.data or 0) * 1000
                     self.max_pts_changed.emit()
                 elif event_prop.name == 'mute':
                     self.mute_changed.emit()

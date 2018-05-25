@@ -25,6 +25,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.api.media.audio
+from bubblesub.api.media.state import MediaState
 from bubblesub.ui.spectrogram import SpectrumWorker, DERIVATION_SIZE
 from bubblesub.ui.util import blend_colors, get_color
 
@@ -108,7 +109,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         api.media.current_pts_changed.connect(
             self._on_video_current_pts_change
         )
-        api.media.loaded.connect(self._on_video_load)
+        api.media.state_changed.connect(self._on_media_state_change)
         api.media.audio.view_changed.connect(self._on_audio_view_change)
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
@@ -207,7 +208,7 @@ class AudioPreviewWidget(BaseAudioWidget):
         }
         self._spectrum_worker.clear_tasks()
 
-    def _on_video_load(self) -> None:
+    def _on_media_state_change(self, _state: MediaState) -> None:
         self._spectrum_cache.clear()
         self._spectrum_worker.clear_tasks()
         self.update()
