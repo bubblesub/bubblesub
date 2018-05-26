@@ -16,12 +16,14 @@
 
 """Video API."""
 
+import threading
 import time
 import typing as T
 from pathlib import Path
 
 import ffms
 import mpv  # pylint: disable=wrong-import-order
+import numpy as np
 from PyQt5 import QtCore
 
 import bubblesub.api.log
@@ -32,6 +34,8 @@ import bubblesub.worker
 from bubblesub.api.media.state import MediaState
 
 _LOADING = object()
+_SAMPLER_LOCK = threading.Lock()
+_PIX_FMT = [ffms.get_pix_fmt('rgb24')]
 
 
 class VideoSourceWorker(bubblesub.worker.Worker):
@@ -92,6 +96,8 @@ class VideoApi(QtCore.QObject):
         self._video_source: T.Union[None, ffms.VideoSource] = None
         self._video_source_worker = VideoSourceWorker(log_api)
         self._video_source_worker.task_finished.connect(self._got_video_source)
+
+        self._last_output_fmt: T.Any = None
 
     def start(self) -> None:
         """Start internal worker threads."""
@@ -210,6 +216,35 @@ class VideoApi(QtCore.QObject):
             return []
         return self._video_source.track.keyframes
 
+    def get_frame(self, frame_idx: int, width: int, height: int) -> np.array:
+        """
+        Get raw video data from the currently loaded video source.
+
+        :param frame_idx: frame number
+        :param width: output image width
+        :param height: output image height
+        :return: numpy image
+        """
+        with _SAMPLER_LOCK:
+            if not self.has_video_source \
+                    or not self._wait_for_video_source() \
+                    or frame_idx < 0 \
+                    or frame_idx >= len(self.timecodes):
+                return np.zeros(width * height * 3).reshape((width, height, 3))
+
+            new_output_fmt = (_PIX_FMT, width, height, ffms.FFMS_RESIZER_AREA)
+            if self._last_output_fmt != new_output_fmt:
+                self._video_source.set_output_format(*new_output_fmt)
+                self._last_output_fmt = new_output_fmt
+
+            frame = self._video_source.get_frame(frame_idx)
+            return (
+                frame.planes[0]
+                .reshape((height, frame.Linesize[0]))
+                [:, 0:width * 3]
+                .reshape(height, width, 3)
+            )
+
     def _wait_for_video_source(self) -> bool:
         if self._video_source is None:
             return False
@@ -221,6 +256,7 @@ class VideoApi(QtCore.QObject):
         if state == MediaState.Unloaded:
             self._video_source = None
         elif state == MediaState.Loading:
+            self._last_output_fmt = None
             self._video_source = _LOADING
             self._video_source_worker.schedule_task(self._media_api.path)
         else:
