@@ -34,6 +34,7 @@ class Worker(QtCore.QThread):
         """Initialize self."""
         super().__init__(parent=None)
         self._running = False
+        self._clearing = False
         self._queue: queue.LifoQueue = queue.LifoQueue()
 
     def run(self) -> None:
@@ -49,6 +50,10 @@ class Worker(QtCore.QThread):
         self._running = True
         self._start_work()
         while self._running:
+            if self._clearing:
+                time.sleep(0.1)
+                continue
+
             arg = self._queue.get()
             if arg is None:
                 break
@@ -66,6 +71,9 @@ class Worker(QtCore.QThread):
     def stop(self) -> None:
         """Stop processing any remaining tasks and quit the thread ASAP."""
         self._running = False
+        self._queue.put(None)  # make sure run() exits
+        self.quit()
+        self.wait()
 
     def schedule_task(self, task_data: T.Any) -> None:
         """
@@ -81,12 +89,14 @@ class Worker(QtCore.QThread):
 
         Doesn't fire task_finished signal.
         """
+        self._clearing = True
         while not self._queue.empty():
             try:
                 self._queue.get(False)
             except queue.Empty:
                 continue
             self._queue.task_done()
+        self._clearing = False
 
     def _start_work(self) -> None:
         """
