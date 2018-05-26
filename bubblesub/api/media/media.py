@@ -412,27 +412,30 @@ class MediaApi(QtCore.QObject):
 
     def _mpv_event_handler(self) -> None:
         while self._mpv:
-            event = self._mpv.wait_event(.01)
-            if event.id in {mpv.Events.none, mpv.Events.shutdown}:
-                break
-            elif event.id == mpv.Events.end_file:
-                self._mpv_unloaded()
-            elif event.id == mpv.Events.file_loaded:
-                self._mpv_loaded()
-            elif event.id == mpv.Events.log_message:
-                event_log = event.data
-                self._log_api.debug(
-                    f'video/{event_log.prefix}: {event_log.text.strip()}'
-                )
-            elif event.id == mpv.Events.property_change:
-                event_prop = event.data
-                if event_prop.name == 'time-pos':
-                    self._current_pts = (event_prop.data or 0) * 1000
-                    self.current_pts_changed.emit()
-                elif event_prop.name == 'duration':
-                    self._max_pts = (event_prop.data or 0) * 1000
-                    self.max_pts_changed.emit()
-                elif event_prop.name == 'mute':
-                    self.mute_changed.emit()
-                elif event_prop.name == 'pause':
-                    self.pause_changed.emit()
+            try:
+                event = self._mpv.wait_event(.01)
+                if event.id in {mpv.Events.none, mpv.Events.shutdown}:
+                    break
+                elif event.id == mpv.Events.end_file:
+                    self._mpv_unloaded()
+                elif event.id == mpv.Events.file_loaded:
+                    self._mpv_loaded()
+                elif event.id == mpv.Events.log_message:
+                    event_log = event.data
+                    self._log_api.debug(
+                        f'video/{event_log.prefix}: {event_log.text.strip()}'
+                    )
+                elif event.id == mpv.Events.property_change:
+                    event_prop = event.data
+                    if event_prop.name == 'time-pos':
+                        self._current_pts = (event_prop.data or 0) * 1000
+                        self.current_pts_changed.emit()
+                    elif event_prop.name == 'duration':
+                        self._max_pts = (event_prop.data or 0) * 1000
+                        self.max_pts_changed.emit()
+                    elif event_prop.name == 'mute':
+                        self.mute_changed.emit()
+                    elif event_prop.name == 'pause':
+                        self.pause_changed.emit()
+            except Exception:
+                traceback.print_exc()
