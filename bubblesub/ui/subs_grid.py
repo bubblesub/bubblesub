@@ -148,13 +148,21 @@ class SubsGrid(QtWidgets.QTableView):
             )
 
         api.subs.loaded.connect(self._on_subs_load)
-        api.subs.selection_changed.connect(self._on_api_selection_change)
+        api.subs.selection_changed.connect(self._sync_api_selection_to_video)
+        api.subs.selection_changed.connect(self._sync_api_selection_to_grid)
         self.selectionModel().selectionChanged.connect(
-            self._widget_selection_changed
+            self._sync_grid_selection_to_api
         )
 
         self._setup_subtitles_menu()
         self._setup_header_menu()
+
+        self._seek_to: T.Optional[int] = None
+
+        timer = QtCore.QTimer(self)
+        timer.setInterval(50)
+        timer.timeout.connect(self._sync_sub_selection)
+        timer.start()
 
     def _setup_subtitles_menu(self) -> None:
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -208,6 +216,12 @@ class SubsGrid(QtWidgets.QTableView):
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         self._subs_grid_delegate.on_palette_change()
 
+    def _sync_sub_selection(self) -> None:
+        if self._seek_to is not None:
+            self._api.media.is_paused = True
+            self._api.media.seek(self._seek_to)
+            self._seek_to = None
+
     def _open_subtitles_menu(self, position: QtCore.QPoint) -> None:
         self.subtitles_menu.exec_(self.viewport().mapToGlobal(position))
 
@@ -223,21 +237,22 @@ class SubsGrid(QtWidgets.QTableView):
             self.EnsureVisible | self.PositionAtTop
         )
 
-    def _widget_selection_changed(
+    def _sync_grid_selection_to_api(
             self,
             _selected: T.List[int],
             _deselected: T.List[int]
     ) -> None:
-        if self._collect_rows() != self._api.subs.selected_indexes:
+        rows = self._collect_rows()
+        if rows != self._api.subs.selected_indexes:
             self._api.subs.selection_changed.disconnect(
-                self._on_api_selection_change
+                self._sync_api_selection_to_grid
             )
-            self._api.subs.selected_indexes = self._collect_rows()
+            self._api.subs.selected_indexes = rows
             self._api.subs.selection_changed.connect(
-                self._on_api_selection_change
+                self._sync_api_selection_to_grid
             )
 
-    def _on_api_selection_change(
+    def _sync_api_selection_to_grid(
             self,
             _rows: T.List[int],
             _changed: bool
@@ -248,7 +263,7 @@ class SubsGrid(QtWidgets.QTableView):
         self.setUpdatesEnabled(False)
 
         self.selectionModel().selectionChanged.disconnect(
-            self._widget_selection_changed
+            self._sync_grid_selection_to_api
         )
 
         selection = QtCore.QItemSelection()
@@ -272,7 +287,13 @@ class SubsGrid(QtWidgets.QTableView):
         )
 
         self.selectionModel().selectionChanged.connect(
-            self._widget_selection_changed
+            self._sync_grid_selection_to_api
         )
 
         self.setUpdatesEnabled(True)
+
+    def _sync_api_selection_to_video(
+            self, rows: T.List[int], _changed: bool
+    ) -> None:
+        if len(rows) == 1:
+            self._seek_to = self._api.subs.events[rows[0]].start

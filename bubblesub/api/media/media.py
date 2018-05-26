@@ -87,10 +87,6 @@ class MediaApi(QtCore.QObject):
         self._subs_api.styles.items_removed.connect(self._on_subs_change)
         self._subs_api.styles.items_inserted.connect(self._on_subs_change)
 
-        self._subs_api.selection_changed.connect(
-            self._on_grid_selection_change
-        )
-
         locale.setlocale(locale.LC_NUMERIC, 'C')
         self._mpv = mpv.Context()
         self._mpv.set_log_level('error')
@@ -400,15 +396,6 @@ class MediaApi(QtCore.QObject):
             bubblesub.ass.writer.write_ass(self._subs_api.ass_file, handle)
             self._mpv.command('sub_add', 'memory://' + handle.getvalue())
         self._need_subs_refresh = False
-
-    def _on_grid_selection_change(
-            self,
-            rows: T.List[int],
-            _changed: bool
-    ) -> None:
-        if len(rows) == 1:
-            self.is_paused = True
-            self.seek(self._subs_api.events[rows[0]].start)
 
     def _mpv_event_handler(self) -> None:
         while self._mpv:
