@@ -37,7 +37,8 @@ from bubblesub.ui.util import get_color
 DERIVATION_SIZE = 10
 DERIVATION_DISTANCE = 6
 NOT_CACHED = object()
-CACHING: np.array = np.array([])
+CACHING = object()
+CHUNK_SIZE = 50
 
 
 class SpectrumWorker(bubblesub.worker.Worker):
@@ -60,8 +61,14 @@ class SpectrumWorker(bubblesub.worker.Worker):
         )
 
     def _do_work(self, task: T.Any) -> T.Any:
-        pts = task
+        chunk = task
+        response = []
+        for pts in chunk:
+            out = self._get_spectrogram_for_pts(pts)
+            response.append((pts, out))
+        return response
 
+    def _get_spectrogram_for_pts(self, pts: int) -> np.array:
         audio_frame = int(pts * self._api.media.audio.sample_rate / 1000.0)
         first_sample = (
             audio_frame >> DERIVATION_DISTANCE
@@ -72,7 +79,7 @@ class SpectrumWorker(bubblesub.worker.Worker):
         samples = np.mean(samples, axis=1)
         sample_fmt = self._api.media.audio.sample_format
         if sample_fmt is None:
-            return (pts, np.zeros((1 << DERIVATION_SIZE) + 1))
+            return np.zeros((1 << DERIVATION_SIZE) + 1)
         elif sample_fmt == ffms.FFMS_FMT_S16:
             samples /= 32768.
         elif sample_fmt == ffms.FFMS_FMT_S32:
@@ -98,7 +105,7 @@ class SpectrumWorker(bubblesub.worker.Worker):
         out = np.clip(out, 0, 255)
         out = np.flip(out, axis=0)
         out = out.astype(dtype=np.uint8)
-        return (pts, out)
+        return out
 
 
 class DragMode(enum.Enum):
@@ -116,14 +123,13 @@ class AudioPreview(BaseAudioWidget):
     ) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 2.5))
-        self._spectrum_worker = SpectrumWorker(api)
-        self._spectrum_worker.task_finished.connect(self._on_spectrum_update)
-        self._spectrum_worker.start()
+        self._spectrum_worker = None
 
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
         self._need_repaint = False
         self._drag_mode = DragMode.Off
         self._color_table: T.List[int] = []
+        self._pixels: np.array = np.zeros([0, 0], dtype=np.uint8)
 
         self._generate_color_table()
 
@@ -140,6 +146,11 @@ class AudioPreview(BaseAudioWidget):
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         self._generate_color_table()
+
+    def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
+        height = (1 << DERIVATION_SIZE) + 1
+        self._pixels = np.zeros([height, self.width()], dtype=np.uint8)
+        self._schedule_current_audio_view()
 
     def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
@@ -227,6 +238,14 @@ class AudioPreview(BaseAudioWidget):
             self.update()
 
     def _on_audio_view_change(self) -> None:
+        self._schedule_current_audio_view()
+
+    def _schedule_current_audio_view(self) -> None:
+        if not self._spectrum_worker:
+            return
+
+        self._need_repaint = True
+
         self._spectrum_cache = {
             key: value
             for key, value in self._spectrum_cache.items()
@@ -234,17 +253,56 @@ class AudioPreview(BaseAudioWidget):
         }
         self._spectrum_worker.clear_tasks()
 
-    def _on_media_state_change(self, _state: MediaState) -> None:
-        self._spectrum_cache.clear()
-        self._spectrum_worker.clear_tasks()
-        self.update()
+        horizontal_res = self._api.opt.general.audio.spectrogram_resolution
+        max_pts = self._api.media.max_pts
+
+        pts_to_update = set()
+        for x in range(self.width() * 2):
+            pts = self._pts_from_x(x)
+            pts = (pts // horizontal_res) * horizontal_res
+            if pts < 0 or (max_pts and pts >= max_pts):
+                continue
+            if pts not in self._spectrum_cache:
+                pts_to_update.add(pts)
+
+        # since the task queue is a LIFO queue, in order to render the columns
+        # left-to-right, they need to be iterated backwards (hence reversed()).
+        for chunk in bubblesub.util.chunks(
+                list(sorted(pts_to_update, reverse=True)), CHUNK_SIZE
+        ):
+            self._spectrum_worker.schedule_task(reversed(chunk))
+            for pts in chunk:
+                self._spectrum_cache[pts] = CACHING
+
+    def _on_media_state_change(self, state: MediaState) -> None:
+        if state == MediaState.Unloaded:
+            self._spectrum_cache.clear()
+            if self._spectrum_worker:
+                self._spectrum_worker.task_finished.disconnect(
+                    self._on_spectrum_update
+                )
+                self._spectrum_worker.clear_tasks()
+                self._spectrum_worker.stop()
+                self._spectrum_worker = None
+
+        elif state == MediaState.Loading:
+            self._spectrum_worker = SpectrumWorker(self._api)
+            self._spectrum_worker.task_finished.connect(
+                self._on_spectrum_update
+            )
+            self._spectrum_worker.start()
+
+        self._schedule_current_audio_view()
 
     def _on_video_current_pts_change(self) -> None:
         self._need_repaint = True
 
-    def _on_spectrum_update(self, result: T.Tuple[int, T.List[int]]) -> None:
-        pts, column = result
-        self._spectrum_cache[pts] = column
+    def _on_spectrum_update(
+            self,
+            response: T.List[T.Tuple[int, T.List[int]]]
+    ) -> None:
+        for pts, column in response:
+            self._spectrum_cache[pts] = column
         self._need_repaint = True
 
     def _draw_frame(self, painter: QtGui.QPainter) -> None:
@@ -304,39 +362,28 @@ class AudioPreview(BaseAudioWidget):
             painter.drawText(x + 2, text_height + (h - text_height) / 2, text)
 
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
-        width = painter.viewport().width()
-        height = (1 << DERIVATION_SIZE) + 1
+        horizontal_res = self._api.opt.general.audio.spectrogram_resolution
 
-        pixels = np.zeros([width, height], dtype=np.uint8)
-        horizontal_res = (
-            self._api.opt.general.audio.spectrogram_resolution
-        )
-
-        # since the task queue is a LIFO queue, in order to render the columns
-        # left-to-right, they need to be iterated backwards (hence reversed()).
-        for x in reversed(range(width)):
+        pixels = self._pixels.transpose()
+        prev_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
+        for x in range(pixels.shape[0]):
             pts = self._pts_from_x(x)
             pts = (pts // horizontal_res) * horizontal_res
             column = self._spectrum_cache.get(pts, NOT_CACHED)
-            if column is NOT_CACHED:
-                self._spectrum_worker.schedule_task(pts)
-                self._spectrum_cache[pts] = CACHING
-                continue
-            if column is CACHING:
-                continue
+            if column is NOT_CACHED or column is CACHING:
+                column = prev_column
             pixels[x] = column
 
-        pixels = pixels.transpose().copy()
         image = QtGui.QImage(
-            pixels.data,
-            pixels.shape[1],
-            pixels.shape[0],
-            pixels.strides[0],
+            self._pixels.data,
+            self._pixels.shape[1],
+            self._pixels.shape[0],
+            self._pixels.strides[0],
             QtGui.QImage.Format_Indexed8
         )
         image.setColorTable(self._color_table)
         painter.save()
-        painter.scale(1, painter.viewport().height() / (height - 1))
+        painter.scale(1, painter.viewport().height() / (pixels.shape[1] - 1))
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
 

@@ -231,3 +231,14 @@ def sanitize_file_name(file_name: str) -> str:
     file_name = file_name.replace(' ', '_')
     file_name = re.sub(r'(?u)[^-\w.]', '', file_name)
     return file_name
+
+
+def chunks(source: T.List, size: int) -> T.Iterable[T.List]:
+    """
+    Yield successive chunks of given size from source.
+
+    :param source: source list
+    :param size: chunk size
+    """
+    for i in range(0, len(source), size):
+        yield source[i:i + size]
