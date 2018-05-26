@@ -31,6 +31,7 @@ from bubblesub.ui.audio.base import SLIDER_SIZE
 
 NOT_CACHED = object()
 CACHING: np.array = np.array([])
+BAND_Y_RESOLUTION = 30
 
 
 class VideoBandWorker(bubblesub.worker.Worker):
@@ -40,8 +41,8 @@ class VideoBandWorker(bubblesub.worker.Worker):
 
     def _do_work(self, task: T.Any) -> T.Any:
         frame_idx, width, height = task
-        out = self._api.media.video.get_frame(frame_idx, width, height)
-        return (frame_idx, width, height, out.copy())
+        out = self._api.media.video.get_frame(frame_idx, width, height).copy()
+        return (frame_idx, width, height, out)
 
 
 class VideoPreview(BaseAudioWidget):
@@ -63,26 +64,29 @@ class VideoPreview(BaseAudioWidget):
 
         self._cache: T.Dict[int, np.array] = {}
         self._need_repaint = False
+        self._pixels: np.array = np.zeros([0, 0, 3], dtype=np.uint8)
 
         timer = QtCore.QTimer(self)
         timer.setInterval(api.opt.general.audio.spectrogram_sync_interval)
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
-        api.media.current_pts_changed.connect(
-            self._on_video_current_pts_change
-        )
         api.media.state_changed.connect(self._on_media_state_change)
         api.media.audio.view_changed.connect(self._on_audio_view_change)
+        api.media.video.parsed.connect(self._on_audio_view_change)
+
+    def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
+        self._pixels = np.zeros(
+            [BAND_Y_RESOLUTION, self.width(), 3],
+            dtype=np.uint8
+        )
 
     def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
 
         painter.begin(self)
-        painter.save()
         self._draw_video_band(painter)
         self._draw_frame(painter)
-        painter.restore()
         painter.end()
 
         self._need_repaint = False
@@ -92,6 +96,8 @@ class VideoPreview(BaseAudioWidget):
             self.update()
 
     def _on_audio_view_change(self) -> None:
+        self._need_repaint = True
+
         self._cache = {
             key: value
             for key, value in self._cache.items()
@@ -99,13 +105,16 @@ class VideoPreview(BaseAudioWidget):
         }
         self._worker.clear_tasks()
 
+        for x in reversed(range(self.width() * 2)):
+            frame_idx = self._frame_idx_from_x(x)
+            if frame_idx not in self._cache:
+                self._worker.schedule_task((frame_idx, 1, BAND_Y_RESOLUTION))
+                self._cache[frame_idx] = CACHING
+
     def _on_media_state_change(self, _state: MediaState) -> None:
         self._cache.clear()
         self._worker.clear_tasks()
         self.update()
-
-    def _on_video_current_pts_change(self) -> None:
-        self._need_repaint = True
 
     def _on_video_update(
             self,
@@ -128,43 +137,33 @@ class VideoPreview(BaseAudioWidget):
         )
 
     def _draw_video_band(self, painter: QtGui.QPainter) -> None:
-        width = painter.viewport().width()
-        height = 30
-
-        pixels = np.zeros([width, height, 3], dtype=np.uint8)
-
-        for x in reversed(range(width)):
-            pts = self._pts_from_x(x)
-            frame_idx = self._frame_from_pts(pts)
+        pixels = self._pixels.transpose(1, 0, 2)
+        prev_column = np.zeros([pixels.shape[1], 3], dtype=np.uint8)
+        for x in range(pixels.shape[0]):
+            frame_idx = self._frame_idx_from_x(x)
             column = self._cache.get(frame_idx, NOT_CACHED)
-            if column is NOT_CACHED:
-                self._worker.schedule_task((frame_idx, 1, height))
-                self._cache[frame_idx] = CACHING
-                continue
-            if column is CACHING:
-                continue
+            if column is NOT_CACHED or column is CACHING:
+                column = prev_column
+            else:
+                prev_column = column
             pixels[x] = column
 
-        pixels = pixels.transpose((1, 0, 2)).copy()
-
         image = QtGui.QImage(
-            pixels.data,
-            width,
-            height,
-            pixels.strides[0],
+            self._pixels.data,
+            self._pixels.shape[1],
+            self._pixels.shape[0],
+            self._pixels.strides[0],
             QtGui.QImage.Format_RGB888
         )
         painter.save()
-        painter.scale(1, painter.viewport().height() / (height - 1))
+        painter.scale(1, painter.viewport().height() / (BAND_Y_RESOLUTION - 1))
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
 
-    def _frame_from_pts(self, pts: int) -> int:
+    def _frame_idx_from_x(self, x: int) -> int:
+        scale = self._audio.view_size / self.width()
+        pts = int(x * scale + self._audio.view_start)
         return max(
             0,
             bisect.bisect_left(self._api.media.video.timecodes, pts) - 1
         )
-
-    def _pts_from_x(self, x: float) -> int:
-        scale = self._audio.view_size / self.width()
-        return int(x * scale + self._audio.view_start)
