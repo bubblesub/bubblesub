@@ -14,26 +14,91 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import bisect
 import enum
 import math
 import typing as T
 
+import ffms
 import numpy as np
+import pyfftw
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.api.media.audio
+import bubblesub.worker
 from bubblesub.api.media.state import MediaState
-from bubblesub.ui.spectrogram import SpectrumWorker, DERIVATION_SIZE
-from bubblesub.ui.util import blend_colors, get_color
-from bubblesub.ui.video_band import VideoBandWorker
+from bubblesub.ui.audio.base import BaseAudioWidget
+from bubblesub.ui.audio.base import SLIDER_SIZE
+from bubblesub.ui.util import blend_colors
+from bubblesub.ui.util import get_color
 
+DERIVATION_SIZE = 10
+DERIVATION_DISTANCE = 6
 NOT_CACHED = object()
-CACHING: T.List[int] = []
-SLIDER_SIZE = 20
+CACHING: np.array = np.array([])
+
+
+class SpectrumWorker(bubblesub.worker.Worker):
+    def __init__(self, api: bubblesub.api.Api) -> None:
+        super().__init__()
+        self._api = api
+        self._input: T.Any = None
+        self._output: T.Any = None
+        self._fftw: T.Any = None
+
+    def _start_work(self) -> None:
+        self._input = pyfftw.empty_aligned(
+            2 << DERIVATION_SIZE, dtype=np.float32
+        )
+        self._output = pyfftw.empty_aligned(
+            (1 << DERIVATION_SIZE) + 1, dtype=np.complex64
+        )
+        self._fftw = pyfftw.FFTW(
+            self._input, self._output, flags=('FFTW_MEASURE',)
+        )
+
+    def _do_work(self, task: T.Any) -> T.Any:
+        pts = task
+
+        audio_frame = int(pts * self._api.media.audio.sample_rate / 1000.0)
+        first_sample = (
+            audio_frame >> DERIVATION_DISTANCE
+        ) << DERIVATION_DISTANCE
+        sample_count = 2 << DERIVATION_SIZE
+
+        samples = self._api.media.audio.get_samples(first_sample, sample_count)
+        samples = np.mean(samples, axis=1)
+        sample_fmt = self._api.media.audio.sample_format
+        if sample_fmt is None:
+            return (pts, np.zeros((1 << DERIVATION_SIZE) + 1))
+        elif sample_fmt == ffms.FFMS_FMT_S16:
+            samples /= 32768.
+        elif sample_fmt == ffms.FFMS_FMT_S32:
+            samples /= 4294967296.
+        elif sample_fmt not in (ffms.FFMS_FMT_FLT, ffms.FFMS_FMT_DBL):
+            raise RuntimeError('Unknown sample format: {}'.format(sample_fmt))
+
+        assert self._input is not None
+        self._input[0:len(samples)] = samples
+
+        assert self._fftw is not None
+        out = self._fftw()
+
+        scale_factor = 9 / np.sqrt(1 * (1 << DERIVATION_SIZE))
+        out = np.log(
+            np.sqrt(
+                np.real(out) * np.real(out)
+                + np.imag(out) * np.imag(out)
+            ) * scale_factor + 1
+        )
+
+        out *= 255
+        out = np.clip(out, 0, 255)
+        out = np.flip(out, axis=0)
+        out = out.astype(dtype=np.uint8)
+        return (pts, out)
 
 
 class DragMode(enum.Enum):
@@ -43,48 +108,7 @@ class DragMode(enum.Enum):
     VideoPosition = 3
 
 
-class BaseAudioWidget(QtWidgets.QWidget):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
-    ) -> None:
-        super().__init__(parent)
-        self._api = api
-
-        def update(*_: T.Any) -> None:
-            self.update()
-
-        api.media.audio.selection_changed.connect(update)
-        api.media.audio.view_changed.connect(update)
-        api.subs.events.items_inserted.connect(update)
-        api.subs.events.items_removed.connect(update)
-        api.subs.events.item_changed.connect(update)
-
-    @property
-    def _audio(self) -> bubblesub.api.media.audio.AudioApi:
-        return self._api.media.audio
-
-    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        if event.modifiers() & QtCore.Qt.ControlModifier:
-            self._zoomed(
-                event.angleDelta().y(), event.pos().x() / self.width()
-            )
-        else:
-            self._scrolled(event.angleDelta().y())
-
-    def _zoomed(self, delta: int, mouse_x: int) -> None:
-        cur_factor = self._audio.view_size / self._audio.size
-        new_factor = cur_factor * (1.1 if delta < 0 else 0.9)
-        self._audio.zoom_view(new_factor, mouse_x)
-
-    def _scrolled(self, delta: int) -> None:
-        distance = self._audio.view_size * 0.05
-        distance *= 1 if delta < 0 else -1
-        self._audio.move_view(int(distance))
-
-
-class AudioPreviewWidget(BaseAudioWidget):
+class AudioPreview(BaseAudioWidget):
     def __init__(
             self,
             api: bubblesub.api.Api,
@@ -443,252 +467,3 @@ class AudioPreviewWidget(BaseAudioWidget):
     def _pts_from_x(self, x: float) -> int:
         scale = self._audio.view_size / self.width()
         return int(x * scale + self._audio.view_start)
-
-
-class VideoPreviewWidget(BaseAudioWidget):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
-    ) -> None:
-        super().__init__(api, parent)
-        self.setMinimumHeight(SLIDER_SIZE * 3)
-        self._worker = VideoBandWorker(api)
-        self._worker.task_finished.connect(self._on_video_update)
-        self._worker.start()
-
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum,
-            QtWidgets.QSizePolicy.Maximum
-        )
-
-        self._cache: T.Dict[int, T.List[T.Tuple[int, int, int]]] = {}
-        self._need_repaint = False
-
-        timer = QtCore.QTimer(self)
-        timer.setInterval(api.opt.general.audio.spectrogram_sync_interval)
-        timer.timeout.connect(self._repaint_if_needed)
-        timer.start()
-
-        api.media.current_pts_changed.connect(
-            self._on_video_current_pts_change
-        )
-        api.media.state_changed.connect(self._on_media_state_change)
-        api.media.audio.view_changed.connect(self._on_audio_view_change)
-
-    def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
-        painter = QtGui.QPainter()
-
-        painter.begin(self)
-        painter.save()
-        self._draw_video_band(painter)
-        self._draw_frame(painter)
-        painter.restore()
-        painter.end()
-
-        self._need_repaint = False
-
-    def _repaint_if_needed(self) -> None:
-        if self._need_repaint:
-            self.update()
-
-    def _on_audio_view_change(self) -> None:
-        self._cache = {
-            key: value
-            for key, value in self._cache.items()
-            if value is not CACHING
-        }
-        self._worker.clear_tasks()
-
-    def _on_media_state_change(self, _state: MediaState) -> None:
-        self._cache.clear()
-        self._worker.clear_tasks()
-        self.update()
-
-    def _on_video_current_pts_change(self) -> None:
-        self._need_repaint = True
-
-    def _on_video_update(
-            self,
-            result: T.Tuple[int, int, int, np.array]
-    ) -> None:
-        frame, _width, height, column = result
-        self._cache[frame] = column.reshape(height, 3)
-        self._need_repaint = True
-
-    def _draw_frame(self, painter: QtGui.QPainter) -> None:
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        )
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.drawRect(
-            0,
-            0,
-            painter.viewport().width() - 1,
-            painter.viewport().height() - 1
-        )
-
-    def _draw_video_band(self, painter: QtGui.QPainter) -> None:
-        width = painter.viewport().width()
-        height = 30
-
-        pixels = np.zeros([width, height, 3], dtype=np.uint8)
-
-        for x in reversed(range(width)):
-            pts = self._pts_from_x(x)
-            frame_idx = self._frame_from_pts(pts)
-            column = self._cache.get(frame_idx, NOT_CACHED)
-            if column is NOT_CACHED:
-                self._worker.schedule_task((frame_idx, 1, height))
-                self._cache[frame_idx] = CACHING
-                continue
-            if column is CACHING:
-                continue
-            pixels[x] = column
-
-        pixels = pixels.transpose((1, 0, 2)).copy()
-
-        image = QtGui.QImage(
-            pixels.data,
-            width,
-            height,
-            pixels.strides[0],
-            QtGui.QImage.Format_RGB888
-        )
-        painter.save()
-        painter.scale(1, painter.viewport().height() / (height - 1))
-        painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
-        painter.restore()
-
-    def _frame_from_pts(self, pts: int) -> int:
-        return max(
-            0,
-            bisect.bisect_left(self._api.media.video.timecodes, pts) - 1
-        )
-
-    def _pts_from_x(self, x: float) -> int:
-        scale = self._audio.view_size / self.width()
-        return int(x * scale + self._audio.view_start)
-
-
-class AudioSliderWidget(BaseAudioWidget):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
-    ) -> None:
-        super().__init__(api, parent)
-        self.setFixedHeight(SLIDER_SIZE)
-        api.media.current_pts_changed.connect(
-            self._on_video_current_pts_change
-        )
-
-    def _on_video_current_pts_change(self) -> None:
-        self.update()
-
-    def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
-        painter = QtGui.QPainter()
-        painter.begin(self)
-        self._draw_subtitle_rects(painter)
-        self._draw_slider(painter)
-        self._draw_video_pos(painter)
-        self._draw_frame(painter)
-        painter.end()
-
-    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        self.setCursor(QtCore.Qt.SizeHorCursor)
-        self.mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, _event: QtGui.QMouseEvent) -> None:
-        self.setCursor(QtCore.Qt.ArrowCursor)
-
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        old_center = self._audio.view_start + self._audio.view_size / 2
-        new_center = self._pts_from_x(event.x())
-        distance = new_center - old_center
-        self._audio.move_view(int(distance))
-
-    def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
-        if not self._api.media.current_pts:
-            return
-        x = self._pts_to_x(self._api.media.current_pts)
-        painter.setPen(QtGui.QPen(
-            get_color(self._api, 'spectrogram/video-marker'),
-            1,
-            QtCore.Qt.SolidLine
-        ))
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.drawLine(x, 0, x, self.height())
-
-    def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
-        h = self.height()
-        painter.setPen(QtCore.Qt.NoPen)
-        color = self.palette().highlight().color()
-        color.setAlpha(40)
-        painter.setBrush(QtGui.QBrush(color))
-        for line in self._api.subs.events:
-            x1 = self._pts_to_x(line.start)
-            x2 = self._pts_to_x(line.end)
-            painter.drawRect(x1, 0, x2 - x1, h - 1)
-
-    def _draw_slider(self, painter: QtGui.QPainter) -> None:
-        h = self.height()
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(QtGui.QBrush(self.palette().highlight()))
-        x1 = self._pts_to_x(self._audio.view_start)
-        x2 = self._pts_to_x(self._audio.view_end)
-        painter.drawRect(x1, 0, x2 - x1, h / 4)
-        painter.drawRect(x1, h - 1 - h / 4, x2 - x1, h / 4)
-
-    def _draw_frame(self, painter: QtGui.QPainter) -> None:
-        w, h = self.width(), self.height()
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        )
-        painter.drawLine(0, 0, 0, h - 1)
-        painter.drawLine(w - 1, 0, w - 1, h - 1)
-        painter.drawLine(0, h - 1, w - 1, h - 1)
-
-    def _pts_to_x(self, pts: int) -> float:
-        scale = T.cast(int, self.width()) / max(1, self._audio.size)
-        return (pts - self._audio.min) * scale
-
-    def _pts_from_x(self, x: float) -> int:
-        scale = self._audio.size / self.width()
-        return int(x * scale + self._audio.min)
-
-
-class Audio(QtWidgets.QWidget):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
-    ) -> None:
-        super().__init__(parent)
-        self._api = api
-        slider = AudioSliderWidget(self._api, self)
-        audio_preview = AudioPreviewWidget(self._api, self)
-        video_preview = VideoPreviewWidget(self._api, self)
-
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
-
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(audio_preview)
-        layout.addWidget(video_preview)
-        layout.addWidget(slider)
-
-        api.subs.events.items_inserted.connect(self._sync_selection)
-        api.subs.events.items_removed.connect(self._sync_selection)
-        api.subs.selection_changed.connect(
-            lambda _rows, _changed: self._sync_selection()
-        )
-
-    def _sync_selection(self) -> None:
-        if len(self._api.subs.selected_indexes) == 1:
-            sub = self._api.subs.selected_events[0]
-            self._api.media.audio.view(sub.start - 10000, sub.end + 10000)
-            self._api.media.audio.select(sub.start, sub.end)
-        else:
-            self._api.media.audio.unselect()

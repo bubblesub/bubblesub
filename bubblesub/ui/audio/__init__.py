@@ -14,18 +14,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
-
-import bubblesub.api
-import bubblesub.worker
-
-
-class VideoBandWorker(bubblesub.worker.Worker):
-    def __init__(self, api: bubblesub.api.Api) -> None:
-        super().__init__()
-        self._api = api
-
-    def _do_work(self, task: T.Any) -> T.Any:
-        frame_idx, width, height = task
-        out = self._api.media.video.get_frame(frame_idx, width, height)
-        return (frame_idx, width, height, out.copy())
+from bubblesub.ui.audio.main import Audio
