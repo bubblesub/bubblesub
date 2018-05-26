@@ -96,7 +96,6 @@ class MediaApi(QtCore.QObject):
                 'msg-level': 'all=error',
                 'osc': False,
                 'osd-bar': False,
-                'cursor-autohide': 'no',
                 'input-cursor': False,
                 'input-vo-keyboard': False,
                 'input-default-bindings': False,
@@ -106,10 +105,8 @@ class MediaApi(QtCore.QObject):
                 'vo': 'null' if args.no_video else 'opengl-cb',
                 'pause': True,
                 'idle': True,
-                'sid': False,
                 'video-sync': 'display-vdrop',
                 'keepaspect': True,
-                'hwdec': 'auto',
                 'stop-playback-on-init-failure': False,
                 'keep-open': True,
         }.items():
