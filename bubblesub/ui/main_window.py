@@ -121,6 +121,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ):
             event.ignore()
         else:
+            self.audio.shutdown()
             self.video.shutdown()
             event.accept()
 

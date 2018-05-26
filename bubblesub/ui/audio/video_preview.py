@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import bisect
+import queue
 import typing as T
 
 import numpy as np
@@ -24,25 +25,93 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.api.media.audio
-import bubblesub.worker
+import bubblesub.cache
+import bubblesub.util
 from bubblesub.api.media.state import MediaState
 from bubblesub.ui.audio.base import BaseAudioWidget
 from bubblesub.ui.audio.base import SLIDER_SIZE
 
 NOT_CACHED = object()
-CACHING: np.array = np.array([])
 BAND_Y_RESOLUTION = 30
 
 
-class VideoBandWorker(bubblesub.worker.Worker):
+class VideoBandWorker(QtCore.QObject):
+    cache_updated = QtCore.pyqtSignal()
+
     def __init__(self, api: bubblesub.api.Api) -> None:
         super().__init__()
         self._api = api
+        self._queue = queue.Queue()
+        self._running = False
+        self._clearing = False
+        self._anything_to_save = False
+        self.cache: T.Dict[int, np.array] = {}
 
-    def _do_work(self, task: T.Any) -> T.Any:
-        frame_idx, width, height = task
-        out = self._api.media.video.get_frame(frame_idx, width, height).copy()
-        return (frame_idx, width, height, out)
+        api.media.state_changed.connect(self._on_media_state_change)
+        api.media.video.parsed.connect(self._on_video_parse)
+
+    def run(self):
+        self._running = True
+        while self._running:
+            if self._clearing:
+                continue
+            frame_idx = self._queue.get()
+            if frame_idx is None:
+                break
+
+            frame = (
+                self._api.media.video
+                .get_frame(frame_idx, 1, BAND_Y_RESOLUTION)
+                .reshape(BAND_Y_RESOLUTION, 3)
+                .copy()
+            )
+
+            self.cache[frame_idx] = frame
+            self.cache_updated.emit()
+            self._anything_to_save = True
+
+            self._queue.task_done()
+            if self._queue.empty():
+                self._save_to_cache()
+
+    def stop(self) -> None:
+        self._clear_queue()
+        self._running = False
+
+    def _on_media_state_change(self, state: MediaState) -> None:
+        if state == MediaState.Unloaded:
+            if self._anything_to_save:
+                self._save_to_cache()
+        elif state == MediaState.Loading:
+            self._clear_queue()
+            self._anything_to_save = False
+            self.cache = self._load_from_cache()
+
+    def _on_video_parse(self) -> None:
+        for frame_idx in range(len(self._api.media.video.timecodes)):
+            if frame_idx not in self.cache:
+                self._queue.put(frame_idx)
+
+    def _clear_queue(self) -> None:
+        self._clearing = True
+        while not self._queue.empty():
+            try:
+                self._queue.get(False)
+            except queue.Empty:
+                continue
+            self._queue.task_done()
+        self._clearing = False
+
+    @property
+    def _cache_name(self) -> str:
+        return bubblesub.util.hash_digest(self._api.media.path) + '-video-band'
+
+    def _load_from_cache(self) -> T.Dict[int, np.array]:
+        cache = bubblesub.cache.load_cache(self._cache_name)
+        return cache or {}
+
+    def _save_to_cache(self) -> None:
+        bubblesub.cache.save_cache(self._cache_name, self.cache)
 
 
 class VideoPreview(BaseAudioWidget):
@@ -53,16 +122,18 @@ class VideoPreview(BaseAudioWidget):
     ) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(SLIDER_SIZE * 3)
-        self._worker = VideoBandWorker(api)
-        self._worker.task_finished.connect(self._on_video_update)
-        self._worker.start()
-
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Minimum,
             QtWidgets.QSizePolicy.Maximum
         )
 
-        self._cache: T.Dict[int, np.array] = {}
+        self._worker = VideoBandWorker(api)
+        self._worker.cache_updated.connect(self._on_video_band_update)
+        self._worker_thread = QtCore.QThread()
+        self._worker.moveToThread(self._worker_thread)
+        self._worker_thread.started.connect(self._worker.run)
+        self._worker_thread.start()
+
         self._need_repaint = False
         self._pixels: np.array = np.zeros([0, 0, 3], dtype=np.uint8)
 
@@ -74,6 +145,9 @@ class VideoPreview(BaseAudioWidget):
         api.media.state_changed.connect(self._on_media_state_change)
         api.media.audio.view_changed.connect(self._on_audio_view_change)
         api.media.video.parsed.connect(self._on_audio_view_change)
+
+    def shutdown(self) -> None:
+        self._worker.stop()
 
     def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
         self._pixels = np.zeros(
@@ -98,30 +172,10 @@ class VideoPreview(BaseAudioWidget):
     def _on_audio_view_change(self) -> None:
         self._need_repaint = True
 
-        self._cache = {
-            key: value
-            for key, value in self._cache.items()
-            if value is not CACHING
-        }
-        self._worker.clear_tasks()
-
-        for x in reversed(range(self.width() * 2)):
-            frame_idx = self._frame_idx_from_x(x)
-            if frame_idx not in self._cache:
-                self._worker.schedule_task((frame_idx, 1, BAND_Y_RESOLUTION))
-                self._cache[frame_idx] = CACHING
-
     def _on_media_state_change(self, _state: MediaState) -> None:
-        self._cache.clear()
-        self._worker.clear_tasks()
         self.update()
 
-    def _on_video_update(
-            self,
-            result: T.Tuple[int, int, int, np.array]
-    ) -> None:
-        frame, _width, height, column = result
-        self._cache[frame] = column.reshape(height, 3)
+    def _on_video_band_update(self) -> None:
         self._need_repaint = True
 
     def _draw_frame(self, painter: QtGui.QPainter) -> None:
@@ -141,8 +195,8 @@ class VideoPreview(BaseAudioWidget):
         prev_column = np.zeros([pixels.shape[1], 3], dtype=np.uint8)
         for x in range(pixels.shape[0]):
             frame_idx = self._frame_idx_from_x(x)
-            column = self._cache.get(frame_idx, NOT_CACHED)
-            if column is NOT_CACHED or column is CACHING:
+            column = self._worker.cache.get(frame_idx, NOT_CACHED)
+            if column is NOT_CACHED:
                 column = prev_column
             else:
                 prev_column = column
@@ -159,6 +213,9 @@ class VideoPreview(BaseAudioWidget):
         painter.scale(1, painter.viewport().height() / (BAND_Y_RESOLUTION - 1))
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
+
+    def _frame_idx_from_pts(self, pts: int) -> int:
+        return bisect.bisect_left(self._api.media.video.timecodes, pts)
 
     def _frame_idx_from_x(self, x: int) -> int:
         scale = self._audio.view_size / self.width()

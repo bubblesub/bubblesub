@@ -60,7 +60,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
         self._log_api.info(f'audio/sampler: loading... ({path})')
 
         path_hash = bubblesub.util.hash_digest(path)
-        cache_name = f'index-{path_hash}-audio'
+        cache_name = f'{path_hash}-audio-index'
         cache_path = bubblesub.cache.get_cache_file_path(cache_name)
 
         index = None
