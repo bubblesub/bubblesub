@@ -165,12 +165,12 @@ class CommandApi(QtCore.QObject):
         :param cmd: command to run
         :return: whether the command was executed without problems
         """
+        start_time = time.time()
         if not cmd.is_enabled:
             cmd.info('not available right now')
             return False
 
         cmd.info('running...')
-        start_time = time.time()
         try:
             await cmd.run()
         except Exception as ex:  # pylint: disable=broad-except
