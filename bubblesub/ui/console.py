@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import datetime
 import re
 import typing as T
 
@@ -99,7 +100,7 @@ class Console(QtWidgets.QTextEdit):
         api.log.logged.connect(self._on_log)
 
     def _on_log(self, level: LogLevel, text: str) -> None:
-        print(f'[{level.name.lower()[0]}] {text}')
+        print(f'{datetime.datetime.now()} [{level.name.lower()[0]}] {text}')
         if level == LogLevel.Debug:
             return
         self.log(level, text)
