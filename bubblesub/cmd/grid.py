@@ -458,7 +458,7 @@ class CreateAudioSampleCommand(BaseCommand):
         end_pts = self.api.subs.selected_events[-1].end
 
         file_name = bubblesub.util.sanitize_file_name(
-            'audio-{}-{}..{}.png'.format(
+            'audio-{}-{}..{}.wav'.format(
                 self.api.media.path.name,
                 bubblesub.util.ms_to_str(start_pts),
                 bubblesub.util.ms_to_str(end_pts)
