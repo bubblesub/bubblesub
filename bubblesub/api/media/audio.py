@@ -82,6 +82,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
 
             indexer = ffms.Indexer(str(path))
             index = indexer.do_indexing(-1)
+            cache_path.parent.mkdir(exist_ok=True, parents=True)
             index.write(str(cache_path))
 
         track_number = index.get_first_indexed_track_of_type(
