@@ -41,7 +41,7 @@ class VideoBandWorker(QtCore.QObject):
     def __init__(self, api: bubblesub.api.Api) -> None:
         super().__init__()
         self._api = api
-        self._queue = queue.Queue()
+        self._queue: queue.Queue = queue.Queue()
         self._running = False
         self._clearing = False
         self._anything_to_save = False
