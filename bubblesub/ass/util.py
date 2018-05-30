@@ -61,7 +61,7 @@ def ass_to_plaintext(text: str) -> str:
     :return: plain text
     """
     return str(
-        regex.sub('{[^}]+}', '', text)
+        regex.sub('{[^}]*}', '', text)
         .replace('\\h', ' ')
         .replace('\\n', ' ')
         .replace('\\N', '\n')
