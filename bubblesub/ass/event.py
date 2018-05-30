@@ -27,8 +27,8 @@ class Event(bubblesub.model.ObservableObject):
 
     def __init__(
             self,
-            start: int,
-            end: int,
+            start: int = 0,
+            end: int = 0,
             style: str = 'Default',
             actor: str = '',
             text: str = '',
@@ -205,7 +205,7 @@ class Event(bubblesub.model.ObservableObject):
 
         :return: duplicate of self
         """
-        ret = type(self)(start=self.start, end=self.end)
+        ret = type(self)()
         for key, value in self.__dict__.items():
             if not callable(value):
                 ret.__dict__[key] = value
