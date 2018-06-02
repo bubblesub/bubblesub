@@ -29,6 +29,16 @@ class TargetWidget(enum.Enum):
 
     TextEditor = 'text-editor'
     NoteEditor = 'note-editor'
+    StyleEditor = 'style-editor'
+    ActorEditor = 'actor-editor'
+    LayerEditor = 'layer-editor'
+    MarginLeftEditor = 'margin-left-editor'
+    MarginRightEditor = 'margin-right-editor'
+    MarginVerticalEditor = 'margin-vertical-editor'
+    StartTimeEditor = 'start-time-editor'
+    EndTimeEditor = 'end-time-editor'
+    DurationEditor = 'duration-editor'
+    CommentCheckbox = 'comment-checkbox'
     SubtitlesGrid = 'subtitles-grid'
     Spectrogram = 'spectrogram'
 
@@ -99,6 +109,16 @@ class FocusWidgetCommand(BaseCommand):
         widget_name = {
             TargetWidget.TextEditor: 'text editor',
             TargetWidget.NoteEditor: 'note editor',
+            TargetWidget.StyleEditor: 'style editor',
+            TargetWidget.ActorEditor: 'actor editor',
+            TargetWidget.LayerEditor: 'layer editor',
+            TargetWidget.MarginLeftEditor: 'left margin editor',
+            TargetWidget.MarginRightEditor: 'right margin editor',
+            TargetWidget.MarginVerticalEditor: 'vertical margin editor',
+            TargetWidget.StartTimeEditor: 'start time editor',
+            TargetWidget.EndTimeEditor: 'end time editor',
+            TargetWidget.DurationEditor: 'duration editor',
+            TargetWidget.CommentCheckbox: 'comment checkbox',
             TargetWidget.SubtitlesGrid: 'subtitles grid',
             TargetWidget.Spectrogram: 'spectrogram'
         }[self._target_widget]
@@ -110,6 +130,21 @@ class FocusWidgetCommand(BaseCommand):
             TargetWidget.NoteEditor: main_window.editor.center.note_edit,
             TargetWidget.SubtitlesGrid: main_window.subs_grid,
             TargetWidget.Spectrogram: main_window.audio,
+            TargetWidget.StyleEditor: main_window.editor.bar1.style_edit,
+            TargetWidget.ActorEditor: main_window.editor.bar1.actor_edit,
+            TargetWidget.LayerEditor: main_window.editor.bar1.layer_edit,
+            TargetWidget.MarginLeftEditor:
+                main_window.editor.bar1.margin_l_edit,
+            TargetWidget.MarginRightEditor:
+                main_window.editor.bar1.margin_r_edit,
+            TargetWidget.MarginVerticalEditor:
+                main_window.editor.bar1.margin_v_edit,
+            TargetWidget.StartTimeEditor:
+                main_window.editor.bar2.start_time_edit,
+            TargetWidget.EndTimeEditor: main_window.editor.bar2.end_time_edit,
+            TargetWidget.DurationEditor: main_window.editor.bar2.duration_edit,
+            TargetWidget.CommentCheckbox:
+                main_window.editor.bar2.comment_checkbox,
         }[self._target_widget]
         widget.setFocus()
         if isinstance(widget, (QtWidgets.QTextEdit, QtWidgets.QPlainTextEdit)):
