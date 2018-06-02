@@ -154,10 +154,10 @@ class MenuConfig(BaseConfig):
                     MenuCommand('video/screenshot', False),
                     MenuCommand('video/screenshot', True),
                     MenuSeparator(),
-                    MenuCommand('view/focus-text-editor'),
-                    MenuCommand('view/focus-note-editor'),
-                    MenuCommand('view/focus-subs-grid'),
-                    MenuCommand('view/focus-spectrogram'),
+                    MenuCommand('view/focus-widget', 'text-editor'),
+                    MenuCommand('view/focus-widget', 'note-editor'),
+                    MenuCommand('view/focus-widget', 'subtitles-grid'),
+                    MenuCommand('view/focus-widget', 'spectrogram'),
                 ]),
 
                 SubMenu('&Playback', [

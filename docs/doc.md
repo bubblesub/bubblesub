@@ -48,10 +48,10 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+]</kbd> | global | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}*1.5` |
 |<kbd>F3</kbd> | global | <a href="#user-content-cmd-edit-search-repeat">`edit/search-repeat`</a> | `1` |
 |<kbd>Shift+F3</kbd> | global | <a href="#user-content-cmd-edit-search-repeat">`edit/search-repeat`</a> | `-1` |
-|<kbd>Alt+A</kbd> | global | <a href="#user-content-cmd-view-focus-spectrogram">`view/focus-spectrogram`</a> |  |
-|<kbd>Alt+S</kbd> | global | <a href="#user-content-cmd-view-focus-subs-grid">`view/focus-subs-grid`</a> |  |
-|<kbd>Alt+D</kbd> | global | <a href="#user-content-cmd-view-focus-text-editor">`view/focus-text-editor`</a> |  |
-|<kbd>Alt+Shift+D</kbd> | global | <a href="#user-content-cmd-view-focus-note-editor">`view/focus-note-editor`</a> |  |
+|<kbd>Alt+A</kbd> | global | <a href="#user-content-cmd-view-focus-widget">`view/focus-widget`</a> | `spectrogram` |
+|<kbd>Alt+S</kbd> | global | <a href="#user-content-cmd-view-focus-widget">`view/focus-widget`</a> | `subtitles-grid` |
+|<kbd>Alt+D</kbd> | global | <a href="#user-content-cmd-view-focus-widget">`view/focus-widget`</a> | `text-editor` |
+|<kbd>Alt+Shift+D</kbd> | global | <a href="#user-content-cmd-view-focus-widget">`view/focus-widget`</a> | `note-editor` |
 |<kbd>Alt+X</kbd> | global | <a href="#user-content-cmd-edit-split-sub-at-current-video-frame">`edit/split-sub-at-current-video-frame`</a> |  |
 |<kbd>Alt+J</kbd> | global | <a href="#user-content-cmd-edit-join-subs-concatenate">`edit/join-subs-concatenate`</a> |  |
 |<kbd>Alt+Up</kbd> | global | <a href="#user-content-cmd-edit-move-subs">`edit/move-subs`</a> | `above` |
@@ -161,9 +161,6 @@ Context refers to the currently focused widget.
 |`video/set‑volume` | <a name="cmd-video-set-volume"></a>Adjusts the video volume.<br>Parameters:<br><ol><li>expr (string): expression to calculate new volume</li></ol> |
 |`video/step‑frame` | <a name="cmd-video-step-frame"></a>Seeks the video by the specified amount of frames.<br>Parameters:<br><ol><li>delta (integer): how many frames to step</li></ol> |
 |`video/step‑ms` | <a name="cmd-video-step-ms"></a>Seeks the video by the specified milliseconds.<br>Parameters:<br><ol><li>delta (integer): how many milliseconds to step</li><li>precise (boolean): whether to use precise seekingat the expense of performance</li></ol> |
-|`view/focus‑note‑editor` | <a name="cmd-view-focus-note-editor"></a>Focuses the subtitle note edit field. |
-|`view/focus‑spectrogram` | <a name="cmd-view-focus-spectrogram"></a>Focuses the audio spectrogram. |
-|`view/focus‑subs‑grid` | <a name="cmd-view-focus-subs-grid"></a>Focuses the subtitles grid. |
-|`view/focus‑text‑editor` | <a name="cmd-view-focus-text-editor"></a>Focuses the subtitle text edit field. |
+|`view/focus‑widget` | <a name="cmd-view-focus-widget"></a>Focuses the target widget.<br>Parameters:<br><ol><li>target_widget (string): which widget to focus</li></ol> |
 |`view/set‑palette` | <a name="cmd-view-set-palette"></a>Changes the GUI color theme.<br>Parameters:<br><ol><li>palette_name (string): name of the palette to change to</li></ol> |
 
