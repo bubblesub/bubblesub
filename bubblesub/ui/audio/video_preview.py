@@ -50,7 +50,7 @@ class VideoBandWorker(QtCore.QObject):
         api.media.state_changed.connect(self._on_media_state_change)
         api.media.video.parsed.connect(self._on_video_parse)
 
-    def run(self):
+    def run(self) -> None:
         self._running = True
         while self._running:
             if self._clearing:
