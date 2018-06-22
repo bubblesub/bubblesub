@@ -268,7 +268,8 @@ class AssStyle(ctypes.Structure):
         ('margin_v', ctypes.c_int),
         ('encoding', ctypes.c_int),
         ('treat_fontname_as_pattern', ctypes.c_int),
-        ('blur', ctypes.c_double)
+        ('blur', ctypes.c_double),
+        ('jsutify', ctypes.c_int)
     ]
 
     @staticmethod
