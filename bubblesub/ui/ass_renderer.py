@@ -27,6 +27,7 @@ import PIL.Image
 import numpy as np
 
 import bubblesub.ass.event
+import bubblesub.ass.info
 import bubblesub.ass.style
 
 _libass = ctypes.cdll.LoadLibrary(ctypes.util.find_library('ass'))
@@ -239,11 +240,6 @@ class _AssRenderer(ctypes.Structure):
         )
         return _AssImageSequence(self, head)
 
-    def set_all_sizes(self, size: T.Tuple[int, int]) -> None:
-        self.frame_size = size
-        self.storage_size = size
-        self.pixel_aspect = 1.0
-
 
 class _AssStyle(ctypes.Structure):
     _fields_ = [
@@ -422,16 +418,8 @@ class _AssTrack(ctypes.Structure):
             self,
             style_list: bubblesub.ass.style.StyleList,
             event_list: bubblesub.ass.event.EventList,
-            play_res: T.Tuple[int, int],
-            wrap_style: int = 1,
-            scaled_border_and_shadow: bool = True
     ) -> None:
         self.type = _AssTrack.TYPE_ASS
-
-        self.play_res_x = play_res[0]
-        self.play_res_y = play_res[1]
-        self.wrap_style = wrap_style
-        self.scaled_border_and_shadow = scaled_border_and_shadow
 
         self.style_format = _encode_str(
             'Name, Fontname, Fontsize, '
@@ -511,11 +499,22 @@ class AssRenderer:
             self,
             style_list: bubblesub.ass.style.StyleList,
             event_list: bubblesub.ass.event.EventList,
-            resolution: T.Tuple[int, int]
+            info: bubblesub.ass.info.Metadata,
+            video_resolution: T.Tuple[int, int]
     ) -> None:
         self._track = self._ctx.make_track()
-        self._track.populate(style_list, event_list, play_res=resolution)
-        self._renderer.set_all_sizes(resolution)
+        self._track.populate( style_list, event_list,)
+
+        self._track.play_res_x = int(info.get('PlayResX', video_resolution[0]))
+        self._track.play_res_y = int(info.get('PlayResY', video_resolution[1]))
+        self._track.wrap_style = int(info.get('WrapStyle', 1))
+        self._track.scaled_border_and_shadow = info.get(
+            'ScaledBorderAndShadow', 'yes'
+        ) == 'yes'
+
+        self._renderer.frame_size = video_resolution
+        self._renderer.storage_size = video_resolution
+        self._renderer.pixel_aspect = 1.0
 
     def render(self, time: int) -> PIL.Image:
         if self._track is None:

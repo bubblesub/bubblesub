@@ -28,6 +28,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ass.file
+import bubblesub.ass.info
 import bubblesub.ass.style
 import bubblesub.ass.writer
 import bubblesub.data
@@ -139,6 +140,8 @@ class _StylePreview(QtWidgets.QGroupBox):
             style=fake_style.name
         )
 
+        fake_info = bubblesub.ass.info.Metadata()
+
         image = PIL.Image.new(mode='RGBA', size=resolution)
 
         background_path = self._background_combobox.currentData()
@@ -148,7 +151,12 @@ class _StylePreview(QtWidgets.QGroupBox):
                 for x in range(0, resolution[0], background.width):
                     image.paste(background, (x, y))
 
-        self._renderer.set_source(fake_style_list, fake_event_list, resolution)
+        self._renderer.set_source(
+            fake_style_list,
+            fake_event_list,
+            fake_info,
+            resolution,
+        )
         red, green, blue, alpha = self._renderer.render(time=0).split()
         top = PIL.Image.merge('RGB', (red, green, blue))
         mask = PIL.Image.merge('L', (alpha,))
