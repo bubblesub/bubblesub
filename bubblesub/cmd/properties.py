@@ -266,7 +266,7 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
         )
 
         self._options_group_box.scale_check_box.setChecked(
-            self._api.subs.info.get('ScaledBorderAndShadow', '1') == 'yes'
+            self._api.subs.info.get('ScaledBorderAndShadow', 'yes') == 'yes'
         )
 
         for key, value in self._api.subs.info.items():
