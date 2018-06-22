@@ -24,6 +24,7 @@ import ctypes.util
 import typing as T
 
 import PIL.Image
+import numpy as np
 
 import bubblesub.ass.event
 import bubblesub.ass.style
@@ -523,20 +524,55 @@ class AssRenderer:
         if any(dim <= 0 for dim in self._renderer.frame_size):
             raise ValueError('Resolution needs to be a positive integer')
 
-        image = PIL.Image.new(mode='RGBA', size=self._renderer.frame_size)
+        image_data = np.zeros((
+            self._renderer.frame_size[1],
+            self._renderer.frame_size[0],
+            4
+        ), dtype=np.uint8)
 
-        for img in self._renderer.render_frame(self._track, now=time):
-            red, green, blue, alpha = img.rgba
-            color = PIL.Image.new(
-                'RGBA', image.size, (red, green, blue, 255 - alpha)
+        for layer in self.render_raw(time):
+            red, green, blue, alpha = layer.rgba
+
+            mask_data = np.lib.stride_tricks.as_strided(
+                np.frombuffer(
+                    (ctypes.c_uint8 * (layer.stride * layer.h))
+                    .from_address(
+                        ctypes.addressof(layer.bitmap.contents)
+                    ),
+                    dtype=np.uint8
+                ),
+                (layer.h, layer.w),
+                (layer.stride, 1)
             )
 
-            mask = PIL.Image.new('L', image.size, (255,))
-            mask_data = mask.load()
-            for y in range(img.h):
-                for x in range(img.w):
-                    mask_data[img.dst_x + x, img.dst_y + y] = 255 - img[x, y]
+            overlay = np.zeros((layer.h, layer.w, 4), dtype=np.uint8)
+            overlay[..., :3] = (red, green, blue)
+            overlay[..., 3] = mask_data
+            overlay[..., 3] = (
+                overlay[..., 3] * (1.0 - alpha / 255.0)
+            ).astype(np.uint8)
 
-            image = PIL.Image.composite(image, color, mask)
+            fragment = image_data[
+                layer.dst_y:layer.dst_y + layer.h,
+                layer.dst_x:layer.dst_x + layer.w
+            ]
 
-        return image
+            src_color = overlay[..., :3].astype(np.float32) / 255.0
+            src_alpha = overlay[..., 3].astype(np.float32) / 255.0
+            dst_color = fragment[..., :3].astype(np.float32) / 255.0
+            dst_alpha = fragment[..., 3].astype(np.float32) / 255.0
+
+            out_alpha = src_alpha + dst_alpha * (1.0 - src_alpha)
+            out_color = (
+                src_color * src_alpha[..., None]
+                + dst_color * dst_alpha[..., None]
+                * (1.0 - src_alpha[..., None])
+            ) / out_alpha[..., None]
+
+            fragment[..., :3] = out_color * 255
+            fragment[..., 3] = out_alpha * 255
+
+        return PIL.Image.fromarray(image_data)
+
+    def render_raw(self, time: int) -> None:
+        return self._renderer.render_frame(self._track, now=time)
