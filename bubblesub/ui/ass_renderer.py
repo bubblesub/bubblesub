@@ -335,8 +335,8 @@ class _AssEvent(ctypes.Structure):
         return -1
 
     def populate(self, event: bubblesub.ass.event.Event) -> None:
-        self.start_ms = event.start
-        self.duration_ms = event.end - event.start
+        self.start_ms = int(event.start)
+        self.duration_ms = int(event.end - event.start)
         self.layer = event.layer
         self.style_id = self._style_name_to_style_id(event.style)
         self.name = _encode_str(event.actor)
