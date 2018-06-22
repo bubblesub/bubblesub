@@ -48,9 +48,7 @@ class _StylePreview(QtWidgets.QGroupBox):
         self._api = api
         self._selection_model = selection_model
 
-        self._ctx = bubblesub.ui.ass_renderer.AssContext()
-        self._renderer = self._ctx.make_renderer()
-        self._renderer.set_fonts()
+        self._renderer = bubblesub.ui.ass_renderer.AssRenderer()
 
         self._editor = QtWidgets.QPlainTextEdit()
         self._editor.setPlainText(api.opt.general.styles.preview_test_text)
@@ -141,12 +139,6 @@ class _StylePreview(QtWidgets.QGroupBox):
             style=fake_style.name
         )
 
-        track = self._ctx.make_track()
-        track.populate(fake_style_list, fake_event_list, play_res=resolution)
-
-        self._renderer.set_all_sizes(resolution)
-        imgs = self._renderer.render_frame(track, now=0)
-
         image = PIL.Image.new(mode='RGBA', size=resolution)
 
         background_path = self._background_combobox.currentData()
@@ -156,19 +148,11 @@ class _StylePreview(QtWidgets.QGroupBox):
                 for x in range(0, resolution[0], background.width):
                     image.paste(background, (x, y))
 
-        for img in imgs:
-            red, green, blue, alpha = img.rgba
-            color = PIL.Image.new(
-                'RGBA', image.size, (red, green, blue, 255 - alpha)
-            )
-
-            mask = PIL.Image.new('L', image.size, (255,))
-            mask_data = mask.load()
-            for y in range(img.h):
-                for x in range(img.w):
-                    mask_data[img.dst_x + x, img.dst_y + y] = 255 - img[x, y]
-
-            image = PIL.Image.composite(image, color, mask)
+        self._renderer.set_source(fake_style_list, fake_event_list, resolution)
+        red, green, blue, alpha = self._renderer.render(time=0).split()
+        top = PIL.Image.merge('RGB', (red, green, blue))
+        mask = PIL.Image.merge('L', (alpha,))
+        image.paste(top, (0, 0), mask)
 
         image = PIL.ImageQt.ImageQt(image)
         image = QtGui.QImage(image)
