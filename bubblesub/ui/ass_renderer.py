@@ -494,6 +494,10 @@ class AssRenderer:
         self._renderer = self._ctx.make_renderer()
         self._renderer.set_fonts()
         self._track = None
+        self.style_list = None
+        self.event_list = None
+        self.info = None
+        self.video_resolution = None
 
     def set_source(
             self,
@@ -502,6 +506,11 @@ class AssRenderer:
             info: bubblesub.ass.info.Metadata,
             video_resolution: T.Tuple[int, int]
     ) -> None:
+        self.style_list = style_list
+        self.event_list = event_list
+        self.info = info
+        self.video_resolution = video_resolution
+
         self._track = self._ctx.make_track()
         self._track.populate( style_list, event_list,)
 
