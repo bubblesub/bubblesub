@@ -92,6 +92,7 @@ class Console(QtWidgets.QTextEdit):
     ) -> None:
         super().__init__(parent)
         self._api = api
+        self._scroll_lock = False
 
         self.syntax_highlight = ConsoleSyntaxHighlight(api, self)
         self.setReadOnly(True)
@@ -106,24 +107,34 @@ class Console(QtWidgets.QTextEdit):
         self.log(level, text)
 
     def log(self, level: LogLevel, text: str) -> None:
+        old_pos = self.verticalScrollBar().value()
+
         self.moveCursor(QtGui.QTextCursor.End)
         cursor = QtGui.QTextCursor(self.textCursor())
         cursor.insertText(f'[{level.name.lower()[0]}] {text}\n')
-        self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
+
+        self.verticalScrollBar().setValue(
+            old_pos
+            if self._scroll_lock
+            else self.verticalScrollBar().maximum()
+        )
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         self.syntax_highlight.update_style_map()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        if not event.modifiers() & QtCore.Qt.ControlModifier:
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            distance = 1 if event.angleDelta().y() > 0 else -1
+            font = self.syntax_highlight.get_font()
+            new_size = font.pointSize() + distance
+            if new_size < 5:
+                return
+            font.setPointSize(new_size)
+            self.syntax_highlight.set_font(font)
+            self._api.opt.general.gui.fonts['console'] = font.toString()
+        else:
             super().wheelEvent(event)
-            return
-
-        distance = 1 if event.angleDelta().y() > 0 else -1
-        font = self.syntax_highlight.get_font()
-        new_size = font.pointSize() + distance
-        if new_size < 5:
-            return
-        font.setPointSize(new_size)
-        self.syntax_highlight.set_font(font)
-        self._api.opt.general.gui.fonts['console'] = font.toString()
+            maximum = self.verticalScrollBar().maximum()
+            current = self.verticalScrollBar().value()
+            delta = maximum - current
+            self._scroll_lock = delta > 5
