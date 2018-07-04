@@ -84,7 +84,9 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
         return fmt
 
 
-class Console(QtWidgets.QTextEdit):
+class ConsoleTextEdit(QtWidgets.QTextEdit):
+    scroll_lock_changed = QtCore.pyqtSignal()
+
     def __init__(
             self,
             api: bubblesub.api.Api,
@@ -94,7 +96,7 @@ class Console(QtWidgets.QTextEdit):
         self._api = api
         self._scroll_lock = False
 
-        self.syntax_highlight = ConsoleSyntaxHighlight(api, self)
+        self._syntax_highlight = ConsoleSyntaxHighlight(api, self)
         self.setReadOnly(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
 
@@ -104,9 +106,7 @@ class Console(QtWidgets.QTextEdit):
         print(f'{datetime.datetime.now()} [{level.name.lower()[0]}] {text}')
         if level == LogLevel.Debug:
             return
-        self.log(level, text)
 
-    def log(self, level: LogLevel, text: str) -> None:
         old_pos = self.verticalScrollBar().value()
 
         self.moveCursor(QtGui.QTextCursor.End)
@@ -120,21 +120,64 @@ class Console(QtWidgets.QTextEdit):
         )
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
-        self.syntax_highlight.update_style_map()
+        self._syntax_highlight.update_style_map()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.modifiers() & QtCore.Qt.ControlModifier:
             distance = 1 if event.angleDelta().y() > 0 else -1
-            font = self.syntax_highlight.get_font()
+            font = self._syntax_highlight.get_font()
             new_size = font.pointSize() + distance
             if new_size < 5:
                 return
             font.setPointSize(new_size)
-            self.syntax_highlight.set_font(font)
+            self._syntax_highlight.set_font(font)
             self._api.opt.general.gui.fonts['console'] = font.toString()
         else:
             super().wheelEvent(event)
             maximum = self.verticalScrollBar().maximum()
             current = self.verticalScrollBar().value()
             delta = maximum - current
-            self._scroll_lock = delta > 5
+            self.scroll_lock = delta > 5
+
+    @property
+    def scroll_lock(self) -> bool:
+        return self._scroll_lock
+
+    @scroll_lock.setter
+    def scroll_lock(self, value: bool) -> None:
+        self._scroll_lock = value
+        self.scroll_lock_changed.emit()
+
+
+class Console(QtWidgets.QWidget):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget
+    ) -> None:
+        super().__init__(parent)
+
+        self._text_edit = ConsoleTextEdit(api, self)
+        self._auto_scroll_chkbox = QtWidgets.QCheckBox(
+            'Auto scroll', self
+        )
+        self._auto_scroll_chkbox.setChecked(not self._text_edit.scroll_lock)
+
+        self._text_edit.scroll_lock_changed.connect(
+            self._on_text_edit_scroll_lock_change
+        )
+        self._auto_scroll_chkbox.stateChanged.connect(
+            self._on_auto_scroll_chkbox_change
+        )
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(4)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self._text_edit)
+        layout.addWidget(self._auto_scroll_chkbox)
+
+    def _on_text_edit_scroll_lock_change(self):
+        self._auto_scroll_chkbox.setChecked(not self._text_edit.scroll_lock)
+
+    def _on_auto_scroll_chkbox_change(self):
+        self._text_edit.scroll_lock = not self._auto_scroll_chkbox.isChecked()
