@@ -107,14 +107,21 @@ class ConsoleTextEdit(QtWidgets.QTextEdit):
         if level == LogLevel.Debug:
             return
 
-        old_pos = self.verticalScrollBar().value()
+        old_pos_x = self.horizontalScrollBar().value()
+        old_pos_y = self.verticalScrollBar().value()
+        separator = '\n' if self.toPlainText().strip() else ''
 
         self.moveCursor(QtGui.QTextCursor.End)
         cursor = QtGui.QTextCursor(self.textCursor())
-        cursor.insertText(f'[{level.name.lower()[0]}] {text}\n')
+        cursor.insertText(f'{separator}[{level.name.lower()[0]}] {text}')
 
+        self.horizontalScrollBar().setValue(
+            old_pos_x
+            if self._scroll_lock
+            else self.verticalScrollBar().minimum()
+        )
         self.verticalScrollBar().setValue(
-            old_pos
+            old_pos_y
             if self._scroll_lock
             else self.verticalScrollBar().maximum()
         )
