@@ -412,10 +412,10 @@ class MediaApi(QtCore.QObject):
                 elif event.id == mpv.Events.property_change:
                     event_prop = event.data
                     if event_prop.name == 'time-pos':
-                        self._current_pts = (event_prop.data or 0) * 1000
+                        self._current_pts = int((event_prop.data or 0) * 1000)
                         self.current_pts_changed.emit()
                     elif event_prop.name == 'duration':
-                        self._max_pts = (event_prop.data or 0) * 1000
+                        self._max_pts = int((event_prop.data or 0) * 1000)
                         self.max_pts_changed.emit()
                     elif event_prop.name == 'mute':
                         self.mute_changed.emit()
