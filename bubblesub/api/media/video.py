@@ -93,6 +93,9 @@ class VideoApi(QtCore.QObject):
         self._media_api.state_changed.connect(self._on_media_state_change)
         self._mpv = mpv_
 
+        self._timecodes: T.List[int] = []
+        self._keyframes: T.List[int] = []
+
         self._video_source: T.Union[None, ffms.VideoSource] = None
         self._video_source_worker = VideoSourceWorker(log_api)
         self._video_source_worker.task_finished.connect(self._got_video_source)
@@ -201,7 +204,7 @@ class VideoApi(QtCore.QObject):
             return []
         if not self._wait_for_video_source():
             return []
-        return self._video_source.track.timecodes
+        return self._timecodes
 
     @property
     def keyframes(self) -> T.List[int]:
@@ -214,7 +217,7 @@ class VideoApi(QtCore.QObject):
             return []
         if not self._wait_for_video_source():
             return []
-        return self._video_source.track.keyframes
+        return self._keyframes
 
     def get_frame(self, frame_idx: int, width: int, height: int) -> np.array:
         """
@@ -255,16 +258,26 @@ class VideoApi(QtCore.QObject):
     def _on_media_state_change(self, state: MediaState) -> None:
         if state == MediaState.Unloaded:
             self._video_source = None
+            self._timecodes.clear()
+            self._keyframes.clear()
         elif state == MediaState.Loading:
             self._last_output_fmt = None
             self._video_source = _LOADING
+            self._timecodes.clear()
+            self._keyframes.clear()
             self._video_source_worker.schedule_task(self._media_api.path)
         else:
             assert state == MediaState.Loaded
 
     def _got_video_source(self, result: T.Optional[ffms.VideoSource]) -> None:
-        if result is not None:
-            path, video_source = result
-            if path == self._media_api.path:
-                self._video_source = video_source
-                self.parsed.emit()
+        if result is None:
+            return
+
+        path, video_source = result
+        if path != self._media_api.path:
+            return
+
+        self._video_source = video_source
+        self._timecodes = [int(pts) for pts in video_source.track.timecodes]
+        self._keyframes = [int(pts) for pts in video_source.track.keyframes]
+        self.parsed.emit()
