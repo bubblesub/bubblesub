@@ -43,20 +43,24 @@ class GenerateDocumentationCommand(Command):
 
     def _generate_hotkeys_documentation(self, handle):
         import re
+        import shlex
         import bubblesub.opt
+        from bubblesub.api.cmd import split_invocation
 
         opt = bubblesub.opt.Options()
 
         table = []
         for context, hotkeys in opt.hotkeys:
             for hotkey in hotkeys:
-                cmd_name = hotkey.command_name
+                cmd_name, cmd_args = split_invocation(hotkey.invocation)
                 cmd_anchor = self._get_anchor_name('cmd', cmd_name)
                 row = [
                     f'<kbd>{hotkey.shortcut}</kbd>',
                     re.sub('([A-Z])', r' \1', context.name).strip().lower(),
-                    f'<a href="#user-content-{cmd_anchor}">`{cmd_name}`</a>',
-                    ', '.join(f'`{arg}`' for arg in hotkey.command_args)
+                    '<code>' +
+                    f'<a href="#user-content-{cmd_anchor}">{cmd_name}</a> ' +
+                    ' '.join(shlex.quote(arg) for arg in cmd_args) +
+                    '</code>'
                 ]
                 table.append(row)
 
@@ -65,10 +69,7 @@ class GenerateDocumentationCommand(Command):
         print('Context refers to the currently focused widget.', file=handle)
         print('', file=handle)
         print(
-            self._make_table(
-                ['Shortcut', 'Context', 'Command name', 'Command parameters'],
-                table
-            ),
+            self._make_table(['Shortcut', 'Context', 'Command'], table),
             file=handle
         )
 
@@ -78,9 +79,6 @@ class GenerateDocumentationCommand(Command):
 
         import bubblesub.opt
         import bubblesub.api.cmd
-        import docstring_parser
-
-        table = []
 
         args = argparse.Namespace()
         setattr(args, 'no_video', True)
@@ -89,48 +87,78 @@ class GenerateDocumentationCommand(Command):
         api = bubblesub.api.Api(opt, args)
         api.cmd.load_commands(Path(__file__).parent / 'bubblesub' / 'cmd')
 
+        print('# Default commands', file=handle)
         for cls in sorted(api.cmd.get_all(), key=lambda cls: cls.name):
-            signature = inspect.signature(cls.__init__)
-            cls_docstring = docstring_parser.parse(cls.__doc__)
-            init_docstring = docstring_parser.parse(cls.__init__.__doc__)
-            parameters = {
-                name: param
-                for name, param in signature.parameters.items()
-                if name not in {'self', 'api'}
-            }
+            parser = argparse.ArgumentParser(
+                add_help=False,
+                prog=cls.name,
+                formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            )
+            cls._decorate_parser(parser)
 
-            row = []
             cmd_anchor = self._get_anchor_name('cmd', cls.name)
             cmd_name = cls.name.replace('-', '\N{NON-BREAKING HYPHEN}')
-            row.append(f'`{cmd_name}`')
+            print(f'### <a name="{cmd_anchor}"></a>`{cmd_name}`', file=handle)
+            print(cls.help_text, file=handle)
+            if parser._actions:
+                print('\n\n', file=handle)
+                print(self._get_usage(cmd_name, parser), file=handle)
+                print('\n\n', file=handle)
+                print(self._get_params_help(cmd_name, parser), file=handle)
 
-            desc = f'<a name="{cmd_anchor}"></a>'
-            desc += cls_docstring.short_description
-            if cls_docstring.long_description:
-                desc += '\n'
-                desc += cls_docstring.long_description.replace('\n', ' ')
-            desc += '\n'
+    @staticmethod
+    def _get_usage(cmd_name, parser):
+        def format_action(action):
+            ret = ''
+            if action.nargs in {'?', 0}:
+                ret += '['
+            ret += (
+                '|'.join(action.option_strings)
+                or f'{action.dest}'
+                or ''
+            )
+            if action.option_strings and action.nargs != 0:
+                ret += '=…'
+            if action.nargs in {'?', 0}:
+                ret += ']'
+            return ret
 
-            if parameters:
-                desc += 'Parameters:\n<ol>'
-                for num, item in enumerate(parameters.items()):
-                    name, param = item
-                    param_type = self._repr_type(param.annotation)
-                    param_desc = next(
-                        p for p in init_docstring.params if p.arg_name == name
-                    ).description.replace('\n', '')
-                    desc += f'<li>{name} ({param_type}): {param_desc}</li>'
-                desc += '</ol>'
-
-            row.append(desc.strip())
-
-            table.append(row)
-
-        print('# Default commands', file=handle)
-        print(
-            self._make_table(['Command name', 'Description'], table),
-            file=handle
+        desc = 'Usage:\n`'
+        desc += ' '.join(
+            [cmd_name] +
+            [format_action(action) for action in parser._actions]
         )
+        desc += '`'
+        return desc
+
+    @staticmethod
+    def _get_params_help(cmd_name, parser):
+        desc = ''
+        for action in parser._actions:
+            if not action.help:
+                raise ValueError(
+                    f'Command {cmd_name} has no help text '
+                    f'for one of its arguments'
+                )
+
+            desc += '* '
+            desc += (
+                ', '.join(f'`{opt}`' for opt in action.option_strings)
+                or f'`{action.dest}`'
+                or ''
+            )
+            desc += ': '
+            desc += action.help
+            if action.choices:
+                desc += (
+                    ' ('
+                    + ', '.join(
+                        f'`{choice!s}`' for choice in action.choices
+                    )
+                    + ')'
+                )
+            desc += '\n'
+        return desc
 
     @staticmethod
     def _get_anchor_name(prefix: str, name: str) -> str:
@@ -208,7 +236,7 @@ class LintCommand(Command):
                 'bubblesub/api',
                 'bubblesub/opt',
                 'bubblesub/ass',
-                'bubblesub/cmd',
+                #'bubblesub/cmd',
             ] + glob.glob('bubblesub/*.py'),
             ['pylint', 'bubblesub']
         ]

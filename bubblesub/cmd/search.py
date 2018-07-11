@@ -17,6 +17,7 @@
 """Commands for searching/searching and replacing."""
 
 import abc
+import argparse
 import re
 import traceback
 import typing as T
@@ -30,6 +31,7 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 from bubblesub.opt.general import SearchMode
+from bubblesub.util import VerticalDirection
 
 MAX_HISTORY_ENTRIES = 25
 
@@ -165,27 +167,27 @@ def _narrow_match(
         matches: T.List[T.Match[str]],
         idx: int,
         selected_idx: T.Optional[int],
-        direction: int
+        direction: VerticalDirection
 ) -> T.Optional[T.Match[str]]:
     if idx == selected_idx:
         selection_start, selection_end = handler.get_selection_from_widget()
         if selection_end == selection_start:
-            if direction > 0:
+            if direction == VerticalDirection.Below:
                 return matches[0]
             return None
-        elif direction > 0:
+        elif direction == VerticalDirection.Below:
             for match in matches:
                 if match.end() > selection_end:
                     return match
             return None
-        elif direction < 0:
+        elif direction == VerticalDirection.Above:
             for match in reversed(matches):
                 if match.start() < selection_start:
                     return match
             return None
-    elif direction > 0:
+    elif direction == VerticalDirection.Below:
         return matches[0]
-    elif direction < 0:
+    elif direction == VerticalDirection.Above:
         return matches[-1]
     raise RuntimeError('Bad search direction')
 
@@ -194,18 +196,19 @@ def _search(
         api: bubblesub.api.Api,
         handler: _SearchModeHandler,
         regex: T.Pattern[str],
-        direction: int
+        direction: VerticalDirection
 ) -> bool:
     num_lines = len(api.subs.events)
     if not api.subs.has_selection:
         selected_idx = None
         iterator = list(range(num_lines))
-        if direction < 0:
+        if direction == VerticalDirection.Above:
             iterator.reverse()
     else:
         selected_idx = api.subs.selected_indexes[0]
+        mul = 1 if direction == VerticalDirection.Below else -1
         iterator = list(
-            (selected_idx + direction * i) % num_lines
+            (selected_idx + mul * i) % num_lines
             for i in range(num_lines)
         )
 
@@ -395,9 +398,9 @@ class _SearchDialog(QtWidgets.QDialog):
             elif sender == self.replace_all_btn:
                 self._replace_all()
             elif sender == self.find_prev_btn:
-                self._search(-1)
+                self._search(VerticalDirection.Above)
             elif sender == self.find_next_btn:
-                self._search(1)
+                self._search(VerticalDirection.Below)
             elif sender == self.count_btn:
                 self._count()
         except Exception as ex:  # pylint: disable=broad-except
@@ -419,7 +422,7 @@ class _SearchDialog(QtWidgets.QDialog):
             'No occurences found.'
         )
 
-    def _search(self, direction: int) -> None:
+    def _search(self, direction: VerticalDirection) -> None:
         self._push_search_history()
         result = _search(
             self._api, self._handler, self._search_regex, direction
@@ -505,13 +508,11 @@ class _SearchDialog(QtWidgets.QDialog):
 
 
 class SearchCommand(BaseCommand):
-    """Opens up the search dialog."""
-
     name = 'edit/search'
     menu_name = '&Search...'
+    help_text = 'Opens up the search dialog.'
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -521,13 +522,11 @@ class SearchCommand(BaseCommand):
 
 
 class SearchAndReplaceCommand(BaseCommand):
-    """Opens up the search and replace dialog."""
-
     name = 'edit/search-and-replace'
     menu_name = '&Search and replace...'
+    help_text = 'Opens up the search and replace dialog.'
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -537,40 +536,23 @@ class SearchAndReplaceCommand(BaseCommand):
 
 
 class SearchRepeatCommand(BaseCommand):
-    """Repeats last search operation."""
-
     name = 'edit/search-repeat'
-
-    def __init__(self, api: bubblesub.api.Api, direction: int) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param direction: 1 to search forward, -1 to search backward
-        """
-        super().__init__(api)
-        self._direction = direction
+    help_text = 'Repeats last search operation.'
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        return '&Search %s' % ['previous', 'next'][self._direction > 0]
+        if self.args.direction == VerticalDirection.Above:
+            return '&Search previous'
+        elif self.args.direction == VerticalDirection.Below:
+            return '&Search next'
+        else:
+            raise AssertionError
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.opt.general.search.history) > 0
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -583,10 +565,20 @@ class SearchRepeatCommand(BaseCommand):
                 self.api.opt.general.search.case_sensitive,
                 self.api.opt.general.search.use_regexes
             ),
-            self._direction
+            self.args.direction
         )
         if not result:
             bubblesub.ui.util.notice('No occurences found.')
+
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            '-d', '--direction',
+            help='whether to search forward or backward',
+            type=VerticalDirection.from_string,
+            choices=list(VerticalDirection),
+            default=VerticalDirection.Below
+        )
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

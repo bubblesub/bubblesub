@@ -738,22 +738,15 @@ class _StylesManagerDialog(QtWidgets.QDialog):
 
 
 class ManageStylesCommand(BaseCommand):
-    """Opens up the style manager."""
-
     name = 'edit/manage-styles'
     menu_name = '&Manage styles...'
+    help_text = 'Opens up the style manager.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return True
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:

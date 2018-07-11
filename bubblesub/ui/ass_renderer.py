@@ -512,7 +512,7 @@ class AssRenderer:
         self.video_resolution = video_resolution
 
         self._track = self._ctx.make_track()
-        self._track.populate( style_list, event_list,)
+        self._track.populate(style_list, event_list,)
 
         self._track.play_res_x = int(info.get('PlayResX', video_resolution[0]))
         self._track.play_res_y = int(info.get('PlayResY', video_resolution[1]))

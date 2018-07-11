@@ -16,6 +16,7 @@
 
 """General GUI commands."""
 
+import argparse
 import enum
 
 from PyQt5 import QtWidgets
@@ -26,6 +27,9 @@ from bubblesub.api.cmd import BaseCommand
 
 class TargetWidget(enum.Enum):
     """Known widgets in GUI."""
+
+    def __str__(self):
+        return self.value
 
     TextEditor = 'text-editor'
     NoteEditor = 'note-editor'
@@ -44,68 +48,38 @@ class TargetWidget(enum.Enum):
 
 
 class SetPaletteCommand(BaseCommand):
-    """Changes the GUI color theme."""
-
     name = 'view/set-palette'
-
-    def __init__(self, api: bubblesub.api.Api, palette_name: str) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param palette_name: name of the palette to change to
-        """
-        super().__init__(api)
-        self._palette_name = palette_name
+    help_text = 'Changes the GUI color theme.'
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        return '&Switch to {} color scheme'.format(self._palette_name)
+        return '&Switch to {} color scheme'.format(self.args.palette_name)
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        self.api.opt.general.gui.current_palette = self._palette_name
-        main_window.apply_palette(self._palette_name)
+        self.api.opt.general.gui.current_palette = self.args.palette_name
+        main_window.apply_palette(self.args.palette_name)
+
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            'palette_name',
+            help='name of the palette to change to',
+            type=str
+        )
 
 
 class FocusWidgetCommand(BaseCommand):
-    """Focuses the target widget."""
-
     name = 'view/focus-widget'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            target_widget: str
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param target_widget: which widget to focus
-        """
-        super().__init__(api)
-        self._target_widget = TargetWidget(target_widget)
+    help_text = 'Focuses the target widget.'
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
         widget_name = {
             TargetWidget.TextEditor: 'text editor',
             TargetWidget.NoteEditor: 'note editor',
@@ -121,7 +95,7 @@ class FocusWidgetCommand(BaseCommand):
             TargetWidget.CommentCheckbox: 'comment checkbox',
             TargetWidget.SubtitlesGrid: 'subtitles grid',
             TargetWidget.Spectrogram: 'spectrogram'
-        }[self._target_widget]
+        }[self.args.target]
         return '&Focus ' + widget_name
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -145,10 +119,19 @@ class FocusWidgetCommand(BaseCommand):
             TargetWidget.DurationEditor: main_window.editor.bar2.duration_edit,
             TargetWidget.CommentCheckbox:
                 main_window.editor.bar2.comment_checkbox,
-        }[self._target_widget]
+        }[self.args.target]
         widget.setFocus()
         if isinstance(widget, (QtWidgets.QTextEdit, QtWidgets.QPlainTextEdit)):
             widget.selectAll()
+
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            'target',
+            help='which widget to focus',
+            type=TargetWidget,
+            choices=list(TargetWidget)
+        )
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

@@ -167,22 +167,15 @@ class _SpellCheckDialog(QtWidgets.QDialog):
 
 
 class SpellCheckCommand(BaseCommand):
-    """Opens up the spell check dialog."""
-
     name = 'edit/spell-check'
     menu_name = '&Check spelling...'
+    help_text = 'Opens up the spell check dialog.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:

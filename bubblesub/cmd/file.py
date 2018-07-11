@@ -16,6 +16,7 @@
 
 """Commands related to files."""
 
+import argparse
 import typing as T
 from pathlib import Path
 
@@ -45,55 +46,35 @@ def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
 
 
 class NewCommand(BaseCommand):
-    """
-    Opens a new file.
-
-    Prompts user to save the current file if there are unsaved changes.
-    """
-
     name = 'file/new'
     menu_name = '&New'
+    help_text = (
+        'Opens a new file. '
+        'Prompts user to save the current file if there are unsaved changes.'
+    )
 
     async def run(self) -> None:
-        """Carry out the command."""
         if _ask_about_unsaved_changes(self.api):
             self.api.subs.unload()
 
 
 class OpenCommand(BaseCommand):
-    """
-    Opens an existing subtitles file.
-
-    Prompts user to save the current file if there are unsaved changes.
-    Prompts user to choose where to load the file from if the path wasn't
-    specified in the command arguments.
-    """
-
     name = 'file/open'
     menu_name = '&Open'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            path: T.Optional[Path] = None
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param path: optional path to load the subtitles from
-        """
-        super().__init__(api)
-        self._path = path
+    help_text = (
+        'Opens an existing subtitles file. '
+        'Prompts user to save the current file if there are unsaved changes. '
+        'Prompts user to choose where to load the file from if the path '
+        'wasn\'t specified in the command arguments.'
+    )
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         if _ask_about_unsaved_changes(self.api):
-            if self._path:
-                path = self._path
+            if self.args.path:
+                path = self.args.path
             else:
                 path = bubblesub.ui.util.load_dialog(
                     main_window,
@@ -101,44 +82,36 @@ class OpenCommand(BaseCommand):
                     directory=_get_dialog_dir(self.api)
                 )
             if not path:
-                self.info('cancelled')
+                self.api.log.info('cancelled')
             else:
                 self.api.subs.load_ass(path)
-                self.info(f'opened {path}')
+                self.api.log.info(f'opened {path}')
+
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            'path',
+            help='path to load the subtitles from',
+            type=Path,
+            nargs='?'
+        )
 
 
 class LoadVideoCommand(BaseCommand):
-    """
-    Loads a video file for the audio/video playback.
-
-    Prompts user to choose where to load the file from if the path wasn't
-    specified in the command arguments.
-    """
-
     name = 'file/load-video'
     menu_name = '&Load video'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            path: T.Optional[Path] = None
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param path: optional path to load the video from
-        """
-        super().__init__(api)
-        self._path = path
+    help_text = (
+        'Loads a video file for the audio/video playback. '
+        'Prompts user to choose where to load the file from if the path '
+        'wasn\'t specified in the command arguments.'
+    )
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        if self._path:
-            path = self._path
+        if self.args.path:
+            path = self.args.path
         else:
             path = bubblesub.ui.util.load_dialog(
                 main_window,
@@ -146,25 +119,31 @@ class LoadVideoCommand(BaseCommand):
                 directory=_get_dialog_dir(self.api)
             )
         if not path:
-            self.info('cancelled')
+            self.api.log.info('cancelled')
         else:
             self.api.media.load(path)
-            self.info(f'loading {path}')
+            self.api.log.info(f'loading {path}')
+
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            'path',
+            help='optional path to load the video from',
+            type=Path,
+            nargs='?'
+        )
 
 
 class SaveCommand(BaseCommand):
-    """
-    Saves the current subtitles to an ASS file.
-
-    If the currently loaded subtitles weren't ever saved, prompts user to
-    choose where to save the file to.
-    """
-
     name = 'file/save'
     menu_name = '&Save'
+    help_text = (
+        'Saves the current subtitles to an ASS file. '
+        'If the currently loaded subtitles weren\'t ever saved, prompts user '
+        'to choose where to save the file to.'
+    )
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -176,44 +155,27 @@ class SaveCommand(BaseCommand):
                 directory=_get_dialog_dir(self.api)
             )
         if not path:
-            self.info('cancelled')
+            self.api.log.info('cancelled')
             return
         self.api.subs.save_ass(path, remember_path=True)
-        self.info(f'saved subtitles to {path}')
+        self.api.log.info(f'saved subtitles to {path}')
 
 
 class SaveAsCommand(BaseCommand):
-    """
-    Saves the current subtitles to an ASS file.
-
-    Prompts user to choose where to save the file to if the path wasn't
-    specified in the command arguments.
-    """
-
     name = 'file/save-as'
     menu_name = '&Save as'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            path: T.Optional[Path] = None
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param path: optional path to save the subtitles to
-        """
-        super().__init__(api)
-        self._path = path
+    help_text = (
+        'Saves the current subtitles to an ASS file. '
+        'Prompts user to choose where to save the file to if the path wasn\'t '
+        'specified in the command arguments.'
+    )
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        if self._path:
-            path = self._path
+        if self.args.path:
+            path = self.args.path
         else:
             path = bubblesub.ui.util.save_dialog(
                 main_window,
@@ -221,24 +183,30 @@ class SaveAsCommand(BaseCommand):
                 directory=_get_dialog_dir(self.api)
             )
         if not path:
-            self.info('cancelled')
+            self.api.log.info('cancelled')
         else:
             self.api.subs.save_ass(path, remember_path=True)
-            self.info(f'saved subtitles to {path}')
+            self.api.log.info(f'saved subtitles to {path}')
+
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            'path',
+            help='optional path to save the subtitles to',
+            type=Path,
+            nargs='?'
+        )
 
 
 class QuitCommand(BaseCommand):
-    """
-    Quits the application.
-
-    Prompts user to save the current file if there are unsaved changes.
-    """
-
     name = 'file/quit'
     menu_name = '&Quit'
+    help_text = (
+        'Quits the application. '
+        'Prompts user to save the current file if there are unsaved changes.'
+    )
 
     async def run(self) -> None:
-        """Carry out the command."""
         self.api.gui.quit()
 
 

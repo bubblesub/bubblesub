@@ -31,25 +31,20 @@ class _Syllable:
 
 
 class SplitSubtitleByKaraokeCommand(BaseCommand):
-    """Splits the selected subtitles according to the karaoke tags inside."""
-
     name = 'edit/split-sub-by-karaoke'
     menu_name = '&Split subtitles as karaoke'
+    help_text = (
+        'Splits the selected subtitles according to the karaoke tags inside.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return (
             len(self.api.subs.selected_indexes) == 1
             and '\\k' in self.api.subs.selected_events[0].text
         )
 
     async def run(self) -> None:
-        """Carry out the command."""
         idx = self.api.subs.selected_indexes[0]
         sub = self.api.subs.events[idx]
         start = sub.start
@@ -98,22 +93,17 @@ class SplitSubtitleByKaraokeCommand(BaseCommand):
 
 
 class JoinSubtitlesAsKaraokeCommand(BaseCommand):
-    """Joins the selected subtitles adding karaoke timing tags inbetween."""
-
     name = 'edit/join-subs-as-karaoke'
     menu_name = '&Join subtitles (as karaoke)'
+    help_text = (
+        'Joins the selected subtitles adding karaoke timing tags inbetween.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self) -> None:
-        """Carry out the command."""
         subs = self.api.subs.selected_events
         with self.api.undo.capture():
             for idx in reversed(self.api.subs.selected_indexes[1:]):
@@ -130,26 +120,18 @@ class JoinSubtitlesAsKaraokeCommand(BaseCommand):
 
 
 class JoinSubtitlesAsTransformationCommand(BaseCommand):
-    """
-    Joins the selected subtitles adding animation timing tags inbetween.
-
-    The syllables appear one after another.
-    """
-
     name = 'edit/join-subs-as-transformation'
     menu_name = '&Join subtitles (as transformation)'
+    help_text = (
+        'Joins the selected subtitles adding animation timing tags inbetween. '
+        'The syllables appear one after another.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self) -> None:
-        """Carry out the command."""
         subs = self.api.subs.selected_events
         with self.api.undo.capture():
             for idx in reversed(self.api.subs.selected_indexes[1:]):

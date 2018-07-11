@@ -16,6 +16,7 @@
 
 """Commands related to the subtitle grid."""
 
+import argparse
 import base64
 import pickle
 import typing as T
@@ -43,26 +44,18 @@ def _unpickle(text: str) -> T.Any:
 
 
 class JumpToSubtitleByNumberCommand(BaseCommand):
-    """
-    Jumps to the specified number.
-
-    Prompts user for the line number with a GUI dialog.
-    """
-
     name = 'grid/jump-to-sub-by-number'
     menu_name = 'Jump to subtitle by number...'
+    help_text = (
+        'Jumps to the specified number. '
+        'Prompts user for the line number with a GUI dialog.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -87,26 +80,18 @@ class JumpToSubtitleByNumberCommand(BaseCommand):
 
 
 class JumpToSubtitleByTimeCommand(BaseCommand):
-    """
-    Jumps to the subtitle at specified time.
-
-    Prompts user for details with a GUI dialog.
-    """
-
     name = 'grid/jump-to-sub-by-time'
     menu_name = 'Jump to subtitle by time...'
+    help_text = (
+        'Jumps to the subtitle at specified time. '
+        'Prompts user for details with a GUI dialog.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -138,49 +123,29 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
 
 
 class SelectNearSubtitleCommand(BaseCommand):
-    """Selects nearest subtitle in given direction to the current selection."""
-
     name = 'grid/select-near-sub'
-
-    def __init__(self, api: bubblesub.api.Api, direction: str) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param direction: direction to look in
-        """
-        super().__init__(api)
-        self._direction = VerticalDirection[direction.title()]
+    help_text = (
+        'Selects nearest subtitle in given direction to the current selection.'
+    )
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        return f'Select {self._direction.name.lower()} subtitle'
+        return f'Select {self.args.direction.name.lower()} subtitle'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
-        """Carry out the command."""
         max_idx = len(self.api.subs.events) - 1
-        if self._direction == VerticalDirection.Above:
+        if self.args.direction == VerticalDirection.Above:
             if not self.api.subs.selected_indexes:
                 self.api.subs.selected_indexes = [max_idx]
             else:
                 self.api.subs.selected_indexes = [
                     max(0, self.api.subs.selected_indexes[0] - 1)
                 ]
-        elif self._direction == VerticalDirection.Below:
+        elif self.args.direction == VerticalDirection.Below:
             if not self.api.subs.selected_indexes:
                 self.api.subs.selected_indexes = [0]
             else:
@@ -190,85 +155,72 @@ class SelectNearSubtitleCommand(BaseCommand):
         else:
             raise AssertionError
 
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            '-d', '--direction',
+            help='direction to look in',
+            type=VerticalDirection.from_string,
+            choices=list(VerticalDirection),
+            required=True
+        )
+
 
 class SelectAllSubtitlesCommand(BaseCommand):
-    """Selects all subtitles."""
-
     name = 'grid/select-all-subs'
     menu_name = 'Select all subtitles'
+    help_text = 'Selects all subtitles.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.subs.events) > 0
 
     async def run(self) -> None:
-        """Carry out the command."""
         self.api.subs.selected_indexes = list(range(len(self.api.subs.events)))
 
 
 class ClearSubtitleSelectionCommand(BaseCommand):
-    """Clears subtitle selection."""
-
     name = 'grid/clear-sub-sel'
     menu_name = 'Clear subtitle selection'
+    help_text = 'Clears subtitle selection.'
 
     async def run(self) -> None:
-        """Carry out the command."""
         self.api.subs.selected_indexes = []
 
 
 class CopySubtitlesTextCommand(BaseCommand):
-    """Copies text from the subtitle selection."""
-
     name = 'grid/copy-subs/text'
     menu_name = 'Copy selected subtitles text to clipboard'
+    help_text = 'Copies text from the subtitle selection.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             line.text for line in self.api.subs.selected_events
         ))
 
 
 class PasteSubtitlesTextCommand(BaseCommand):
-    """Pastes teext into the subtitle selection."""
-
     name = 'grid/paste-subs/text'
     menu_name = 'Paste text to selected subtitles from clipboard'
+    help_text = 'Pastes teext into the subtitle selection.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
-            self.error('Clipboard is empty, aborting.')
+            self.api.log.error('Clipboard is empty, aborting.')
             return
 
         lines = text.split('\n')
         if len(lines) != len(self.api.subs.selected_events):
-            self.error(
+            self.api.log.error(
                 'Size mismatch (selected {} lines, got {} lines in clipboard.'
                 .format(len(self.api.subs.selected_events), len(lines))
             )
@@ -280,22 +232,15 @@ class PasteSubtitlesTextCommand(BaseCommand):
 
 
 class CopySubtitlesTimesCommand(BaseCommand):
-    """Copies time boundaries from the subtitle selection."""
-
     name = 'grid/copy-subs/times'
     menu_name = 'Copy selected subtitles times to clipboard'
+    help_text = 'Copies time boundaries from the subtitle selection.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         QtWidgets.QApplication.clipboard().setText('\n'.join(
             '{} - {}'.format(
                 bubblesub.util.ms_to_str(line.start),
@@ -306,30 +251,23 @@ class CopySubtitlesTimesCommand(BaseCommand):
 
 
 class PasteSubtitlesTimesCommand(BaseCommand):
-    """Pastes time boundaries into the subtitle selection."""
-
     name = 'grid/paste-subs/times'
     menu_name = 'Paste times to selected subtitles from clipboard'
+    help_text = 'Pastes time boundaries into the subtitle selection.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
-            self.error('Clipboard is empty, aborting.')
+            self.api.log.error('Clipboard is empty, aborting.')
             return
 
         lines = text.split('\n')
         if len(lines) != len(self.api.subs.selected_events):
-            self.error(
+            self.api.log.error(
                 'Size mismatch (selected {} lines, got {} lines in clipboard.'
                 .format(len(self.api.subs.selected_events), len(lines))
             )
@@ -344,7 +282,7 @@ class PasteSubtitlesTimesCommand(BaseCommand):
                     bubblesub.util.str_to_ms(end)
                 ))
             except ValueError:
-                self.error('Invalid time format: {}'.format(line))
+                self.api.log.error('Invalid time format: {}'.format(line))
                 return
 
         with self.api.undo.capture():
@@ -354,22 +292,15 @@ class PasteSubtitlesTimesCommand(BaseCommand):
 
 
 class CopySubtitlesCommand(BaseCommand):
-    """Copies the selected subtitles."""
-
     name = 'grid/copy-subs'
     menu_name = 'Copy selected subtitles to clipboard'
+    help_text = 'Copies the selected subtitles.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         QtWidgets.QApplication.clipboard().setText(
             _pickle(self.api.subs.selected_events)
         )
@@ -387,39 +318,23 @@ def _paste_from_clipboard(cmd: BaseCommand, idx: int) -> None:
 
 
 class PasteSubtitlesCommand(BaseCommand):
-    """Pastes subtitles near the selection."""
-
     name = 'grid/paste-subs'
-
-    def __init__(self, api: bubblesub.api.Api, direction: str) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param direction: direction to paste into
-        """
-        super().__init__(api)
-        self._direction = VerticalDirection[direction.title()]
+    help_text = 'Pastes subtitles near the selection.'
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
         return (
-            f'Paste subtitles from clipboard ({self._direction.name.lower()})'
+            f'Paste subtitles from clipboard '
+            f'({self.args.direction.name.lower()})'
         )
 
     async def run(self) -> None:
-        """Carry out the command."""
-        if self._direction == VerticalDirection.Below:
+        if self.args.direction == VerticalDirection.Below:
             _paste_from_clipboard(self, (
                 self.api.subs.selected_indexes[-1] + 1
                 if self.api.subs.has_selection else 0
             ))
-        elif self._direction == VerticalDirection.Above:
+        elif self.args.direction == VerticalDirection.Above:
             _paste_from_clipboard(self, (
                 self.api.subs.selected_indexes[0]
                 if self.api.subs.has_selection else 0
@@ -427,30 +342,32 @@ class PasteSubtitlesCommand(BaseCommand):
         else:
             raise AssertionError
 
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            '-d', '--direction',
+            help='direction to paste into',
+            type=VerticalDirection.from_string,
+            choices=list(VerticalDirection),
+            default=VerticalDirection.Below
+        )
+
 
 class CreateAudioSampleCommand(BaseCommand):
-    """
-    Saves current subtitle selection to a WAV file.
-
-    The audio starts at the first selected subtitle start and ends at the last
-    selected subtitle end.
-    """
-
     name = 'grid/create-audio-sample'
     menu_name = 'Create audio sample'
+    help_text = (
+        'Saves current subtitle selection to a WAV file. '
+        'The audio starts at the first selected subtitle start and ends at '
+        'the last selected subtitle end.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection \
             and self.api.media.audio.has_audio_source
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -469,10 +386,10 @@ class CreateAudioSampleCommand(BaseCommand):
             main_window, 'Waveform Audio File (*.wav)', file_name=file_name
         )
         if path is None:
-            self.info('cancelled')
+            self.api.log.info('cancelled')
         else:
             self.api.media.audio.save_wav(path, start_pts, end_pts)
-            self.info(f'saved audio sample to {path}')
+            self.api.log.info(f'saved audio sample to {path}')
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

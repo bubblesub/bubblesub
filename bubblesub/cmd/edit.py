@@ -16,6 +16,7 @@
 
 """Commands related to subtitle manipulation."""
 
+import argparse
 import typing as T
 from copy import copy
 
@@ -36,72 +37,43 @@ def _fmt_shift_target(shift_target: ShiftTarget) -> str:
 
 
 class UndoCommand(BaseCommand):
-    """Undoes last edit operation."""
-
     name = 'edit/undo'
     menu_name = '&Undo'
+    help_text = 'Undoes last edit operation.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.undo.has_undo
 
     async def run(self) -> None:
-        """Carry out the command."""
         self.api.undo.undo()
 
 
 class RedoCommand(BaseCommand):
-    """Redoes last edit operation."""
-
     name = 'edit/redo'
     menu_name = '&Redo'
+    help_text = 'Redoes last edit operation.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.undo.has_redo
 
     async def run(self) -> None:
-        """Carry out the command."""
         self.api.undo.redo()
 
 
 class InsertSubtitleCommand(BaseCommand):
-    """Inserts one empty subtitle near the current subtitle selection."""
-
     name = 'edit/insert-sub'
-
-    def __init__(self, api: bubblesub.api.Api, direction: str) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param direction: whether to insert the subtitle below or above
-        """
-        super().__init__(api)
-        self._direction = VerticalDirection[direction.title()]
+    help_text = (
+        'Inserts one empty subtitle near the current subtitle selection.'
+    )
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        return f'&Insert subtitle ({self._direction.name.lower()})'
+        return f'&Insert subtitle ({self.args.direction.name.lower()})'
 
     async def run(self) -> None:
-        """Carry out the command."""
-        if self._direction == VerticalDirection.Above:
+        if self.args.direction == VerticalDirection.Above:
             if not self.api.subs.selected_indexes:
                 idx = 0
                 prev_sub = None
@@ -127,7 +99,7 @@ class InsertSubtitleCommand(BaseCommand):
             if start > end:
                 start = end
 
-        elif self._direction == VerticalDirection.Below:
+        elif self.args.direction == VerticalDirection.Below:
             if not self.api.subs.selected_indexes:
                 idx = 0
                 cur_sub = None
@@ -155,43 +127,32 @@ class InsertSubtitleCommand(BaseCommand):
             )
             self.api.subs.selected_indexes = [idx]
 
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            '-d', '--direction',
+            help='how to insert the subtitle',
+            type=VerticalDirection.from_string,
+            choices=list(VerticalDirection),
+            required=True
+        )
+
 
 class MoveSubtitlesCommand(BaseCommand):
-    """Moves the selected subtitles above or below."""
-
     name = 'edit/move-subs'
-
-    def __init__(self, api: bubblesub.api.Api, direction: str) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param direction: whether to move the subtitles below or above
-        """
-        super().__init__(api)
-        self._direction = VerticalDirection[direction.title()]
+    help_text = 'Moves the selected subtitles above or below.'
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        return f'&Move selected subtitles {self._direction.name.lower()}'
+        return f'&Move selected subtitles {self.args.direction.name.lower()}'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         if not self.api.subs.selected_indexes:
             return False
-        if self._direction == VerticalDirection.Above:
+        if self.args.direction == VerticalDirection.Above:
             return self.api.subs.selected_indexes[0] > 0
-        elif self._direction == VerticalDirection.Below:
+        elif self.args.direction == VerticalDirection.Below:
             return (
                 self.api.subs.selected_indexes[-1]
                 < len(self.api.subs.events) - 1
@@ -200,11 +161,10 @@ class MoveSubtitlesCommand(BaseCommand):
             raise AssertionError
 
     async def run(self) -> None:
-        """Carry out the command."""
         with self.api.undo.capture():
             indexes: T.List[int] = []
 
-            if self._direction == VerticalDirection.Above:
+            if self.args.direction == VerticalDirection.Above:
                 for start_idx, count in bubblesub.util.make_ranges(
                         self.api.subs.selected_indexes
                 ):
@@ -218,7 +178,7 @@ class MoveSubtitlesCommand(BaseCommand):
                     self.api.subs.events.remove(start_idx + count, count)
                     indexes += [start_idx + i - 1 for i in range(count)]
 
-            elif self._direction == VerticalDirection.Below:
+            elif self.args.direction == VerticalDirection.Below:
                 for start_idx, count in bubblesub.util.make_ranges(
                         self.api.subs.selected_indexes,
                         reverse=True
@@ -238,28 +198,30 @@ class MoveSubtitlesCommand(BaseCommand):
 
             self.api.subs.selected_indexes = indexes
 
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            '-d', '--direction',
+            help='how to move the subtitles',
+            type=VerticalDirection.from_string,
+            choices=list(VerticalDirection),
+            required=True
+        )
+
 
 class MoveSubtitlesToCommand(BaseCommand):
-    """
-    Moves the selected subtitles to the specified position.
-
-    Asks for the position interactively.
-    """
-
     name = 'edit/move-subs-to'
     menu_name = '&Move selected subtitles to...'
+    help_text = (
+        'Moves the selected subtitles to the specified position. '
+        'Asks for the position interactively.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.subs.selected_indexes) > 0
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -300,26 +262,18 @@ class MoveSubtitlesToCommand(BaseCommand):
 
 
 class DuplicateSubtitlesCommand(BaseCommand):
-    """
-    Duplicates the selected subtitles.
-
-    The newly created subtitles are interleaved with the current selection.
-    """
-
     name = 'edit/duplicate-subs'
     menu_name = '&Duplicate selected subtitles'
+    help_text = (
+        'Duplicates the selected subtitles. The newly created subtitles '
+        'are interleaved with the current selection.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         self.api.gui.begin_update()
         with self.api.undo.capture():
             new_selection: T.List[int] = []
@@ -339,22 +293,15 @@ class DuplicateSubtitlesCommand(BaseCommand):
 
 
 class DeleteSubtitlesCommand(BaseCommand):
-    """Deletes the selected subtitles."""
-
     name = 'edit/delete-subs'
     menu_name = '&Delete selected subtitles'
+    help_text = 'Deletes the selected subtitles.'
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         with self.api.undo.capture():
             for start_idx, count in bubblesub.util.make_ranges(
                     self.api.subs.selected_indexes,
@@ -366,22 +313,17 @@ class DeleteSubtitlesCommand(BaseCommand):
 
 
 class SwapSubtitlesTextAndNotesCommand(BaseCommand):
-    """Swaps subtitle text with their notes in the selected subtitles."""
-
     name = 'edit/swap-subs-text-and-notes'
     menu_name = '&Swap notes with subtitle text'
+    help_text = (
+        'Swaps subtitle text with their notes in the selected subtitles.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_events:
                 sub.begin_update()
@@ -390,22 +332,17 @@ class SwapSubtitlesTextAndNotesCommand(BaseCommand):
 
 
 class SplitSubtitleAtCurrentVideoFrameCommand(BaseCommand):
-    """Splits the selected subtitle into two at the current video frame."""
-
     name = 'edit/split-sub-at-current-video-frame'
     menu_name = '&Split selected subtitle at video frame'
+    help_text = (
+        'Splits the selected subtitle into two at the current video frame.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return len(self.api.subs.selected_indexes) == 1
 
     async def run(self) -> None:
-        """Carry out the command."""
         idx = self.api.subs.selected_indexes[0]
         sub = self.api.subs.events[idx]
         split_pos = self.api.media.current_pts
@@ -421,22 +358,15 @@ class SplitSubtitleAtCurrentVideoFrameCommand(BaseCommand):
 
 
 class JoinSubtitlesKeepFirstCommand(BaseCommand):
-    """
-    Joins the selected subtitles together.
-
-    Keeps only the first subtitle's properties.
-    """
-
     name = 'edit/join-subs-keep-first'
     menu_name = '&Join subtitles (keep first)'
+    help_text = (
+        'Joins the selected subtitles together. '
+        'Keeps only the first subtitle\'s properties.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         if len(self.api.subs.selected_indexes) > 1:
             return True
         if len(self.api.subs.selected_indexes) == 1:
@@ -447,7 +377,6 @@ class JoinSubtitlesKeepFirstCommand(BaseCommand):
         return False
 
     async def run(self) -> None:
-        """Carry out the command."""
         idx = self.api.subs.selected_indexes[0]
         with self.api.undo.capture():
             if len(self.api.subs.selected_indexes) == 1:
@@ -460,23 +389,16 @@ class JoinSubtitlesKeepFirstCommand(BaseCommand):
 
 
 class JoinSubtitlesConcatenateCommand(BaseCommand):
-    """
-    Joins the selected subtitles together.
-
-    Keeps the first subtitle's properties and concatenates the text and notes
-    of the consecutive subtitles.
-    """
-
     name = 'edit/join-subs-concatenate'
     menu_name = '&Join subtitles (concatenate)'
+    help_text = (
+        'Joins the selected subtitles together. Keeps the first subtitle\'s '
+        'properties and concatenates the text and notes of the consecutive '
+        'subtitles.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         if len(self.api.subs.selected_indexes) > 1:
             return True
         if len(self.api.subs.selected_indexes) == 1:
@@ -487,7 +409,6 @@ class JoinSubtitlesConcatenateCommand(BaseCommand):
         return False
 
     async def run(self) -> None:
-        """Carry out the command."""
         with self.api.undo.capture():
             idx = self.api.subs.selected_indexes[0]
             if len(self.api.subs.selected_indexes) == 1:
@@ -513,26 +434,18 @@ class JoinSubtitlesConcatenateCommand(BaseCommand):
 
 
 class ShiftSubtitlesWithGuiCommand(BaseCommand):
-    """
-    Shifts the subtitle boundaries by the specified distance.
-
-    Prompts user for details with a GUI dialog.
-    """
-
     name = 'edit/shift-subs-with-gui'
     menu_name = '&Shift times...'
+    help_text = (
+        'Shifts the subtitle boundaries by the specified distance. '
+        'Prompts user for details with a GUI dialog.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
@@ -560,78 +473,58 @@ class ShiftSubtitlesWithGuiCommand(BaseCommand):
 
 
 class SnapSubtitlesToCurrentVideoFrameCommand(BaseCommand):
-    """Snaps selected subtitles to the current video frame."""
-
     name = 'edit/snap-subs-to-current-video-frame'
-
-    def __init__(self, api: bubblesub.api.Api, shift_target: str) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param shift_target: how to snap the subtitles
-        """
-        super().__init__(api)
-        self._shift_target = ShiftTarget[shift_target.title()]
+    help_text = 'Snaps selected subtitles to the current video frame.'
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
         return (
-            f'&Snap {_fmt_shift_target(self._shift_target)} '
+            f'&Snap {_fmt_shift_target(self.args.target)} '
             'to current video frame'
         )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_events:
-                if self._shift_target == ShiftTarget.Start:
+                if self.args.target == ShiftTarget.Start:
                     sub.start = self.api.media.current_pts
-                elif self._shift_target == ShiftTarget.End:
+                elif self.args.target == ShiftTarget.End:
                     sub.end = self.api.media.current_pts
-                elif self._shift_target == ShiftTarget.Both:
+                elif self.args.target == ShiftTarget.Both:
                     sub.start = self.api.media.current_pts
                     sub.end = self.api.media.current_pts
                 else:
                     raise AssertionError
 
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='how to snap the selection',
+            type=ShiftTarget.from_string,
+            choices=list(ShiftTarget),
+            required=True
+        )
+
 
 class PlaceSubtitlesAtCurrentVideoFrameCommand(BaseCommand):
-    """
-    Realigns the selected subtitles to the current video frame.
-
-    The subtitles start time is placed at the current video frame
-    and the subtitles duration is set to the default subtitle duration.
-    """
-
     name = 'edit/place-subs-at-current-video-frame'
     menu_name = '&Place subtitles at current video frame'
+    help_text = (
+        'Realigns the selected subtitles to the current video frame. '
+        'The subtitles start time is placed at the current video frame '
+        'and the subtitles duration is set to the default subtitle duration.'
+    )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_events:
                 sub.start = self.api.media.current_pts
@@ -642,74 +535,45 @@ class PlaceSubtitlesAtCurrentVideoFrameCommand(BaseCommand):
 
 
 class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
-    """Snaps the selected subtitles times to the nearest subtitle."""
-
     name = 'edit/snap-subs-to-near-sub'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            shift_target: str,
-            snap_direction: str
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param shift_target: how to snap the subtitles
-        :param snap_direction: direction to snap into
-        """
-        super().__init__(api)
-        self._shift_target = ShiftTarget[shift_target.title()]
-        self._direction = VerticalDirection[snap_direction.title()]
+    help_text = 'Snaps the selected subtitles times to the nearest subtitle.'
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
         return (
             f'&Snap '
-            f'{_fmt_shift_target(self._shift_target)} to subtitle '
-            f'{self._direction.name.lower()} '
+            f'{_fmt_shift_target(self.args.target)} to subtitle '
+            f'{self.args.direction.name.lower()} '
         )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self._nearest_sub is not None
 
     @property
     def _nearest_sub(self) -> T.Optional[Event]:
         if not self.api.subs.has_selection:
             return None
-        if self._direction == VerticalDirection.Above:
+        if self.args.direction == VerticalDirection.Above:
             return self.api.subs.selected_events[0].prev
-        elif self._direction == VerticalDirection.Below:
+        elif self.args.direction == VerticalDirection.Below:
             return self.api.subs.selected_events[-1].next
         else:
             raise AssertionError
 
     async def run(self) -> None:
-        """Carry out the command."""
         assert self._nearest_sub is not None
         with self.api.undo.capture():
             for sub in self.api.subs.selected_events:
-                if self._shift_target == ShiftTarget.Start:
+                if self.args.target == ShiftTarget.Start:
                     sub.start = self._nearest_sub.end
-                elif self._shift_target == ShiftTarget.End:
+                elif self.args.target == ShiftTarget.End:
                     sub.end = self._nearest_sub.start
-                elif self._shift_target == ShiftTarget.Both:
-                    if self._direction == VerticalDirection.Above:
+                elif self.args.target == ShiftTarget.Both:
+                    if self.args.direction == VerticalDirection.Above:
                         sub.start = self._nearest_sub.end
                         sub.end = self._nearest_sub.end
-                    elif self._direction == VerticalDirection.Below:
+                    elif self.args.direction == VerticalDirection.Below:
                         sub.start = self._nearest_sub.start
                         sub.end = self._nearest_sub.start
                     else:
@@ -717,64 +581,68 @@ class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
                 else:
                     raise AssertionError
 
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='how to snap the subtitles',
+            type=ShiftTarget.from_string,
+            choices=list(ShiftTarget),
+            required=True
+        )
+        parser.add_argument(
+            '-d', '--direction',
+            help='direction to snap into',
+            type=VerticalDirection.from_string,
+            choices=list(VerticalDirection),
+            required=True
+        )
+
 
 class ShiftSubtitlesCommand(BaseCommand):
-    """Shifts selected subtitles times by the specified distance."""
-
     name = 'edit/shift-subs'
-
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            shift_target: str,
-            delta: int
-    ) -> None:
-        """
-        Initialize self.
-
-        :param api: core API
-        :param shift_target: how to shift the subtitles
-        :param delta: milliseconds to shift the subtitles by
-        """
-        super().__init__(api)
-        self._shift_target = ShiftTarget[shift_target.title()]
-        self._delta = delta
+    help_text = 'Shifts selected subtitles times by the specified distance.'
 
     @property
     def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
         return (
             '&Shift '
-            f'{_fmt_shift_target(self._shift_target)} '
-            f'({self._delta:+} ms)'
+            f'{_fmt_shift_target(self.args.target)} '
+            f'({self.args.delta:+} ms)'
         )
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
-
-        :return: whether the command can be executed
-        """
         return self.api.subs.has_selection
 
     async def run(self) -> None:
-        """Carry out the command."""
         with self.api.undo.capture():
             for sub in self.api.subs.selected_events:
-                if self._shift_target == ShiftTarget.Start:
-                    sub.start = max(0, sub.start + self._delta)
-                elif self._shift_target == ShiftTarget.End:
-                    sub.end = max(0, sub.end + self._delta)
-                elif self._shift_target == ShiftTarget.Both:
-                    sub.start = max(0, sub.start + self._delta)
-                    sub.end = max(0, sub.end + self._delta)
+                if self.args.target == ShiftTarget.Start:
+                    sub.start = max(0, sub.start + self.args.delta)
+                elif self.args.target == ShiftTarget.End:
+                    sub.end = max(0, sub.end + self.args.delta)
+                elif self.args.target == ShiftTarget.Both:
+                    sub.start = max(0, sub.start + self.args.delta)
+                    sub.end = max(0, sub.end + self.args.delta)
                 else:
                     raise AssertionError
+
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='how to shift the subtitles',
+            type=ShiftTarget.from_string,
+            choices=list(ShiftTarget),
+            required=True
+        )
+        parser.add_argument(
+            '-d', '--delta',
+            help='milliseconds to shift the subtitles by',
+            type=int,
+            required=True
+        )
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

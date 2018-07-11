@@ -155,7 +155,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _setup_plugins_menu(self) -> None:
         plugins_menu_def: T.List[MenuItem] = [
-            MenuCommand('misc/reload-plugins'),
+            MenuCommand('/reload-plugins'),
             MenuSeparator(),
         ]
         plugins_menu_def += self._api.cmd.get_plugin_menu_items()
@@ -213,15 +213,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 shortcuts[(keys, context)].activated.emit()
 
         try:
-            command = self._api.cmd.get(
-                hotkey.command_name, hotkey.command_args
-            )
+            command = self._api.cmd.get(hotkey.invocation)
         except KeyError:
-            self._api.log.error(f'Unknown command {hotkey.command_name}')
+            self._api.log.error(f'Unknown command {hotkey.invocation}')
             return None
         except TypeError as ex:
             self._api.log.error(
-                f'Error instantiating action {hotkey.command_name}: {ex}'
+                f'Error instantiating action {hotkey.invocation}: {ex}'
             )
             return None
 

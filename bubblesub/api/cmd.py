@@ -22,8 +22,10 @@ interesting, complex ways.
 """
 
 import abc
+import argparse
 import asyncio
 import importlib.util
+import shlex
 import time
 import traceback
 import typing as T
@@ -33,22 +35,37 @@ from PyQt5 import QtCore
 
 import bubblesub.api.api
 import bubblesub.model
-from bubblesub.api.log import LogLevel
 from bubblesub.opt.menu import MenuItem
+
+
+def split_invocation(invocation: str) -> T.Tuple[str, T.List[str]]:
+    """
+    Split invocation into name and arguments array.
+
+    :param invocation: command line to parse
+    :return: tuple containing command name and arguments
+    """
+    if not invocation.startswith('/'):
+        raise ValueError(
+            f'Invocation should start with slash ("{invocation}")'
+        )
+    name, *args = shlex.split(invocation.lstrip('/'))
+    return (name, args)
 
 
 class BaseCommand(abc.ABC):
     """Base class for all commands."""
 
-    args: T.List[T.Any] = []
-
-    def __init__(self, api: 'bubblesub.api.api.Api') -> None:
+    def __init__(self, api: 'bubblesub.api.api.Api', invocation: str) -> None:
         """
         Initialize self.
 
         :param api: core API
+        :param invocation: command invocation
         """
         self.api = api
+        self.invocation = invocation
+        self.args = self.parse_args(split_invocation(invocation)[1])
 
     @bubblesub.model.classproperty
     @abc.abstractproperty
@@ -75,6 +92,16 @@ class BaseCommand(abc.ABC):
         """
         raise NotImplementedError('Command has no menu name')
 
+    @bubblesub.model.classproperty
+    @abc.abstractproperty
+    def help_text(self) -> str:
+        """
+        Return command description shown in help.
+
+        :return: description
+        """
+        raise NotImplementedError('Command has no help text')
+
     @property
     def is_enabled(self) -> bool:
         """
@@ -89,48 +116,26 @@ class BaseCommand(abc.ABC):
         """Carry out the command."""
         raise NotImplementedError('Command has no implementation')
 
-    def debug(self, text: str) -> None:
+    @classmethod
+    def parse_args(cls, invocation: str) -> argparse.Namespace:
         """
-        Log a message with debug level.
+        Convert command invocation.
 
-        :param text: text to log
+        :param cls: type inheriting from BaseCommand
+        :param invocation: command line
+        :return: parsed arguments for command
         """
-        self.log(LogLevel.Debug, text)
+        parser = argparse.ArgumentParser(
+            prog=cls.name,
+            description=cls.help_text,
+            add_help=False
+        )
+        cls._decorate_parser(parser)
+        return parser.parse_args(invocation)
 
-    def info(self, text: str) -> None:
-        """
-        Log a message with info level.
-
-        :param text: text to log
-        """
-        self.log(LogLevel.Info, text)
-
-    def warn(self, text: str) -> None:
-        """
-        Log a message with warning level.
-
-        :param text: text to log
-        """
-        self.log(LogLevel.Warning, text)
-
-    def error(self, text: str) -> None:
-        """
-        Log a message with error level.
-
-        :param text: text to log
-        """
-        self.log(LogLevel.Error, text)
-
-    def log(self, level: LogLevel, text: str) -> None:
-        """
-        Log a message.
-
-        :param level: level to log the message with
-        :param text: text to log
-        """
-        invocation: str = self.name
-        invocation += '(' + ', '.join(map(str, self.args)) + ')'
-        self.api.log.log(level, f'cmd/{invocation}: {text}')
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser):
+        pass
 
 
 class CommandApi(QtCore.QObject):
@@ -147,7 +152,10 @@ class CommandApi(QtCore.QObject):
         super().__init__()
         self._api = api
         self._thread = None
-        self._command_registry: T.Dict[str, T.Type[BaseCommand]] = {}
+        self._command_registry: T.Dict[
+            str,
+            T.Tuple[T.Type[BaseCommand], bool]
+        ] = {}
         self._plugin_menu: T.List[MenuItem] = []
 
     def run(self, cmd: BaseCommand) -> None:
@@ -166,36 +174,40 @@ class CommandApi(QtCore.QObject):
         :return: whether the command was executed without problems
         """
         start_time = time.time()
+
+        self._api.log.info(cmd.invocation)
+
         if not cmd.is_enabled:
-            cmd.info('not available right now')
+            self._api.log.info('Command not available right now')
             return False
 
-        cmd.info('running...')
         try:
             await cmd.run()
         except Exception as ex:  # pylint: disable=broad-except
-            cmd.error(f'{ex}')
+            self._api.log.error(f'Problem running {cmd.invocation}: {ex}')
             traceback.print_exc()
             return False
         end_time = time.time()
         took = end_time - start_time
-        cmd.info(f'ran in {took:.04f} s')
+        self._api.log.debug(f'{cmd.invocation}: took {took:.04f} s')
         return True
 
-    def get(self, name: str, args: T.List[T.Any]) -> BaseCommand:
+    def get(self, invocation: T.Union[T.List[str], str]) -> BaseCommand:
         """
         Retrieve command instance by its name and arguments.
 
-        :param name: command name
-        :param args: command arguments
+        :param invocation: invocation
         :return: BaseCommand instance
         """
-        cls = self._command_registry.get(name)
+        if isinstance(invocation, list):
+            invocation = '/' + ' '.join(shlex.quote(arg) for arg in invocation)
+
+        name, _args = split_invocation(invocation)
+        cls, _is_plugin = self._command_registry.get(name)
         if not cls:
             raise KeyError(f'No command named "{name}"')
         try:
-            instance = cls(self._api, *args)
-            setattr(instance, 'args', args)
+            instance = cls(self._api, invocation)
             return T.cast(BaseCommand, instance)
         except Exception:  # pylint: disable=broad-except
             self._api.log.error(f'Error creating command "{name}"')
@@ -207,7 +219,7 @@ class CommandApi(QtCore.QObject):
 
         :return: list of types
         """
-        return list(self._command_registry.values())
+        return [cls for cls, _is_plugin in self._command_registry.values()]
 
     def load_commands(self, path: Path) -> None:
         """
@@ -249,8 +261,10 @@ class CommandApi(QtCore.QObject):
     def unload_plugin_commands(self) -> None:
         """Remove plugin commands from the registry and clear plugins menu."""
         self._plugin_menu[:] = []
-        for key in list(self._command_registry.keys()):
-            if key.startswith('plugin/'):
+        for key, value in list(self._command_registry.items()):
+            cls, is_plugin = value
+            if is_plugin:
+                print(f'unregistering {cls} as {cls.name}')
                 del self._command_registry[key]
 
     def register_core_command(self, cls: T.Type[BaseCommand]) -> None:
@@ -260,7 +274,7 @@ class CommandApi(QtCore.QObject):
         :param cls: type inheriting from BaseCommand
         """
         print(f'registering {cls} as {cls.name}')
-        self._command_registry[cls.name] = cls
+        self._command_registry[cls.name] = (cls, False)
 
     def register_plugin_command(
             self, cls: T.Type[BaseCommand], menu_item: MenuItem
@@ -276,12 +290,8 @@ class CommandApi(QtCore.QObject):
         :param menu_item: menu item to show in the plugins menu
         """
         print(f'registering {cls} as {cls.name}')
-        if not cls.name.startswith('plugin/'):
-            raise ValueError(
-                'Plugin commands must start with "plugin/" prefix'
-            )
 
-        self._command_registry[cls.name] = cls
+        self._command_registry[cls.name] = (cls, True)
         self._plugin_menu.append(menu_item)
 
     def get_plugin_menu_items(self) -> T.List[MenuItem]:

@@ -37,20 +37,16 @@ class Hotkey:
     def __init__(
             self,
             shortcut: str,
-            command_name: str,
-            *command_args: T.Any
+            invocation: str,
     ) -> None:
         """
         Initialize self.
 
         :param shortcut: key combination that activates the hotkey
-        :param command_name: name of the command to execute when the hotkey
-            is invoked
-        :param command_args: arguments for the command
+        :param invocation: invocation to execute
         """
         self.shortcut = shortcut
-        self.command_name = command_name
-        self.command_args = list(command_args)
+        self.invocation = invocation
 
 
 class HotkeysConfig(BaseConfig):
@@ -63,119 +59,119 @@ class HotkeysConfig(BaseConfig):
         self.hotkeys: T.Dict[HotkeyContext, T.List[Hotkey]] = {
             HotkeyContext.Global:
             [
-                Hotkey('Ctrl+Shift+N', 'file/new'),
-                Hotkey('Ctrl+O', 'file/open'),
-                Hotkey('Ctrl+S', 'file/save'),
-                Hotkey('Ctrl+Shift+S', 'file/save-as'),
-                Hotkey('Ctrl+Q', 'file/quit'),
-                Hotkey('Ctrl+G', 'grid/jump-to-sub-by-number'),
-                Hotkey('Ctrl+Shift+G', 'grid/jump-to-sub-by-time'),
-                Hotkey('Alt+G', 'video/seek-with-gui'),
-                Hotkey('Ctrl+K', 'grid/select-near-sub', 'above'),
-                Hotkey('Ctrl+J', 'grid/select-near-sub', 'below'),
-                Hotkey('Ctrl+A', 'grid/select-all-subs'),
-                Hotkey('Ctrl+Shift+A', 'grid/clear-sub-sel'),
-                Hotkey('Alt+2', 'video/play-around-sel', 'start', 0, 500),
-                Hotkey('Alt+1', 'video/play-around-sel', 'start', -500, 0),
-                Hotkey('Alt+3', 'video/play-around-sel', 'end', -500, 0),
-                Hotkey('Alt+4', 'video/play-around-sel', 'end', 0, 500),
-                Hotkey('Ctrl+R', 'video/play-around-sel', 'both', 0, 0),
-                Hotkey('Ctrl+,', 'video/step-frame', -1),
-                Hotkey('Ctrl+.', 'video/step-frame', 1),
-                Hotkey('Ctrl+Shift+,', 'video/step-ms', -500, False),
-                Hotkey('Ctrl+Shift+.', 'video/step-ms', 500, False),
-                Hotkey('Ctrl+T', 'video/play-current-sub'),
-                Hotkey('Ctrl+P', 'video/pause', 'toggle'),
-                Hotkey('Ctrl+Z', 'edit/undo'),
-                Hotkey('Ctrl+Y', 'edit/redo'),
-                Hotkey('Ctrl+F', 'edit/search'),
-                Hotkey('Ctrl+H', 'edit/search-and-replace'),
-                Hotkey('Ctrl+Return', 'edit/insert-sub', 'below'),
-                Hotkey('Ctrl+Delete', 'edit/delete-subs'),
-                Hotkey('Ctrl+Shift+1', 'audio/shift-sel', 'start', -10),
-                Hotkey('Ctrl+Shift+2', 'audio/shift-sel', 'start', 10),
-                Hotkey('Ctrl+Shift+3', 'audio/shift-sel', 'end', -10),
-                Hotkey('Ctrl+Shift+4', 'audio/shift-sel', 'end', 10),
-                Hotkey('Ctrl+1', 'audio/shift-sel', 'start', -1),
-                Hotkey('Ctrl+2', 'audio/shift-sel', 'start', 1),
-                Hotkey('Ctrl+3', 'audio/shift-sel', 'end', -1),
-                Hotkey('Ctrl+4', 'audio/shift-sel', 'end', 1),
+                Hotkey('Ctrl+Shift+N', '/file/new'),
+                Hotkey('Ctrl+O', '/file/open'),
+                Hotkey('Ctrl+S', '/file/save'),
+                Hotkey('Ctrl+Shift+S', '/file/save-as'),
+                Hotkey('Ctrl+Q', '/file/quit'),
+                Hotkey('Ctrl+G', '/grid/jump-to-sub-by-number'),
+                Hotkey('Ctrl+Shift+G', '/grid/jump-to-sub-by-time'),
+                Hotkey('Alt+G', '/video/seek-with-gui'),
+                Hotkey('Ctrl+K', '/grid/select-near-sub -d above'),
+                Hotkey('Ctrl+J', '/grid/select-near-sub -d below'),
+                Hotkey('Ctrl+A', '/grid/select-all-subs'),
+                Hotkey('Ctrl+Shift+A', '/grid/clear-sub-sel'),
+                Hotkey('Alt+2', '/video/play-around-sel -t start -de 500'),
+                Hotkey('Alt+1', '/video/play-around-sel -t start -ds -500'),
+                Hotkey('Alt+3', '/video/play-around-sel -t end -ds -500'),
+                Hotkey('Alt+4', '/video/play-around-sel -t end -de 500'),
+                Hotkey('Ctrl+R', '/video/play-around-sel'),
+                Hotkey('Ctrl+,', '/video/step-frame -d -1'),
+                Hotkey('Ctrl+.', '/video/step-frame -d 1'),
+                Hotkey('Ctrl+Shift+,', '/video/step-ms -d -500'),
+                Hotkey('Ctrl+Shift+.', '/video/step-ms -d 500'),
+                Hotkey('Ctrl+T', '/video/play-current-sub'),
+                Hotkey('Ctrl+P', '/video/pause toggle'),
+                Hotkey('Ctrl+Z', '/edit/undo'),
+                Hotkey('Ctrl+Y', '/edit/redo'),
+                Hotkey('Ctrl+F', '/edit/search'),
+                Hotkey('Ctrl+H', '/edit/search-and-replace'),
+                Hotkey('Ctrl+Return', '/edit/insert-sub -d below'),
+                Hotkey('Ctrl+Delete', '/edit/delete-subs'),
+                Hotkey('Ctrl+Shift+1', '/audio/shift-sel -t start -d 10'),
+                Hotkey('Ctrl+Shift+2', '/audio/shift-sel -t start -d 10'),
+                Hotkey('Ctrl+Shift+3', '/audio/shift-sel -t end -d -10'),
+                Hotkey('Ctrl+Shift+4', '/audio/shift-sel -t end -d 10'),
+                Hotkey('Ctrl+1', '/audio/shift-sel -t start -d -1'),
+                Hotkey('Ctrl+2', '/audio/shift-sel -t start -d 1'),
+                Hotkey('Ctrl+3', '/audio/shift-sel -t end -d -1'),
+                Hotkey('Ctrl+4', '/audio/shift-sel -t end -d 1'),
                 Hotkey(
-                    'Ctrl+B', 'audio/snap-sel-to-current-video-frame', 'start'
+                    'Ctrl+B', '/audio/snap-sel-to-current-video-frame -t start'
                 ),
                 Hotkey(
-                    'Ctrl+M', 'audio/snap-sel-to-current-video-frame', 'end'
+                    'Ctrl+M', '/audio/snap-sel-to-current-video-frame -t end'
                 ),
-                Hotkey('Ctrl+N', 'audio/place-sel-at-current-video-frame'),
-                Hotkey('Ctrl+[', 'video/set-playback-speed', '{}/1.5'),
-                Hotkey('Ctrl+]', 'video/set-playback-speed', '{}*1.5'),
-                Hotkey('F3', 'edit/search-repeat', 1),
-                Hotkey('Shift+F3', 'edit/search-repeat', -1),
-                Hotkey('Alt+A', 'view/focus-widget', 'spectrogram'),
-                Hotkey('Alt+S', 'view/focus-widget', 'subtitles-grid'),
-                Hotkey('Alt+D', 'view/focus-widget', 'text-editor'),
-                Hotkey('Alt+Shift+D', 'view/focus-widget', 'note-editor'),
-                Hotkey('Alt+X', 'edit/split-sub-at-current-video-frame'),
-                Hotkey('Alt+J', 'edit/join-subs-concatenate'),
-                Hotkey('Alt+Up', 'edit/move-subs', 'above'),
-                Hotkey('Alt+Down', 'edit/move-subs', 'below'),
-                Hotkey('Alt+Return', 'file/properties'),
+                Hotkey('Ctrl+N', '/audio/place-sel-at-current-video-frame'),
+                Hotkey('Ctrl+[', '/video/set-playback-speed {}/1.5'),
+                Hotkey('Ctrl+]', '/video/set-playback-speed {}*1.5'),
+                Hotkey('F3', '/edit/search-repeat -d below'),
+                Hotkey('Shift+F3', '/edit/search-repeat -d above'),
+                Hotkey('Alt+A', '/view/focus-widget spectrogram'),
+                Hotkey('Alt+S', '/view/focus-widget subtitles-grid'),
+                Hotkey('Alt+D', '/view/focus-widget text-editor'),
+                Hotkey('Alt+Shift+D', '/view/focus-widget note-editor'),
+                Hotkey('Alt+X', '/edit/split-sub-at-current-video-frame'),
+                Hotkey('Alt+J', '/edit/join-subs-concatenate'),
+                Hotkey('Alt+Up', '/edit/move-subs -d above'),
+                Hotkey('Alt+Down', '/edit/move-subs -d below'),
+                Hotkey('Alt+Return', '/file/properties'),
             ],
 
             HotkeyContext.Spectrogram:
             [
-                Hotkey('Shift+1', 'audio/shift-sel', 'start', -10),
-                Hotkey('Shift+2', 'audio/shift-sel', 'start', 10),
-                Hotkey('Shift+3', 'audio/shift-sel', 'end', -10),
-                Hotkey('Shift+4', 'audio/shift-sel', 'end', 10),
-                Hotkey('1', 'audio/shift-sel', 'start', -1),
-                Hotkey('2', 'audio/shift-sel', 'start', 1),
-                Hotkey('3', 'audio/shift-sel', 'end', -1),
-                Hotkey('4', 'audio/shift-sel', 'end', 1),
-                Hotkey('C', 'audio/commit-sel'),
-                Hotkey('K', 'edit/insert-sub', 'above'),
-                Hotkey('J', 'edit/insert-sub', 'below'),
-                Hotkey('R', 'video/play-around-sel', 'both', 0, 0),
-                Hotkey('T', 'video/play-current-sub'),
-                Hotkey('P', 'video/pause', 'toggle'),
-                Hotkey('Shift+K', 'grid/select-near-sub', 'above'),
-                Hotkey('Shift+J', 'grid/select-near-sub', 'below'),
-                Hotkey('A', 'audio/scroll-spectrogram', -0.05),
-                Hotkey('F', 'audio/scroll-spectrogram', 0.05),
-                Hotkey('Ctrl+-', 'audio/zoom-spectrogram', 1.1),
-                Hotkey('Ctrl+=', 'audio/zoom-spectrogram', 0.9),
-                Hotkey('Ctrl++', 'audio/zoom-spectrogram', 0.9),
-                Hotkey(',', 'video/step-frame', -1),
-                Hotkey('.', 'video/step-frame', 1),
-                Hotkey('Ctrl+Shift+,', 'video/step-ms', -1500, False),
-                Hotkey('Ctrl+Shift+.', 'video/step-ms', 1500, False),
-                Hotkey('Shift+,', 'video/step-ms', -500, False),
-                Hotkey('Shift+.', 'video/step-ms', 500, False),
-                Hotkey('B', 'audio/snap-sel-to-current-video-frame', 'start'),
-                Hotkey('M', 'audio/snap-sel-to-current-video-frame', 'end'),
-                Hotkey('N', 'audio/place-sel-at-current-video-frame'),
-                Hotkey('[', 'video/set-playback-speed', '{}/1.5'),
-                Hotkey(']', 'video/set-playback-speed', '{}*1.5'),
+                Hotkey('Shift+1', '/audio/shift-sel -t start -d -10'),
+                Hotkey('Shift+2', '/audio/shift-sel -t start -d 10'),
+                Hotkey('Shift+3', '/audio/shift-sel -t end -d -10'),
+                Hotkey('Shift+4', '/audio/shift-sel -t end -d 10'),
+                Hotkey('1', '/audio/shift-sel -t start -d -1'),
+                Hotkey('2', '/audio/shift-sel -t start -d 1'),
+                Hotkey('3', '/audio/shift-sel -t end -d -1'),
+                Hotkey('4', '/audio/shift-sel -t end -d 1'),
+                Hotkey('C', '/audio/commit-sel'),
+                Hotkey('K', '/edit/insert-sub -d above'),
+                Hotkey('J', '/edit/insert-sub -d below'),
+                Hotkey('R', '/video/play-around-sel'),
+                Hotkey('T', '/video/play-current-sub'),
+                Hotkey('P', '/video/pause toggle'),
+                Hotkey('Shift+K', '/grid/select-near-sub -d above'),
+                Hotkey('Shift+J', '/grid/select-near-sub -d below'),
+                Hotkey('A', '/audio/scroll-spectrogram -d -0.05'),
+                Hotkey('F', '/audio/scroll-spectrogram -d 0.05'),
+                Hotkey('Ctrl+-', '/audio/zoom-spectrogram -d 1.1'),
+                Hotkey('Ctrl+=', '/audio/zoom-spectrogram -d 0.9'),
+                Hotkey('Ctrl++', '/audio/zoom-spectrogram -d 0.9'),
+                Hotkey(',', '/video/step-frame -d -1'),
+                Hotkey('.', '/video/step-frame -d 1'),
+                Hotkey('Ctrl+Shift+,', '/video/step-ms -d -1500'),
+                Hotkey('Ctrl+Shift+.', '/video/step-ms -d 1500'),
+                Hotkey('Shift+,', '/video/step-ms -d -500'),
+                Hotkey('Shift+.', '/video/step-ms -d 500'),
+                Hotkey('B', '/audio/snap-sel-to-current-video-frame -t start'),
+                Hotkey('M', '/audio/snap-sel-to-current-video-frame -t end'),
+                Hotkey('N', '/audio/place-sel-at-current-video-frame'),
+                Hotkey('[', '/video/set-playback-speed {}/1.5'),
+                Hotkey(']', '/video/set-playback-speed {}*1.5'),
                 Hotkey(
-                    'Alt+Left', 'audio/snap-sel-to-near-sub', 'start', 'above'
+                    'Alt+Left', '/audio/snap-sel-to-near-sub -t start -d above'
                 ),
                 Hotkey(
-                    'Alt+Right', 'audio/snap-sel-to-near-sub', 'end', 'below'
+                    'Alt+Right', '/audio/snap-sel-to-near-sub -t end -d below'
                 ),
                 Hotkey(
-                    'Alt+Shift+Left', 'audio/snap-sel-to-near-keyframe',
-                    'start', 'above'
+                    'Alt+Shift+Left',
+                    '/audio/snap-sel-to-near-keyframe -t start -d above'
                 ),
                 Hotkey(
-                    'Alt+Shift+Right', 'audio/snap-sel-to-near-keyframe',
-                    'end', 'below'
+                    'Alt+Shift+Right',
+                    '/audio/snap-sel-to-near-keyframe -t end -d below'
                 ),
             ],
 
             HotkeyContext.SubtitlesGrid:
             [
-                Hotkey('Ctrl+C', 'grid/copy-subs'),
-                Hotkey('Ctrl+V', 'grid/paste-subs', 'below'),
+                Hotkey('Ctrl+C', '/grid/copy-subs'),
+                Hotkey('Ctrl+V', '/grid/paste-subs -d below'),
             ],
         }
 
@@ -192,8 +188,7 @@ class HotkeysConfig(BaseConfig):
                 self.hotkeys[context].append(
                     Hotkey(
                         hotkey_obj['shortcut'],
-                        hotkey_obj['command_name'],
-                        *hotkey_obj['command_args']
+                        hotkey_obj['invocation']
                     )
                 )
 
@@ -209,8 +204,7 @@ class HotkeysConfig(BaseConfig):
                 [
                     {
                         'shortcut': hotkey.shortcut,
-                        'command_name': hotkey.command_name,
-                        'command_args': hotkey.command_args,
+                        'invocation': hotkey.invocation,
                     }
                     for hotkey in hotkeys
                 ]

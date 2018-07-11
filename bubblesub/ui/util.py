@@ -197,22 +197,21 @@ class _CommandAction(QtWidgets.QAction):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            cmd_name: str,
-            cmd_args: T.Any,
+            invocation: str,
             parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
-        self.cmd = api.cmd.get(cmd_name, cmd_args)
+        self.cmd = api.cmd.get(invocation)
         self.triggered.connect(lambda: api.cmd.run(self.cmd))
 
 
-def _build_hotkey_map(api: bubblesub.api.Api) -> T.Dict[T.Any, str]:
+def _build_hotkey_map(
+        api: bubblesub.api.Api
+) -> T.Dict[T.Tuple[str, str], str]:
     ret = {}
     for context, hotkeys in api.opt.hotkeys:
         for hotkey in hotkeys:
-            ret[context, hotkey.command_name, tuple(hotkey.command_args)] = (
-                hotkey.shortcut
-            )
+            ret[context, hotkey.invocation] = hotkey.shortcut
     return ret
 
 
@@ -221,7 +220,7 @@ def setup_cmd_menu(
         parent: QtWidgets.QWidget,
         menu_def: T.Sequence[MenuItem],
         context: HotkeyContext,
-        hotkey_map: T.Optional[T.Dict[T.Any, str]] = None
+        hotkey_map: T.Optional[T.Dict[T.Tuple[str, str], str]] = None
 ) -> T.Any:
     if hotkey_map is None:
         hotkey_map = _build_hotkey_map(api)
@@ -241,26 +240,18 @@ def setup_cmd_menu(
             setup_cmd_menu(api, submenu, item.children, context, hotkey_map)
         elif isinstance(item, MenuCommand):
             try:
-                action = _CommandAction(
-                    api,
-                    item.command_name,
-                    item.command_args,
-                    parent
-                )
+                action = _CommandAction(api, item.invocation, parent)
             except KeyError:
-                api.log.error(f'Unknown command {item.command_name}')
+                api.log.error(f'Unknown command {item.invocation}')
                 continue
             except TypeError as ex:
                 api.log.error(
-                    f'Error instantiating action {item.command_name}: {ex}'
+                    f'Error instantiating action {item.invocation}: {ex}'
                 )
                 continue
 
             action.setText(action.cmd.menu_name)
-            shortcut = hotkey_map.get(
-                (context, item.command_name, tuple(item.command_args)),
-                None
-            )
+            shortcut = hotkey_map.get((context, item.invocation))
             if shortcut is not None:
                 action.setText(action.text() + '\t' + shortcut)
 

@@ -21,13 +21,11 @@ from bubblesub.api.cmd import BaseCommand
 
 
 class ReloadPluginsCommand(BaseCommand):
-    """Reloads the user plugins."""
-
-    name = 'misc/reload-plugins'
+    name = 'reload-plugins'
     menu_name = 'Reload plugins'
+    help_text = 'Reloads the user plugins.'
 
     async def run(self) -> None:
-        """Carry out the command."""
         if self.api.opt.root_dir:
             self.api.cmd.unload_plugin_commands()
             self.api.cmd.load_commands(self.api.opt.root_dir / 'scripts')

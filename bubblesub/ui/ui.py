@@ -43,7 +43,7 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
         api.opt.load(api.opt.DEFAULT_PATH)
         api.cmd.load_commands(api.opt.root_dir / 'scripts')
     if args.file:
-        api.cmd.run(api.cmd.get('file/open', [args.file]))
+        api.cmd.run(api.cmd.get(['file/open', args.file]))
 
     main_window = bubblesub.ui.main_window.MainWindow(api, console)
     api.gui.set_main_window(main_window)

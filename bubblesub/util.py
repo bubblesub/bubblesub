@@ -25,7 +25,19 @@ import time
 import typing as T
 
 
-class ShiftTarget(enum.IntEnum):
+class _BaseIntEnum(enum.IntEnum):
+    @classmethod
+    def from_string(cls, name: str) -> None:
+        try:
+            return cls[name.title()]
+        except KeyError:
+            raise ValueError
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
+
+class ShiftTarget(_BaseIntEnum):
     """What parts to shift in a target that has a start and an end point."""
 
     Start = 1
@@ -33,23 +45,25 @@ class ShiftTarget(enum.IntEnum):
     Both = 3
 
 
-class HorizontalDirection(enum.IntEnum):
+class HorizontalDirection(_BaseIntEnum):
     """Generic direction on a horizontal 1D axis."""
 
     Left = 1
     Right = 2
 
 
-class VerticalDirection(enum.IntEnum):
+class VerticalDirection(_BaseIntEnum):
     """Generic direction on a vertical 1D axis."""
 
     Above = 1
     Below = 2
 
 
-class BooleanOperation(enum.IntEnum):
+class BooleanOperation(_BaseIntEnum):
     """Operation to perform on a boolean."""
 
+    On = 1
+    Off = 2
     Enable = 1
     Disable = 2
     Toggle = 3

@@ -327,13 +327,11 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
 
 class FilePropertiesCommand(BaseCommand):
-    """Opens up the metadata editor dialog."""
-
     name = 'file/properties'
     menu_name = '&Properties...'
+    help_text = 'Opens up the metadata editor dialog.'
 
     async def run(self) -> None:
-        """Carry out the command."""
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:

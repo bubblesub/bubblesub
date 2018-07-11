@@ -2,165 +2,505 @@
 
 Context refers to the currently focused widget.
 
-| Shortcut | Context | Command name | Command parameters |
-|:--|:--|:--|:--|
-|<kbd>Ctrl+Shift+N</kbd> | global | <a href="#user-content-cmd-file-new">`file/new`</a> |  |
-|<kbd>Ctrl+O</kbd> | global | <a href="#user-content-cmd-file-open">`file/open`</a> |  |
-|<kbd>Ctrl+S</kbd> | global | <a href="#user-content-cmd-file-save">`file/save`</a> |  |
-|<kbd>Ctrl+Shift+S</kbd> | global | <a href="#user-content-cmd-file-save-as">`file/save-as`</a> |  |
-|<kbd>Ctrl+Q</kbd> | global | <a href="#user-content-cmd-file-quit">`file/quit`</a> |  |
-|<kbd>Ctrl+G</kbd> | global | <a href="#user-content-cmd-grid-jump-to-sub-by-number">`grid/jump-to-sub-by-number`</a> |  |
-|<kbd>Ctrl+Shift+G</kbd> | global | <a href="#user-content-cmd-grid-jump-to-sub-by-time">`grid/jump-to-sub-by-time`</a> |  |
-|<kbd>Alt+G</kbd> | global | <a href="#user-content-cmd-video-seek-with-gui">`video/seek-with-gui`</a> |  |
-|<kbd>Ctrl+K</kbd> | global | <a href="#user-content-cmd-grid-select-near-sub">`grid/select-near-sub`</a> | `above` |
-|<kbd>Ctrl+J</kbd> | global | <a href="#user-content-cmd-grid-select-near-sub">`grid/select-near-sub`</a> | `below` |
-|<kbd>Ctrl+A</kbd> | global | <a href="#user-content-cmd-grid-select-all-subs">`grid/select-all-subs`</a> |  |
-|<kbd>Ctrl+Shift+A</kbd> | global | <a href="#user-content-cmd-grid-clear-sub-sel">`grid/clear-sub-sel`</a> |  |
-|<kbd>Alt+2</kbd> | global | <a href="#user-content-cmd-video-play-around-sel">`video/play-around-sel`</a> | `start`, `0`, `500` |
-|<kbd>Alt+1</kbd> | global | <a href="#user-content-cmd-video-play-around-sel">`video/play-around-sel`</a> | `start`, `-500`, `0` |
-|<kbd>Alt+3</kbd> | global | <a href="#user-content-cmd-video-play-around-sel">`video/play-around-sel`</a> | `end`, `-500`, `0` |
-|<kbd>Alt+4</kbd> | global | <a href="#user-content-cmd-video-play-around-sel">`video/play-around-sel`</a> | `end`, `0`, `500` |
-|<kbd>Ctrl+R</kbd> | global | <a href="#user-content-cmd-video-play-around-sel">`video/play-around-sel`</a> | `both`, `0`, `0` |
-|<kbd>Ctrl+,</kbd> | global | <a href="#user-content-cmd-video-step-frame">`video/step-frame`</a> | `-1` |
-|<kbd>Ctrl+.</kbd> | global | <a href="#user-content-cmd-video-step-frame">`video/step-frame`</a> | `1` |
-|<kbd>Ctrl+Shift+,</kbd> | global | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `-500`, `False` |
-|<kbd>Ctrl+Shift+.</kbd> | global | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `500`, `False` |
-|<kbd>Ctrl+T</kbd> | global | <a href="#user-content-cmd-video-play-current-sub">`video/play-current-sub`</a> |  |
-|<kbd>Ctrl+P</kbd> | global | <a href="#user-content-cmd-video-pause">`video/pause`</a> | `toggle` |
-|<kbd>Ctrl+Z</kbd> | global | <a href="#user-content-cmd-edit-undo">`edit/undo`</a> |  |
-|<kbd>Ctrl+Y</kbd> | global | <a href="#user-content-cmd-edit-redo">`edit/redo`</a> |  |
-|<kbd>Ctrl+F</kbd> | global | <a href="#user-content-cmd-edit-search">`edit/search`</a> |  |
-|<kbd>Ctrl+H</kbd> | global | <a href="#user-content-cmd-edit-search-and-replace">`edit/search-and-replace`</a> |  |
-|<kbd>Ctrl+Return</kbd> | global | <a href="#user-content-cmd-edit-insert-sub">`edit/insert-sub`</a> | `below` |
-|<kbd>Ctrl+Delete</kbd> | global | <a href="#user-content-cmd-edit-delete-subs">`edit/delete-subs`</a> |  |
-|<kbd>Ctrl+Shift+1</kbd> | global | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `start`, `-10` |
-|<kbd>Ctrl+Shift+2</kbd> | global | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `start`, `10` |
-|<kbd>Ctrl+Shift+3</kbd> | global | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `end`, `-10` |
-|<kbd>Ctrl+Shift+4</kbd> | global | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `end`, `10` |
-|<kbd>Ctrl+1</kbd> | global | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `start`, `-1` |
-|<kbd>Ctrl+2</kbd> | global | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `start`, `1` |
-|<kbd>Ctrl+3</kbd> | global | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `end`, `-1` |
-|<kbd>Ctrl+4</kbd> | global | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `end`, `1` |
-|<kbd>Ctrl+B</kbd> | global | <a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">`audio/snap-sel-to-current-video-frame`</a> | `start` |
-|<kbd>Ctrl+M</kbd> | global | <a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">`audio/snap-sel-to-current-video-frame`</a> | `end` |
-|<kbd>Ctrl+N</kbd> | global | <a href="#user-content-cmd-audio-place-sel-at-current-video-frame">`audio/place-sel-at-current-video-frame`</a> |  |
-|<kbd>Ctrl+[</kbd> | global | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}/1.5` |
-|<kbd>Ctrl+]</kbd> | global | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}*1.5` |
-|<kbd>F3</kbd> | global | <a href="#user-content-cmd-edit-search-repeat">`edit/search-repeat`</a> | `1` |
-|<kbd>Shift+F3</kbd> | global | <a href="#user-content-cmd-edit-search-repeat">`edit/search-repeat`</a> | `-1` |
-|<kbd>Alt+A</kbd> | global | <a href="#user-content-cmd-view-focus-widget">`view/focus-widget`</a> | `spectrogram` |
-|<kbd>Alt+S</kbd> | global | <a href="#user-content-cmd-view-focus-widget">`view/focus-widget`</a> | `subtitles-grid` |
-|<kbd>Alt+D</kbd> | global | <a href="#user-content-cmd-view-focus-widget">`view/focus-widget`</a> | `text-editor` |
-|<kbd>Alt+Shift+D</kbd> | global | <a href="#user-content-cmd-view-focus-widget">`view/focus-widget`</a> | `note-editor` |
-|<kbd>Alt+X</kbd> | global | <a href="#user-content-cmd-edit-split-sub-at-current-video-frame">`edit/split-sub-at-current-video-frame`</a> |  |
-|<kbd>Alt+J</kbd> | global | <a href="#user-content-cmd-edit-join-subs-concatenate">`edit/join-subs-concatenate`</a> |  |
-|<kbd>Alt+Up</kbd> | global | <a href="#user-content-cmd-edit-move-subs">`edit/move-subs`</a> | `above` |
-|<kbd>Alt+Down</kbd> | global | <a href="#user-content-cmd-edit-move-subs">`edit/move-subs`</a> | `below` |
-|<kbd>Alt+Return</kbd> | global | <a href="#user-content-cmd-file-properties">`file/properties`</a> |  |
-|<kbd>Shift+1</kbd> | spectrogram | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `start`, `-10` |
-|<kbd>Shift+2</kbd> | spectrogram | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `start`, `10` |
-|<kbd>Shift+3</kbd> | spectrogram | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `end`, `-10` |
-|<kbd>Shift+4</kbd> | spectrogram | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `end`, `10` |
-|<kbd>1</kbd> | spectrogram | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `start`, `-1` |
-|<kbd>2</kbd> | spectrogram | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `start`, `1` |
-|<kbd>3</kbd> | spectrogram | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `end`, `-1` |
-|<kbd>4</kbd> | spectrogram | <a href="#user-content-cmd-audio-shift-sel">`audio/shift-sel`</a> | `end`, `1` |
-|<kbd>C</kbd> | spectrogram | <a href="#user-content-cmd-audio-commit-sel">`audio/commit-sel`</a> |  |
-|<kbd>K</kbd> | spectrogram | <a href="#user-content-cmd-edit-insert-sub">`edit/insert-sub`</a> | `above` |
-|<kbd>J</kbd> | spectrogram | <a href="#user-content-cmd-edit-insert-sub">`edit/insert-sub`</a> | `below` |
-|<kbd>R</kbd> | spectrogram | <a href="#user-content-cmd-video-play-around-sel">`video/play-around-sel`</a> | `both`, `0`, `0` |
-|<kbd>T</kbd> | spectrogram | <a href="#user-content-cmd-video-play-current-sub">`video/play-current-sub`</a> |  |
-|<kbd>P</kbd> | spectrogram | <a href="#user-content-cmd-video-pause">`video/pause`</a> | `toggle` |
-|<kbd>Shift+K</kbd> | spectrogram | <a href="#user-content-cmd-grid-select-near-sub">`grid/select-near-sub`</a> | `above` |
-|<kbd>Shift+J</kbd> | spectrogram | <a href="#user-content-cmd-grid-select-near-sub">`grid/select-near-sub`</a> | `below` |
-|<kbd>A</kbd> | spectrogram | <a href="#user-content-cmd-audio-scroll-spectrogram">`audio/scroll-spectrogram`</a> | `-0.05` |
-|<kbd>F</kbd> | spectrogram | <a href="#user-content-cmd-audio-scroll-spectrogram">`audio/scroll-spectrogram`</a> | `0.05` |
-|<kbd>Ctrl+-</kbd> | spectrogram | <a href="#user-content-cmd-audio-zoom-spectrogram">`audio/zoom-spectrogram`</a> | `1.1` |
-|<kbd>Ctrl+=</kbd> | spectrogram | <a href="#user-content-cmd-audio-zoom-spectrogram">`audio/zoom-spectrogram`</a> | `0.9` |
-|<kbd>Ctrl++</kbd> | spectrogram | <a href="#user-content-cmd-audio-zoom-spectrogram">`audio/zoom-spectrogram`</a> | `0.9` |
-|<kbd>,</kbd> | spectrogram | <a href="#user-content-cmd-video-step-frame">`video/step-frame`</a> | `-1` |
-|<kbd>.</kbd> | spectrogram | <a href="#user-content-cmd-video-step-frame">`video/step-frame`</a> | `1` |
-|<kbd>Ctrl+Shift+,</kbd> | spectrogram | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `-1500`, `False` |
-|<kbd>Ctrl+Shift+.</kbd> | spectrogram | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `1500`, `False` |
-|<kbd>Shift+,</kbd> | spectrogram | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `-500`, `False` |
-|<kbd>Shift+.</kbd> | spectrogram | <a href="#user-content-cmd-video-step-ms">`video/step-ms`</a> | `500`, `False` |
-|<kbd>B</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">`audio/snap-sel-to-current-video-frame`</a> | `start` |
-|<kbd>M</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">`audio/snap-sel-to-current-video-frame`</a> | `end` |
-|<kbd>N</kbd> | spectrogram | <a href="#user-content-cmd-audio-place-sel-at-current-video-frame">`audio/place-sel-at-current-video-frame`</a> |  |
-|<kbd>[</kbd> | spectrogram | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}/1.5` |
-|<kbd>]</kbd> | spectrogram | <a href="#user-content-cmd-video-set-playback-speed">`video/set-playback-speed`</a> | `{}*1.5` |
-|<kbd>Alt+Left</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-near-sub">`audio/snap-sel-to-near-sub`</a> | `start`, `above` |
-|<kbd>Alt+Right</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-near-sub">`audio/snap-sel-to-near-sub`</a> | `end`, `below` |
-|<kbd>Alt+Shift+Left</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">`audio/snap-sel-to-near-keyframe`</a> | `start`, `above` |
-|<kbd>Alt+Shift+Right</kbd> | spectrogram | <a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">`audio/snap-sel-to-near-keyframe`</a> | `end`, `below` |
-|<kbd>Ctrl+C</kbd> | subtitles grid | <a href="#user-content-cmd-grid-copy-subs">`grid/copy-subs`</a> |  |
-|<kbd>Ctrl+V</kbd> | subtitles grid | <a href="#user-content-cmd-grid-paste-subs">`grid/paste-subs`</a> | `below` |
+| Shortcut | Context | Command |
+|:--|:--|:--|
+|<kbd>Ctrl+Shift+N</kbd> | global | <code><a href="#user-content-cmd-file-new">file/new</a> </code> |
+|<kbd>Ctrl+O</kbd> | global | <code><a href="#user-content-cmd-file-open">file/open</a> </code> |
+|<kbd>Ctrl+S</kbd> | global | <code><a href="#user-content-cmd-file-save">file/save</a> </code> |
+|<kbd>Ctrl+Shift+S</kbd> | global | <code><a href="#user-content-cmd-file-save-as">file/save-as</a> </code> |
+|<kbd>Ctrl+Q</kbd> | global | <code><a href="#user-content-cmd-file-quit">file/quit</a> </code> |
+|<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-grid-jump-to-sub-by-number">grid/jump-to-sub-by-number</a> </code> |
+|<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-grid-jump-to-sub-by-time">grid/jump-to-sub-by-time</a> </code> |
+|<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-video-seek-with-gui">video/seek-with-gui</a> </code> |
+|<kbd>Ctrl+K</kbd> | global | <code><a href="#user-content-cmd-grid-select-near-sub">grid/select-near-sub</a> -d above</code> |
+|<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-grid-select-near-sub">grid/select-near-sub</a> -d below</code> |
+|<kbd>Ctrl+A</kbd> | global | <code><a href="#user-content-cmd-grid-select-all-subs">grid/select-all-subs</a> </code> |
+|<kbd>Ctrl+Shift+A</kbd> | global | <code><a href="#user-content-cmd-grid-clear-sub-sel">grid/clear-sub-sel</a> </code> |
+|<kbd>Alt+2</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t start -de 500</code> |
+|<kbd>Alt+1</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t start -ds -500</code> |
+|<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t end -ds -500</code> |
+|<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t end -de 500</code> |
+|<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> </code> |
+|<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d -1</code> |
+|<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d 1</code> |
+|<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d -500</code> |
+|<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 500</code> |
+|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
+|<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-video-pause">video/pause</a> toggle</code> |
+|<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-edit-undo">edit/undo</a> </code> |
+|<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-edit-redo">edit/redo</a> </code> |
+|<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-edit-search">edit/search</a> </code> |
+|<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-edit-search-and-replace">edit/search-and-replace</a> </code> |
+|<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
+|<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-edit-delete-subs">edit/delete-subs</a> </code> |
+|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 10</code> |
+|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 10</code> |
+|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d -10</code> |
+|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d 10</code> |
+|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d -1</code> |
+|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 1</code> |
+|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d -1</code> |
+|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d 1</code> |
+|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t start</code> |
+|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t end</code> |
+|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-place-sel-at-current-video-frame">audio/place-sel-at-current-video-frame</a> </code> |
+|<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
+|<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
+|<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-edit-search-repeat">edit/search-repeat</a> -d below</code> |
+|<kbd>Shift+F3</kbd> | global | <code><a href="#user-content-cmd-edit-search-repeat">edit/search-repeat</a> -d above</code> |
+|<kbd>Alt+A</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> spectrogram</code> |
+|<kbd>Alt+S</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> subtitles-grid</code> |
+|<kbd>Alt+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> text-editor</code> |
+|<kbd>Alt+Shift+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> note-editor</code> |
+|<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-edit-split-sub-at-current-video-frame">edit/split-sub-at-current-video-frame</a> </code> |
+|<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-edit-join-subs-concatenate">edit/join-subs-concatenate</a> </code> |
+|<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d above</code> |
+|<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d below</code> |
+|<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file/properties</a> </code> |
+|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d -10</code> |
+|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 10</code> |
+|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d -10</code> |
+|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d 10</code> |
+|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d -1</code> |
+|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 1</code> |
+|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d -1</code> |
+|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d 1</code> |
+|<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-commit-sel">audio/commit-sel</a> </code> |
+|<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d above</code> |
+|<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
+|<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> </code> |
+|<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
+|<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-video-pause">video/pause</a> toggle</code> |
+|<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-grid-select-near-sub">grid/select-near-sub</a> -d above</code> |
+|<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-grid-select-near-sub">grid/select-near-sub</a> -d below</code> |
+|<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-spectrogram">audio/scroll-spectrogram</a> -d -0.05</code> |
+|<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-spectrogram">audio/scroll-spectrogram</a> -d 0.05</code> |
+|<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-spectrogram">audio/zoom-spectrogram</a> -d 1.1</code> |
+|<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-spectrogram">audio/zoom-spectrogram</a> -d 0.9</code> |
+|<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-spectrogram">audio/zoom-spectrogram</a> -d 0.9</code> |
+|<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d -1</code> |
+|<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d 1</code> |
+|<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d -1500</code> |
+|<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 1500</code> |
+|<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d -500</code> |
+|<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 500</code> |
+|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t start</code> |
+|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t end</code> |
+|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-place-sel-at-current-video-frame">audio/place-sel-at-current-video-frame</a> </code> |
+|<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
+|<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
+|<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-sub">audio/snap-sel-to-near-sub</a> -t start -d above</code> |
+|<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-sub">audio/snap-sel-to-near-sub</a> -t end -d below</code> |
+|<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">audio/snap-sel-to-near-keyframe</a> -t start -d above</code> |
+|<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">audio/snap-sel-to-near-keyframe</a> -t end -d below</code> |
+|<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-grid-copy-subs">grid/copy-subs</a> </code> |
+|<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-grid-paste-subs">grid/paste-subs</a> -d below</code> |
 
 # Default commands
-| Command name | Description |
-|:--|:--|
-|`audio/commit‑sel` | <a name="cmd-audio-commit-sel"></a>Commits the spectrogram selection into the current subtitle.<br>The selected subtitle start and end times is synced to the current spectrogram selection boundaries. |
-|`audio/place‑sel‑at‑current‑video‑frame` | <a name="cmd-audio-place-sel-at-current-video-frame"></a>Realigns the selection to the current video frame.<br>The selection start is placed at the current video frame and the selection size is set to the default subtitle duration. |
-|`audio/scroll‑spectrogram` | <a name="cmd-audio-scroll-spectrogram"></a>Scrolls the spectrogram horizontally by its width's percentage.<br>Parameters:<br><ol><li>delta (real number): factor to shift the view by</li></ol> |
-|`audio/shift‑sel` | <a name="cmd-audio-shift-sel"></a>Shifts the spectrogram selection by the specified distance.<br>Parameters:<br><ol><li>shift_target (string): how to shift the selection</li><li>delta (integer): amount to shift the selection by</li><li>frames (boolean): if true, shift by frames; otherwise by milliseconds</li></ol> |
-|`audio/snap‑sel‑to‑current‑video‑frame` | <a name="cmd-audio-snap-sel-to-current-video-frame"></a>Snaps the spectrogram selection to the current video frame.<br>Parameters:<br><ol><li>shift_target (string): how to snap the selection</li></ol> |
-|`audio/snap‑sel‑to‑near‑keyframe` | <a name="cmd-audio-snap-sel-to-near-keyframe"></a>Snaps the spectrogram selection to the nearest keyframe.<br>Parameters:<br><ol><li>shift_target (string): how to snap the selection</li><li>snap_direction (string): direction to snap into</li></ol> |
-|`audio/snap‑sel‑to‑near‑sub` | <a name="cmd-audio-snap-sel-to-near-sub"></a>Snaps the spectrogram selection to the nearest subtitle.<br>Parameters:<br><ol><li>shift_target (string): how to snap the selection</li><li>snap_direction (string): direction to snap into</li></ol> |
-|`audio/zoom‑spectrogram` | <a name="cmd-audio-zoom-spectrogram"></a>Zooms the spectrogram in or out by the specified factor.<br>Parameters:<br><ol><li>delta (integer): factor to zoom the view by</li></ol> |
-|`edit/delete‑subs` | <a name="cmd-edit-delete-subs"></a>Deletes the selected subtitles. |
-|`edit/duplicate‑subs` | <a name="cmd-edit-duplicate-subs"></a>Duplicates the selected subtitles.<br>The newly created subtitles are interleaved with the current selection. |
-|`edit/insert‑sub` | <a name="cmd-edit-insert-sub"></a>Inserts one empty subtitle near the current subtitle selection.<br>Parameters:<br><ol><li>direction (string): whether to insert the subtitle below or above</li></ol> |
-|`edit/join‑subs‑as‑karaoke` | <a name="cmd-edit-join-subs-as-karaoke"></a>Joins the selected subtitles adding karaoke timing tags inbetween. |
-|`edit/join‑subs‑as‑transformation` | <a name="cmd-edit-join-subs-as-transformation"></a>Joins the selected subtitles adding animation timing tags inbetween.<br>The syllables appear one after another. |
-|`edit/join‑subs‑concatenate` | <a name="cmd-edit-join-subs-concatenate"></a>Joins the selected subtitles together.<br>Keeps the first subtitle's properties and concatenates the text and notes of the consecutive subtitles. |
-|`edit/join‑subs‑keep‑first` | <a name="cmd-edit-join-subs-keep-first"></a>Joins the selected subtitles together.<br>Keeps only the first subtitle's properties. |
-|`edit/manage‑styles` | <a name="cmd-edit-manage-styles"></a>Opens up the style manager. |
-|`edit/move‑subs` | <a name="cmd-edit-move-subs"></a>Moves the selected subtitles above or below.<br>Parameters:<br><ol><li>direction (string): whether to move the subtitles below or above</li></ol> |
-|`edit/move‑subs‑to` | <a name="cmd-edit-move-subs-to"></a>Moves the selected subtitles to the specified position.<br>Asks for the position interactively. |
-|`edit/place‑subs‑at‑current‑video‑frame` | <a name="cmd-edit-place-subs-at-current-video-frame"></a>Realigns the selected subtitles to the current video frame.<br>The subtitles start time is placed at the current video frame and the subtitles duration is set to the default subtitle duration. |
-|`edit/redo` | <a name="cmd-edit-redo"></a>Redoes last edit operation. |
-|`edit/search` | <a name="cmd-edit-search"></a>Opens up the search dialog. |
-|`edit/search‑and‑replace` | <a name="cmd-edit-search-and-replace"></a>Opens up the search and replace dialog. |
-|`edit/search‑repeat` | <a name="cmd-edit-search-repeat"></a>Repeats last search operation.<br>Parameters:<br><ol><li>direction (integer): 1 to search forward, -1 to search backward</li></ol> |
-|`edit/shift‑subs` | <a name="cmd-edit-shift-subs"></a>Shifts selected subtitles times by the specified distance.<br>Parameters:<br><ol><li>shift_target (string): how to shift the subtitles</li><li>delta (integer): milliseconds to shift the subtitles by</li></ol> |
-|`edit/shift‑subs‑with‑gui` | <a name="cmd-edit-shift-subs-with-gui"></a>Shifts the subtitle boundaries by the specified distance.<br>Prompts user for details with a GUI dialog. |
-|`edit/snap‑subs‑to‑current‑video‑frame` | <a name="cmd-edit-snap-subs-to-current-video-frame"></a>Snaps selected subtitles to the current video frame.<br>Parameters:<br><ol><li>shift_target (string): how to snap the subtitles</li></ol> |
-|`edit/snap‑subs‑to‑near‑sub` | <a name="cmd-edit-snap-subs-to-near-sub"></a>Snaps the selected subtitles times to the nearest subtitle.<br>Parameters:<br><ol><li>shift_target (string): how to snap the subtitles</li><li>snap_direction (string): direction to snap into</li></ol> |
-|`edit/spell‑check` | <a name="cmd-edit-spell-check"></a>Opens up the spell check dialog. |
-|`edit/split‑sub‑at‑current‑video‑frame` | <a name="cmd-edit-split-sub-at-current-video-frame"></a>Splits the selected subtitle into two at the current video frame. |
-|`edit/split‑sub‑by‑karaoke` | <a name="cmd-edit-split-sub-by-karaoke"></a>Splits the selected subtitles according to the karaoke tags inside. |
-|`edit/swap‑subs‑text‑and‑notes` | <a name="cmd-edit-swap-subs-text-and-notes"></a>Swaps subtitle text with their notes in the selected subtitles. |
-|`edit/undo` | <a name="cmd-edit-undo"></a>Undoes last edit operation. |
-|`file/load‑video` | <a name="cmd-file-load-video"></a>Loads a video file for the audio/video playback.<br>Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.<br>Parameters:<br><ol><li>path (path, optional): optional path to load the video from</li></ol> |
-|`file/new` | <a name="cmd-file-new"></a>Opens a new file.<br>Prompts user to save the current file if there are unsaved changes. |
-|`file/open` | <a name="cmd-file-open"></a>Opens an existing subtitles file.<br>Prompts user to save the current file if there are unsaved changes. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.<br>Parameters:<br><ol><li>path (path, optional): optional path to load the subtitles from</li></ol> |
-|`file/properties` | <a name="cmd-file-properties"></a>Opens up the metadata editor dialog. |
-|`file/quit` | <a name="cmd-file-quit"></a>Quits the application.<br>Prompts user to save the current file if there are unsaved changes. |
-|`file/save` | <a name="cmd-file-save"></a>Saves the current subtitles to an ASS file.<br>If the currently loaded subtitles weren't ever saved, prompts user to choose where to save the file to. |
-|`file/save‑as` | <a name="cmd-file-save-as"></a>Saves the current subtitles to an ASS file.<br>Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.<br>Parameters:<br><ol><li>path (path, optional): optional path to save the subtitles to</li></ol> |
-|`grid/clear‑sub‑sel` | <a name="cmd-grid-clear-sub-sel"></a>Clears subtitle selection. |
-|`grid/copy‑subs` | <a name="cmd-grid-copy-subs"></a>Copies the selected subtitles. |
-|`grid/copy‑subs/text` | <a name="cmd-grid-copy-subs-text"></a>Copies text from the subtitle selection. |
-|`grid/copy‑subs/times` | <a name="cmd-grid-copy-subs-times"></a>Copies time boundaries from the subtitle selection. |
-|`grid/create‑audio‑sample` | <a name="cmd-grid-create-audio-sample"></a>Saves current subtitle selection to a WAV file.<br>The audio starts at the first selected subtitle start and ends at the last selected subtitle end. |
-|`grid/jump‑to‑sub‑by‑number` | <a name="cmd-grid-jump-to-sub-by-number"></a>Jumps to the specified number.<br>Prompts user for the line number with a GUI dialog. |
-|`grid/jump‑to‑sub‑by‑time` | <a name="cmd-grid-jump-to-sub-by-time"></a>Jumps to the subtitle at specified time.<br>Prompts user for details with a GUI dialog. |
-|`grid/paste‑subs` | <a name="cmd-grid-paste-subs"></a>Pastes subtitles near the selection.<br>Parameters:<br><ol><li>direction (string): direction to paste into</li></ol> |
-|`grid/paste‑subs/text` | <a name="cmd-grid-paste-subs-text"></a>Pastes teext into the subtitle selection. |
-|`grid/paste‑subs/times` | <a name="cmd-grid-paste-subs-times"></a>Pastes time boundaries into the subtitle selection. |
-|`grid/select‑all‑subs` | <a name="cmd-grid-select-all-subs"></a>Selects all subtitles. |
-|`grid/select‑near‑sub` | <a name="cmd-grid-select-near-sub"></a>Selects nearest subtitle in given direction to the current selection.<br>Parameters:<br><ol><li>direction (string): direction to look in</li></ol> |
-|`misc/reload‑plugins` | <a name="cmd-misc-reload-plugins"></a>Reloads the user plugins. |
-|`video/mute` | <a name="cmd-video-mute"></a>Mutes or unmutes the video audio.<br>Parameters:<br><ol><li>op (string): whether to enable, disable, or toggle</li></ol> |
-|`video/pause` | <a name="cmd-video-pause"></a>Pauses or unpauses the video playback.<br>Parameters:<br><ol><li>op (string): whether to enable, disable, or toggle</li></ol> |
-|`video/play‑around‑sel` | <a name="cmd-video-play-around-sel"></a>Plays a region near the current spectrogram selection.<br>Parameters:<br><ol><li>shift_target (string): part of selection to play around</li><li>delta_start (integer): delta relative to the selection start inmilliseconds</li><li>delta_end (integer): delta relative to the selection end in milliseconds</li></ol> |
-|`video/play‑current‑sub` | <a name="cmd-video-play-current-sub"></a>Plays the currently selected subtitle. |
-|`video/screenshot` | <a name="cmd-video-screenshot"></a>Makes a screenshot of the current video frame.<br>Prompts user for the path where to save the screenshot to.<br>Parameters:<br><ol><li>include_subtitles (boolean): whether to "burn" the subtitles intothe screenshot</li></ol> |
-|`video/seek‑with‑gui` | <a name="cmd-video-seek-with-gui"></a>Seeks the video to the desired place.<br>Prompts user for details with a GUI dialog. |
-|`video/set‑playback‑speed` | <a name="cmd-video-set-playback-speed"></a>Adjusts the video playback speed.<br>Parameters:<br><ol><li>expr (string): expression to calculate new playback speed</li></ol> |
-|`video/set‑volume` | <a name="cmd-video-set-volume"></a>Adjusts the video volume.<br>Parameters:<br><ol><li>expr (string): expression to calculate new volume</li></ol> |
-|`video/step‑frame` | <a name="cmd-video-step-frame"></a>Seeks the video by the specified amount of frames.<br>Parameters:<br><ol><li>delta (integer): how many frames to step</li></ol> |
-|`video/step‑ms` | <a name="cmd-video-step-ms"></a>Seeks the video by the specified milliseconds.<br>Parameters:<br><ol><li>delta (integer): how many milliseconds to step</li><li>precise (boolean): whether to use precise seekingat the expense of performance</li></ol> |
-|`view/focus‑widget` | <a name="cmd-view-focus-widget"></a>Focuses the target widget.<br>Parameters:<br><ol><li>target_widget (string): which widget to focus</li></ol> |
-|`view/set‑palette` | <a name="cmd-view-set-palette"></a>Changes the GUI color theme.<br>Parameters:<br><ol><li>palette_name (string): name of the palette to change to</li></ol> |
+### <a name="cmd-audio-commit-sel"></a>`audio/commit‑sel`
+Commits the spectrogram selection into the current subtitle. The selected subtitle start and end times is synced to the current spectrogram selection boundaries.
+### <a name="cmd-audio-place-sel-at-current-video-frame"></a>`audio/place‑sel‑at‑current‑video‑frame`
+Realigns the selection to the current video frame. The selection start is placed at the current video frame and the selection size is set to the default subtitle duration.
+### <a name="cmd-audio-scroll-spectrogram"></a>`audio/scroll‑spectrogram`
+Scrolls the spectrogram horizontally by its width's percentage.
+
+
+
+Usage:
+`audio/scroll‑spectrogram -d|--delta=…`
+
+
+
+* `-d`, `--delta`: factor to shift the view by
+
+### <a name="cmd-audio-shift-sel"></a>`audio/shift‑sel`
+Shifts the spectrogram selection by the specified distance.
+
+
+
+Usage:
+`audio/shift‑sel -t|--target=… -d|--delta=… [-f|--frames]`
+
+
+
+* `-t`, `--target`: how to shift the selection (`start`, `end`, `both`)
+* `-d`, `--delta`: amount to shift the selection by
+* `-f`, `--frames`: if true, shift by frames; otherwise by milliseconds
+
+### <a name="cmd-audio-snap-sel-to-current-video-frame"></a>`audio/snap‑sel‑to‑current‑video‑frame`
+Snaps the spectrogram selection to the current video frame.
+
+
+
+Usage:
+`audio/snap‑sel‑to‑current‑video‑frame -t|--target=…`
+
+
+
+* `-t`, `--target`: how to snap the selection (`start`, `end`, `both`)
+
+### <a name="cmd-audio-snap-sel-to-near-keyframe"></a>`audio/snap‑sel‑to‑near‑keyframe`
+Snaps the spectrogram selection to the nearest keyframe.
+
+
+
+Usage:
+`audio/snap‑sel‑to‑near‑keyframe -t|--target=… -d|--direction=…`
+
+
+
+* `-t`, `--target`: how to snap the selection (`start`, `end`, `both`)
+* `-d`, `--direction`: direction to snap into (`above`, `below`)
+
+### <a name="cmd-audio-snap-sel-to-near-sub"></a>`audio/snap‑sel‑to‑near‑sub`
+Snaps the spectrogram selection to the nearest subtitle.
+
+
+
+Usage:
+`audio/snap‑sel‑to‑near‑sub -t|--target=… -d|--direction=…`
+
+
+
+* `-t`, `--target`: how to snap the selection (`start`, `end`, `both`)
+* `-d`, `--direction`: direction to snap into (`above`, `below`)
+
+### <a name="cmd-audio-zoom-spectrogram"></a>`audio/zoom‑spectrogram`
+Zooms the spectrogram in or out by the specified factor.
+
+
+
+Usage:
+`audio/zoom‑spectrogram -d|--delta=…`
+
+
+
+* `-d`, `--delta`: factor to zoom the view by
+
+### <a name="cmd-edit-delete-subs"></a>`edit/delete‑subs`
+Deletes the selected subtitles.
+### <a name="cmd-edit-duplicate-subs"></a>`edit/duplicate‑subs`
+Duplicates the selected subtitles. The newly created subtitles are interleaved with the current selection.
+### <a name="cmd-edit-insert-sub"></a>`edit/insert‑sub`
+Inserts one empty subtitle near the current subtitle selection.
+
+
+
+Usage:
+`edit/insert‑sub -d|--direction=…`
+
+
+
+* `-d`, `--direction`: how to insert the subtitle (`above`, `below`)
+
+### <a name="cmd-edit-join-subs-as-karaoke"></a>`edit/join‑subs‑as‑karaoke`
+Joins the selected subtitles adding karaoke timing tags inbetween.
+### <a name="cmd-edit-join-subs-as-transformation"></a>`edit/join‑subs‑as‑transformation`
+Joins the selected subtitles adding animation timing tags inbetween. The syllables appear one after another.
+### <a name="cmd-edit-join-subs-concatenate"></a>`edit/join‑subs‑concatenate`
+Joins the selected subtitles together. Keeps the first subtitle's properties and concatenates the text and notes of the consecutive subtitles.
+### <a name="cmd-edit-join-subs-keep-first"></a>`edit/join‑subs‑keep‑first`
+Joins the selected subtitles together. Keeps only the first subtitle's properties.
+### <a name="cmd-edit-manage-styles"></a>`edit/manage‑styles`
+Opens up the style manager.
+### <a name="cmd-edit-move-subs"></a>`edit/move‑subs`
+Moves the selected subtitles above or below.
+
+
+
+Usage:
+`edit/move‑subs -d|--direction=…`
+
+
+
+* `-d`, `--direction`: how to move the subtitles (`above`, `below`)
+
+### <a name="cmd-edit-move-subs-to"></a>`edit/move‑subs‑to`
+Moves the selected subtitles to the specified position. Asks for the position interactively.
+### <a name="cmd-edit-place-subs-at-current-video-frame"></a>`edit/place‑subs‑at‑current‑video‑frame`
+Realigns the selected subtitles to the current video frame. The subtitles start time is placed at the current video frame and the subtitles duration is set to the default subtitle duration.
+### <a name="cmd-edit-redo"></a>`edit/redo`
+Redoes last edit operation.
+### <a name="cmd-edit-search"></a>`edit/search`
+Opens up the search dialog.
+### <a name="cmd-edit-search-and-replace"></a>`edit/search‑and‑replace`
+Opens up the search and replace dialog.
+### <a name="cmd-edit-search-repeat"></a>`edit/search‑repeat`
+Repeats last search operation.
+
+
+
+Usage:
+`edit/search‑repeat -d|--direction=…`
+
+
+
+* `-d`, `--direction`: whether to search forward or backward (`above`, `below`)
+
+### <a name="cmd-edit-shift-subs"></a>`edit/shift‑subs`
+Shifts selected subtitles times by the specified distance.
+
+
+
+Usage:
+`edit/shift‑subs -t|--target=… -d|--delta=…`
+
+
+
+* `-t`, `--target`: how to shift the subtitles (`start`, `end`, `both`)
+* `-d`, `--delta`: milliseconds to shift the subtitles by
+
+### <a name="cmd-edit-shift-subs-with-gui"></a>`edit/shift‑subs‑with‑gui`
+Shifts the subtitle boundaries by the specified distance. Prompts user for details with a GUI dialog.
+### <a name="cmd-edit-snap-subs-to-current-video-frame"></a>`edit/snap‑subs‑to‑current‑video‑frame`
+Snaps selected subtitles to the current video frame.
+
+
+
+Usage:
+`edit/snap‑subs‑to‑current‑video‑frame -t|--target=…`
+
+
+
+* `-t`, `--target`: how to snap the selection (`start`, `end`, `both`)
+
+### <a name="cmd-edit-snap-subs-to-near-sub"></a>`edit/snap‑subs‑to‑near‑sub`
+Snaps the selected subtitles times to the nearest subtitle.
+
+
+
+Usage:
+`edit/snap‑subs‑to‑near‑sub -t|--target=… -d|--direction=…`
+
+
+
+* `-t`, `--target`: how to snap the subtitles (`start`, `end`, `both`)
+* `-d`, `--direction`: direction to snap into (`above`, `below`)
+
+### <a name="cmd-edit-spell-check"></a>`edit/spell‑check`
+Opens up the spell check dialog.
+### <a name="cmd-edit-split-sub-at-current-video-frame"></a>`edit/split‑sub‑at‑current‑video‑frame`
+Splits the selected subtitle into two at the current video frame.
+### <a name="cmd-edit-split-sub-by-karaoke"></a>`edit/split‑sub‑by‑karaoke`
+Splits the selected subtitles according to the karaoke tags inside.
+### <a name="cmd-edit-swap-subs-text-and-notes"></a>`edit/swap‑subs‑text‑and‑notes`
+Swaps subtitle text with their notes in the selected subtitles.
+### <a name="cmd-edit-undo"></a>`edit/undo`
+Undoes last edit operation.
+### <a name="cmd-file-load-video"></a>`file/load‑video`
+Loads a video file for the audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
+
+
+
+Usage:
+`file/load‑video [path]`
+
+
+
+* `path`: optional path to load the video from
+
+### <a name="cmd-file-new"></a>`file/new`
+Opens a new file. Prompts user to save the current file if there are unsaved changes.
+### <a name="cmd-file-open"></a>`file/open`
+Opens an existing subtitles file. Prompts user to save the current file if there are unsaved changes. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
+
+
+
+Usage:
+`file/open [path]`
+
+
+
+* `path`: path to load the subtitles from
+
+### <a name="cmd-file-properties"></a>`file/properties`
+Opens up the metadata editor dialog.
+### <a name="cmd-file-quit"></a>`file/quit`
+Quits the application. Prompts user to save the current file if there are unsaved changes.
+### <a name="cmd-file-save"></a>`file/save`
+Saves the current subtitles to an ASS file. If the currently loaded subtitles weren't ever saved, prompts user to choose where to save the file to.
+### <a name="cmd-file-save-as"></a>`file/save‑as`
+Saves the current subtitles to an ASS file. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
+
+
+
+Usage:
+`file/save‑as [path]`
+
+
+
+* `path`: optional path to save the subtitles to
+
+### <a name="cmd-grid-clear-sub-sel"></a>`grid/clear‑sub‑sel`
+Clears subtitle selection.
+### <a name="cmd-grid-copy-subs"></a>`grid/copy‑subs`
+Copies the selected subtitles.
+### <a name="cmd-grid-copy-subs-text"></a>`grid/copy‑subs/text`
+Copies text from the subtitle selection.
+### <a name="cmd-grid-copy-subs-times"></a>`grid/copy‑subs/times`
+Copies time boundaries from the subtitle selection.
+### <a name="cmd-grid-create-audio-sample"></a>`grid/create‑audio‑sample`
+Saves current subtitle selection to a WAV file. The audio starts at the first selected subtitle start and ends at the last selected subtitle end.
+### <a name="cmd-grid-jump-to-sub-by-number"></a>`grid/jump‑to‑sub‑by‑number`
+Jumps to the specified number. Prompts user for the line number with a GUI dialog.
+### <a name="cmd-grid-jump-to-sub-by-time"></a>`grid/jump‑to‑sub‑by‑time`
+Jumps to the subtitle at specified time. Prompts user for details with a GUI dialog.
+### <a name="cmd-grid-paste-subs"></a>`grid/paste‑subs`
+Pastes subtitles near the selection.
+
+
+
+Usage:
+`grid/paste‑subs -d|--direction=…`
+
+
+
+* `-d`, `--direction`: direction to paste into (`above`, `below`)
+
+### <a name="cmd-grid-paste-subs-text"></a>`grid/paste‑subs/text`
+Pastes teext into the subtitle selection.
+### <a name="cmd-grid-paste-subs-times"></a>`grid/paste‑subs/times`
+Pastes time boundaries into the subtitle selection.
+### <a name="cmd-grid-select-all-subs"></a>`grid/select‑all‑subs`
+Selects all subtitles.
+### <a name="cmd-grid-select-near-sub"></a>`grid/select‑near‑sub`
+Selects nearest subtitle in given direction to the current selection.
+
+
+
+Usage:
+`grid/select‑near‑sub -d|--direction=…`
+
+
+
+* `-d`, `--direction`: direction to look in (`above`, `below`)
+
+### <a name="cmd-reload-plugins"></a>`reload‑plugins`
+Reloads the user plugins.
+### <a name="cmd-video-mute"></a>`video/mute`
+Mutes or unmutes the video audio.
+
+
+
+Usage:
+`video/mute operation`
+
+
+
+* `operation`: whether to mute the audio (`on`, `off`, `toggle`)
+
+### <a name="cmd-video-pause"></a>`video/pause`
+Pauses or unpauses the video playback.
+
+
+
+Usage:
+`video/pause operation`
+
+
+
+* `operation`: whether to pause the video (`on`, `off`, `toggle`)
+
+### <a name="cmd-video-play-around-sel"></a>`video/play‑around‑sel`
+Plays a region near the current spectrogram selection.
+
+
+
+Usage:
+`video/play‑around‑sel -t|--target=… -ds|--delta-start=… -de|--delta-end=…`
+
+
+
+* `-t`, `--target`: part of selection to play around (`start`, `end`, `both`)
+* `-ds`, `--delta-start`: delta relative to the selection start in milliseconds
+* `-de`, `--delta-end`: delta relative to the selection end in milliseconds
+
+### <a name="cmd-video-play-current-sub"></a>`video/play‑current‑sub`
+Plays the currently selected subtitle.
+### <a name="cmd-video-screenshot"></a>`video/screenshot`
+Makes a screenshot of the current video frame. Prompts user for the path where to save the screenshot to.
+
+
+
+Usage:
+`video/screenshot [-i|--include-subs]`
+
+
+
+* `-i`, `--include-subs`: whether to "burn" the subtitles into the screenshot
+
+### <a name="cmd-video-seek-with-gui"></a>`video/seek‑with‑gui`
+Seeks the video to the desired place. Prompts user for details with a GUI dialog.
+### <a name="cmd-video-set-playback-speed"></a>`video/set‑playback‑speed`
+Adjusts the video playback speed.
+
+
+
+Usage:
+`video/set‑playback‑speed expression`
+
+
+
+* `expression`: expression to calculate new playback speed
+
+### <a name="cmd-video-set-volume"></a>`video/set‑volume`
+Adjusts the video volume.
+
+
+
+Usage:
+`video/set‑volume expression`
+
+
+
+* `expression`: expression to calculate new volume
+
+### <a name="cmd-video-step-frame"></a>`video/step‑frame`
+Seeks the video by the specified amount of frames.
+
+
+
+Usage:
+`video/step‑frame -d|--delta=…`
+
+
+
+* `-d`, `--delta`: how many frames to step
+
+### <a name="cmd-video-step-ms"></a>`video/step‑ms`
+Seeks the video by the specified milliseconds.
+
+
+
+Usage:
+`video/step‑ms -d|--delta=… [-p|--precise]`
+
+
+
+* `-d`, `--delta`: how many milliseconds to step
+* `-p`, `--precise`: whether to use precise seeking at the expense of performance
+
+### <a name="cmd-view-focus-widget"></a>`view/focus‑widget`
+Focuses the target widget.
+
+
+
+Usage:
+`view/focus‑widget target`
+
+
+
+* `target`: which widget to focus (`text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`)
+
+### <a name="cmd-view-set-palette"></a>`view/set‑palette`
+Changes the GUI color theme.
+
+
+
+Usage:
+`view/set‑palette palette_name`
+
+
+
+* `palette_name`: name of the palette to change to
 
