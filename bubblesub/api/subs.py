@@ -47,6 +47,7 @@ class SubtitlesApi(QtCore.QObject):
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
         self.ass_file = AssFile()
+        self.ass_file.styles.insert_one(name='Default')
         self.info_changed = self.ass_file.info.changed
         self.events.items_removed.connect(self._on_items_removed)
 
@@ -160,6 +161,7 @@ class SubtitlesApi(QtCore.QObject):
         self.ass_file.info.clear()
         self.ass_file.events.clear()
         self.ass_file.styles.clear()
+        self.ass_file.styles.insert_one(name='Default')
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:
