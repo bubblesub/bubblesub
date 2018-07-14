@@ -113,7 +113,12 @@ class ConsoleTextEdit(QtWidgets.QTextEdit):
 
         self.moveCursor(QtGui.QTextCursor.End)
         cursor = QtGui.QTextCursor(self.textCursor())
-        cursor.insertText(f'{separator}[{level.name.lower()[0]}] {text}')
+        cursor.insertText(
+            f'{separator}'
+            f'[{level.name.lower()[0]}] '
+            f'[{datetime.datetime.now():%H:%M:%S.%f}] '
+            f'{text}'
+        )
 
         self.horizontalScrollBar().setValue(
             old_pos_x
