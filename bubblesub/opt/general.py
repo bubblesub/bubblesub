@@ -100,6 +100,8 @@ PALETTE_DARK: T.Dict[str, T.Tuple[int, ...]] = {
     'console/warning':                 (200, 100, 0),
     'console/info':                    (255, 255, 255),
     'console/debug':                   (0, 100, 200),
+    'console/timestamp':               (130, 130, 130),
+    'console/command':                 (100, 200, 100),
 }
 
 PALETTE_LIGHT: T.Dict[str, T.Tuple[int, ...]] = {
@@ -158,6 +160,8 @@ PALETTE_LIGHT: T.Dict[str, T.Tuple[int, ...]] = {
     'console/warning':                 (200, 100, 0),
     'console/info':                    (0, 0, 0),
     'console/debug':                   (0, 100, 200),
+    'console/timestamp':               (120, 120, 120),
+    'console/command':                 (0, 128, 0),
 }
 
 

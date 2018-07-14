@@ -46,6 +46,14 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
         self._invisible_fmt.setFontPointSize(1)
         self._invisible_fmt.setForeground(QtCore.Qt.transparent)
 
+        self._regex = re.compile(
+            r'^'
+            r'(?P<prefix>\[(?P<log_level>[ewid])\] )'
+            r'(?P<timestamp>\[[^\]]+\]) '
+            r'(?P<text>.*)'
+            r'$'
+        )
+
         self.update_style_map()
 
     def get_font(self) -> QtGui.QFont:
@@ -61,20 +69,32 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
             'w': self._get_format('console/warning'),
             'i': self._get_format('console/info'),
             'd': self._get_format('console/debug'),
+            'timestamp': self._get_format('console/timestamp'),
+            'command': self._get_format('console/command'),
         }
         self.rehighlight()
 
     def highlightBlock(self, text: str) -> None:
-        for match in re.finditer(r'^(\[([ewid])\] )(.*)$', text):
+        for match in re.finditer(self._regex, text):
+            start = match.start()
+            start_of_timestamp = match.start() + len(match.group('prefix'))
+            start_of_text = start_of_timestamp + len(match.group('timestamp'))
+            end = match.end()
+
             self.setFormat(
-                match.start(),
-                match.start() + len(match.group(1)),
-                self._invisible_fmt
+                start, start_of_timestamp - start, self._invisible_fmt
             )
             self.setFormat(
-                match.start() + len(match.group(1)),
-                match.end() - match.start(),
-                self._style_map[match.group(2)]
+                start_of_timestamp,
+                start_of_text - start_of_timestamp,
+                self._style_map['timestamp']
+            )
+            self.setFormat(
+                start_of_text,
+                end - start,
+                self._style_map['command']
+                if match.group('text').startswith('/')
+                else self._style_map[match.group('log_level')]
             )
 
     def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
