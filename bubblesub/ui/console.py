@@ -72,7 +72,11 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
             'timestamp': self._get_format('console/timestamp'),
             'command': self._get_format('console/command'),
         }
+        QtWidgets.QApplication.setOverrideCursor(
+            QtGui.QCursor(QtCore.Qt.WaitCursor)
+        )
         self.rehighlight()
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def highlightBlock(self, text: str) -> None:
         for match in re.finditer(self._regex, text):
