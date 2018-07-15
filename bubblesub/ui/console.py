@@ -119,6 +119,7 @@ class ConsoleTextEdit(QtWidgets.QTextEdit):
         super().__init__(parent)
         self._api = api
         self._scroll_lock = False
+        self._empty = True
 
         self._syntax_highlight = ConsoleSyntaxHighlight(api, self)
         self.setReadOnly(True)
@@ -133,7 +134,7 @@ class ConsoleTextEdit(QtWidgets.QTextEdit):
 
         old_pos_x = self.horizontalScrollBar().value()
         old_pos_y = self.verticalScrollBar().value()
-        separator = '\n' if self.toPlainText().strip() else ''
+        separator = '' if self._empty else '\n'
 
         self.moveCursor(QtGui.QTextCursor.End)
         cursor = QtGui.QTextCursor(self.textCursor())
@@ -154,6 +155,7 @@ class ConsoleTextEdit(QtWidgets.QTextEdit):
             if self._scroll_lock
             else self.verticalScrollBar().maximum()
         )
+        self._empty = False
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         self._syntax_highlight.update_style_map()
