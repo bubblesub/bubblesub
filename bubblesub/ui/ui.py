@@ -30,7 +30,8 @@ import bubblesub.ui.main_window
 
 def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
     QtCore.pyqtRemoveInputHook()
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv + ['--name', 'bubblesub'])
+    app.setApplicationName('bubblesub')
     loop = quamash.QEventLoop(app)
     asyncio.set_event_loop(loop)
 
