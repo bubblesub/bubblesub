@@ -111,7 +111,7 @@ def str_to_ms(text: str) -> int:
         (?:(?P<hour>\\d+):)?
         (?P<minute>\\d\\d):
         (?P<second>\\d\\d)\\.
-        (?P<millisecond>\\d\\d\\d)$
+        (?P<millisecond>\\d\\d\\d)\\d*$
         '''.strip(),
         text.strip(),
         re.VERBOSE
@@ -127,7 +127,7 @@ def str_to_ms(text: str) -> int:
         if sign == '-':
             ret = -ret
         return ret
-    raise ValueError('Invalid time')
+    raise ValueError(f'Invalid time: "{text}"')
 
 
 def hash_digest(subject: T.Any) -> str:
