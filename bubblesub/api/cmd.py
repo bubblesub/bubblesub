@@ -25,6 +25,7 @@ import abc
 import argparse
 import asyncio
 import importlib.util
+import io
 import shlex
 import time
 import traceback
@@ -38,6 +39,31 @@ import bubblesub.model
 from bubblesub.opt.menu import MenuItem
 
 
+class CommandError(RuntimeError):
+    """Base class for all command related errors."""
+    pass
+
+
+class CommandNotFound(CommandError):
+    """The given command was not found."""
+    pass
+
+
+class BadInvocation(CommandError):
+    """The given invocation was invalid."""
+    pass
+
+
+class CommandArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        with io.StringIO() as handle:
+            handle.write(f'{self.prog}: error: {message}\n')
+            self.print_help(handle)
+            handle.seek(0)
+            message = handle.read()
+        raise BadInvocation(message)
+
+
 def split_invocation(invocation: str) -> T.Tuple[str, T.List[str]]:
     """
     Split invocation into name and arguments array.
@@ -46,7 +72,7 @@ def split_invocation(invocation: str) -> T.Tuple[str, T.List[str]]:
     :return: tuple containing command name and arguments
     """
     if not invocation.startswith('/'):
-        raise ValueError(
+        raise BadInvocation(
             f'Invocation should start with slash ("{invocation}")'
         )
     name, *args = shlex.split(invocation.lstrip('/'))
@@ -125,7 +151,7 @@ class BaseCommand(abc.ABC):
         :param invocation: command line
         :return: parsed arguments for command
         """
-        parser = argparse.ArgumentParser(
+        parser = CommandArgumentParser(
             prog=cls.name,
             description=cls.help_text,
             add_help=False
@@ -157,6 +183,19 @@ class CommandApi(QtCore.QObject):
             T.Tuple[T.Type[BaseCommand], bool]
         ] = {}
         self._plugin_menu: T.List[MenuItem] = []
+
+    def execute(self, invocation: T.Union[T.List[str], str]) -> None:
+        if not invocation:
+            return
+        if isinstance(invocation, list):
+            invocation = '/' + ' '.join(shlex.quote(arg) for arg in invocation)
+
+        try:
+            cmd = self.get(invocation)
+        except Exception as ex:
+            self._api.log.error(str(ex))
+        else:
+            self.run(cmd)
 
     def run(self, cmd: BaseCommand) -> None:
         """
@@ -203,15 +242,11 @@ class CommandApi(QtCore.QObject):
             invocation = '/' + ' '.join(shlex.quote(arg) for arg in invocation)
 
         name, _args = split_invocation(invocation)
-        cls, _is_plugin = self._command_registry.get(name)
+        cls, _is_plugin = self._command_registry.get(name, (None, False))
         if not cls:
-            raise KeyError(f'No command named "{name}"')
-        try:
-            instance = cls(self._api, invocation)
-            return T.cast(BaseCommand, instance)
-        except Exception:  # pylint: disable=broad-except
-            self._api.log.error(f'Error creating command "{name}"')
-            raise
+            raise CommandNotFound(f'No command named "{name}"')
+        instance = cls(self._api, invocation)
+        return T.cast(BaseCommand, instance)
 
     def get_all(self) -> T.List[T.Type[BaseCommand]]:
         """

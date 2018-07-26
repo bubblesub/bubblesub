@@ -214,13 +214,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         try:
             command = self._api.cmd.get(hotkey.invocation)
-        except KeyError:
-            self._api.log.error(f'Unknown command {hotkey.invocation}')
-            return None
-        except TypeError as ex:
-            self._api.log.error(
-                f'Error instantiating action {hotkey.invocation}: {ex}'
-            )
+        except bubblesub.api.cmd.CommandError as ex:
+            self._api.log.error(str(ex))
             return None
 
         shortcut = QtWidgets.QShortcut(

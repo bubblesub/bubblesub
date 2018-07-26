@@ -241,13 +241,8 @@ def setup_cmd_menu(
         elif isinstance(item, MenuCommand):
             try:
                 action = _CommandAction(api, item.invocation, parent)
-            except KeyError:
-                api.log.error(f'Unknown command {item.invocation}')
-                continue
-            except TypeError as ex:
-                api.log.error(
-                    f'Error instantiating action {item.invocation}: {ex}'
-                )
+            except bubblesub.api.cmd.CommandError as ex:
+                api.log.error(str(ex))
                 continue
 
             action.setText(action.cmd.menu_name)

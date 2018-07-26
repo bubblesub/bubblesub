@@ -195,15 +195,21 @@ class Console(QtWidgets.QWidget):
     ) -> None:
         super().__init__(parent)
 
+        self._api = api
         self._text_edit = ConsoleTextEdit(api, self)
 
         strip = QtWidgets.QWidget(self)
+        self._input = QtWidgets.QLineEdit(strip)
+        self._input.setFont(QtGui.QFontDatabase.systemFont(
+            QtGui.QFontDatabase.FixedFont
+        ))
         self._auto_scroll_chkbox = QtWidgets.QCheckBox(
             'Auto scroll', strip
         )
         self._clear_btn = QtWidgets.QPushButton('Clear', strip)
         self._auto_scroll_chkbox.setChecked(not self._text_edit.scroll_lock)
 
+        self._input.returnPressed.connect(self._on_input_return_press)
         self._clear_btn.clicked.connect(self._on_clear_btn_click)
         self._text_edit.scroll_lock_changed.connect(
             self._on_text_edit_scroll_lock_change
@@ -215,7 +221,7 @@ class Console(QtWidgets.QWidget):
         strip_layout = QtWidgets.QHBoxLayout(strip)
         strip_layout.setSpacing(4)
         strip_layout.setContentsMargins(0, 0, 0, 0)
-        strip_layout.addStretch()
+        strip_layout.addWidget(self._input)
         strip_layout.addWidget(self._auto_scroll_chkbox)
         strip_layout.addWidget(self._clear_btn)
 
@@ -224,6 +230,10 @@ class Console(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._text_edit)
         layout.addWidget(strip)
+
+    def _on_input_return_press(self):
+        self._api.cmd.execute(self._input.text())
+        self._input.setText('')
 
     def _on_text_edit_scroll_lock_change(self):
         self._auto_scroll_chkbox.setChecked(not self._text_edit.scroll_lock)
