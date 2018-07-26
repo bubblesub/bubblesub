@@ -198,10 +198,10 @@ class Console(QtWidgets.QWidget):
         self._text_edit = ConsoleTextEdit(api, self)
 
         strip = QtWidgets.QWidget(self)
-        self._clear_btn = QtWidgets.QPushButton('Clear', strip)
         self._auto_scroll_chkbox = QtWidgets.QCheckBox(
             'Auto scroll', strip
         )
+        self._clear_btn = QtWidgets.QPushButton('Clear', strip)
         self._auto_scroll_chkbox.setChecked(not self._text_edit.scroll_lock)
 
         self._clear_btn.clicked.connect(self._on_clear_btn_click)
