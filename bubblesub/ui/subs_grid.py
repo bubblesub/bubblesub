@@ -129,6 +129,7 @@ class SubsGrid(QtWidgets.QTableView):
     ) -> None:
         super().__init__(parent)
         self._api = api
+        self.setObjectName('subtitles-grid')
         self.setModel(SubtitlesModel(self, api))
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)

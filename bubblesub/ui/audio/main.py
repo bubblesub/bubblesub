@@ -35,6 +35,7 @@ class Audio(QtWidgets.QWidget):
         self._video_preview = VideoPreview(self._api, self)
         self._slider = AudioSlider(self._api, self)
 
+        self.setObjectName('spectrogram')
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         layout = QtWidgets.QVBoxLayout(self)

@@ -103,31 +103,11 @@ class FocusWidgetCommand(BaseCommand):
         return '&Focus ' + widget_name
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        widget = {
-            TargetWidget.TextEditor: main_window.editor.center.text_edit,
-            TargetWidget.NoteEditor: main_window.editor.center.note_edit,
-            TargetWidget.SubtitlesGrid: main_window.subs_grid,
-            TargetWidget.Spectrogram: main_window.audio,
-            TargetWidget.StyleEditor: main_window.editor.bar1.style_edit,
-            TargetWidget.ActorEditor: main_window.editor.bar1.actor_edit,
-            TargetWidget.LayerEditor: main_window.editor.bar1.layer_edit,
-            TargetWidget.MarginLeftEditor:
-                main_window.editor.bar1.margin_l_edit,
-            TargetWidget.MarginRightEditor:
-                main_window.editor.bar1.margin_r_edit,
-            TargetWidget.MarginVerticalEditor:
-                main_window.editor.bar1.margin_v_edit,
-            TargetWidget.StartTimeEditor:
-                main_window.editor.bar2.start_time_edit,
-            TargetWidget.EndTimeEditor: main_window.editor.bar2.end_time_edit,
-            TargetWidget.DurationEditor: main_window.editor.bar2.duration_edit,
-            TargetWidget.CommentCheckbox:
-                main_window.editor.bar2.comment_checkbox,
-            TargetWidget.Console: main_window.console.log_window,
-            TargetWidget.ConsoleInput: main_window.console.input
-        }[self.args.target]
+        widget = main_window.findChild(
+            QtWidgets.QWidget, str(self.args.target)
+        )
         widget.setFocus()
-        if isinstance(widget, (QtWidgets.QTextEdit, QtWidgets.QPlainTextEdit)):
+        if self.args.select:
             widget.selectAll()
 
     @staticmethod
@@ -137,6 +117,11 @@ class FocusWidgetCommand(BaseCommand):
             help='which widget to focus',
             type=TargetWidget,
             choices=list(TargetWidget)
+        )
+        parser.add_argument(
+            '-s', '--select',
+            help='whether to select the text',
+            action='store_true'
         )
 
 

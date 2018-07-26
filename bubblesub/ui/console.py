@@ -122,6 +122,7 @@ class ConsoleTextEdit(QtWidgets.QTextEdit):
         self._empty = True
 
         self._syntax_highlight = ConsoleSyntaxHighlight(api, self)
+        self.setObjectName('console')
         self.setReadOnly(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
 
@@ -200,6 +201,7 @@ class Console(QtWidgets.QWidget):
 
         strip = QtWidgets.QWidget(self)
         self.input = QtWidgets.QLineEdit(strip)
+        self.input.setObjectName('console-input')
         self.input.setFont(QtGui.QFontDatabase.systemFont(
             QtGui.QFontDatabase.FixedFont
         ))
