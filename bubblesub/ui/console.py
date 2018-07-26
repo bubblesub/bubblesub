@@ -196,50 +196,50 @@ class Console(QtWidgets.QWidget):
         super().__init__(parent)
 
         self._api = api
-        self._text_edit = ConsoleTextEdit(api, self)
+        self.log_window = ConsoleTextEdit(api, self)
 
         strip = QtWidgets.QWidget(self)
-        self._input = QtWidgets.QLineEdit(strip)
-        self._input.setFont(QtGui.QFontDatabase.systemFont(
+        self.input = QtWidgets.QLineEdit(strip)
+        self.input.setFont(QtGui.QFontDatabase.systemFont(
             QtGui.QFontDatabase.FixedFont
         ))
-        self._auto_scroll_chkbox = QtWidgets.QCheckBox(
+        self.auto_scroll_chkbox = QtWidgets.QCheckBox(
             'Auto scroll', strip
         )
-        self._clear_btn = QtWidgets.QPushButton('Clear', strip)
-        self._auto_scroll_chkbox.setChecked(not self._text_edit.scroll_lock)
+        self.clear_btn = QtWidgets.QPushButton('Clear', strip)
+        self.auto_scroll_chkbox.setChecked(not self.log_window.scroll_lock)
 
-        self._input.returnPressed.connect(self._on_input_return_press)
-        self._clear_btn.clicked.connect(self._on_clear_btn_click)
-        self._text_edit.scroll_lock_changed.connect(
+        self.input.returnPressed.connect(self._on_input_return_press)
+        self.clear_btn.clicked.connect(self._on_clear_btn_click)
+        self.log_window.scroll_lock_changed.connect(
             self._on_text_edit_scroll_lock_change
         )
-        self._auto_scroll_chkbox.stateChanged.connect(
+        self.auto_scroll_chkbox.stateChanged.connect(
             self._on_auto_scroll_chkbox_change
         )
 
         strip_layout = QtWidgets.QHBoxLayout(strip)
         strip_layout.setSpacing(4)
         strip_layout.setContentsMargins(0, 0, 0, 0)
-        strip_layout.addWidget(self._input)
-        strip_layout.addWidget(self._auto_scroll_chkbox)
-        strip_layout.addWidget(self._clear_btn)
+        strip_layout.addWidget(self.input)
+        strip_layout.addWidget(self.auto_scroll_chkbox)
+        strip_layout.addWidget(self.clear_btn)
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(4)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._text_edit)
+        layout.addWidget(self.log_window)
         layout.addWidget(strip)
 
     def _on_input_return_press(self):
-        self._api.cmd.execute(self._input.text())
-        self._input.setText('')
+        self._api.cmd.execute(self.input.text())
+        self.input.setText('')
 
     def _on_text_edit_scroll_lock_change(self):
-        self._auto_scroll_chkbox.setChecked(not self._text_edit.scroll_lock)
+        self.auto_scroll_chkbox.setChecked(not self.log_window.scroll_lock)
 
     def _on_auto_scroll_chkbox_change(self):
-        self._text_edit.scroll_lock = not self._auto_scroll_chkbox.isChecked()
+        self.log_window.scroll_lock = not self.auto_scroll_chkbox.isChecked()
 
     def _on_clear_btn_click(self):
-        self._text_edit.document().setPlainText('')
+        self.log_window.document().setPlainText('')

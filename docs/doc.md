@@ -33,14 +33,14 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-edit-search-and-replace">edit/search-and-replace</a> </code> |
 |<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
 |<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-edit-delete-subs">edit/delete-subs</a> </code> |
-|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 10</code> |
-|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 10</code> |
-|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d -10</code> |
-|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d 10</code> |
-|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d -1</code> |
-|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 1</code> |
-|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d -1</code> |
-|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d 1</code> |
+|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 10</code> |
+|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 10</code> |
+|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -10</code> |
+|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 10</code> |
+|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d -1</code> |
+|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 1</code> |
+|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -1</code> |
+|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 1</code> |
 |<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t start</code> |
 |<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t end</code> |
 |<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-place-sel-at-current-video-frame">audio/place-sel-at-current-video-frame</a> </code> |
@@ -52,19 +52,21 @@ Context refers to the currently focused widget.
 |<kbd>Alt+S</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> subtitles-grid</code> |
 |<kbd>Alt+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> text-editor</code> |
 |<kbd>Alt+Shift+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> note-editor</code> |
+|<kbd>Alt+C</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> console-input</code> |
+|<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> console</code> |
 |<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-edit-split-sub-at-current-video-frame">edit/split-sub-at-current-video-frame</a> </code> |
 |<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-edit-join-subs-concatenate">edit/join-subs-concatenate</a> </code> |
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d above</code> |
 |<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d below</code> |
 |<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file/properties</a> </code> |
-|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d -10</code> |
-|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 10</code> |
-|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d -10</code> |
-|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d 10</code> |
-|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d -1</code> |
-|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t start -d 1</code> |
-|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d -1</code> |
-|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -t end -d 1</code> |
+|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d -10</code> |
+|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 10</code> |
+|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -10</code> |
+|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 10</code> |
+|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d -1</code> |
+|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 1</code> |
+|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -1</code> |
+|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 1</code> |
 |<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-commit-sel">audio/commit-sel</a> </code> |
 |<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d above</code> |
 |<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
@@ -490,7 +492,7 @@ Usage:
 
 
 
-* `target`: which widget to focus (`text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`)
+* `target`: which widget to focus (`text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
 
 ### <a name="cmd-view-set-palette"></a>`view/set‑palette`
 Changes the GUI color theme.

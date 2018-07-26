@@ -155,6 +155,8 @@ class MenuConfig(BaseConfig):
                     MenuCommand('/view/focus-widget note-editor'),
                     MenuCommand('/view/focus-widget subtitles-grid'),
                     MenuCommand('/view/focus-widget spectrogram'),
+                    MenuCommand('/view/focus-widget console-input'),
+                    MenuCommand('/view/focus-widget console'),
                 ]),
 
                 SubMenu('&Playback', [

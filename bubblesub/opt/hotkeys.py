@@ -111,6 +111,8 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Alt+S', '/view/focus-widget subtitles-grid'),
                 Hotkey('Alt+D', '/view/focus-widget text-editor'),
                 Hotkey('Alt+Shift+D', '/view/focus-widget note-editor'),
+                Hotkey('Alt+C', '/view/focus-widget console-input'),
+                Hotkey('Alt+Shift+C', '/view/focus-widget console'),
                 Hotkey('Alt+X', '/edit/split-sub-at-current-video-frame'),
                 Hotkey('Alt+J', '/edit/join-subs-concatenate'),
                 Hotkey('Alt+Up', '/edit/move-subs -d above'),

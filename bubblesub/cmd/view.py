@@ -45,6 +45,8 @@ class TargetWidget(enum.Enum):
     CommentCheckbox = 'comment-checkbox'
     SubtitlesGrid = 'subtitles-grid'
     Spectrogram = 'spectrogram'
+    Console = 'console'
+    ConsoleInput = 'console-input'
 
 
 class SetPaletteCommand(BaseCommand):
@@ -94,7 +96,9 @@ class FocusWidgetCommand(BaseCommand):
             TargetWidget.DurationEditor: 'duration editor',
             TargetWidget.CommentCheckbox: 'comment checkbox',
             TargetWidget.SubtitlesGrid: 'subtitles grid',
-            TargetWidget.Spectrogram: 'spectrogram'
+            TargetWidget.Spectrogram: 'spectrogram',
+            TargetWidget.Console: 'console',
+            TargetWidget.ConsoleInput: 'console prompt'
         }[self.args.target]
         return '&Focus ' + widget_name
 
@@ -119,6 +123,8 @@ class FocusWidgetCommand(BaseCommand):
             TargetWidget.DurationEditor: main_window.editor.bar2.duration_edit,
             TargetWidget.CommentCheckbox:
                 main_window.editor.bar2.comment_checkbox,
+            TargetWidget.Console: main_window.console.log_window,
+            TargetWidget.ConsoleInput: main_window.console.input
         }[self.args.target]
         widget.setFocus()
         if isinstance(widget, (QtWidgets.QTextEdit, QtWidgets.QPlainTextEdit)):

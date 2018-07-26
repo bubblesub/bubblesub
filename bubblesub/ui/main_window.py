@@ -81,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor_splitter.setContentsMargins(2, 0, 0, 0)
 
         self.console_splitter = QtWidgets.QSplitter(self)
+        self.console = console
         console.setParent(self.console_splitter)
         self.console_splitter.setOrientation(QtCore.Qt.Horizontal)
         self.console_splitter.addWidget(self.subs_grid)
