@@ -505,4 +505,3 @@ Usage:
 
 
 * `palette_name`: name of the palette to change to
-

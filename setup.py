@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import io
 import sys
 import typing as T
 from pathlib import Path
@@ -37,9 +38,12 @@ class GenerateDocumentationCommand(Command):
         return Path(__file__).parent / 'docs'
 
     def run(self):
-        with (self._docs_dir / 'doc.md').open('w') as handle:
+        with io.StringIO() as handle:
             self._generate_hotkeys_documentation(handle=handle)
             self._generate_commands_documentation(handle=handle)
+            handle.seek(0)
+            text = handle.read()
+        (self._docs_dir / 'doc.md').write_text(text.strip() + '\n')
 
     def _generate_hotkeys_documentation(self, handle):
         import re
