@@ -242,6 +242,13 @@ class Console(QtWidgets.QWidget):
 
     def _on_auto_scroll_chkbox_change(self):
         self.log_window.scroll_lock = not self.auto_scroll_chkbox.isChecked()
+        if self.auto_scroll_chkbox.isChecked():
+            self.log_window.horizontalScrollBar().setValue(
+                self.log_window.horizontalScrollBar().minimum()
+            )
+            self.log_window.verticalScrollBar().setValue(
+                self.log_window.verticalScrollBar().maximum()
+            )
 
     def _on_clear_btn_click(self):
         self.log_window.document().setPlainText('')
