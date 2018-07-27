@@ -521,7 +521,10 @@ class AssRenderer:
             'ScaledBorderAndShadow', 'yes'
         ) == 'yes'
 
-        self._renderer.frame_size = video_resolution
+        self._renderer.frame_size = (
+            self._track.play_res_x,
+            self._track.play_res_y
+        )
         self._renderer.storage_size = video_resolution
         self._renderer.pixel_aspect = 1.0
 
