@@ -50,7 +50,7 @@ class TargetWidget(enum.Enum):
 
 
 class SetPaletteCommand(BaseCommand):
-    name = 'view/set-palette'
+    names = ['view/set-palette']
     help_text = 'Changes the GUI color theme.'
 
     @property
@@ -74,7 +74,7 @@ class SetPaletteCommand(BaseCommand):
 
 
 class FocusWidgetCommand(BaseCommand):
-    name = 'view/focus-widget'
+    names = ['view/focus-widget']
     help_text = 'Focuses the target widget.'
 
     async def run(self) -> None:

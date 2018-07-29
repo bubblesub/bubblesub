@@ -38,7 +38,7 @@ def _fmt_shift_target(shift_target: ShiftTarget) -> str:
 
 
 class PlayCurrentSubtitleCommand(BaseCommand):
-    name = 'video/play-current-sub'
+    names = ['video/play-current-sub']
     menu_name = '&Play current subtitle'
     help_text = 'Plays the currently selected subtitle.'
 
@@ -52,7 +52,7 @@ class PlayCurrentSubtitleCommand(BaseCommand):
 
 
 class PlayAroundSpectrogramSelectionCommand(BaseCommand):
-    name = 'video/play-around-sel'
+    names = ['video/play-around-sel']
     help_text = 'Plays a region near the current spectrogram selection.'
 
     @property
@@ -116,7 +116,7 @@ class PlayAroundSpectrogramSelectionCommand(BaseCommand):
 
 
 class StepFrameCommand(BaseCommand):
-    name = 'video/step-frame'
+    names = ['video/step-frame']
     help_text = 'Seeks the video by the specified amount of frames.'
 
     @property
@@ -160,7 +160,7 @@ class StepFrameCommand(BaseCommand):
 
 
 class StepMillisecondsCommand(BaseCommand):
-    name = 'video/step-ms'
+    names = ['video/step-ms']
     help_text = 'Seeks the video by the specified milliseconds.'
 
     @property
@@ -197,7 +197,7 @@ class StepMillisecondsCommand(BaseCommand):
 
 
 class SeekWithGuiCommand(BaseCommand):
-    name = 'video/seek-with-gui'
+    names = ['video/seek-with-gui']
     menu_name = '&Seek to...'
     help_text = (
         'Seeks the video to the desired place. '
@@ -232,7 +232,7 @@ class SeekWithGuiCommand(BaseCommand):
 
 
 class SetPlaybackSpeedCommand(BaseCommand):
-    name = 'video/set-playback-speed'
+    names = ['video/set-playback-speed']
     help_text = 'Adjusts the video playback speed.'
 
     @property
@@ -258,7 +258,7 @@ class SetPlaybackSpeedCommand(BaseCommand):
 
 
 class SetVolumeCommand(BaseCommand):
-    name = 'video/set-volume'
+    names = ['video/set-volume']
     help_text = 'Adjusts the video volume.'
 
     @property
@@ -284,7 +284,7 @@ class SetVolumeCommand(BaseCommand):
 
 
 class MuteCommand(BaseCommand):
-    name = 'video/mute'
+    names = ['video/mute']
     help_text = 'Mutes or unmutes the video audio.'
 
     @property
@@ -320,7 +320,7 @@ class MuteCommand(BaseCommand):
 
 
 class PauseCommand(BaseCommand):
-    name = 'video/pause'
+    names = ['video/pause']
     help_text = 'Pauses or unpauses the video playback.'
 
     @property
@@ -356,7 +356,7 @@ class PauseCommand(BaseCommand):
 
 
 class ScreenshotCommand(BaseCommand):
-    name = 'video/screenshot'
+    names = ['video/screenshot']
     help_text = (
         'Makes a screenshot of the current video frame. '
         'Prompts user for the path where to save the screenshot to.'

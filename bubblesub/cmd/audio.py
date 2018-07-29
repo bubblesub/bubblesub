@@ -36,7 +36,7 @@ def _fmt_shift_target(shift_target: ShiftTarget) -> str:
 
 
 class ScrollSpectrogramCommand(BaseCommand):
-    name = 'audio/scroll-spectrogram'
+    names = ['audio/scroll-spectrogram']
     help_text = (
         'Scrolls the spectrogram horizontally by its width\'s percentage.'
     )
@@ -61,7 +61,7 @@ class ScrollSpectrogramCommand(BaseCommand):
 
 
 class ZoomSpectrogramCommand(BaseCommand):
-    name = 'audio/zoom-spectrogram'
+    names = ['audio/zoom-spectrogram']
     help_text = 'Zooms the spectrogram in or out by the specified factor.'
 
     @property
@@ -85,7 +85,7 @@ class ZoomSpectrogramCommand(BaseCommand):
 
 
 class SnapSpectrogramSelectionToCurrentVideoFrameCommand(BaseCommand):
-    name = 'audio/snap-sel-to-current-video-frame'
+    names = ['audio/snap-sel-to-current-video-frame']
     help_text = 'Snaps the spectrogram selection to the current video frame.'
 
     @property
@@ -126,7 +126,7 @@ class SnapSpectrogramSelectionToCurrentVideoFrameCommand(BaseCommand):
 
 
 class PlaceSpectrogramSelectionAtCurrentVideoFrameCommand(BaseCommand):
-    name = 'audio/place-sel-at-current-video-frame'
+    names = ['audio/place-sel-at-current-video-frame']
     menu_name = '&Place selection at current video frame'
     help_text = (
         'Realigns the selection to the current video frame. '
@@ -150,7 +150,7 @@ class PlaceSpectrogramSelectionAtCurrentVideoFrameCommand(BaseCommand):
 
 
 class SnapSpectrogramSelectionToNearSubtitleCommand(BaseCommand):
-    name = 'audio/snap-sel-to-near-sub'
+    names = ['audio/snap-sel-to-near-sub']
     help_text = 'Snaps the spectrogram selection to the nearest subtitle.'
 
     @property
@@ -225,7 +225,7 @@ class SnapSpectrogramSelectionToNearSubtitleCommand(BaseCommand):
 
 
 class SnapSpectrogramSelectionToNearKeyframeCommand(BaseCommand):
-    name = 'audio/snap-sel-to-near-keyframe'
+    names = ['audio/snap-sel-to-near-keyframe']
     help_text = 'Snaps the spectrogram selection to the nearest keyframe.'
 
     @property
@@ -309,7 +309,7 @@ class SnapSpectrogramSelectionToNearKeyframeCommand(BaseCommand):
 
 
 class ShiftSpectrogramSelectionCommand(BaseCommand):
-    name = 'audio/shift-sel'
+    names = ['audio/shift-sel']
     help_text = 'Shifts the spectrogram selection by the specified distance.'
 
     @property
@@ -396,7 +396,7 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
 
 
 class CommitSpectrogramSelectionCommand(BaseCommand):
-    name = 'audio/commit-sel'
+    names = ['audio/commit-sel']
     menu_name = '&Commit selection to subtitle'
     help_text = (
         'Commits the spectrogram selection into the current subtitle. '

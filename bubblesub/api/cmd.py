@@ -95,16 +95,16 @@ class BaseCommand(abc.ABC):
 
     @bubblesub.model.classproperty
     @abc.abstractproperty
-    def name(  # pylint: disable=no-self-argument
+    def names(  # pylint: disable=no-self-argument
             cls: T.Any
-    ) -> str:
+    ) -> T.List[str]:
         """
-        Return command name.
+        Return command names.
 
         Must be globally unique and should be human readable.
 
         :param cls: type inheriting from BaseCommand
-        :return: command name
+        :return: command names
         """
         raise NotImplementedError('Command has no name')
 
@@ -152,7 +152,7 @@ class BaseCommand(abc.ABC):
         :return: parsed arguments for command
         """
         parser = CommandArgumentParser(
-            prog=cls.name,
+            prog=cls.names[0],
             description=cls.help_text,
             add_help=False
         )
@@ -308,8 +308,9 @@ class CommandApi(QtCore.QObject):
 
         :param cls: type inheriting from BaseCommand
         """
-        print(f'registering {cls} as {cls.name}')
-        self._command_registry[cls.name] = (cls, False)
+        for name in cls.names:
+            print(f'registering {cls} as {name}')
+            self._command_registry[name] = (cls, False)
 
     def register_plugin_command(
             self, cls: T.Type[BaseCommand], menu_item: MenuItem
@@ -324,9 +325,9 @@ class CommandApi(QtCore.QObject):
         :param cls: type inheriting from BaseCommand
         :param menu_item: menu item to show in the plugins menu
         """
-        print(f'registering {cls} as {cls.name}')
-
-        self._command_registry[cls.name] = (cls, True)
+        for name in cls.names:
+            print(f'registering {cls} as {name}')
+            self._command_registry[name] = (cls, True)
         self._plugin_menu.append(menu_item)
 
     def get_plugin_menu_items(self) -> T.List[MenuItem]:

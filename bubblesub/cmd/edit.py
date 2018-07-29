@@ -37,7 +37,7 @@ def _fmt_shift_target(shift_target: ShiftTarget) -> str:
 
 
 class UndoCommand(BaseCommand):
-    name = 'edit/undo'
+    names = ['edit/undo']
     menu_name = '&Undo'
     help_text = 'Undoes last edit operation.'
 
@@ -50,7 +50,7 @@ class UndoCommand(BaseCommand):
 
 
 class RedoCommand(BaseCommand):
-    name = 'edit/redo'
+    names = ['edit/redo']
     menu_name = '&Redo'
     help_text = 'Redoes last edit operation.'
 
@@ -63,7 +63,7 @@ class RedoCommand(BaseCommand):
 
 
 class InsertSubtitleCommand(BaseCommand):
-    name = 'edit/insert-sub'
+    names = ['edit/insert-sub']
     help_text = (
         'Inserts one empty subtitle near the current subtitle selection.'
     )
@@ -139,7 +139,7 @@ class InsertSubtitleCommand(BaseCommand):
 
 
 class MoveSubtitlesCommand(BaseCommand):
-    name = 'edit/move-subs'
+    names = ['edit/move-subs']
     help_text = 'Moves the selected subtitles above or below.'
 
     @property
@@ -210,7 +210,7 @@ class MoveSubtitlesCommand(BaseCommand):
 
 
 class MoveSubtitlesToCommand(BaseCommand):
-    name = 'edit/move-subs-to'
+    names = ['edit/move-subs-to']
     menu_name = '&Move selected subtitles to...'
     help_text = (
         'Moves the selected subtitles to the specified position. '
@@ -262,7 +262,7 @@ class MoveSubtitlesToCommand(BaseCommand):
 
 
 class DuplicateSubtitlesCommand(BaseCommand):
-    name = 'edit/duplicate-subs'
+    names = ['edit/duplicate-subs']
     menu_name = '&Duplicate selected subtitles'
     help_text = (
         'Duplicates the selected subtitles. The newly created subtitles '
@@ -293,7 +293,7 @@ class DuplicateSubtitlesCommand(BaseCommand):
 
 
 class DeleteSubtitlesCommand(BaseCommand):
-    name = 'edit/delete-subs'
+    names = ['edit/delete-subs']
     menu_name = '&Delete selected subtitles'
     help_text = 'Deletes the selected subtitles.'
 
@@ -313,7 +313,7 @@ class DeleteSubtitlesCommand(BaseCommand):
 
 
 class SwapSubtitlesTextAndNotesCommand(BaseCommand):
-    name = 'edit/swap-subs-text-and-notes'
+    names = ['edit/swap-subs-text-and-notes']
     menu_name = '&Swap notes with subtitle text'
     help_text = (
         'Swaps subtitle text with their notes in the selected subtitles.'
@@ -332,7 +332,7 @@ class SwapSubtitlesTextAndNotesCommand(BaseCommand):
 
 
 class SplitSubtitleAtCurrentVideoFrameCommand(BaseCommand):
-    name = 'edit/split-sub-at-current-video-frame'
+    names = ['edit/split-sub-at-current-video-frame']
     menu_name = '&Split selected subtitle at video frame'
     help_text = (
         'Splits the selected subtitle into two at the current video frame.'
@@ -358,7 +358,7 @@ class SplitSubtitleAtCurrentVideoFrameCommand(BaseCommand):
 
 
 class JoinSubtitlesKeepFirstCommand(BaseCommand):
-    name = 'edit/join-subs-keep-first'
+    names = ['edit/join-subs-keep-first']
     menu_name = '&Join subtitles (keep first)'
     help_text = (
         'Joins the selected subtitles together. '
@@ -389,7 +389,7 @@ class JoinSubtitlesKeepFirstCommand(BaseCommand):
 
 
 class JoinSubtitlesConcatenateCommand(BaseCommand):
-    name = 'edit/join-subs-concatenate'
+    names = ['edit/join-subs-concatenate']
     menu_name = '&Join subtitles (concatenate)'
     help_text = (
         'Joins the selected subtitles together. Keeps the first subtitle\'s '
@@ -434,7 +434,7 @@ class JoinSubtitlesConcatenateCommand(BaseCommand):
 
 
 class ShiftSubtitlesWithGuiCommand(BaseCommand):
-    name = 'edit/shift-subs-with-gui'
+    names = ['edit/shift-subs-with-gui']
     menu_name = '&Shift times...'
     help_text = (
         'Shifts the subtitle boundaries by the specified distance. '
@@ -473,7 +473,7 @@ class ShiftSubtitlesWithGuiCommand(BaseCommand):
 
 
 class SnapSubtitlesToCurrentVideoFrameCommand(BaseCommand):
-    name = 'edit/snap-subs-to-current-video-frame'
+    names = ['edit/snap-subs-to-current-video-frame']
     help_text = 'Snaps selected subtitles to the current video frame.'
 
     @property
@@ -512,7 +512,7 @@ class SnapSubtitlesToCurrentVideoFrameCommand(BaseCommand):
 
 
 class PlaceSubtitlesAtCurrentVideoFrameCommand(BaseCommand):
-    name = 'edit/place-subs-at-current-video-frame'
+    names = ['edit/place-subs-at-current-video-frame']
     menu_name = '&Place subtitles at current video frame'
     help_text = (
         'Realigns the selected subtitles to the current video frame. '
@@ -535,7 +535,7 @@ class PlaceSubtitlesAtCurrentVideoFrameCommand(BaseCommand):
 
 
 class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
-    name = 'edit/snap-subs-to-near-sub'
+    names = ['edit/snap-subs-to-near-sub']
     help_text = 'Snaps the selected subtitles times to the nearest subtitle.'
 
     @property
@@ -600,7 +600,7 @@ class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
 
 
 class ShiftSubtitlesCommand(BaseCommand):
-    name = 'edit/shift-subs'
+    names = ['edit/shift-subs']
     help_text = 'Shifts selected subtitles times by the specified distance.'
 
     @property

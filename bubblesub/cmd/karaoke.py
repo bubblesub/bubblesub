@@ -31,7 +31,7 @@ class _Syllable:
 
 
 class SplitSubtitleByKaraokeCommand(BaseCommand):
-    name = 'edit/split-sub-by-karaoke'
+    names = ['edit/split-sub-by-karaoke']
     menu_name = '&Split subtitles as karaoke'
     help_text = (
         'Splits the selected subtitles according to the karaoke tags inside.'
@@ -93,7 +93,7 @@ class SplitSubtitleByKaraokeCommand(BaseCommand):
 
 
 class JoinSubtitlesAsKaraokeCommand(BaseCommand):
-    name = 'edit/join-subs-as-karaoke'
+    names = ['edit/join-subs-as-karaoke']
     menu_name = '&Join subtitles (as karaoke)'
     help_text = (
         'Joins the selected subtitles adding karaoke timing tags inbetween.'
@@ -120,7 +120,7 @@ class JoinSubtitlesAsKaraokeCommand(BaseCommand):
 
 
 class JoinSubtitlesAsTransformationCommand(BaseCommand):
-    name = 'edit/join-subs-as-transformation'
+    names = ['edit/join-subs-as-transformation']
     menu_name = '&Join subtitles (as transformation)'
     help_text = (
         'Joins the selected subtitles adding animation timing tags inbetween. '

@@ -44,7 +44,7 @@ def _unpickle(text: str) -> T.Any:
 
 
 class JumpToSubtitleByNumberCommand(BaseCommand):
-    name = 'grid/jump-to-sub-by-number'
+    names = ['grid/jump-to-sub-by-number']
     menu_name = 'Jump to subtitle by number...'
     help_text = (
         'Jumps to the specified number. '
@@ -80,7 +80,7 @@ class JumpToSubtitleByNumberCommand(BaseCommand):
 
 
 class JumpToSubtitleByTimeCommand(BaseCommand):
-    name = 'grid/jump-to-sub-by-time'
+    names = ['grid/jump-to-sub-by-time']
     menu_name = 'Jump to subtitle by time...'
     help_text = (
         'Jumps to the subtitle at specified time. '
@@ -123,7 +123,7 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
 
 
 class SelectNearSubtitleCommand(BaseCommand):
-    name = 'grid/select-near-sub'
+    names = ['grid/select-near-sub']
     help_text = (
         'Selects nearest subtitle in given direction to the current selection.'
     )
@@ -167,7 +167,7 @@ class SelectNearSubtitleCommand(BaseCommand):
 
 
 class SelectAllSubtitlesCommand(BaseCommand):
-    name = 'grid/select-all-subs'
+    names = ['grid/select-all-subs']
     menu_name = 'Select all subtitles'
     help_text = 'Selects all subtitles.'
 
@@ -180,7 +180,7 @@ class SelectAllSubtitlesCommand(BaseCommand):
 
 
 class ClearSubtitleSelectionCommand(BaseCommand):
-    name = 'grid/clear-sub-sel'
+    names = ['grid/clear-sub-sel']
     menu_name = 'Clear subtitle selection'
     help_text = 'Clears subtitle selection.'
 
@@ -189,7 +189,7 @@ class ClearSubtitleSelectionCommand(BaseCommand):
 
 
 class CopySubtitlesTextCommand(BaseCommand):
-    name = 'grid/copy-subs/text'
+    names = ['grid/copy-subs/text']
     menu_name = 'Copy selected subtitles text to clipboard'
     help_text = 'Copies text from the subtitle selection.'
 
@@ -204,7 +204,7 @@ class CopySubtitlesTextCommand(BaseCommand):
 
 
 class PasteSubtitlesTextCommand(BaseCommand):
-    name = 'grid/paste-subs/text'
+    names = ['grid/paste-subs/text']
     menu_name = 'Paste text to selected subtitles from clipboard'
     help_text = 'Pastes teext into the subtitle selection.'
 
@@ -232,7 +232,7 @@ class PasteSubtitlesTextCommand(BaseCommand):
 
 
 class CopySubtitlesTimesCommand(BaseCommand):
-    name = 'grid/copy-subs/times'
+    names = ['grid/copy-subs/times']
     menu_name = 'Copy selected subtitles times to clipboard'
     help_text = 'Copies time boundaries from the subtitle selection.'
 
@@ -251,7 +251,7 @@ class CopySubtitlesTimesCommand(BaseCommand):
 
 
 class PasteSubtitlesTimesCommand(BaseCommand):
-    name = 'grid/paste-subs/times'
+    names = ['grid/paste-subs/times']
     menu_name = 'Paste times to selected subtitles from clipboard'
     help_text = 'Pastes time boundaries into the subtitle selection.'
 
@@ -292,7 +292,7 @@ class PasteSubtitlesTimesCommand(BaseCommand):
 
 
 class CopySubtitlesCommand(BaseCommand):
-    name = 'grid/copy-subs'
+    names = ['grid/copy-subs']
     menu_name = 'Copy selected subtitles to clipboard'
     help_text = 'Copies the selected subtitles.'
 
@@ -318,7 +318,7 @@ def _paste_from_clipboard(cmd: BaseCommand, idx: int) -> None:
 
 
 class PasteSubtitlesCommand(BaseCommand):
-    name = 'grid/paste-subs'
+    names = ['grid/paste-subs']
     help_text = 'Pastes subtitles near the selection.'
 
     @property
@@ -354,7 +354,7 @@ class PasteSubtitlesCommand(BaseCommand):
 
 
 class CreateAudioSampleCommand(BaseCommand):
-    name = 'grid/create-audio-sample'
+    names = ['grid/create-audio-sample']
     menu_name = 'Create audio sample'
     help_text = (
         'Saves current subtitle selection to a WAV file. '

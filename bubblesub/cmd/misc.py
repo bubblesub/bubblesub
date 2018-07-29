@@ -21,7 +21,7 @@ from bubblesub.api.cmd import BaseCommand
 
 
 class ReloadPluginsCommand(BaseCommand):
-    name = 'reload-plugins'
+    names = ['reload-plugins']
     menu_name = 'Reload plugins'
     help_text = 'Reloads the user plugins.'
 
