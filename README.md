@@ -49,17 +49,26 @@ file](https://github.com/rr-/bubblesub/tree/master/docs/doc.md).
 #### Example plugin: speech recognition of selected lines
 
 ```python
-import io
+import argparse
 import asyncio
+import io
 
 import speech_recognition as sr
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import SubMenu
 
+_CODE_TO_NAME = {
+    'ja': 'Japanese',
+    'de': 'German',
+    'fr': 'French',
+    'it': 'Italian',
+    'auto': 'Automatic'
+}
 
-async def _work(language, api, logger, line):
-    logger.info(f'line #{line.number} - analyzing')
+
+async def _work(language, api, line):
+    api.log.info(f'line #{line.number} - analyzing')
     recognizer = sr.Recognizer()
     try:
         def recognize():
@@ -73,11 +82,11 @@ async def _work(language, api, logger, line):
         # don't clog the UI thread
         note = await asyncio.get_event_loop().run_in_executor(None, recognize)
     except sr.UnknownValueError:
-        logger.warn(f'line #{line.number}: not recognized')
+        api.log.warn(f'line #{line.number}: not recognized')
     except sr.RequestError as ex:
-        logger.error(f'line #{line.number}: error ({ex})')
+        api.log.error(f'line #{line.number}: error ({ex})')
     else:
-        logger.info(f'line #{line.number}: OK')
+        api.log.info(f'line #{line.number}: OK')
         with api.undo.capture():
             if line.note:
                 line.note = line.note + r'\N' + note
@@ -86,16 +95,15 @@ async def _work(language, api, logger, line):
 
 
 class SpeechRecognitionCommand(BaseCommand):
-    name = 'plugin/speech-recognition'
-
-    def __init__(self, api, language_code, language_name):
-        super().__init__(api)
-        self._language_code = language_code
-        self._language_name = language_name
+    names = ['google-speech-recognition']
+    help_text = (
+        'Puts results of Google speech recognition '
+        'for selected subtitles into their notes.'
+    )
 
     @property
     def menu_name(self):
-        return f'&{self._language_name}'
+        return '&' + _CODE_TO_NAME[self.args.code]
 
     @property
     def is_enabled(self):
@@ -103,8 +111,16 @@ class SpeechRecognitionCommand(BaseCommand):
             and self.api.media.audio.has_audio_source
 
     async def run(self):
-        for line in self.api.subs.selected_lines:
-            await _work(self._language_code, self.api, self, line)
+        for line in self.api.subs.selected_events:
+            await _work(self.args.code, self.api, line)
+
+    @staticmethod
+    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            'code',
+            help='language code',
+            choices=list(_CODE_TO_NAME.keys())
+        )
 
 
 def register(cmd_api):
@@ -113,11 +129,11 @@ def register(cmd_api):
         SubMenu(
             '&Speech recognition',
             [
-                MenuCommand(SpeechRecognitionCommand.name, 'ja', 'Japanese'),
-                MenuCommand(SpeechRecognitionCommand.name, 'de', 'German'),
-                MenuCommand(SpeechRecognitionCommand.name, 'fr', 'French'),
-                MenuCommand(SpeechRecognitionCommand.name, 'it', 'Italian'),
-                MenuCommand(SpeechRecognitionCommand.name, 'auto', 'auto')
+                MenuCommand('/google-speech-recognition ja'),
+                MenuCommand('/google-speech-recognition de'),
+                MenuCommand('/google-speech-recognition fr'),
+                MenuCommand('/google-speech-recognition it'),
+                MenuCommand('/google-speech-recognition auto')
             ]
         )
     )
