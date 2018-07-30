@@ -92,17 +92,26 @@ class GenerateDocumentationCommand(Command):
         api.cmd.load_commands(Path(__file__).parent / 'bubblesub' / 'cmd')
 
         print('# Default commands', file=handle)
-        for cls in sorted(api.cmd.get_all(), key=lambda cls: cls.name):
+        for cls in sorted(api.cmd.get_all(), key=lambda cls: cls.names[0]):
             parser = argparse.ArgumentParser(
                 add_help=False,
-                prog=cls.name,
+                prog=cls.names[0],
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
             cls._decorate_parser(parser)
 
-            cmd_anchor = self._get_anchor_name('cmd', cls.name)
-            cmd_name = cls.name.replace('-', '\N{NON-BREAKING HYPHEN}')
+            cmd_anchor = self._get_anchor_name('cmd', cls.names[0])
+            cmd_name = cls.names[0].replace('-', '\N{NON-BREAKING HYPHEN}')
             print(f'### <a name="{cmd_anchor}"></a>`{cmd_name}`', file=handle)
+
+            if len(cls.names) > 1:
+                print(
+                    'Aliases: '
+                    + ', '.join(f'`{alias}`' for alias in cls.names[1:])
+                    + '\n',
+                    file=handle
+                )
+
             print(cls.help_text, file=handle)
             if parser._actions:
                 print('\n\n', file=handle)

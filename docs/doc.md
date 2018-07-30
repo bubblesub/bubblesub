@@ -50,9 +50,9 @@ Context refers to the currently focused widget.
 |<kbd>Shift+F3</kbd> | global | <code><a href="#user-content-cmd-edit-search-repeat">edit/search-repeat</a> -d above</code> |
 |<kbd>Alt+A</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> spectrogram</code> |
 |<kbd>Alt+S</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> subtitles-grid</code> |
-|<kbd>Alt+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> text-editor</code> |
-|<kbd>Alt+Shift+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> note-editor</code> |
-|<kbd>Alt+C</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> console-input</code> |
+|<kbd>Alt+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> text-editor -s</code> |
+|<kbd>Alt+Shift+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> note-editor -s</code> |
+|<kbd>Alt+C</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> console-input -s</code> |
 |<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> console</code> |
 |<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-edit-split-sub-at-current-video-frame">edit/split-sub-at-current-video-frame</a> </code> |
 |<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-edit-join-subs-concatenate">edit/join-subs-concatenate</a> </code> |
@@ -488,11 +488,12 @@ Focuses the target widget.
 
 
 Usage:
-`view/focus‑widget target`
+`view/focus‑widget target [-s|--select]`
 
 
 
 * `target`: which widget to focus (`text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
+* `-s`, `--select`: whether to select the text
 
 ### <a name="cmd-view-set-palette"></a>`view/set‑palette`
 Changes the GUI color theme.
