@@ -90,15 +90,18 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         elif sender == self.ignore_all_btn:
             self._ignore_all()
 
+    @property
+    def text_edit(self) -> QtWidgets.QWidget:
+        return self._main_window.findChild(QtWidgets.QWidget, 'text-editor')
+
     def _replace(self) -> None:
-        edit = self._main_window.editor.center.text_edit
-        text = edit.toPlainText()
+        text = self.text_edit.toPlainText()
         text = (
-            text[:edit.textCursor().selectionStart()] +
+            text[:self.text_edit.textCursor().selectionStart()] +
             self._replacement_text_edit.text() +
-            text[edit.textCursor().selectionEnd():]
+            text[self.text_edit.textCursor().selectionEnd():]
         )
-        edit.document().setPlainText(text)
+        self.text_edit.document().setPlainText(text)
         self._next()
 
     def _add_to_dictionary(self) -> None:
@@ -125,7 +128,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
     def _iter_to_next_mispelt_match(
             self
     ) -> T.Optional[T.Tuple[int, int, int, str]]:
-        cursor = self._main_window.editor.center.text_edit.textCursor()
+        cursor = self.text_edit.textCursor()
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]
             for start, end, word in bubblesub.ass.util.spell_check_ass_line(
@@ -149,10 +152,10 @@ class _SpellCheckDialog(QtWidgets.QDialog):
     ) -> None:
         self._api.subs.selected_indexes = [idx]
 
-        cursor = self._main_window.editor.center.text_edit.textCursor()
+        cursor = self.text_edit.textCursor()
         cursor.setPosition(start)
         cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
-        self._main_window.editor.center.text_edit.setTextCursor(cursor)
+        self.text_edit.setTextCursor(cursor)
 
         self._mispelt_text_edit.setText(mispelt_word)
 

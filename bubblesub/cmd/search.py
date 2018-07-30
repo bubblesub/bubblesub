@@ -60,8 +60,13 @@ class _SearchModeHandler(abc.ABC):
         raise NotImplementedError('Not implemented')
 
     @abc.abstractmethod
-    def get_subject_widget(self) -> QtWidgets.QWidget:
+    def get_subject_widget_name(self) -> str:
         raise NotImplementedError('Not implemented')
+
+    def get_subject_widget(self) -> QtWidgets.QWidget:
+        return self.main_window.findChild(
+            QtWidgets.QWidget, self.get_subject_widget_name()
+        )
 
     def select_text_on_widget(
             self, selection_start: int, selection_end: int
@@ -117,8 +122,8 @@ class _TextSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: Event, value: str) -> None:
         sub.text = value.replace('\n', '\\N')
 
-    def get_subject_widget(self) -> QtWidgets.QWidget:
-        return self.main_window.editor.center.text_edit
+    def get_subject_widget_name(self) -> QtWidgets.QWidget:
+        return 'text-editor'
 
 
 class _NoteSearchModeHandler(_SearchModeHandler):
@@ -128,8 +133,8 @@ class _NoteSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: Event, value: str) -> None:
         sub.note = value.replace('\n', '\\N')
 
-    def get_subject_widget(self) -> QtWidgets.QWidget:
-        return self.main_window.editor.center.note_edit
+    def get_subject_widget_name(self) -> QtWidgets.QWidget:
+        return 'note-editor'
 
 
 class _ActorSearchModeHandler(_SearchModeHandler):
@@ -139,8 +144,8 @@ class _ActorSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: Event, value: str) -> None:
         sub.actor = value
 
-    def get_subject_widget(self) -> QtWidgets.QWidget:
-        return self.main_window.editor.bar1.actor_edit.lineEdit()
+    def get_subject_widget_name(self) -> QtWidgets.QWidget:
+        return 'actor-editor'
 
 
 class _StyleSearchModeHandler(_SearchModeHandler):
@@ -150,8 +155,8 @@ class _StyleSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: Event, value: str) -> None:
         sub.style = value
 
-    def get_subject_widget(self) -> QtWidgets.QWidget:
-        return self.main_window.editor.bar1.style_edit.lineEdit()
+    def get_subject_widget_name(self) -> QtWidgets.QWidget:
+        return 'style-editor'
 
 
 _HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
