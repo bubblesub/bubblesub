@@ -513,7 +513,7 @@ class _SearchDialog(QtWidgets.QDialog):
 
 
 class SearchCommand(BaseCommand):
-    names = ['edit/search']
+    names = ['search']
     menu_name = '&Search...'
     help_text = 'Opens up the search dialog.'
 
@@ -527,7 +527,7 @@ class SearchCommand(BaseCommand):
 
 
 class SearchAndReplaceCommand(BaseCommand):
-    names = ['edit/search-and-replace']
+    names = ['search-and-replace']
     menu_name = '&Search and replace...'
     help_text = 'Opens up the search and replace dialog.'
 
@@ -541,7 +541,7 @@ class SearchAndReplaceCommand(BaseCommand):
 
 
 class SearchRepeatCommand(BaseCommand):
-    names = ['edit/search-repeat']
+    names = ['search-repeat', 'search-again']
     help_text = 'Repeats last search operation.'
 
     @property

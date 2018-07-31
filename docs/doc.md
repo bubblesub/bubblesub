@@ -4,11 +4,11 @@ Context refers to the currently focused widget.
 
 | Shortcut | Context | Command |
 |:--|:--|:--|
-|<kbd>Ctrl+Shift+N</kbd> | global | <code><a href="#user-content-cmd-file-new">file/new</a> </code> |
-|<kbd>Ctrl+O</kbd> | global | <code><a href="#user-content-cmd-file-open">file/open</a> </code> |
-|<kbd>Ctrl+S</kbd> | global | <code><a href="#user-content-cmd-file-save">file/save</a> </code> |
-|<kbd>Ctrl+Shift+S</kbd> | global | <code><a href="#user-content-cmd-file-save-as">file/save-as</a> </code> |
-|<kbd>Ctrl+Q</kbd> | global | <code><a href="#user-content-cmd-file-quit">file/quit</a> </code> |
+|<kbd>Ctrl+Shift+N</kbd> | global | <code><a href="#user-content-cmd-new">new</a> </code> |
+|<kbd>Ctrl+O</kbd> | global | <code><a href="#user-content-cmd-open">open</a> </code> |
+|<kbd>Ctrl+S</kbd> | global | <code><a href="#user-content-cmd-save">save</a> </code> |
+|<kbd>Ctrl+Shift+S</kbd> | global | <code><a href="#user-content-cmd-save-as">save-as</a> </code> |
+|<kbd>Ctrl+Q</kbd> | global | <code><a href="#user-content-cmd-quit">quit</a> </code> |
 |<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-grid-jump-to-sub-by-number">grid/jump-to-sub-by-number</a> </code> |
 |<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-grid-jump-to-sub-by-time">grid/jump-to-sub-by-time</a> </code> |
 |<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-video-seek-with-gui">video/seek-with-gui</a> </code> |
@@ -27,10 +27,10 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 500</code> |
 |<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
 |<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-video-pause">video/pause</a> toggle</code> |
-|<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-edit-undo">edit/undo</a> </code> |
-|<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-edit-redo">edit/redo</a> </code> |
-|<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-edit-search">edit/search</a> </code> |
-|<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-edit-search-and-replace">edit/search-and-replace</a> </code> |
+|<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-undo">undo</a> </code> |
+|<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
+|<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-search">search</a> </code> |
+|<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-search-and-replace">search-and-replace</a> </code> |
 |<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
 |<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-edit-delete-subs">edit/delete-subs</a> </code> |
 |<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 10</code> |
@@ -46,19 +46,19 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-place-sel-at-current-video-frame">audio/place-sel-at-current-video-frame</a> </code> |
 |<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
-|<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-edit-search-repeat">edit/search-repeat</a> -d below</code> |
-|<kbd>Shift+F3</kbd> | global | <code><a href="#user-content-cmd-edit-search-repeat">edit/search-repeat</a> -d above</code> |
-|<kbd>Alt+A</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> spectrogram</code> |
-|<kbd>Alt+S</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> subtitles-grid</code> |
-|<kbd>Alt+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> text-editor -s</code> |
-|<kbd>Alt+Shift+D</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> note-editor -s</code> |
-|<kbd>Alt+C</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> console-input -s</code> |
-|<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-view-focus-widget">view/focus-widget</a> console</code> |
+|<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d below</code> |
+|<kbd>Shift+F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d above</code> |
+|<kbd>Alt+A</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> spectrogram</code> |
+|<kbd>Alt+S</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> subtitles-grid</code> |
+|<kbd>Alt+D</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> text-editor -s</code> |
+|<kbd>Alt+Shift+D</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> note-editor -s</code> |
+|<kbd>Alt+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console-input -s</code> |
+|<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console</code> |
 |<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-edit-split-sub-at-current-video-frame">edit/split-sub-at-current-video-frame</a> </code> |
 |<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-edit-join-subs-concatenate">edit/join-subs-concatenate</a> </code> |
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d above</code> |
 |<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d below</code> |
-|<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file/properties</a> </code> |
+|<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file-properties</a> </code> |
 |<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d -10</code> |
 |<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 10</code> |
 |<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -10</code> |
@@ -216,8 +216,6 @@ Joins the selected subtitles adding animation timing tags inbetween. The syllabl
 Joins the selected subtitles together. Keeps the first subtitle's properties and concatenates the text and notes of the consecutive subtitles.
 ### <a name="cmd-edit-join-subs-keep-first"></a>`edit/join‑subs‑keep‑first`
 Joins the selected subtitles together. Keeps only the first subtitle's properties.
-### <a name="cmd-edit-manage-styles"></a>`edit/manage‑styles`
-Opens up the style manager.
 ### <a name="cmd-edit-move-subs"></a>`edit/move‑subs`
 Moves the selected subtitles above or below.
 
@@ -234,24 +232,6 @@ Usage:
 Moves the selected subtitles to the specified position. Asks for the position interactively.
 ### <a name="cmd-edit-place-subs-at-current-video-frame"></a>`edit/place‑subs‑at‑current‑video‑frame`
 Realigns the selected subtitles to the current video frame. The subtitles start time is placed at the current video frame and the subtitles duration is set to the default subtitle duration.
-### <a name="cmd-edit-redo"></a>`edit/redo`
-Redoes last edit operation.
-### <a name="cmd-edit-search"></a>`edit/search`
-Opens up the search dialog.
-### <a name="cmd-edit-search-and-replace"></a>`edit/search‑and‑replace`
-Opens up the search and replace dialog.
-### <a name="cmd-edit-search-repeat"></a>`edit/search‑repeat`
-Repeats last search operation.
-
-
-
-Usage:
-`edit/search‑repeat -d|--direction=…`
-
-
-
-* `-d`, `--direction`: whether to search forward or backward (`above`, `below`)
-
 ### <a name="cmd-edit-shift-subs"></a>`edit/shift‑subs`
 Shifts selected subtitles times by the specified distance.
 
@@ -292,59 +272,26 @@ Usage:
 * `-t`, `--target`: how to snap the subtitles (`start`, `end`, `both`)
 * `-d`, `--direction`: direction to snap into (`above`, `below`)
 
-### <a name="cmd-edit-spell-check"></a>`edit/spell‑check`
-Opens up the spell check dialog.
 ### <a name="cmd-edit-split-sub-at-current-video-frame"></a>`edit/split‑sub‑at‑current‑video‑frame`
 Splits the selected subtitle into two at the current video frame.
 ### <a name="cmd-edit-split-sub-by-karaoke"></a>`edit/split‑sub‑by‑karaoke`
 Splits the selected subtitles according to the karaoke tags inside.
 ### <a name="cmd-edit-swap-subs-text-and-notes"></a>`edit/swap‑subs‑text‑and‑notes`
 Swaps subtitle text with their notes in the selected subtitles.
-### <a name="cmd-edit-undo"></a>`edit/undo`
-Undoes last edit operation.
-### <a name="cmd-file-load-video"></a>`file/load‑video`
-Loads a video file for the audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
-
-
-
-Usage:
-`file/load‑video [path]`
-
-
-
-* `path`: optional path to load the video from
-
-### <a name="cmd-file-new"></a>`file/new`
-Opens a new file. Prompts user to save the current file if there are unsaved changes.
-### <a name="cmd-file-open"></a>`file/open`
-Opens an existing subtitles file. Prompts user to save the current file if there are unsaved changes. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
-
-
-
-Usage:
-`file/open [path]`
-
-
-
-* `path`: path to load the subtitles from
-
-### <a name="cmd-file-properties"></a>`file/properties`
+### <a name="cmd-file-properties"></a>`file‑properties`
 Opens up the metadata editor dialog.
-### <a name="cmd-file-quit"></a>`file/quit`
-Quits the application. Prompts user to save the current file if there are unsaved changes.
-### <a name="cmd-file-save"></a>`file/save`
-Saves the current subtitles to an ASS file. If the currently loaded subtitles weren't ever saved, prompts user to choose where to save the file to.
-### <a name="cmd-file-save-as"></a>`file/save‑as`
-Saves the current subtitles to an ASS file. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
+### <a name="cmd-focus-widget"></a>`focus‑widget`
+Focuses the target widget.
 
 
 
 Usage:
-`file/save‑as [path]`
+`focus‑widget target [-s|--select]`
 
 
 
-* `path`: optional path to save the subtitles to
+* `target`: which widget to focus (`text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
+* `-s`, `--select`: whether to select the text
 
 ### <a name="cmd-grid-create-audio-sample"></a>`grid/create‑audio‑sample`
 Saves current subtitle selection to a WAV file. The audio starts at the first selected subtitle start and ends at the last selected subtitle end.
@@ -368,8 +315,96 @@ Usage:
 Pastes teext into the subtitle selection.
 ### <a name="cmd-grid-paste-subs-times"></a>`grid/paste‑subs/times`
 Pastes time boundaries into the subtitle selection.
+### <a name="cmd-load-video"></a>`load‑video`
+Loads a video file for the audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
+
+
+
+Usage:
+`load‑video [path]`
+
+
+
+* `path`: optional path to load the video from
+
+### <a name="cmd-manage-styles"></a>`manage‑styles`
+Aliases: `styles-manager`, `style-manager`
+
+Opens up the style manager.
+### <a name="cmd-manage-styles"></a>`manage‑styles`
+Aliases: `styles-manager`, `style-manager`
+
+Opens up the style manager.
+### <a name="cmd-manage-styles"></a>`manage‑styles`
+Aliases: `styles-manager`, `style-manager`
+
+Opens up the style manager.
+### <a name="cmd-new"></a>`new`
+Opens a new file. Prompts user to save the current file if there are unsaved changes.
+### <a name="cmd-open"></a>`open`
+Opens an existing subtitles file. Prompts user to save the current file if there are unsaved changes. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
+
+
+
+Usage:
+`open [path]`
+
+
+
+* `path`: path to load the subtitles from
+
+### <a name="cmd-quit"></a>`quit`
+Quits the application. Prompts user to save the current file if there are unsaved changes.
+### <a name="cmd-redo"></a>`redo`
+Redoes last edit operation.
 ### <a name="cmd-reload-plugins"></a>`reload‑plugins`
 Reloads the user plugins.
+### <a name="cmd-save"></a>`save`
+Saves the current subtitles to an ASS file. If the currently loaded subtitles weren't ever saved, prompts user to choose where to save the file to.
+### <a name="cmd-save-as"></a>`save‑as`
+Saves the current subtitles to an ASS file. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
+
+
+
+Usage:
+`save‑as [path]`
+
+
+
+* `path`: optional path to save the subtitles to
+
+### <a name="cmd-search"></a>`search`
+Opens up the search dialog.
+### <a name="cmd-search-and-replace"></a>`search‑and‑replace`
+Opens up the search and replace dialog.
+### <a name="cmd-search-repeat"></a>`search‑repeat`
+Aliases: `search-again`
+
+Repeats last search operation.
+
+
+
+Usage:
+`search‑repeat -d|--direction=…`
+
+
+
+* `-d`, `--direction`: whether to search forward or backward (`above`, `below`)
+
+### <a name="cmd-search-repeat"></a>`search‑repeat`
+Aliases: `search-again`
+
+Repeats last search operation.
+
+
+
+Usage:
+`search‑repeat -d|--direction=…`
+
+
+
+* `-d`, `--direction`: whether to search forward or backward (`above`, `below`)
+
 ### <a name="cmd-select-subs"></a>`select‑subs`
 Selects given subtitles.
 
@@ -382,6 +417,22 @@ Usage:
 
 * `target`: subtitles to select
 
+### <a name="cmd-set-palette"></a>`set‑palette`
+Changes the GUI color theme.
+
+
+
+Usage:
+`set‑palette palette_name`
+
+
+
+* `palette_name`: name of the palette to change to
+
+### <a name="cmd-spell-check"></a>`spell‑check`
+Opens up the spell check dialog.
+### <a name="cmd-undo"></a>`undo`
+Undoes last edit operation.
 ### <a name="cmd-video-mute"></a>`video/mute`
 Mutes or unmutes the video audio.
 
@@ -484,28 +535,3 @@ Usage:
 
 * `-d`, `--delta`: how many milliseconds to step
 * `-p`, `--precise`: whether to use precise seeking at the expense of performance
-
-### <a name="cmd-view-focus-widget"></a>`view/focus‑widget`
-Focuses the target widget.
-
-
-
-Usage:
-`view/focus‑widget target [-s|--select]`
-
-
-
-* `target`: which widget to focus (`text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
-* `-s`, `--select`: whether to select the text
-
-### <a name="cmd-view-set-palette"></a>`view/set‑palette`
-Changes the GUI color theme.
-
-
-
-Usage:
-`view/set‑palette palette_name`
-
-
-
-* `palette_name`: name of the palette to change to

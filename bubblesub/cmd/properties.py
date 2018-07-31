@@ -327,7 +327,7 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
 
 class FilePropertiesCommand(BaseCommand):
-    names = ['file/properties']
+    names = ['file-properties']
     menu_name = '&Properties...'
     help_text = 'Opens up the metadata editor dialog.'
 

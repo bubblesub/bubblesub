@@ -46,7 +46,7 @@ def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
 
 
 class NewCommand(BaseCommand):
-    names = ['file/new']
+    names = ['new']
     menu_name = '&New'
     help_text = (
         'Opens a new file. '
@@ -59,7 +59,7 @@ class NewCommand(BaseCommand):
 
 
 class OpenCommand(BaseCommand):
-    names = ['file/open']
+    names = ['open']
     menu_name = '&Open'
     help_text = (
         'Opens an existing subtitles file. '
@@ -101,7 +101,7 @@ class OpenCommand(BaseCommand):
 
 
 class LoadVideoCommand(BaseCommand):
-    names = ['file/load-video']
+    names = ['load-video']
     menu_name = '&Load video'
     help_text = (
         'Loads a video file for the audio/video playback. '
@@ -141,7 +141,7 @@ class LoadVideoCommand(BaseCommand):
 
 
 class SaveCommand(BaseCommand):
-    names = ['file/save']
+    names = ['save']
     menu_name = '&Save'
     help_text = (
         'Saves the current subtitles to an ASS file. '
@@ -168,7 +168,7 @@ class SaveCommand(BaseCommand):
 
 
 class SaveAsCommand(BaseCommand):
-    names = ['file/save-as']
+    names = ['save-as']
     menu_name = '&Save as'
     help_text = (
         'Saves the current subtitles to an ASS file. '
@@ -208,7 +208,7 @@ class SaveAsCommand(BaseCommand):
 
 
 class QuitCommand(BaseCommand):
-    names = ['file/quit']
+    names = ['quit']
     menu_name = '&Quit'
     help_text = (
         'Quits the application. '

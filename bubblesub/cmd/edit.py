@@ -37,7 +37,7 @@ def _fmt_shift_target(shift_target: ShiftTarget) -> str:
 
 
 class UndoCommand(BaseCommand):
-    names = ['edit/undo']
+    names = ['undo']
     menu_name = '&Undo'
     help_text = 'Undoes last edit operation.'
 
@@ -50,7 +50,7 @@ class UndoCommand(BaseCommand):
 
 
 class RedoCommand(BaseCommand):
-    names = ['edit/redo']
+    names = ['redo']
     menu_name = '&Redo'
     help_text = 'Redoes last edit operation.'
 

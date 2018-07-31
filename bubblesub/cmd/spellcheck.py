@@ -170,7 +170,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
 
 
 class SpellCheckCommand(BaseCommand):
-    names = ['edit/spell-check']
+    names = ['spell-check']
     menu_name = '&Check spelling...'
     help_text = 'Opens up the spell check dialog.'
 
