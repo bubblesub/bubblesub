@@ -65,4 +65,4 @@ def test_command_naming(  # pylint: disable=redefined-outer-name
 
     assert len(api.cmd.get_all()) >= 1
     for cls in api.cmd.get_all():
-        verify_name(cls.__name__, cls.name)
+        verify_name(cls.__name__, cls.names[0])
