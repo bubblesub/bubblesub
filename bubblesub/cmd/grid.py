@@ -28,6 +28,7 @@ import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
+from bubblesub.cmd.common import EventSelection
 from bubblesub.util import VerticalDirection
 
 
@@ -122,70 +123,31 @@ class JumpToSubtitleByTimeCommand(BaseCommand):
             self.api.subs.selected_indexes = [best_idx]
 
 
-class SelectNearSubtitleCommand(BaseCommand):
-    names = ['grid/select-near-sub']
-    help_text = (
-        'Selects nearest subtitle in given direction to the current selection.'
-    )
+class SelectSubtitlesCommand(BaseCommand):
+    names = ['select-subs']
+    help_text = 'Selects given subtitles.'
 
     @property
     def menu_name(self) -> str:
-        return f'Select {self.args.direction.name.lower()} subtitle'
+        return 'Select ' + self.args.target.get_description()
 
     @property
     def is_enabled(self) -> bool:
-        return len(self.api.subs.events) > 0
+        return True
 
     async def run(self) -> None:
-        max_idx = len(self.api.subs.events) - 1
-        if self.args.direction == VerticalDirection.Above:
-            if not self.api.subs.selected_indexes:
-                self.api.subs.selected_indexes = [max_idx]
-            else:
-                self.api.subs.selected_indexes = [
-                    max(0, self.api.subs.selected_indexes[0] - 1)
-                ]
-        elif self.args.direction == VerticalDirection.Below:
-            if not self.api.subs.selected_indexes:
-                self.api.subs.selected_indexes = [0]
-            else:
-                self.api.subs.selected_indexes = [
-                    min(self.api.subs.selected_indexes[-1] + 1, max_idx)
-                ]
-        else:
-            raise AssertionError
+        self.api.subs.selected_indexes = self.args.target.get_indexes()
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
-            '-d', '--direction',
-            help='direction to look in',
-            type=VerticalDirection.from_string,
-            choices=list(VerticalDirection),
-            required=True
+            'target',
+            help='subtitles to select',
+            type=lambda target: EventSelection(api, target)
         )
-
-
-class SelectAllSubtitlesCommand(BaseCommand):
-    names = ['grid/select-all-subs']
-    menu_name = 'Select all subtitles'
-    help_text = 'Selects all subtitles.'
-
-    @property
-    def is_enabled(self) -> bool:
-        return len(self.api.subs.events) > 0
-
-    async def run(self) -> None:
-        self.api.subs.selected_indexes = list(range(len(self.api.subs.events)))
-
-
-class ClearSubtitleSelectionCommand(BaseCommand):
-    names = ['grid/clear-sub-sel']
-    menu_name = 'Clear subtitle selection'
-    help_text = 'Clears subtitle selection.'
-
-    async def run(self) -> None:
-        self.api.subs.selected_indexes = []
 
 
 class CopySubtitlesTextCommand(BaseCommand):
@@ -404,9 +366,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             JumpToSubtitleByNumberCommand,
             JumpToSubtitleByTimeCommand,
-            SelectNearSubtitleCommand,
-            SelectAllSubtitlesCommand,
-            ClearSubtitleSelectionCommand,
+            SelectSubtitlesCommand,
             CopySubtitlesTextCommand,
             PasteSubtitlesTextCommand,
             CopySubtitlesTimesCommand,

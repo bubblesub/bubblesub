@@ -137,10 +137,10 @@ class MenuConfig(BaseConfig):
                     MenuCommand('/grid/jump-to-sub-by-number'),
                     MenuCommand('/grid/jump-to-sub-by-time'),
                     MenuSeparator(),
-                    MenuCommand('/grid/select-all-subs'),
-                    MenuCommand('/grid/select-near-sub -d above'),
-                    MenuCommand('/grid/select-near-sub -d below'),
-                    MenuCommand('/grid/clear-sub-sel'),
+                    MenuCommand('/select-subs all'),
+                    MenuCommand('/select-subs one-above'),
+                    MenuCommand('/select-subs one-below'),
+                    MenuCommand('/select-subs none'),
                 ]),
 
                 SubMenu('&View', [

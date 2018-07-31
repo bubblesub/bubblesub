@@ -12,10 +12,10 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-grid-jump-to-sub-by-number">grid/jump-to-sub-by-number</a> </code> |
 |<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-grid-jump-to-sub-by-time">grid/jump-to-sub-by-time</a> </code> |
 |<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-video-seek-with-gui">video/seek-with-gui</a> </code> |
-|<kbd>Ctrl+K</kbd> | global | <code><a href="#user-content-cmd-grid-select-near-sub">grid/select-near-sub</a> -d above</code> |
-|<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-grid-select-near-sub">grid/select-near-sub</a> -d below</code> |
-|<kbd>Ctrl+A</kbd> | global | <code><a href="#user-content-cmd-grid-select-all-subs">grid/select-all-subs</a> </code> |
-|<kbd>Ctrl+Shift+A</kbd> | global | <code><a href="#user-content-cmd-grid-clear-sub-sel">grid/clear-sub-sel</a> </code> |
+|<kbd>Ctrl+K</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
+|<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
+|<kbd>Ctrl+A</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> all</code> |
+|<kbd>Ctrl+Shift+A</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> none</code> |
 |<kbd>Alt+2</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t start -de 500</code> |
 |<kbd>Alt+1</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t start -ds -500</code> |
 |<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t end -ds -500</code> |
@@ -73,8 +73,8 @@ Context refers to the currently focused widget.
 |<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> </code> |
 |<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-video-pause">video/pause</a> toggle</code> |
-|<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-grid-select-near-sub">grid/select-near-sub</a> -d above</code> |
-|<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-grid-select-near-sub">grid/select-near-sub</a> -d below</code> |
+|<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
+|<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
 |<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-spectrogram">audio/scroll-spectrogram</a> -d -0.05</code> |
 |<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-spectrogram">audio/scroll-spectrogram</a> -d 0.05</code> |
 |<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-spectrogram">audio/zoom-spectrogram</a> -d 1.1</code> |
@@ -333,8 +333,6 @@ Usage:
 
 * `path`: optional path to save the subtitles to
 
-### <a name="cmd-grid-clear-sub-sel"></a>`grid/clear‑sub‑sel`
-Clears subtitle selection.
 ### <a name="cmd-grid-copy-subs"></a>`grid/copy‑subs`
 Copies the selected subtitles.
 ### <a name="cmd-grid-copy-subs-text"></a>`grid/copy‑subs/text`
@@ -363,22 +361,20 @@ Usage:
 Pastes teext into the subtitle selection.
 ### <a name="cmd-grid-paste-subs-times"></a>`grid/paste‑subs/times`
 Pastes time boundaries into the subtitle selection.
-### <a name="cmd-grid-select-all-subs"></a>`grid/select‑all‑subs`
-Selects all subtitles.
-### <a name="cmd-grid-select-near-sub"></a>`grid/select‑near‑sub`
-Selects nearest subtitle in given direction to the current selection.
+### <a name="cmd-reload-plugins"></a>`reload‑plugins`
+Reloads the user plugins.
+### <a name="cmd-select-subs"></a>`select‑subs`
+Selects given subtitles.
 
 
 
 Usage:
-`grid/select‑near‑sub -d|--direction=…`
+`select‑subs target`
 
 
 
-* `-d`, `--direction`: direction to look in (`above`, `below`)
+* `target`: subtitles to select
 
-### <a name="cmd-reload-plugins"></a>`reload‑plugins`
-Reloads the user plugins.
 ### <a name="cmd-video-mute"></a>`video/mute`
 Mutes or unmutes the video audio.
 
