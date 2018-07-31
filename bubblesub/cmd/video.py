@@ -93,7 +93,10 @@ class PlayAroundSpectrogramSelectionCommand(BaseCommand):
             )
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-t', '--target',
             help='part of selection to play around',
@@ -150,7 +153,10 @@ class StepFrameCommand(BaseCommand):
             )
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='how many frames to step',
@@ -180,7 +186,10 @@ class StepMillisecondsCommand(BaseCommand):
         )
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='how many milliseconds to step',
@@ -249,7 +258,10 @@ class SetPlaybackSpeedCommand(BaseCommand):
         self.api.media.playback_speed = new_value
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'expression',
             help='expression to calculate new playback speed',
@@ -275,7 +287,10 @@ class SetVolumeCommand(BaseCommand):
         self.api.media.volume = new_value
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'expression',
             help='expression to calculate new volume',
@@ -310,7 +325,10 @@ class MuteCommand(BaseCommand):
             raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'operation',
             help='whether to mute the audio',
@@ -346,7 +364,10 @@ class PauseCommand(BaseCommand):
             raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'operation',
             help='whether to pause the video',
@@ -403,7 +424,10 @@ class ScreenshotCommand(BaseCommand):
         )
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-i', '--include-subs',
             help='whether to "burn" the subtitles into the screenshot',

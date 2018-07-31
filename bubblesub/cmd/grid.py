@@ -343,7 +343,10 @@ class PasteSubtitlesCommand(BaseCommand):
             raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-d', '--direction',
             help='direction to paste into',

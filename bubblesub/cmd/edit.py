@@ -128,7 +128,10 @@ class InsertSubtitleCommand(BaseCommand):
             self.api.subs.selected_indexes = [idx]
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-d', '--direction',
             help='how to insert the subtitle',
@@ -199,7 +202,10 @@ class MoveSubtitlesCommand(BaseCommand):
             self.api.subs.selected_indexes = indexes
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-d', '--direction',
             help='how to move the subtitles',
@@ -501,7 +507,10 @@ class SnapSubtitlesToCurrentVideoFrameCommand(BaseCommand):
                     raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-t', '--target',
             help='how to snap the selection',
@@ -582,7 +591,10 @@ class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
                     raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-t', '--target',
             help='how to snap the subtitles',
@@ -629,7 +641,10 @@ class ShiftSubtitlesCommand(BaseCommand):
                     raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-t', '--target',
             help='how to shift the subtitles',

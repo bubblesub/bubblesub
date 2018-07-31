@@ -65,7 +65,10 @@ class SetPaletteCommand(BaseCommand):
         main_window.apply_palette(self.args.palette_name)
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'palette_name',
             help='name of the palette to change to',
@@ -111,7 +114,10 @@ class FocusWidgetCommand(BaseCommand):
             widget.selectAll()
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'target',
             help='which widget to focus',

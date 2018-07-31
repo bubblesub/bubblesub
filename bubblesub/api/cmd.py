@@ -101,7 +101,7 @@ class BaseCommand(abc.ABC):
         """
         self.api = api
         self.invocation = invocation
-        self.args = self.parse_args(split_invocation(invocation)[1])
+        self.args = self.parse_args(api, split_invocation(invocation)[1])
 
     @bubblesub.model.classproperty
     @abc.abstractproperty
@@ -153,11 +153,16 @@ class BaseCommand(abc.ABC):
         raise NotImplementedError('Command has no implementation')
 
     @classmethod
-    def parse_args(cls, invocation: str) -> argparse.Namespace:
+    def parse_args(
+            cls,
+            api: 'bubblesub.api.Api',
+            invocation: str
+    ) -> argparse.Namespace:
         """
         Convert command invocation.
 
         :param cls: type inheriting from BaseCommand
+        :param api: core API
         :param invocation: command line
         :return: parsed arguments for command
         """
@@ -166,11 +171,14 @@ class BaseCommand(abc.ABC):
             description=cls.help_text,
             add_help=False
         )
-        cls._decorate_parser(parser)
+        cls._decorate_parser(api, parser)
         return parser.parse_args(invocation)
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser):
+    def _decorate_parser(
+            api: 'bubblesub.api.Api',
+            parser: argparse.ArgumentParser
+    ) -> None:
         pass
 
 

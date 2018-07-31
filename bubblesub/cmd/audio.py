@@ -51,7 +51,10 @@ class ScrollSpectrogramCommand(BaseCommand):
         self.api.media.audio.move_view(distance)
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='factor to shift the view by',
@@ -75,7 +78,10 @@ class ZoomSpectrogramCommand(BaseCommand):
         self.api.media.audio.zoom_view(new_factor, mouse_x)
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='factor to zoom the view by',
@@ -115,7 +121,10 @@ class SnapSpectrogramSelectionToCurrentVideoFrameCommand(BaseCommand):
             raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-t', '--target',
             help='how to snap the selection',
@@ -207,7 +216,10 @@ class SnapSpectrogramSelectionToNearSubtitleCommand(BaseCommand):
             raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-t', '--target',
             help='how to snap the selection',
@@ -291,7 +303,10 @@ class SnapSpectrogramSelectionToNearKeyframeCommand(BaseCommand):
         raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-t', '--target',
             help='how to snap the selection',
@@ -374,7 +389,10 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
                 raise AssertionError
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-t', '--target',
             help='how to shift the selection',

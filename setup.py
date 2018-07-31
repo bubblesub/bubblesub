@@ -98,7 +98,7 @@ class GenerateDocumentationCommand(Command):
                 prog=cls.names[0],
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
-            cls._decorate_parser(parser)
+            cls._decorate_parser(api, parser)
 
             cmd_anchor = self._get_anchor_name('cmd', cls.names[0])
             cmd_name = cls.names[0].replace('-', '\N{NON-BREAKING HYPHEN}')

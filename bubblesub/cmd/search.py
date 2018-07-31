@@ -576,7 +576,10 @@ class SearchRepeatCommand(BaseCommand):
             bubblesub.ui.util.notice('No occurences found.')
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-d', '--direction',
             help='whether to search forward or backward',

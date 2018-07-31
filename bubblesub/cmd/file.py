@@ -88,7 +88,10 @@ class OpenCommand(BaseCommand):
                 self.api.log.info(f'opened {path}')
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'path',
             help='path to load the subtitles from',
@@ -125,7 +128,10 @@ class LoadVideoCommand(BaseCommand):
             self.api.log.info(f'loading {path}')
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'path',
             help='optional path to load the video from',
@@ -189,7 +195,10 @@ class SaveAsCommand(BaseCommand):
             self.api.log.info(f'saved subtitles to {path}')
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             'path',
             help='optional path to save the subtitles to',
