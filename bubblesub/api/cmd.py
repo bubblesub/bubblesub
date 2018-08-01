@@ -215,7 +215,7 @@ class CommandApi(QtCore.QObject):
 
         try:
             cmd = self.get(invocation)
-        except Exception as ex:
+        except Exception as ex:  # pylint: disable=broad-except
             self._api.log.error(str(ex))
         else:
             self.run(cmd)

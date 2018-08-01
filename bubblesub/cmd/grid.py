@@ -158,9 +158,9 @@ class CopySubtitlesCommand(BaseCommand):
         target = self.args.target.get_description()
         if self.args.subject == 'text':
             return f'Copy {target} text to clipboard'
-        elif self.args.subject == 'times':
+        if self.args.subject == 'times':
             return f'Copy {target} times to clipboard'
-        elif self.args.subject == 'all':
+        if self.args.subject == 'all':
             return f'Copy {target} to clipboard'
         raise AssertionError
 

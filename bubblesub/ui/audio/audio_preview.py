@@ -80,7 +80,8 @@ class SpectrumWorker(bubblesub.worker.Worker):
         sample_fmt = self._api.media.audio.sample_format
         if sample_fmt is None:
             return np.zeros((1 << DERIVATION_SIZE) + 1)
-        elif sample_fmt == ffms.FFMS_FMT_S16:
+
+        if sample_fmt == ffms.FFMS_FMT_S16:
             samples /= 32768.
         elif sample_fmt == ffms.FFMS_FMT_S32:
             samples /= 4294967296.

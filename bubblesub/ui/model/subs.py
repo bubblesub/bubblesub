@@ -88,13 +88,13 @@ class SubtitlesModel(ObservableListTableAdapter):
         if orientation == QtCore.Qt.Vertical:
             if role == QtCore.Qt.DisplayRole:
                 return idx + 1
-            elif role == QtCore.Qt.TextAlignmentRole:
+            if role == QtCore.Qt.TextAlignmentRole:
                 return QtCore.Qt.AlignRight
 
-        elif orientation == QtCore.Qt.Horizontal:
+        if orientation == QtCore.Qt.Horizontal:
             if role == QtCore.Qt.DisplayRole:
                 return _HEADERS[SubtitlesModelColumn(idx)]
-            elif role == QtCore.Qt.TextAlignmentRole:
+            if role == QtCore.Qt.TextAlignmentRole:
                 if idx in {
                         SubtitlesModelColumn.Text,
                         SubtitlesModelColumn.Note
@@ -122,9 +122,8 @@ class SubtitlesModel(ObservableListTableAdapter):
                 return bubblesub.ui.util.get_color(self._api, 'grid/comment')
             if col_idx == SubtitlesModelColumn.CharsPerSec:
                 return self._get_background_cps(subtitle)
-            return QtCore.QVariant()
 
-        elif role == QtCore.Qt.TextAlignmentRole:
+        if role == QtCore.Qt.TextAlignmentRole:
             if col_idx in {
                     SubtitlesModelColumn.Text,
                     SubtitlesModelColumn.Note
@@ -132,7 +131,7 @@ class SubtitlesModel(ObservableListTableAdapter):
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
 
-        elif role == QtCore.Qt.DisplayRole:
+        if role == QtCore.Qt.DisplayRole:
             return _READER_MAP[SubtitlesModelColumn(col_idx)](subtitle)
 
         return QtCore.QVariant()

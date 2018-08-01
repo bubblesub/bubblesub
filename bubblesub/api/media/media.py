@@ -421,5 +421,5 @@ class MediaApi(QtCore.QObject):
                         self.mute_changed.emit()
                     elif event_prop.name == 'pause':
                         self.pause_changed.emit()
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()

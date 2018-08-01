@@ -202,9 +202,9 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
     ) -> T.Union[int, float, fractions.Fraction]:
         if isinstance(node, ast.Num):
             return fractions.Fraction(node.n)
-        elif isinstance(node, ast.BinOp):
+        if isinstance(node, ast.BinOp):
             return op_map[type(node.op)](eval_(node.left), eval_(node.right))
-        elif isinstance(node, ast.UnaryOp):
+        if isinstance(node, ast.UnaryOp):
             return op_map[type(node.op)](eval_(node.operand))
         raise TypeError(node)
 

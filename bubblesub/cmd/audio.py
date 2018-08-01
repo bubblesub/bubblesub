@@ -182,10 +182,9 @@ class SnapSpectrogramSelectionToNearSubtitleCommand(BaseCommand):
             return None
         if self.args.direction == VerticalDirection.Above:
             return self.api.subs.selected_events[0].prev
-        elif self.args.direction == VerticalDirection.Below:
+        if self.args.direction == VerticalDirection.Below:
             return self.api.subs.selected_events[-1].next
-        else:
-            raise AssertionError
+        raise AssertionError
 
     async def run(self) -> None:
         assert self._nearest_sub is not None
@@ -296,9 +295,9 @@ class SnapSpectrogramSelectionToNearKeyframeCommand(BaseCommand):
         old_end = self.api.media.audio.selection_end
         if self.args.target == ShiftTarget.Start:
             return origin, old_end
-        elif self.args.target == ShiftTarget.End:
+        if self.args.target == ShiftTarget.End:
             return old_start, origin
-        elif self.args.target == ShiftTarget.Both:
+        if self.args.target == ShiftTarget.Both:
             return origin, origin
         raise AssertionError
 

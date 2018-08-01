@@ -82,7 +82,7 @@ class _SearchModeHandler(abc.ABC):
                 selection_start, selection_end - selection_start
             )
         else:
-            raise RuntimeError('Unknown search widget type')
+            raise AssertionError(f'Unknown search widget type ({type(widget)}')
         widget.setFocus()
 
     def get_selection_from_widget(self) -> T.Tuple[int, int]:
@@ -90,29 +90,31 @@ class _SearchModeHandler(abc.ABC):
         if isinstance(widget, QtWidgets.QPlainTextEdit):
             cursor = widget.textCursor()
             return (cursor.selectionStart(), cursor.selectionEnd())
-        elif isinstance(widget, QtWidgets.QLineEdit):
+        if isinstance(widget, QtWidgets.QLineEdit):
             return (
                 widget.selectionStart(),
                 widget.selectionStart() + len(widget.selectedText())
             )
-        raise RuntimeError(f'Unknown search widget type ({type(widget)})')
+        raise AssertionError(f'Unknown search widget type ({type(widget)})')
 
     def get_widget_text(self) -> str:
         widget = self.get_subject_widget()
         if isinstance(widget, QtWidgets.QPlainTextEdit):
             return T.cast(str, widget.toPlainText())
-        elif isinstance(widget, QtWidgets.QLineEdit):
+        if isinstance(widget, QtWidgets.QLineEdit):
             return widget.text()
-        raise RuntimeError(f'Unknown search widget type ({type(widget)})')
+        raise AssertionError(f'Unknown search widget type ({type(widget)})')
 
     def set_widget_text(self, text: str) -> None:
         widget = self.get_subject_widget()
         if isinstance(widget, QtWidgets.QPlainTextEdit):
             widget.document().setPlainText(text)
-        elif isinstance(widget, QtWidgets.QLineEdit):
+        if isinstance(widget, QtWidgets.QLineEdit):
             widget.setText(text)
         else:
-            raise RuntimeError(f'Unknown search widget type ({type(widget)})')
+            raise AssertionError(
+                f'Unknown search widget type ({type(widget)})'
+            )
 
 
 class _TextSearchModeHandler(_SearchModeHandler):
@@ -179,22 +181,27 @@ def _narrow_match(
         if selection_end == selection_start:
             if direction == VerticalDirection.Below:
                 return matches[0]
-            return None
-        elif direction == VerticalDirection.Below:
+            if direction == VerticalDirection.Above:
+                return None
+            raise AssertionError
+
+        if direction == VerticalDirection.Below:
             for match in matches:
                 if match.end() > selection_end:
                     return match
             return None
-        elif direction == VerticalDirection.Above:
+        if direction == VerticalDirection.Above:
             for match in reversed(matches):
                 if match.start() < selection_start:
                     return match
             return None
-    elif direction == VerticalDirection.Below:
+        raise AssertionError
+
+    if direction == VerticalDirection.Below:
         return matches[0]
-    elif direction == VerticalDirection.Above:
+    if direction == VerticalDirection.Above:
         return matches[-1]
-    raise RuntimeError('Bad search direction')
+    raise AssertionError
 
 
 def _search(
@@ -301,7 +308,7 @@ class _SearchModeGroupBox(QtWidgets.QGroupBox):
         for key, radio_button in self._radio_buttons.items():
             if radio_button.isChecked():
                 return key
-        raise RuntimeError('No radio selected')
+        raise AssertionError
 
 
 class _SearchTextEdit(QtWidgets.QComboBox):
@@ -548,10 +555,9 @@ class SearchRepeatCommand(BaseCommand):
     def menu_name(self) -> str:
         if self.args.direction == VerticalDirection.Above:
             return '&Search previous'
-        elif self.args.direction == VerticalDirection.Below:
+        if self.args.direction == VerticalDirection.Below:
             return '&Search next'
-        else:
-            raise AssertionError
+        raise AssertionError
 
     @property
     def is_enabled(self) -> bool:

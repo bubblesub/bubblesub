@@ -153,15 +153,17 @@ class MoveSubtitlesCommand(BaseCommand):
     def is_enabled(self) -> bool:
         if not self.api.subs.selected_indexes:
             return False
+
         if self.args.direction == VerticalDirection.Above:
             return self.api.subs.selected_indexes[0] > 0
-        elif self.args.direction == VerticalDirection.Below:
+
+        if self.args.direction == VerticalDirection.Below:
             return (
                 self.api.subs.selected_indexes[-1]
                 < len(self.api.subs.events) - 1
             )
-        else:
-            raise AssertionError
+
+        raise AssertionError
 
     async def run(self) -> None:
         with self.api.undo.capture():
@@ -563,12 +565,14 @@ class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
     def _nearest_sub(self) -> T.Optional[Event]:
         if not self.api.subs.has_selection:
             return None
+
         if self.args.direction == VerticalDirection.Above:
             return self.api.subs.selected_events[0].prev
-        elif self.args.direction == VerticalDirection.Below:
+
+        if self.args.direction == VerticalDirection.Below:
             return self.api.subs.selected_events[-1].next
-        else:
-            raise AssertionError
+
+        raise AssertionError
 
     async def run(self) -> None:
         assert self._nearest_sub is not None

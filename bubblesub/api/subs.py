@@ -172,11 +172,8 @@ class SubtitlesApi(QtCore.QObject):
         """
         assert path
         path = Path(path)
-        try:
-            with path.open('r') as handle:
-                bubblesub.ass.reader.load_ass(handle, self.ass_file)
-        except (FileNotFoundError, ValueError):
-            raise
+        with path.open('r') as handle:
+            bubblesub.ass.reader.load_ass(handle, self.ass_file)
 
         self.selected_indexes = []
         self._path = path

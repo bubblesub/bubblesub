@@ -331,13 +331,13 @@ class MenuConfig(BaseConfig):
                 if isinstance(o, MenuSeparator):
                     return {'type': 'separator'}
 
-                elif isinstance(o, MenuCommand):
+                if isinstance(o, MenuCommand):
                     return {
                         'type': 'command',
                         'invocation': o.invocation
                     }
 
-                elif isinstance(o, SubMenu):
+                if isinstance(o, SubMenu):
                     return {
                         'type': 'submenu',
                         'name': o.name,
