@@ -146,23 +146,65 @@ class SelectSubtitlesCommand(BaseCommand):
         parser.add_argument(
             'target',
             help='subtitles to select',
-            type=lambda target: EventSelection(api, target)
+            type=lambda value: EventSelection(api, value)
         )
 
 
-class CopySubtitlesTextCommand(BaseCommand):
-    names = ['grid/copy-subs/text']
-    menu_name = 'Copy selected subtitles text to clipboard'
-    help_text = 'Copies text from the subtitle selection.'
+class CopySubtitlesCommand(BaseCommand):
+    names = ['copy-subs']
+    help_text = 'Copies given subtitles to clipboard.'
+
+    @property
+    def menu_name(self):
+        target = self.args.target.get_description()
+        if self.args.subject == 'text':
+            return f'Copy {target} text to clipboard'
+        elif self.args.subject == 'times':
+            return f'Copy {target} times to clipboard'
+        elif self.args.subject == 'all':
+            return f'Copy {target} to clipboard'
+        raise AssertionError
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
+        return self.args.target.any()
 
     async def run(self) -> None:
-        QtWidgets.QApplication.clipboard().setText('\n'.join(
-            line.text for line in self.api.subs.selected_events
-        ))
+        if self.args.subject == 'text':
+            QtWidgets.QApplication.clipboard().setText('\n'.join(
+                event.text for event in self.args.target.get_subtitles()
+            ))
+        elif self.args.subject == 'times':
+            QtWidgets.QApplication.clipboard().setText('\n'.join(
+                '{} - {}'.format(
+                    bubblesub.util.ms_to_str(event.start),
+                    bubblesub.util.ms_to_str(event.end)
+                )
+                for event in self.args.target.get_subtitles()
+            ))
+        elif self.args.subject == 'all':
+            QtWidgets.QApplication.clipboard().setText(
+                _pickle(self.args.target.get_subtitles())
+            )
+        raise AssertionError
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to select',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
+        parser.add_argument(
+            '-s', '--subject',
+            help='subject to copy',
+            choices=('text', 'times', 'all'),
+            default='all'
+        )
 
 
 class PasteSubtitlesTextCommand(BaseCommand):
@@ -191,25 +233,6 @@ class PasteSubtitlesTextCommand(BaseCommand):
         with self.api.undo.capture():
             for i, sub in enumerate(self.api.subs.selected_events):
                 sub.text = lines[i]
-
-
-class CopySubtitlesTimesCommand(BaseCommand):
-    names = ['grid/copy-subs/times']
-    menu_name = 'Copy selected subtitles times to clipboard'
-    help_text = 'Copies time boundaries from the subtitle selection.'
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
-
-    async def run(self) -> None:
-        QtWidgets.QApplication.clipboard().setText('\n'.join(
-            '{} - {}'.format(
-                bubblesub.util.ms_to_str(line.start),
-                bubblesub.util.ms_to_str(line.end)
-            )
-            for line in self.api.subs.selected_events
-        ))
 
 
 class PasteSubtitlesTimesCommand(BaseCommand):
@@ -251,21 +274,6 @@ class PasteSubtitlesTimesCommand(BaseCommand):
             for i, sub in enumerate(self.api.subs.selected_events):
                 sub.start = times[i][0]
                 sub.end = times[i][1]
-
-
-class CopySubtitlesCommand(BaseCommand):
-    names = ['grid/copy-subs']
-    menu_name = 'Copy selected subtitles to clipboard'
-    help_text = 'Copies the selected subtitles.'
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
-
-    async def run(self) -> None:
-        QtWidgets.QApplication.clipboard().setText(
-            _pickle(self.api.subs.selected_events)
-        )
 
 
 def _paste_from_clipboard(cmd: BaseCommand, idx: int) -> None:
@@ -367,11 +375,9 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             JumpToSubtitleByNumberCommand,
             JumpToSubtitleByTimeCommand,
             SelectSubtitlesCommand,
-            CopySubtitlesTextCommand,
-            PasteSubtitlesTextCommand,
-            CopySubtitlesTimesCommand,
-            PasteSubtitlesTimesCommand,
             CopySubtitlesCommand,
+            PasteSubtitlesTextCommand,
+            PasteSubtitlesTimesCommand,
             PasteSubtitlesCommand,
             CreateAudioSampleCommand,
     ]:

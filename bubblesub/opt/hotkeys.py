@@ -172,7 +172,7 @@ class HotkeysConfig(BaseConfig):
 
             HotkeyContext.SubtitlesGrid:
             [
-                Hotkey('Ctrl+C', '/grid/copy-subs'),
+                Hotkey('Ctrl+C', '/copy-subs'),
                 Hotkey('Ctrl+V', '/grid/paste-subs -d below'),
             ],
         }

@@ -95,7 +95,7 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-sub">audio/snap-sel-to-near-sub</a> -t end -d below</code> |
 |<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">audio/snap-sel-to-near-keyframe</a> -t start -d above</code> |
 |<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">audio/snap-sel-to-near-keyframe</a> -t end -d below</code> |
-|<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-grid-copy-subs">grid/copy-subs</a> </code> |
+|<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-copy-subs">copy-subs</a> </code> |
 |<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-grid-paste-subs">grid/paste-subs</a> -d below</code> |
 
 # Default commands
@@ -178,6 +178,19 @@ Usage:
 
 
 * `-d`, `--delta`: factor to zoom the view by
+
+### <a name="cmd-copy-subs"></a>`copy‑subs`
+Copies given subtitles to clipboard.
+
+
+
+Usage:
+`copy‑subs -t|--target=… -s|--subject=…`
+
+
+
+* `-t`, `--target`: subtitles to select
+* `-s`, `--subject`: subject to copy (`text`, `times`, `all`)
 
 ### <a name="cmd-edit-delete-subs"></a>`edit/delete‑subs`
 Deletes the selected subtitles.
@@ -333,12 +346,6 @@ Usage:
 
 * `path`: optional path to save the subtitles to
 
-### <a name="cmd-grid-copy-subs"></a>`grid/copy‑subs`
-Copies the selected subtitles.
-### <a name="cmd-grid-copy-subs-text"></a>`grid/copy‑subs/text`
-Copies text from the subtitle selection.
-### <a name="cmd-grid-copy-subs-times"></a>`grid/copy‑subs/times`
-Copies time boundaries from the subtitle selection.
 ### <a name="cmd-grid-create-audio-sample"></a>`grid/create‑audio‑sample`
 Saves current subtitle selection to a WAV file. The audio starts at the first selected subtitle start and ends at the last selected subtitle end.
 ### <a name="cmd-grid-jump-to-sub-by-number"></a>`grid/jump‑to‑sub‑by‑number`
