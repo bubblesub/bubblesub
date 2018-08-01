@@ -108,7 +108,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
         return fmt
 
 
-class ConsoleTextEdit(QtWidgets.QTextEdit):
+class ConsoleLogWindow(QtWidgets.QTextEdit):
     scroll_lock_changed = QtCore.pyqtSignal()
 
     def __init__(
@@ -188,6 +188,56 @@ class ConsoleTextEdit(QtWidgets.QTextEdit):
         self.scroll_lock_changed.emit()
 
 
+class ConsoleInput(QtWidgets.QLineEdit):
+    def __init__(self, api, parent: QtWidgets.QWidget) -> None:
+        super().__init__(parent)
+        self._api = api
+        self._edited = False
+
+        self.history_pos = 0
+        self.history = []
+
+        self.setObjectName('console-input')
+        self.setFont(QtGui.QFontDatabase.systemFont(
+            QtGui.QFontDatabase.FixedFont
+        ))
+
+        self.returnPressed.connect(self._on_return_press)
+        self.textEdited.connect(self._on_edit)
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        if not self._edited or not self.text():
+            if event.key() == QtCore.Qt.Key_Up:
+                if self.history_pos > 0:
+                    self.history_pos -= 1
+                    self.setText(self.history[self.history_pos])
+                    self._edited = False
+                return
+
+            if event.key() == QtCore.Qt.Key_Down:
+                if self.history_pos + 1 < len(self.history):
+                    self.history_pos += 1
+                    self.setText(self.history[self.history_pos])
+                    self._edited = False
+                return
+
+        super().keyPressEvent(event)
+
+    def _on_edit(self) -> None:
+        self._edited = True
+
+    def _on_return_press(self) -> None:
+        if not self.text():
+            return
+
+        self.history.append(self.text())
+        self.history_pos = len(self.history)
+
+        self._api.cmd.execute(self.text())
+        self.setText('')
+        self._edited = False
+
+
 class Console(QtWidgets.QWidget):
     def __init__(
             self,
@@ -197,21 +247,16 @@ class Console(QtWidgets.QWidget):
         super().__init__(parent)
 
         self._api = api
-        self.log_window = ConsoleTextEdit(api, self)
+        self.log_window = ConsoleLogWindow(api, self)
 
         strip = QtWidgets.QWidget(self)
-        self.input = QtWidgets.QLineEdit(strip)
-        self.input.setObjectName('console-input')
-        self.input.setFont(QtGui.QFontDatabase.systemFont(
-            QtGui.QFontDatabase.FixedFont
-        ))
+        self.input = ConsoleInput(api, strip)
         self.auto_scroll_chkbox = QtWidgets.QCheckBox(
             'Auto scroll', strip
         )
         self.clear_btn = QtWidgets.QPushButton('Clear', strip)
         self.auto_scroll_chkbox.setChecked(not self.log_window.scroll_lock)
 
-        self.input.returnPressed.connect(self._on_input_return_press)
         self.clear_btn.clicked.connect(self._on_clear_btn_click)
         self.log_window.scroll_lock_changed.connect(
             self._on_text_edit_scroll_lock_change
@@ -232,10 +277,6 @@ class Console(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.log_window)
         layout.addWidget(strip)
-
-    def _on_input_return_press(self):
-        self._api.cmd.execute(self.input.text())
-        self.input.setText('')
 
     def _on_text_edit_scroll_lock_change(self):
         self.auto_scroll_chkbox.setChecked(not self.log_window.scroll_lock)
