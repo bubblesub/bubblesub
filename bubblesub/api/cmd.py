@@ -41,21 +41,31 @@ from bubblesub.opt.menu import MenuItem
 
 class CommandError(RuntimeError):
     """Base class for all command related errors."""
+
     pass
 
 
 class CommandNotFound(CommandError):
     """The given command was not found."""
+
     pass
 
 
 class BadInvocation(CommandError):
     """The given invocation was invalid."""
+
     pass
 
 
 class CommandArgumentParser(argparse.ArgumentParser):
+    """Overloaded ArgumentParser, suitable for commands."""
+
     def error(self, message):
+        """
+        Rather than exiting, raise an exception.
+
+        :param message: error message about to be shown to the user
+        """
         with io.StringIO() as handle:
             handle.write(f'{self.prog}: error: {message}\n')
             self.print_help(handle)
@@ -185,6 +195,11 @@ class CommandApi(QtCore.QObject):
         self._plugin_menu: T.List[MenuItem] = []
 
     def execute(self, invocation: T.Union[T.List[str], str]) -> None:
+        """
+        Execute given invocation.
+
+        :param invocation: invocation to run
+        """
         if not invocation:
             return
         if isinstance(invocation, list):
