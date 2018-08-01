@@ -9,8 +9,8 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+S</kbd> | global | <code><a href="#user-content-cmd-save">save</a> </code> |
 |<kbd>Ctrl+Shift+S</kbd> | global | <code><a href="#user-content-cmd-save-as">save-as</a> </code> |
 |<kbd>Ctrl+Q</kbd> | global | <code><a href="#user-content-cmd-quit">quit</a> </code> |
-|<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-grid-jump-to-sub-by-number">grid/jump-to-sub-by-number</a> </code> |
-|<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-grid-jump-to-sub-by-time">grid/jump-to-sub-by-time</a> </code> |
+|<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> ask-number</code> |
+|<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> ask-time</code> |
 |<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-video-seek-with-gui">video/seek-with-gui</a> </code> |
 |<kbd>Ctrl+K</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
 |<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
@@ -295,10 +295,6 @@ Usage:
 
 ### <a name="cmd-grid-create-audio-sample"></a>`grid/create‑audio‑sample`
 Saves current subtitle selection to a WAV file. The audio starts at the first selected subtitle start and ends at the last selected subtitle end.
-### <a name="cmd-grid-jump-to-sub-by-number"></a>`grid/jump‑to‑sub‑by‑number`
-Jumps to the specified number. Prompts user for the line number with a GUI dialog.
-### <a name="cmd-grid-jump-to-sub-by-time"></a>`grid/jump‑to‑sub‑by‑time`
-Jumps to the subtitle at specified time. Prompts user for details with a GUI dialog.
 ### <a name="cmd-load-video"></a>`load‑video`
 Loads a video file for the audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 

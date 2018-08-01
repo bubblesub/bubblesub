@@ -134,8 +134,8 @@ class MenuConfig(BaseConfig):
                 ]),
 
                 SubMenu('Select', [
-                    MenuCommand('/grid/jump-to-sub-by-number'),
-                    MenuCommand('/grid/jump-to-sub-by-time'),
+                    MenuCommand('/select-subs ask-number'),
+                    MenuCommand('/select-subs ask-time'),
                     MenuSeparator(),
                     MenuCommand('/select-subs all'),
                     MenuCommand('/select-subs one-above'),

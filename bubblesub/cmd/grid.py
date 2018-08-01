@@ -43,99 +43,20 @@ def _unpickle(text: str) -> T.Any:
     return pickle.loads(zlib.decompress(base64.b64decode(text.encode())))
 
 
-class JumpToSubtitleByNumberCommand(BaseCommand):
-    names = ['grid/jump-to-sub-by-number']
-    menu_name = 'Jump to subtitle by number...'
-    help_text = (
-        'Jumps to the specified number. '
-        'Prompts user for the line number with a GUI dialog.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return len(self.api.subs.events) > 0
-
-    async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
-
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        value = self._show_dialog(main_window)
-        if value is not None:
-            self.api.subs.selected_indexes = [value - 1]
-
-    def _show_dialog(
-            self,
-            main_window: QtWidgets.QMainWindow
-    ) -> T.Optional[int]:
-        dialog = QtWidgets.QInputDialog(main_window)
-        dialog.setLabelText('Line number to jump to:')
-        dialog.setIntMinimum(1)
-        dialog.setIntMaximum(len(self.api.subs.events))
-        if self.api.subs.has_selection:
-            dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
-        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-        if dialog.exec_():
-            return T.cast(int, dialog.intValue())
-        return None
-
-
-class JumpToSubtitleByTimeCommand(BaseCommand):
-    names = ['grid/jump-to-sub-by-time']
-    menu_name = 'Jump to subtitle by time...'
-    help_text = (
-        'Jumps to the subtitle at specified time. '
-        'Prompts user for details with a GUI dialog.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return len(self.api.subs.events) > 0
-
-    async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
-
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        ret = bubblesub.ui.util.time_jump_dialog(
-            main_window,
-            value=(
-                self.api.subs.selected_events[0].start
-                if self.api.subs.has_selection else
-                0
-            ),
-            absolute_label='Time to jump to:',
-            relative_checked=False,
-            show_radio=False
-        )
-        if ret is None:
-            return
-
-        target_pts, _is_relative = ret
-        best_distance = None
-        best_idx = None
-        for i, sub in enumerate(self.api.subs.events):
-            center = (sub.start + sub.end) / 2
-            distance = abs(target_pts - center)
-            if best_distance is None or distance < best_distance:
-                best_distance = distance
-                best_idx = i
-        if best_idx is not None:
-            self.api.subs.selected_indexes = [best_idx]
-
-
 class SelectSubtitlesCommand(BaseCommand):
     names = ['select-subs']
     help_text = 'Selects given subtitles.'
 
     @property
     def menu_name(self) -> str:
-        return 'Select ' + self.args.target.get_description()
+        return 'Select ' + self.args.target.description
 
     @property
     def is_enabled(self) -> bool:
-        return True
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
-        self.api.subs.selected_indexes = self.args.target.get_indexes()
+        self.api.subs.selected_indexes = await self.args.target.get_indexes()
 
     @staticmethod
     def _decorate_parser(
@@ -155,23 +76,23 @@ class CopySubtitlesCommand(BaseCommand):
 
     @property
     def menu_name(self):
-        target = self.args.target.get_description()
+        target_desc = self.args.target.description
         if self.args.subject == 'text':
-            return f'Copy {target} text to clipboard'
+            return f'Copy {target_desc} text to clipboard'
         if self.args.subject == 'times':
-            return f'Copy {target} times to clipboard'
+            return f'Copy {target_desc} times to clipboard'
         if self.args.subject == 'all':
-            return f'Copy {target} to clipboard'
+            return f'Copy {target_desc} to clipboard'
         raise AssertionError
 
     @property
     def is_enabled(self) -> bool:
-        return self.args.target.any()
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
         if self.args.subject == 'text':
             QtWidgets.QApplication.clipboard().setText('\n'.join(
-                event.text for event in self.args.target.get_subtitles()
+                event.text for event in await self.args.target.get_subtitles()
             ))
         elif self.args.subject == 'times':
             QtWidgets.QApplication.clipboard().setText('\n'.join(
@@ -179,11 +100,11 @@ class CopySubtitlesCommand(BaseCommand):
                     bubblesub.util.ms_to_str(event.start),
                     bubblesub.util.ms_to_str(event.end)
                 )
-                for event in self.args.target.get_subtitles()
+                for event in await self.args.target.get_subtitles()
             ))
         elif self.args.subject == 'all':
             QtWidgets.QApplication.clipboard().setText(
-                _pickle(self.args.target.get_subtitles())
+                _pickle(await self.args.target.get_subtitles())
             )
         else:
             raise AssertionError
@@ -217,16 +138,12 @@ class PasteSubtitlesCommand(BaseCommand):
         return f'Paste subtitles from clipboard ({direction})'
 
     async def run(self) -> None:
+        indexes = await self.args.target.get_indexes()
+
         if self.args.before:
-            self._paste_from_clipboard(
-                self.args.target.get_indexes()[0]
-                if self.args.target.any else 0
-            )
+            self._paste_from_clipboard(indexes[0] if indexes else 0)
         else:
-            self._paste_from_clipboard(
-                self.args.target.get_indexes()[-1] + 1
-                if self.args.target.any else 0
-            )
+            self._paste_from_clipboard(indexes[-1] + 1 if indexes else 0)
 
     def _paste_from_clipboard(self, idx: int) -> None:
         text = QtWidgets.QApplication.clipboard().text()
@@ -268,12 +185,12 @@ class PasteIntoSubtitlesCommand(BaseCommand):
 
     @property
     def menu_name(self) -> str:
-        target = self.args.target.get_description()
-        return f'Paste {self.args.subject} to {target} from clipboard'
+        target_desc = self.args.target.description
+        return f'Paste {self.args.subject} to {target_desc} from clipboard'
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
         text = QtWidgets.QApplication.clipboard().text()
@@ -282,16 +199,17 @@ class PasteIntoSubtitlesCommand(BaseCommand):
             return
 
         lines = text.split('\n')
-        if len(lines) != len(self.args.target.get_indexes()):
+        events = await self.args.target.get_subtitles()
+        if len(lines) != len(events):
             self.api.log.error(
                 'Size mismatch (selected {} lines, got {} lines in clipboard.'
-                .format(len(self.args.target.get_indexes()), len(lines))
+                .format(len(events), len(lines))
             )
             return
 
         with self.api.undo.capture():
             if self.args.subject == 'text':
-                for i, event in enumerate(self.args.target.get_subtitles()):
+                for i, event in enumerate(events):
                     event.text = lines[i]
 
             elif self.args.subject == 'times':
@@ -306,7 +224,7 @@ class PasteIntoSubtitlesCommand(BaseCommand):
                     except ValueError:
                         raise ValueError(f'Invalid time format: {line}')
 
-                for i, event in enumerate(self.args.target.get_subtitles()):
+                for i, event in enumerate(events):
                     event.start = times[i][0]
                     event.end = times[i][1]
 
@@ -378,8 +296,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            JumpToSubtitleByNumberCommand,
-            JumpToSubtitleByTimeCommand,
             SelectSubtitlesCommand,
             CopySubtitlesCommand,
             PasteSubtitlesCommand,

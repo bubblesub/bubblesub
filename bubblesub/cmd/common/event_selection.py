@@ -19,6 +19,8 @@
 import re
 import typing as T
 
+from PyQt5 import QtWidgets
+
 import bubblesub.api
 from bubblesub.ass.event import Event
 
@@ -28,7 +30,8 @@ class EventSelection:
         self.api = api
         self.target = target
 
-    def get_description(self) -> T.List[int]:
+    @property
+    def description(self) -> str:
         if self.target == 'all':
             return 'all subtitles'
 
@@ -47,6 +50,12 @@ class EventSelection:
         if self.target == 'last':
             return 'last subtitle'
 
+        if self.target == 'ask-number':
+            return 'subtitle by number'
+
+        if self.target == 'ask-time':
+            return 'subtitle by time'
+
         if self.target == 'selected':
             return 'selected subtitles'
 
@@ -56,7 +65,29 @@ class EventSelection:
 
         raise ValueError(f'Unknown selection target: "{self.target}"')
 
-    def get_all_indexes(self):
+    @property
+    def makes_sense(self) -> bool:
+        if self.target in {'all', 'none'}:
+            return True
+
+        if self.target in {
+                'one-below', 'one-above',
+                'first', 'last',
+                'ask-time', 'ask-number'
+        }:
+            return len(self.api.subs.events) > 0
+
+        if self.target == 'selected':
+            return self.api.subs.has_selection
+
+        match = re.match(r'(\d+)', self.target)
+        if match:
+            idx = int(match.group(1)) - 1
+            return idx in range(len(self.api.subs.events))
+
+        return False
+
+    async def get_all_indexes(self):
         if self.target == 'all':
             return list(range(len(self.api.subs.events)))
 
@@ -85,21 +116,77 @@ class EventSelection:
         if self.target == 'last':
             return [len(self.api.subs.events) - 1]
 
+        if self.target == 'ask-number':
+            if not len(self.api.subs.events):
+                return []
+            value = await self.api.gui.exec(self._show_number_dialog)
+            return [] if value is None else [value - 1]
+
+        if self.target == 'ask-time':
+            if not len(self.api.subs.events):
+                return []
+            value = await self.api.gui.exec(self._show_time_dialog)
+            return [] if value is None else [value - 1]
+
         match = re.match(r'(\d+)', self.target)
         if match:
             return [int(match.group(0)) - 1]
 
         raise ValueError(f'Unknown selection target: "{self.target}"')
 
-    def get_indexes(self):
+    async def get_indexes(self):
         return [
             idx
-            for idx in self.get_all_indexes()
+            for idx in await self.get_all_indexes()
             if idx in range(0, len(self.api.subs.events))
         ]
 
-    def get_subtitles(self) -> T.List[Event]:
-        return [self.api.subs.events[idx] for idx in self.get_indexes()]
+    async def get_subtitles(self) -> T.List[Event]:
+        return [self.api.subs.events[idx] for idx in await self.get_indexes()]
 
-    def any(self) -> bool:
-        return len(self.get_indexes()) > 0
+    async def _show_number_dialog(
+            self,
+            main_window: QtWidgets.QMainWindow
+    ) -> T.Optional[int]:
+        dialog = QtWidgets.QInputDialog(main_window)
+        dialog.setLabelText('Line number to jump to:')
+        dialog.setIntMinimum(1)
+        dialog.setIntMaximum(len(self.api.subs.events))
+        if self.api.subs.has_selection:
+            dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
+        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+        if dialog.exec_():
+            return T.cast(int, dialog.intValue())
+        return None
+
+    async def _show_time_dialog(
+            self,
+            main_window: QtWidgets.QMainWindow
+    ) -> T.Optional[int]:
+        ret = bubblesub.ui.util.time_jump_dialog(
+            main_window,
+            value=(
+                self.api.subs.selected_events[0].start
+                if self.api.subs.has_selection else
+                0
+            ),
+            absolute_label='Time to jump to:',
+            relative_checked=False,
+            show_radio=False
+        )
+        if ret is None:
+            return None
+
+        target_pts, _is_relative = ret
+        best_distance = None
+        best_idx = None
+        for i, sub in enumerate(self.api.subs.events):
+            center = (sub.start + sub.end) / 2
+            distance = abs(target_pts - center)
+            if best_distance is None or distance < best_distance:
+                best_distance = distance
+                best_idx = i
+        if best_idx is None:
+            return None
+
+        return best_idx
