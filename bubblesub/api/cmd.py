@@ -83,7 +83,7 @@ def split_invocation(invocation: str) -> T.Tuple[str, T.List[str]]:
     """
     if not invocation.startswith('/'):
         raise BadInvocation(
-            f'Invocation should start with slash ("{invocation}")'
+            f'Invocation should start with a slash ("{invocation}")'
         )
     name, *args = shlex.split(invocation.lstrip('/'))
     return (name, args)
