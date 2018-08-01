@@ -29,7 +29,6 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
-from bubblesub.util import VerticalDirection
 
 
 def _pickle(data: T.Any) -> str:
@@ -186,7 +185,8 @@ class CopySubtitlesCommand(BaseCommand):
             QtWidgets.QApplication.clipboard().setText(
                 _pickle(self.args.target.get_subtitles())
             )
-        raise AssertionError
+        else:
+            raise AssertionError
 
     @staticmethod
     def _decorate_parser(
@@ -207,110 +207,36 @@ class CopySubtitlesCommand(BaseCommand):
         )
 
 
-class PasteSubtitlesTextCommand(BaseCommand):
-    names = ['grid/paste-subs/text']
-    menu_name = 'Paste text to selected subtitles from clipboard'
-    help_text = 'Pastes teext into the subtitle selection.'
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
-
-    async def run(self) -> None:
-        text = QtWidgets.QApplication.clipboard().text()
-        if not text:
-            self.api.log.error('Clipboard is empty, aborting.')
-            return
-
-        lines = text.split('\n')
-        if len(lines) != len(self.api.subs.selected_events):
-            self.api.log.error(
-                'Size mismatch (selected {} lines, got {} lines in clipboard.'
-                .format(len(self.api.subs.selected_events), len(lines))
-            )
-            return
-
-        with self.api.undo.capture():
-            for i, sub in enumerate(self.api.subs.selected_events):
-                sub.text = lines[i]
-
-
-class PasteSubtitlesTimesCommand(BaseCommand):
-    names = ['grid/paste-subs/times']
-    menu_name = 'Paste times to selected subtitles from clipboard'
-    help_text = 'Pastes time boundaries into the subtitle selection.'
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
-
-    async def run(self) -> None:
-        text = QtWidgets.QApplication.clipboard().text()
-        if not text:
-            self.api.log.error('Clipboard is empty, aborting.')
-            return
-
-        lines = text.split('\n')
-        if len(lines) != len(self.api.subs.selected_events):
-            self.api.log.error(
-                'Size mismatch (selected {} lines, got {} lines in clipboard.'
-                .format(len(self.api.subs.selected_events), len(lines))
-            )
-            return
-
-        times: T.List[T.Tuple[int, int]] = []
-        for line in lines:
-            try:
-                start, end = line.strip().split(' - ')
-                times.append((
-                    bubblesub.util.str_to_ms(start),
-                    bubblesub.util.str_to_ms(end)
-                ))
-            except ValueError:
-                self.api.log.error('Invalid time format: {}'.format(line))
-                return
-
-        with self.api.undo.capture():
-            for i, sub in enumerate(self.api.subs.selected_events):
-                sub.start = times[i][0]
-                sub.end = times[i][1]
-
-
-def _paste_from_clipboard(cmd: BaseCommand, idx: int) -> None:
-    text = QtWidgets.QApplication.clipboard().text()
-    if not text:
-        cmd.error('Clipboard is empty, aborting.')
-        return
-    items = T.cast(T.List[Event], _unpickle(text))
-    with cmd.api.undo.capture():
-        cmd.api.subs.events.insert(idx, items)
-        cmd.api.subs.selected_indexes = list(range(idx, idx + len(items)))
-
-
 class PasteSubtitlesCommand(BaseCommand):
-    names = ['grid/paste-subs']
-    help_text = 'Pastes subtitles near the selection.'
+    names = ['paste-subs']
+    help_text = 'Pastes subtitles from clipboard.'
 
     @property
     def menu_name(self) -> str:
-        return (
-            f'Paste subtitles from clipboard '
-            f'({self.args.direction.name.lower()})'
-        )
+        direction = 'before' if self.args.before else 'after'
+        return f'Paste subtitles from clipboard ({direction})'
 
     async def run(self) -> None:
-        if self.args.direction == VerticalDirection.Below:
-            _paste_from_clipboard(self, (
-                self.api.subs.selected_indexes[-1] + 1
-                if self.api.subs.has_selection else 0
-            ))
-        elif self.args.direction == VerticalDirection.Above:
-            _paste_from_clipboard(self, (
-                self.api.subs.selected_indexes[0]
-                if self.api.subs.has_selection else 0
-            ))
+        if self.args.before:
+            self._paste_from_clipboard(
+                self.args.target.get_indexes()[0]
+                if self.args.target.any else 0
+            )
         else:
-            raise AssertionError
+            self._paste_from_clipboard(
+                self.args.target.get_indexes()[-1] + 1
+                if self.args.target.any else 0
+            )
+
+    def _paste_from_clipboard(self, idx: int) -> None:
+        text = QtWidgets.QApplication.clipboard().text()
+        if not text:
+            self.api.log.error('Clipboard is empty, aborting.')
+            return
+        items = T.cast(T.List[Event], _unpickle(text))
+        with self.api.undo.capture():
+            self.api.subs.events.insert(idx, items)
+            self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
     @staticmethod
     def _decorate_parser(
@@ -318,11 +244,91 @@ class PasteSubtitlesCommand(BaseCommand):
             parser: argparse.ArgumentParser
     ) -> None:
         parser.add_argument(
-            '-d', '--direction',
-            help='direction to paste into',
-            type=VerticalDirection.from_string,
-            choices=list(VerticalDirection),
-            default=VerticalDirection.Below
+            '-t', '--target',
+            help='where to paste the subtitles',
+            type=lambda value: EventSelection(api, value)
+        )
+
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument(
+            '--before',
+            action='store_true',
+            help='paste before target'
+        )
+        group.add_argument(
+            '--after',
+            action='store_false', dest='before',
+            help='paste after target'
+        )
+
+
+class PasteIntoSubtitlesCommand(BaseCommand):
+    names = ['paste-into-subs']
+    help_text = 'Pastes text or times into the given subtitles.'
+
+    @property
+    def menu_name(self) -> str:
+        target = self.args.target.get_description()
+        return f'Paste {self.args.subject} to {target} from clipboard'
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.subs.has_selection
+
+    async def run(self) -> None:
+        text = QtWidgets.QApplication.clipboard().text()
+        if not text:
+            self.api.log.error('Clipboard is empty, aborting.')
+            return
+
+        lines = text.split('\n')
+        if len(lines) != len(self.args.target.get_indexes()):
+            self.api.log.error(
+                'Size mismatch (selected {} lines, got {} lines in clipboard.'
+                .format(len(self.args.target.get_indexes()), len(lines))
+            )
+            return
+
+        with self.api.undo.capture():
+            if self.args.subject == 'text':
+                for i, event in enumerate(self.args.target.get_subtitles()):
+                    event.text = lines[i]
+
+            elif self.args.subject == 'times':
+                times: T.List[T.Tuple[int, int]] = []
+                for line in lines:
+                    try:
+                        start, end = line.split('-', 1)
+                        times.append((
+                            bubblesub.util.str_to_ms(start.strip()),
+                            bubblesub.util.str_to_ms(end.strip())
+                        ))
+                    except ValueError:
+                        raise ValueError(f'Invalid time format: {line}')
+
+                for i, event in enumerate(self.args.target.get_subtitles()):
+                    event.start = times[i][0]
+                    event.end = times[i][1]
+
+            else:
+                raise AssertionError
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to paste the subject into',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
+        parser.add_argument(
+            '-s', '--subject',
+            help='subject to copy',
+            choices=('text', 'times'),
+            required=True,
         )
 
 
@@ -376,9 +382,8 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             JumpToSubtitleByTimeCommand,
             SelectSubtitlesCommand,
             CopySubtitlesCommand,
-            PasteSubtitlesTextCommand,
-            PasteSubtitlesTimesCommand,
             PasteSubtitlesCommand,
+            PasteIntoSubtitlesCommand,
             CreateAudioSampleCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

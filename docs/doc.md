@@ -96,7 +96,7 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">audio/snap-sel-to-near-keyframe</a> -t start -d above</code> |
 |<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">audio/snap-sel-to-near-keyframe</a> -t end -d below</code> |
 |<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-copy-subs">copy-subs</a> </code> |
-|<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-grid-paste-subs">grid/paste-subs</a> -d below</code> |
+|<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-paste-subs">paste-subs</a> -t selected --after</code> |
 
 # Default commands
 ### <a name="cmd-audio-commit-sel"></a>`audio/commit‑sel`
@@ -299,22 +299,6 @@ Saves current subtitle selection to a WAV file. The audio starts at the first se
 Jumps to the specified number. Prompts user for the line number with a GUI dialog.
 ### <a name="cmd-grid-jump-to-sub-by-time"></a>`grid/jump‑to‑sub‑by‑time`
 Jumps to the subtitle at specified time. Prompts user for details with a GUI dialog.
-### <a name="cmd-grid-paste-subs"></a>`grid/paste‑subs`
-Pastes subtitles near the selection.
-
-
-
-Usage:
-`grid/paste‑subs -d|--direction=…`
-
-
-
-* `-d`, `--direction`: direction to paste into (`above`, `below`)
-
-### <a name="cmd-grid-paste-subs-text"></a>`grid/paste‑subs/text`
-Pastes teext into the subtitle selection.
-### <a name="cmd-grid-paste-subs-times"></a>`grid/paste‑subs/times`
-Pastes time boundaries into the subtitle selection.
 ### <a name="cmd-load-video"></a>`load‑video`
 Loads a video file for the audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 
@@ -352,6 +336,33 @@ Usage:
 
 
 * `path`: path to load the subtitles from
+
+### <a name="cmd-paste-into-subs"></a>`paste‑into‑subs`
+Pastes text or times into the given subtitles.
+
+
+
+Usage:
+`paste‑into‑subs -t|--target=… -s|--subject=…`
+
+
+
+* `-t`, `--target`: subtitles to paste the subject into
+* `-s`, `--subject`: subject to copy (`text`, `times`)
+
+### <a name="cmd-paste-subs"></a>`paste‑subs`
+Pastes subtitles from clipboard.
+
+
+
+Usage:
+`paste‑subs -t|--target=… [--before] [--after]`
+
+
+
+* `-t`, `--target`: where to paste the subtitles
+* `--before`: paste before target
+* `--after`: paste after target
 
 ### <a name="cmd-quit"></a>`quit`
 Quits the application. Prompts user to save the current file if there are unsaved changes.
