@@ -246,7 +246,8 @@ class CommandApi(QtCore.QObject):
         try:
             await cmd.run()
         except Exception as ex:  # pylint: disable=broad-except
-            self._api.log.error(f'Problem running {cmd.invocation}: {ex}')
+            self._api.log.error(f'Problem running {cmd.invocation}:')
+            self._api.log.error(f'{ex}')
             traceback.print_exc()
             return False
         end_time = time.time()
