@@ -64,9 +64,12 @@ class _SearchModeHandler(abc.ABC):
         raise NotImplementedError('Not implemented')
 
     def get_subject_widget(self) -> QtWidgets.QWidget:
-        return self.main_window.findChild(
+        widget = self.main_window.findChild(
             QtWidgets.QWidget, self.get_subject_widget_name()
         )
+        if isinstance(widget, QtWidgets.QComboBox):
+            widget = widget.lineEdit()
+        return widget
 
     def select_text_on_widget(
             self, selection_start: int, selection_end: int
