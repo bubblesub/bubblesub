@@ -25,6 +25,11 @@ import bubblesub.api
 from bubblesub.ass.event import Event
 
 
+class SelectionCanceled(RuntimeError):
+    def __init__(self) -> None:
+        super().__init__('Selection canceled.')
+
+
 class EventSelection:
     def __init__(self, api: bubblesub.api.Api, target: str) -> None:
         self.api = api
@@ -120,13 +125,17 @@ class EventSelection:
             if not len(self.api.subs.events):
                 return []
             value = await self.api.gui.exec(self._show_number_dialog)
-            return [] if value is None else [value - 1]
+            if value is None:
+                raise SelectionCanceled
+            return [value - 1]
 
         if self.target == 'ask-time':
             if not len(self.api.subs.events):
                 return []
             value = await self.api.gui.exec(self._show_time_dialog)
-            return [] if value is None else [value - 1]
+            if value is None:
+                raise SelectionCanceled
+            return [value - 1]
 
         match = re.match(r'(\d+)', self.target)
         if match:
