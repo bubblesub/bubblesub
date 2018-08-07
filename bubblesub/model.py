@@ -234,7 +234,7 @@ class ObservableList(T.Generic[TItem]):
         :param value: new value
         """
         if isinstance(idx, slice):
-            raise RuntimeError('Slice assignment is not supported')
+            raise RuntimeError('slice assignment is not supported')
         else:
             self._items[idx] = value
             self.item_changed.emit(idx)

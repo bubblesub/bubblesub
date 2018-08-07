@@ -39,7 +39,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
             )
         except enchant.errors.DictNotFoundError:
             self._dictionary = None
-            api.log.warn(f'dictionary {spell_check_lang} not installed.')
+            api.log.warn(f'dictionary {spell_check_lang} not installed')
 
         self._fmt = QtGui.QTextCharFormat()
         self._fmt.setUnderlineColor(QtCore.Qt.red)

@@ -123,7 +123,7 @@ def _events_section_handler(
     field_dict = dict(zip(ctx.field_names, field_values))
 
     if event_type not in {'Comment', 'Dialogue'}:
-        raise ValueError(f'Unknown event type: "{event_type}"')
+        raise ValueError(f'unknown event type: "{event_type}"')
 
     text = field_dict['Text']
     note = ''
@@ -197,13 +197,13 @@ def load_ass(handle: T.IO, ass_file: AssFile) -> None:
                 elif section == 'Aegisub Project Garbage':
                     handler = _dummy_handler
                 else:
-                    raise ValueError(f'Unrecognized section: "{section}"')
+                    raise ValueError(f'unrecognized section: "{section}"')
             elif not handler:
-                raise ValueError('Expected section')
+                raise ValueError('expected section')
             else:
                 handler(line, ass_file, ctx)  # pylint: disable=not-callable
         except (ValueError, IndexError):
-            raise ValueError(f'Corrupt ASS file at line #{i+1}: "{line}"')
+            raise ValueError(f'corrupt ASS file at line #{i+1}: "{line}"')
 
 
 def read_ass(source: T.Union[Path, T.IO]) -> AssFile:

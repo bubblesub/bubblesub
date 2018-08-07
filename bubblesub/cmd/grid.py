@@ -27,6 +27,7 @@ from PyQt5 import QtWidgets
 import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
 
@@ -148,7 +149,7 @@ class PasteSubtitlesCommand(BaseCommand):
     def _paste_from_clipboard(self, idx: int) -> None:
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
-            self.api.log.error('Clipboard is empty, aborting.')
+            self.api.log.error('clipboard is empty, aborting')
             return
         items = T.cast(T.List[Event], _unpickle(text))
         with self.api.undo.capture():
@@ -195,14 +196,14 @@ class PasteIntoSubtitlesCommand(BaseCommand):
     async def run(self) -> None:
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
-            self.api.log.error('Clipboard is empty, aborting.')
+            self.api.log.error('clipboard is empty, aborting')
             return
 
         lines = text.split('\n')
         events = await self.args.target.get_subtitles()
         if len(lines) != len(events):
             self.api.log.error(
-                'Size mismatch (selected {} lines, got {} lines in clipboard.'
+                'size mismatch (selected {} lines, got {} lines in clipboard'
                 .format(len(events), len(lines))
             )
             return
@@ -222,7 +223,7 @@ class PasteIntoSubtitlesCommand(BaseCommand):
                             bubblesub.util.str_to_ms(end.strip())
                         ))
                     except ValueError:
-                        raise ValueError(f'Invalid time format: {line}')
+                        raise ValueError(f'invalid time format: {line}')
 
                 for i, event in enumerate(events):
                     event.start = times[i][0]
@@ -283,10 +284,9 @@ class CreateAudioSampleCommand(BaseCommand):
             main_window, 'Waveform Audio File (*.wav)', file_name=file_name
         )
         if path is None:
-            self.api.log.info('cancelled')
-        else:
-            self.api.media.audio.save_wav(path, start_pts, end_pts)
-            self.api.log.info(f'saved audio sample to {path}')
+            raise CommandCanceled
+        self.api.media.audio.save_wav(path, start_pts, end_pts)
+        self.api.log.info(f'saved audio sample to {path}')
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:

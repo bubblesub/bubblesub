@@ -53,15 +53,15 @@ class _SearchModeHandler(abc.ABC):
 
     @abc.abstractmethod
     def get_subject_text(self, sub: Event) -> str:
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     @abc.abstractmethod
     def set_subject_text(self, sub: Event, value: str) -> None:
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     @abc.abstractmethod
     def get_subject_widget_name(self) -> str:
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     def get_subject_widget(self) -> QtWidgets.QWidget:
         widget = self.main_window.findChild(
@@ -85,7 +85,7 @@ class _SearchModeHandler(abc.ABC):
                 selection_start, selection_end - selection_start
             )
         else:
-            raise AssertionError(f'Unknown search widget type ({type(widget)}')
+            raise AssertionError(f'unknown search widget type ({type(widget)}')
         widget.setFocus()
 
     def get_selection_from_widget(self) -> T.Tuple[int, int]:
@@ -98,7 +98,7 @@ class _SearchModeHandler(abc.ABC):
                 widget.selectionStart(),
                 widget.selectionStart() + len(widget.selectedText())
             )
-        raise AssertionError(f'Unknown search widget type ({type(widget)})')
+        raise AssertionError(f'unknown search widget type ({type(widget)})')
 
     def get_widget_text(self) -> str:
         widget = self.get_subject_widget()
@@ -106,7 +106,7 @@ class _SearchModeHandler(abc.ABC):
             return T.cast(str, widget.toPlainText())
         if isinstance(widget, QtWidgets.QLineEdit):
             return widget.text()
-        raise AssertionError(f'Unknown search widget type ({type(widget)})')
+        raise AssertionError(f'unknown search widget type ({type(widget)})')
 
     def set_widget_text(self, text: str) -> None:
         widget = self.get_subject_widget()
@@ -116,7 +116,7 @@ class _SearchModeHandler(abc.ABC):
             widget.setText(text)
         else:
             raise AssertionError(
-                f'Unknown search widget type ({type(widget)})'
+                f'unknown search widget type ({type(widget)})'
             )
 
 

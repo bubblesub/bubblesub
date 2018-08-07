@@ -252,7 +252,7 @@ def setup_cmd_menu(
 
             parent.addAction(action)
         else:
-            api.log.error(f'Unexpected menu item {item}')
+            api.log.error(f'unexpected menu item {item}')
 
 
 @functools.lru_cache(maxsize=None)

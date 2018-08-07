@@ -233,7 +233,7 @@ class MainWindow(QtWidgets.QMainWindow):
         elif context == HotkeyContext.Global:
             shortcut.setContext(QtCore.Qt.ApplicationShortcut)
         else:
-            raise RuntimeError(f'Invalid shortcut context "{context}"')
+            raise RuntimeError(f'invalid shortcut context "{context}"')
 
         shortcut.activatedAmbiguously.connect(
             functools.partial(resolve_ambiguity, hotkey.shortcut)

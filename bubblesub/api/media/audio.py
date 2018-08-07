@@ -57,7 +57,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
         :return: audio source
         """
         path = T.cast(Path, task)
-        self._log_api.info(f'audio/sampler: loading... ({path})')
+        self._log_api.info(f'started loading audio ({path})')
 
         path_hash = bubblesub.util.hash_digest(path)
         cache_name = f'{path_hash}-audio-index'
@@ -77,7 +77,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
 
         if not index:
             if not path.exists():
-                self._log_api.error('audio/sampler: audio file not found')
+                self._log_api.error(f'audio file {path} not found')
                 return None
 
             indexer = ffms.Indexer(str(path))
@@ -89,7 +89,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
             ffms.FFMS_TYPE_AUDIO
         )
         audio_source = ffms.AudioSource(str(path), track_number, index)
-        self._log_api.info('audio/sampler: loaded')
+        self._log_api.info('audio finished loading')
         return (path, audio_source)
 
 

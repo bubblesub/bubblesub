@@ -58,14 +58,14 @@ class VideoSourceWorker(bubblesub.worker.Worker):
         :return: video source
         """
         path = T.cast(Path, task)
-        self._log_api.info(f'video/sampler: loading... ({path})')
+        self._log_api.info(f'started loading video... ({path})')
 
         if not path.exists():
-            self._log_api.error('video/sampler: video file not found')
+            self._log_api.error(f'video file {path} not found')
             return None
 
         video_source = ffms.VideoSource(str(path))
-        self._log_api.info('video/sampler: loaded')
+        self._log_api.info('video finished loading')
         return (path, video_source)
 
 

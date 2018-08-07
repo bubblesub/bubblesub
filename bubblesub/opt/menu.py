@@ -313,7 +313,7 @@ class MenuConfig(BaseConfig):
                     target.append(sub_menu)
                 else:
                     raise ValueError(
-                        'Unknown menu type "{}"'.format(item['type'])
+                        'unknown menu type "{}"'.format(item['type'])
                     )
 
         obj = json.loads(text)

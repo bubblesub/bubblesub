@@ -26,6 +26,7 @@ from PyQt5 import QtWidgets
 import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.api.cmd import CommandCanceled
 from bubblesub.util import ShiftTarget, BooleanOperation
 
 
@@ -399,10 +400,9 @@ class ScreenshotCommand(BaseCommand):
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         path = self._show_dialog(main_window)
         if path is None:
-            self.api.log.info('cancelled')
-        else:
-            self.api.media.video.screenshot(path, self.args.include_subs)
-            self.api.log.info(f'saved screenshot to {path}')
+            raise CommandCanceled
+        self.api.media.video.screenshot(path, self.args.include_subs)
+        self.api.log.info(f'saved screenshot to {path}')
 
     def _show_dialog(
             self,

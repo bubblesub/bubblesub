@@ -27,7 +27,7 @@ class BaseConfig(abc.ABC):
     @abc.abstractmethod
     def file_name(self) -> str:
         """Config file name."""
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     @abc.abstractmethod
     def loads(self, text: str) -> None:
@@ -36,7 +36,7 @@ class BaseConfig(abc.ABC):
 
         :param text: INI, JSON, etc.
         """
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     @abc.abstractmethod
     def dumps(self) -> str:
@@ -45,7 +45,7 @@ class BaseConfig(abc.ABC):
 
         :return: INI, JSON etc.
         """
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     def load(self, root_dir: Path) -> None:
         """

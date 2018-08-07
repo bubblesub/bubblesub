@@ -45,6 +45,13 @@ class CommandError(RuntimeError):
     pass
 
 
+class CommandCanceled(CommandError):
+    """The given command was canceled by the user."""
+
+    def __init__(self):
+        super().__init__('canceled')
+
+
 class CommandNotFound(CommandError):
     """The given command was not found."""
 
@@ -116,7 +123,7 @@ class BaseCommand(abc.ABC):
         :param cls: type inheriting from BaseCommand
         :return: command names
         """
-        raise NotImplementedError('Command has no name')
+        raise NotImplementedError('command has no name')
 
     @property
     @abc.abstractproperty
@@ -126,7 +133,7 @@ class BaseCommand(abc.ABC):
 
         :return: name shown in GUI menu
         """
-        raise NotImplementedError('Command has no menu name')
+        raise NotImplementedError('command has no menu name')
 
     @bubblesub.model.classproperty
     @abc.abstractproperty
@@ -136,7 +143,7 @@ class BaseCommand(abc.ABC):
 
         :return: description
         """
-        raise NotImplementedError('Command has no help text')
+        raise NotImplementedError('command has no help text')
 
     @property
     def is_enabled(self) -> bool:
@@ -150,7 +157,7 @@ class BaseCommand(abc.ABC):
     @abc.abstractmethod
     async def run(self) -> None:
         """Carry out the command."""
-        raise NotImplementedError('Command has no implementation')
+        raise NotImplementedError('command has no implementation')
 
     @classmethod
     def parse_args(
@@ -240,13 +247,16 @@ class CommandApi(QtCore.QObject):
         self._api.log.info(cmd.invocation)
 
         if not cmd.is_enabled:
-            self._api.log.info('Command not available right now')
+            self._api.log.info('command not available right now')
             return False
 
         try:
             await cmd.run()
+        except CommandCanceled:
+            self._api.log.warn(f'canceled')
+            return False
         except Exception as ex:  # pylint: disable=broad-except
-            self._api.log.error(f'Problem running {cmd.invocation}:')
+            self._api.log.error(f'problem running {cmd.invocation}:')
             self._api.log.error(f'{ex}')
             traceback.print_exc()
             return False
@@ -268,7 +278,7 @@ class CommandApi(QtCore.QObject):
         name, _args = split_invocation(invocation)
         cls, _is_plugin = self._command_registry.get(name, (None, False))
         if not cls:
-            raise CommandNotFound(f'No command named "{name}"')
+            raise CommandNotFound(f'no command named "{name}"')
         instance = cls(self._api, invocation)
         return T.cast(BaseCommand, instance)
 

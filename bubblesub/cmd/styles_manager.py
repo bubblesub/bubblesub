@@ -705,7 +705,7 @@ class _StyleEditor(QtWidgets.QWidget):
                     get_signal(widget).connect(self._submit)
                     break
             else:
-                raise RuntimeError(f'Unknown widget type: "{type(widget)}"')
+                raise RuntimeError(f'unknown widget type: "{type(widget)}"')
 
     def _submit(self, *_args: T.Any) -> None:
         self._mapper.submit()

@@ -86,7 +86,7 @@ class SpectrumWorker(bubblesub.worker.Worker):
         elif sample_fmt == ffms.FFMS_FMT_S32:
             samples /= 4294967296.
         elif sample_fmt not in (ffms.FFMS_FMT_FLT, ffms.FFMS_FMT_DBL):
-            raise RuntimeError('Unknown sample format: {}'.format(sample_fmt))
+            raise RuntimeError(f'unknown sample format: {sample_fmt}')
 
         assert self._input is not None
         self._input[0:len(samples)] = samples

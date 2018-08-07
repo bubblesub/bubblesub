@@ -127,7 +127,7 @@ def str_to_ms(text: str) -> int:
         if sign == '-':
             ret = -ret
         return ret
-    raise ValueError(f'Invalid time: "{text}"')
+    raise ValueError(f'invalid time format: "{text}"')
 
 
 def hash_digest(subject: T.Any) -> str:

@@ -106,15 +106,15 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
 
     @property
     def _column_count(self) -> int:
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     def _set_data(
             self, row_idx: int, col_idx: int, role: int, new_value: T.Any
     ) -> bool:
-        raise NotImplementedError('Not implemented')
+        raise NotImplementedError('not implemented')
 
     def _proxy_data_changed(self, row_idx: int) -> None:
         # XXX: this causes qt to call .data() for EVERY VISIBLE CELL. really.

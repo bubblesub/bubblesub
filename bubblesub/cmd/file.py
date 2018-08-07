@@ -24,6 +24,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
+from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import BaseCommand
 
 VIDEO_FILE_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'
@@ -82,10 +83,9 @@ class OpenCommand(BaseCommand):
                     directory=_get_dialog_dir(self.api)
                 )
             if not path:
-                self.api.log.info('cancelled')
-            else:
-                self.api.subs.load_ass(path)
-                self.api.log.info(f'opened {path}')
+                raise CommandCanceled
+            self.api.subs.load_ass(path)
+            self.api.log.info(f'opened {path}')
 
     @staticmethod
     def _decorate_parser(
@@ -122,10 +122,9 @@ class LoadVideoCommand(BaseCommand):
                 directory=_get_dialog_dir(self.api)
             )
         if not path:
-            self.api.log.info('cancelled')
-        else:
-            self.api.media.load(path)
-            self.api.log.info(f'loading {path}')
+            raise CommandCanceled
+        self.api.media.load(path)
+        self.api.log.info(f'loading {path}')
 
     @staticmethod
     def _decorate_parser(
@@ -161,8 +160,7 @@ class SaveCommand(BaseCommand):
                 directory=_get_dialog_dir(self.api)
             )
         if not path:
-            self.api.log.info('cancelled')
-            return
+            raise CommandCanceled
         self.api.subs.save_ass(path, remember_path=True)
         self.api.log.info(f'saved subtitles to {path}')
 
@@ -189,10 +187,9 @@ class SaveAsCommand(BaseCommand):
                 directory=_get_dialog_dir(self.api)
             )
         if not path:
-            self.api.log.info('cancelled')
-        else:
-            self.api.subs.save_ass(path, remember_path=True)
-            self.api.log.info(f'saved subtitles to {path}')
+            raise CommandCanceled
+        self.api.subs.save_ass(path, remember_path=True)
+        self.api.log.info(f'saved subtitles to {path}')
 
     @staticmethod
     def _decorate_parser(

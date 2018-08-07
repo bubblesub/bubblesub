@@ -208,7 +208,7 @@ class GenerateDocumentationCommand(Command):
                 return name
             if type_ == T.Optional[comp]:
                 return name + ', optional'
-        raise RuntimeError(f'Don\'t know how to describe "{type_}"')
+        raise RuntimeError(f'don\'t know how to describe "{type_}"')
 
 
 class PyTestCommand(Command):

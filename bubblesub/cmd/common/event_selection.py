@@ -22,12 +22,8 @@ import typing as T
 from PyQt5 import QtWidgets
 
 import bubblesub.api
+from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
-
-
-class SelectionCanceled(RuntimeError):
-    def __init__(self) -> None:
-        super().__init__('Selection canceled.')
 
 
 class EventSelection:
@@ -68,7 +64,7 @@ class EventSelection:
         if match:
             return 'subtitle #' + match.group(1)
 
-        raise ValueError(f'Unknown selection target: "{self.target}"')
+        raise ValueError(f'unknown selection target: "{self.target}"')
 
     @property
     def makes_sense(self) -> bool:
@@ -126,7 +122,7 @@ class EventSelection:
                 return []
             value = await self.api.gui.exec(self._show_number_dialog)
             if value is None:
-                raise SelectionCanceled
+                raise CommandCanceled
             return [value - 1]
 
         if self.target == 'ask-time':
@@ -134,14 +130,14 @@ class EventSelection:
                 return []
             value = await self.api.gui.exec(self._show_time_dialog)
             if value is None:
-                raise SelectionCanceled
+                raise CommandCanceled
             return [value - 1]
 
         match = re.match(r'(\d+)', self.target)
         if match:
             return [int(match.group(0)) - 1]
 
-        raise ValueError(f'Unknown selection target: "{self.target}"')
+        raise ValueError(f'unknown selection target: "{self.target}"')
 
     async def get_indexes(self):
         return [

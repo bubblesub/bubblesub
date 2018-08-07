@@ -530,10 +530,10 @@ class AssRenderer:
 
     def render(self, time: int) -> PIL.Image:
         if self._track is None:
-            raise ValueError('Need source to render')
+            raise ValueError('need source to render')
 
         if any(dim <= 0 for dim in self._renderer.frame_size):
-            raise ValueError('Resolution needs to be a positive integer')
+            raise ValueError('resolution needs to be a positive integer')
 
         image_data = np.zeros((
             self._renderer.frame_size[1],
