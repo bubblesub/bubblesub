@@ -330,11 +330,11 @@ class CommandApi(QtCore.QObject):
     def unload_plugin_commands(self) -> None:
         """Remove plugin commands from the registry and clear plugins menu."""
         self._plugin_menu[:] = []
-        for key, value in list(self._command_registry.items()):
+        for name, value in list(self._command_registry.items()):
             cls, is_plugin = value
             if is_plugin:
-                print(f'unregistering {cls} as {cls.name}')
-                del self._command_registry[key]
+                print(f'unregistering {cls} as {name}')
+                del self._command_registry[name]
 
     def register_core_command(self, cls: T.Type[BaseCommand]) -> None:
         """
