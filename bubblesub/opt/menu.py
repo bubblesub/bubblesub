@@ -250,7 +250,7 @@ class MenuConfig(BaseConfig):
                         MenuCommand('/edit/shift-subs -t end -d 1000'),
                     ]),
 
-                    MenuCommand('/audio/commit-sel'),
+                    MenuCommand('/spectrogram-commit-sel'),
                     MenuSeparator(),
                     MenuCommand('/edit/shift-subs-with-gui'),
                     MenuSeparator(),

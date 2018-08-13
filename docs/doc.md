@@ -67,7 +67,7 @@ Context refers to the currently focused widget.
 |<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 1</code> |
 |<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -1</code> |
 |<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 1</code> |
-|<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-commit-sel">audio/commit-sel</a> </code> |
+|<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-commit-sel">spectrogram-commit-sel</a> </code> |
 |<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d above</code> |
 |<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
 |<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> </code> |
@@ -99,8 +99,6 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-paste-subs">paste-subs</a> -t selected --after</code> |
 
 # Default commands
-### <a name="cmd-audio-commit-sel"></a>`audio/commit‑sel`
-Commits the spectrogram selection into the current subtitle. The selected subtitle start and end times is synced to the current spectrogram selection boundaries.
 ### <a name="cmd-audio-place-sel-at-current-video-frame"></a>`audio/place‑sel‑at‑current‑video‑frame`
 Realigns the selection to the current video frame. The selection start is placed at the current video frame and the selection size is set to the default subtitle duration.
 ### <a name="cmd-audio-scroll-spectrogram"></a>`audio/scroll‑spectrogram`
@@ -435,6 +433,34 @@ Usage:
 
 
 * `palette_name`: name of the palette to change to (`dark`, `light`)
+
+### <a name="cmd-spectrogram-commit-sel"></a>`spectrogram‑commit‑sel`
+Aliases: `spectrogram-commit-selection`
+
+Commits the spectrogram selection into given subtitles. The subtitles start and end times are synced to the current spectrogram selection boundaries.
+
+
+
+Usage:
+`spectrogram‑commit‑sel -t|--target=…`
+
+
+
+* `-t`, `--target`: subtitles to select
+
+### <a name="cmd-spectrogram-commit-sel"></a>`spectrogram‑commit‑sel`
+Aliases: `spectrogram-commit-selection`
+
+Commits the spectrogram selection into given subtitles. The subtitles start and end times are synced to the current spectrogram selection boundaries.
+
+
+
+Usage:
+`spectrogram‑commit‑sel -t|--target=…`
+
+
+
+* `-t`, `--target`: subtitles to select
 
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.

@@ -130,7 +130,7 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('2', '/audio/shift-sel -f -t start -d 1'),
                 Hotkey('3', '/audio/shift-sel -f -t end -d -1'),
                 Hotkey('4', '/audio/shift-sel -f -t end -d 1'),
-                Hotkey('C', '/audio/commit-sel'),
+                Hotkey('C', '/spectrogram-commit-sel'),
                 Hotkey('K', '/edit/insert-sub -d above'),
                 Hotkey('J', '/edit/insert-sub -d below'),
                 Hotkey('R', '/video/play-around-sel'),

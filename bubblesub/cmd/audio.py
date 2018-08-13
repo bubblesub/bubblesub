@@ -24,6 +24,7 @@ import typing as T
 import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
+from bubblesub.cmd.common import EventSelection
 from bubblesub.util import VerticalDirection, ShiftTarget
 
 
@@ -412,27 +413,42 @@ class ShiftSpectrogramSelectionCommand(BaseCommand):
         )
 
 
-class CommitSpectrogramSelectionCommand(BaseCommand):
-    names = ['audio/commit-sel']
-    menu_name = '&Commit selection to subtitle'
+class SpectrogramCommitSelectionCommand(BaseCommand):
+    names = ['spectrogram-commit-sel', 'spectrogram-commit-selection']
     help_text = (
-        'Commits the spectrogram selection into the current subtitle. '
-        'The selected subtitle start and end times is synced to the '
+        'Commits the spectrogram selection into given subtitles. '
+        'The subtitles start and end times are synced to the '
         'current spectrogram selection boundaries.'
     )
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.subs.has_selection \
-            and self.api.media.audio.has_selection
+        return self.args.target.makes_sense
+
+    @property
+    def menu_name(self) -> str:
+        return '&Commit selection to ' + self.args.target.description
 
     async def run(self) -> None:
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_events:
+            target_subtitles = await self.args.target.get_subtitles()
+            for sub in target_subtitles:
                 sub.begin_update()
                 sub.start = self.api.media.audio.selection_start
                 sub.end = self.api.media.audio.selection_end
                 sub.end_update()
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to select',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
@@ -449,6 +465,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SnapSpectrogramSelectionToCurrentVideoFrameCommand,
             PlaceSpectrogramSelectionAtCurrentVideoFrameCommand,
             ShiftSpectrogramSelectionCommand,
-            CommitSpectrogramSelectionCommand,
+            SpectrogramCommitSelectionCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))
