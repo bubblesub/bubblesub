@@ -434,7 +434,7 @@ Usage:
 
 
 
-* `palette_name`: name of the palette to change to
+* `palette_name`: name of the palette to change to (`dark`, `light`)
 
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.

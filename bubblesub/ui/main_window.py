@@ -127,7 +127,13 @@ class MainWindow(QtWidgets.QMainWindow):
             event.accept()
 
     def apply_palette(self, palette_name: str) -> None:
-        palette_def = self._api.opt.general.gui.palettes[palette_name]
+        try:
+            palette_def = self._api.opt.general.gui.palettes[palette_name]
+        except KeyError:
+            raise ValueError(f'unknown palette: "{palette_name}"')
+
+        self._api.opt.general.gui.current_palette = palette_name
+
         palette = QtGui.QPalette()
         for color_type, color_value in palette_def.items():
             if '+' in color_type:
@@ -144,6 +150,7 @@ class MainWindow(QtWidgets.QMainWindow):
             elif target_role is not None:
                 palette.setColor(target_role, QtGui.QColor(*color_value))
         self.setPalette(palette)
+
         self.update()
 
     def _setup_menu(self) -> T.Any:

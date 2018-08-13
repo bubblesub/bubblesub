@@ -61,7 +61,6 @@ class SetPaletteCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        self.api.opt.general.gui.current_palette = self.args.palette_name
         main_window.apply_palette(self.args.palette_name)
 
     @staticmethod
@@ -72,7 +71,8 @@ class SetPaletteCommand(BaseCommand):
         parser.add_argument(
             'palette_name',
             help='name of the palette to change to',
-            type=str
+            type=str,
+            choices=list(api.opt.general.gui.palettes.keys())
         )
 
 
