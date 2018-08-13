@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Common utilities shared between commands."""
+"""Subtitles selection, usable as an argument to commands."""
 
 import re
 import typing as T

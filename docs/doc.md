@@ -33,16 +33,16 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-search-and-replace">search-and-replace</a> </code> |
 |<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
 |<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-edit-delete-subs">edit/delete-subs</a> </code> |
-|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 10</code> |
-|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 10</code> |
-|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -10</code> |
-|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 10</code> |
-|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d -1</code> |
-|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 1</code> |
-|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -1</code> |
-|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 1</code> |
-|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t start</code> |
-|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t end</code> |
+|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-10f</code> |
+|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+10f</code> |
+|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-10f</code> |
+|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+10f</code> |
+|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-1f</code> |
+|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+1f</code> |
+|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-1f</code> |
+|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+1f</code> |
+|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
+|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
 |<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-place-sel-at-current-video-frame">audio/place-sel-at-current-video-frame</a> </code> |
 |<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
@@ -59,14 +59,14 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d above</code> |
 |<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d below</code> |
 |<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file-properties</a> </code> |
-|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d -10</code> |
-|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 10</code> |
-|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -10</code> |
-|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 10</code> |
-|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d -1</code> |
-|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t start -d 1</code> |
-|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d -1</code> |
-|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio/shift-sel</a> -f -t end -d 1</code> |
+|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-10f</code> |
+|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+10f</code> |
+|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-10f</code> |
+|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+10f</code> |
+|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-1f</code> |
+|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+1f</code> |
+|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-1f</code> |
+|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+1f</code> |
 |<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-commit-sel">spectrogram-commit-sel</a> </code> |
 |<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d above</code> |
 |<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
@@ -86,15 +86,15 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 1500</code> |
 |<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d -500</code> |
 |<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 500</code> |
-|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t start</code> |
-|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-current-video-frame">audio/snap-sel-to-current-video-frame</a> -t end</code> |
+|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
+|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
 |<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-place-sel-at-current-video-frame">audio/place-sel-at-current-video-frame</a> </code> |
 |<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
-|<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-sub">audio/snap-sel-to-near-sub</a> -t start -d above</code> |
-|<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-sub">audio/snap-sel-to-near-sub</a> -t end -d below</code> |
-|<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">audio/snap-sel-to-near-keyframe</a> -t start -d above</code> |
-|<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-snap-sel-to-near-keyframe">audio/snap-sel-to-near-keyframe</a> -t end -d below</code> |
+|<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d prev-sub-end</code> |
+|<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d next-sub-start</code> |
+|<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-1kf</code> |
+|<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+1kf</code> |
 |<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-copy-subs">copy-subs</a> </code> |
 |<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-paste-subs">paste-subs</a> -t selected --after</code> |
 
@@ -112,58 +112,6 @@ Usage:
 
 
 * `-d`, `--delta`: factor to shift the view by
-
-### <a name="cmd-audio-shift-sel"></a>`audio/shift‑sel`
-Shifts the spectrogram selection by the specified distance.
-
-
-
-Usage:
-`audio/shift‑sel -t|--target=… -d|--delta=… [-f|--frames]`
-
-
-
-* `-t`, `--target`: how to shift the selection (`start`, `end`, `both`)
-* `-d`, `--delta`: amount to shift the selection by
-* `-f`, `--frames`: if true, shift by frames; otherwise by milliseconds
-
-### <a name="cmd-audio-snap-sel-to-current-video-frame"></a>`audio/snap‑sel‑to‑current‑video‑frame`
-Snaps the spectrogram selection to the current video frame.
-
-
-
-Usage:
-`audio/snap‑sel‑to‑current‑video‑frame -t|--target=…`
-
-
-
-* `-t`, `--target`: how to snap the selection (`start`, `end`, `both`)
-
-### <a name="cmd-audio-snap-sel-to-near-keyframe"></a>`audio/snap‑sel‑to‑near‑keyframe`
-Snaps the spectrogram selection to the nearest keyframe.
-
-
-
-Usage:
-`audio/snap‑sel‑to‑near‑keyframe -t|--target=… -d|--direction=…`
-
-
-
-* `-t`, `--target`: how to snap the selection (`start`, `end`, `both`)
-* `-d`, `--direction`: direction to snap into (`above`, `below`)
-
-### <a name="cmd-audio-snap-sel-to-near-sub"></a>`audio/snap‑sel‑to‑near‑sub`
-Snaps the spectrogram selection to the nearest subtitle.
-
-
-
-Usage:
-`audio/snap‑sel‑to‑near‑sub -t|--target=… -d|--direction=…`
-
-
-
-* `-t`, `--target`: how to snap the selection (`start`, `end`, `both`)
-* `-d`, `--direction`: direction to snap into (`above`, `below`)
 
 ### <a name="cmd-audio-zoom-spectrogram"></a>`audio/zoom‑spectrogram`
 Zooms the spectrogram in or out by the specified factor.
@@ -446,7 +394,7 @@ Usage:
 
 
 
-* `-t`, `--target`: subtitles to select
+* `-t`, `--target`: subtitles to commit selection into
 
 ### <a name="cmd-spectrogram-commit-sel"></a>`spectrogram‑commit‑sel`
 Aliases: `spectrogram-commit-selection`
@@ -460,7 +408,41 @@ Usage:
 
 
 
-* `-t`, `--target`: subtitles to select
+* `-t`, `--target`: subtitles to commit selection into
+
+### <a name="cmd-spectrogram-shift-sel"></a>`spectrogram‑shift‑sel`
+Aliases: `spectrogram-shift-selection`
+
+Shfits the spectrogram selection.
+
+
+
+Usage:
+`spectrogram‑shift‑sel -d|--delta=… [--start] [--end] [--both]`
+
+
+
+* `-d`, `--delta`: amount to shift the selection
+* `--start`: shift selection start
+* `--end`: shift selection end
+* `--both`: shift whole selection
+
+### <a name="cmd-spectrogram-shift-sel"></a>`spectrogram‑shift‑sel`
+Aliases: `spectrogram-shift-selection`
+
+Shfits the spectrogram selection.
+
+
+
+Usage:
+`spectrogram‑shift‑sel -d|--delta=… [--start] [--end] [--both]`
+
+
+
+* `-d`, `--delta`: amount to shift the selection
+* `--start`: shift selection start
+* `--end`: shift selection end
+* `--both`: shift whole selection
 
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.

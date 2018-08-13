@@ -88,19 +88,23 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Ctrl+H', '/search-and-replace'),
                 Hotkey('Ctrl+Return', '/edit/insert-sub -d below'),
                 Hotkey('Ctrl+Delete', '/edit/delete-subs'),
-                Hotkey('Ctrl+Shift+1', '/audio/shift-sel -f -t start -d 10'),
-                Hotkey('Ctrl+Shift+2', '/audio/shift-sel -f -t start -d 10'),
-                Hotkey('Ctrl+Shift+3', '/audio/shift-sel -f -t end -d -10'),
-                Hotkey('Ctrl+Shift+4', '/audio/shift-sel -f -t end -d 10'),
-                Hotkey('Ctrl+1', '/audio/shift-sel -f -t start -d -1'),
-                Hotkey('Ctrl+2', '/audio/shift-sel -f -t start -d 1'),
-                Hotkey('Ctrl+3', '/audio/shift-sel -f -t end -d -1'),
-                Hotkey('Ctrl+4', '/audio/shift-sel -f -t end -d 1'),
                 Hotkey(
-                    'Ctrl+B', '/audio/snap-sel-to-current-video-frame -t start'
+                    'Ctrl+Shift+1', '/spectrogram-shift-sel --start -d=-10f'
                 ),
                 Hotkey(
-                    'Ctrl+M', '/audio/snap-sel-to-current-video-frame -t end'
+                    'Ctrl+Shift+2', '/spectrogram-shift-sel --start -d=+10f'
+                ),
+                Hotkey('Ctrl+Shift+3', '/spectrogram-shift-sel --end -d=-10f'),
+                Hotkey('Ctrl+Shift+4', '/spectrogram-shift-sel --end -d=+10f'),
+                Hotkey('Ctrl+1', '/spectrogram-shift-sel --start -d=-1f'),
+                Hotkey('Ctrl+2', '/spectrogram-shift-sel --start -d=+1f'),
+                Hotkey('Ctrl+3', '/spectrogram-shift-sel --end -d=-1f'),
+                Hotkey('Ctrl+4', '/spectrogram-shift-sel --end -d=+1f'),
+                Hotkey(
+                    'Ctrl+B', '/spectrogram-shift-sel --start -d current-frame'
+                ),
+                Hotkey(
+                    'Ctrl+M', '/spectrogram-shift-sel --end -d current-frame'
                 ),
                 Hotkey('Ctrl+N', '/audio/place-sel-at-current-video-frame'),
                 Hotkey('Ctrl+[', '/video/set-playback-speed {}/1.5'),
@@ -122,14 +126,14 @@ class HotkeysConfig(BaseConfig):
 
             HotkeyContext.Spectrogram:
             [
-                Hotkey('Shift+1', '/audio/shift-sel -f -t start -d -10'),
-                Hotkey('Shift+2', '/audio/shift-sel -f -t start -d 10'),
-                Hotkey('Shift+3', '/audio/shift-sel -f -t end -d -10'),
-                Hotkey('Shift+4', '/audio/shift-sel -f -t end -d 10'),
-                Hotkey('1', '/audio/shift-sel -f -t start -d -1'),
-                Hotkey('2', '/audio/shift-sel -f -t start -d 1'),
-                Hotkey('3', '/audio/shift-sel -f -t end -d -1'),
-                Hotkey('4', '/audio/shift-sel -f -t end -d 1'),
+                Hotkey('Shift+1', '/spectrogram-shift-sel --start -d=-10f'),
+                Hotkey('Shift+2', '/spectrogram-shift-sel --start -d=+10f'),
+                Hotkey('Shift+3', '/spectrogram-shift-sel --end -d=-10f'),
+                Hotkey('Shift+4', '/spectrogram-shift-sel --end -d=+10f'),
+                Hotkey('1', '/spectrogram-shift-sel --start -d=-1f'),
+                Hotkey('2', '/spectrogram-shift-sel --start -d=+1f'),
+                Hotkey('3', '/spectrogram-shift-sel --end -d=-1f'),
+                Hotkey('4', '/spectrogram-shift-sel --end -d=+1f'),
                 Hotkey('C', '/spectrogram-commit-sel'),
                 Hotkey('K', '/edit/insert-sub -d above'),
                 Hotkey('J', '/edit/insert-sub -d below'),
@@ -149,24 +153,26 @@ class HotkeysConfig(BaseConfig):
                 Hotkey('Ctrl+Shift+.', '/video/step-ms -d 1500'),
                 Hotkey('Shift+,', '/video/step-ms -d -500'),
                 Hotkey('Shift+.', '/video/step-ms -d 500'),
-                Hotkey('B', '/audio/snap-sel-to-current-video-frame -t start'),
-                Hotkey('M', '/audio/snap-sel-to-current-video-frame -t end'),
+                Hotkey('B', '/spectrogram-shift-sel --start -d current-frame'),
+                Hotkey('M', '/spectrogram-shift-sel --end -d current-frame'),
                 Hotkey('N', '/audio/place-sel-at-current-video-frame'),
                 Hotkey('[', '/video/set-playback-speed {}/1.5'),
                 Hotkey(']', '/video/set-playback-speed {}*1.5'),
                 Hotkey(
-                    'Alt+Left', '/audio/snap-sel-to-near-sub -t start -d above'
+                    'Alt+Left',
+                    '/spectrogram-shift-sel --start -d prev-sub-end'
                 ),
                 Hotkey(
-                    'Alt+Right', '/audio/snap-sel-to-near-sub -t end -d below'
+                    'Alt+Right',
+                    '/spectrogram-shift-sel --end -d next-sub-start'
                 ),
                 Hotkey(
                     'Alt+Shift+Left',
-                    '/audio/snap-sel-to-near-keyframe -t start -d above'
+                    '/spectrogram-shift-sel --start -d=-1kf'
                 ),
                 Hotkey(
                     'Alt+Shift+Right',
-                    '/audio/snap-sel-to-near-keyframe -t end -d below'
+                    '/spectrogram-shift-sel --end -d=+1kf'
                 ),
             ],
 

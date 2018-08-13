@@ -17,15 +17,13 @@
 """Commands related to audio and audio selection."""
 
 import argparse
-import bisect
-import operator
 import typing as T
 
 import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
-from bubblesub.util import VerticalDirection, ShiftTarget
+from bubblesub.cmd.common import RelativePts
+from bubblesub.util import ShiftTarget
 
 
 def _fmt_shift_target(shift_target: ShiftTarget) -> str:
@@ -91,50 +89,6 @@ class ZoomSpectrogramCommand(BaseCommand):
         )
 
 
-class SnapSpectrogramSelectionToCurrentVideoFrameCommand(BaseCommand):
-    names = ['audio/snap-sel-to-current-video-frame']
-    help_text = 'Snaps the spectrogram selection to the current video frame.'
-
-    @property
-    def menu_name(self) -> str:
-        return (
-            '&Snap '
-            f'{_fmt_shift_target(self.args.target)} '
-            'to current video frame'
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.media.audio.has_selection \
-            and self.api.media.is_loaded
-
-    async def run(self) -> None:
-        old_end = self.api.media.audio.selection_end
-        old_start = self.api.media.audio.selection_start
-        target = self.api.media.current_pts
-        if self.args.target == ShiftTarget.Start:
-            self.api.media.audio.select(target, old_end)
-        elif self.args.target == ShiftTarget.End:
-            self.api.media.audio.select(old_start, target)
-        elif self.args.target == ShiftTarget.Both:
-            self.api.media.audio.select(target, target)
-        else:
-            raise AssertionError
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            '-t', '--target',
-            help='how to snap the selection',
-            type=ShiftTarget.from_string,
-            choices=list(ShiftTarget),
-            required=True
-        )
-
-
 class PlaceSpectrogramSelectionAtCurrentVideoFrameCommand(BaseCommand):
     names = ['audio/place-sel-at-current-video-frame']
     menu_name = '&Place selection at current video frame'
@@ -159,257 +113,66 @@ class PlaceSpectrogramSelectionAtCurrentVideoFrameCommand(BaseCommand):
         )
 
 
-class SnapSpectrogramSelectionToNearSubtitleCommand(BaseCommand):
-    names = ['audio/snap-sel-to-near-sub']
-    help_text = 'Snaps the spectrogram selection to the nearest subtitle.'
+class SpectrogramShiftSelectionCommand(BaseCommand):
+    names = ['spectrogram-shift-sel', 'spectrogram-shift-selection']
+    help_text = 'Shfits the spectrogram selection.'
 
     @property
     def menu_name(self) -> str:
-        return (
-            f'&Snap '
-            f'{_fmt_shift_target(self.args.target)} to subtitle '
-            f'{self.args.direction.name.lower()}'
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        if not self.api.media.audio.has_selection:
-            return False
-        return self._nearest_sub is not None
-
-    @property
-    def _nearest_sub(self) -> T.Optional[Event]:
-        if not self.api.subs.has_selection:
-            return None
-        if self.args.direction == VerticalDirection.Above:
-            return self.api.subs.selected_events[0].prev
-        if self.args.direction == VerticalDirection.Below:
-            return self.api.subs.selected_events[-1].next
-        raise AssertionError
+        if self.args.method == 'start':
+            target = 'selection start'
+        elif self.args.method == 'end':
+            target = 'selection end'
+        else:
+            target = 'selection'
+        return f'&Shift {target} to {self.args.delta.description}'
 
     async def run(self) -> None:
-        assert self._nearest_sub is not None
-        if self.args.target == ShiftTarget.Start:
-            self.api.media.audio.select(
-                self._nearest_sub.end,
-                self.api.media.audio.selection_end
-            )
-        elif self.args.target == ShiftTarget.End:
-            self.api.media.audio.select(
-                self.api.media.audio.selection_start,
-                self._nearest_sub.start
-            )
-        elif self.args.target == ShiftTarget.Both:
-            if self.args.direction == VerticalDirection.Above:
-                self.api.media.audio.select(
-                    self._nearest_sub.end,
-                    self._nearest_sub.end
-                )
-            elif self.args.direction == VerticalDirection.Below:
-                self.api.media.audio.select(
-                    self._nearest_sub.start,
-                    self._nearest_sub.start
-                )
-            else:
-                raise AssertionError
-        else:
-            raise AssertionError
+        with self.api.undo.capture():
+            start = self.api.media.audio.selection_start
+            end = self.api.media.audio.selection_end
+
+            if self.args.method in {'start', 'both'}:
+                start = await self.args.delta.apply(start)
+
+            if self.args.method in {'end', 'both'}:
+                end = await self.args.delta.apply(end)
+
+            self.api.media.audio.select(start, end)
 
     @staticmethod
     def _decorate_parser(
             api: bubblesub.api.Api,
             parser: argparse.ArgumentParser
     ) -> None:
-        parser.add_argument(
-            '-t', '--target',
-            help='how to snap the selection',
-            type=ShiftTarget.from_string,
-            choices=list(ShiftTarget),
-            required=True
-        )
-        parser.add_argument(
-            '-d', '--direction',
-            help='direction to snap into',
-            type=VerticalDirection.from_string,
-            choices=list(VerticalDirection),
-            required=True
-        )
-
-
-class SnapSpectrogramSelectionToNearKeyframeCommand(BaseCommand):
-    names = ['audio/snap-sel-to-near-keyframe']
-    help_text = 'Snaps the spectrogram selection to the nearest keyframe.'
-
-    @property
-    def is_enabled(self) -> bool:
-        return (
-            self.api.media.audio.has_selection
-            and bool(self.api.media.video.keyframes)
-        )
-
-    @property
-    def menu_name(self) -> str:
-        return (
-            '&Snap '
-            f'{_fmt_shift_target(self.args.target)} to keyframe '
-            f'{self.args.direction.name.lower()}'
-        )
-
-    async def run(self) -> None:
-        origin = self._get_origin()
-        new_start, new_end = self._get_new_pos(origin)
-        self.api.media.audio.select(new_start, new_end)
-
-    def _get_possible_pts(self) -> T.List[int]:
-        return [
-            self.api.media.video.timecodes[i]
-            for i in self.api.media.video.keyframes
-        ]
-
-    def _get_origin(self) -> int:
-        possible_pts = self._get_possible_pts()
-
-        if self.args.direction == VerticalDirection.Above:
-            possible_pts.reverse()
-            func = operator.__lt__
-            not_found_pts = 0
-        elif self.args.direction == VerticalDirection.Below:
-            func = operator.__gt__
-            not_found_pts = self.api.media.max_pts
-        else:
-            raise AssertionError
-
-        if self.args.target == ShiftTarget.End:
-            current_origin = self.api.media.audio.selection_end
-        elif self.args.target in {ShiftTarget.Start, ShiftTarget.Both}:
-            current_origin = self.api.media.audio.selection_start
-        else:
-            raise AssertionError
-
-        for pts in possible_pts:
-            if func(pts, current_origin):
-                return pts
-        return not_found_pts
-
-    def _get_new_pos(self, origin: int) -> T.Tuple[int, int]:
-        old_start = self.api.media.audio.selection_start
-        old_end = self.api.media.audio.selection_end
-        if self.args.target == ShiftTarget.Start:
-            return origin, old_end
-        if self.args.target == ShiftTarget.End:
-            return old_start, origin
-        if self.args.target == ShiftTarget.Both:
-            return origin, origin
-        raise AssertionError
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            '-t', '--target',
-            help='how to snap the selection',
-            type=ShiftTarget.from_string,
-            choices=list(ShiftTarget),
-            required=True
-        )
-        parser.add_argument(
-            '-d', '--direction',
-            help='direction to snap into',
-            type=VerticalDirection.from_string,
-            choices=list(VerticalDirection),
-            required=True
-        )
-
-
-class ShiftSpectrogramSelectionCommand(BaseCommand):
-    names = ['audio/shift-sel']
-    help_text = 'Shifts the spectrogram selection by the specified distance.'
-
-    @property
-    def menu_name(self) -> str:
-        unit = 'frames' if self.args.frames else 'ms'
-        return (
-            '&Shift '
-            f'{_fmt_shift_target(self.args.target)} '
-            f'({self.args.delta:+} {unit})'
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.media.audio.has_selection and bool(
-            not self.args.frames or self.api.media.video.timecodes
-        )
-
-    async def run(self) -> None:
-        old_start = self.api.media.audio.selection_start
-        old_end = self.api.media.audio.selection_end
-
-        if self.args.frames:
-            idx1 = bisect.bisect_left(
-                self.api.media.video.timecodes,
-                self.api.media.audio.selection_start
-            )
-            idx2 = bisect.bisect_left(
-                self.api.media.video.timecodes,
-                self.api.media.audio.selection_end
-            )
-            idx1 += self.args.delta
-            idx2 += self.args.delta
-            idx1 = max(0, min(idx1, len(self.api.media.video.timecodes) - 1))
-            idx2 = max(0, min(idx2, len(self.api.media.video.timecodes) - 1))
-
-            new_start = self.api.media.video.timecodes[idx1]
-            new_end = self.api.media.video.timecodes[idx2]
-
-            if self.args.target == ShiftTarget.Start:
-                self.api.media.audio.select(new_start, old_end)
-            elif self.args.target == ShiftTarget.End:
-                self.api.media.audio.select(old_start, new_end)
-            elif self.args.target == ShiftTarget.Both:
-                self.api.media.audio.select(new_start, new_end)
-            else:
-                raise AssertionError
-
-        else:
-            if self.args.target == ShiftTarget.Start:
-                self.api.media.audio.select(
-                    min(old_end, old_start + self.args.delta), old_end
-                )
-            elif self.args.target == ShiftTarget.End:
-                self.api.media.audio.select(
-                    old_start, max(old_start, old_end + self.args.delta)
-                )
-            elif self.args.target == ShiftTarget.Both:
-                self.api.media.audio.select(
-                    old_start + self.args.delta, old_end + self.args.delta
-                )
-            else:
-                raise AssertionError
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            '-t', '--target',
-            help='how to shift the selection',
-            type=ShiftTarget.from_string,
-            choices=list(ShiftTarget),
-            required=True
-        )
         parser.add_argument(
             '-d', '--delta',
-            help='amount to shift the selection by',
-            type=int,
-            required=True
+            help='amount to shift the selection',
+            type=lambda value: RelativePts(api, value),
+            default='selected'
         )
-        parser.add_argument(
-            '-f', '--frames',
-            help='if true, shift by frames; otherwise by milliseconds',
-            action='store_true'
+
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument(
+            '--start',
+            action='store_const',
+            dest='method',
+            const='start',
+            help='shift selection start'
+        )
+        group.add_argument(
+            '--end',
+            action='store_const',
+            dest='method',
+            const='end',
+            help='shift selection end'
+        )
+        group.add_argument(
+            '--both',
+            action='store_const',
+            dest='method',
+            const='both',
+            help='shift whole selection'
         )
 
 
@@ -445,7 +208,7 @@ class SpectrogramCommitSelectionCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             '-t', '--target',
-            help='subtitles to select',
+            help='subtitles to commit selection into',
             type=lambda value: EventSelection(api, value),
             default='selected'
         )
@@ -460,11 +223,8 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             ScrollSpectrogramCommand,
             ZoomSpectrogramCommand,
-            SnapSpectrogramSelectionToNearSubtitleCommand,
-            SnapSpectrogramSelectionToNearKeyframeCommand,
-            SnapSpectrogramSelectionToCurrentVideoFrameCommand,
             PlaceSpectrogramSelectionAtCurrentVideoFrameCommand,
-            ShiftSpectrogramSelectionCommand,
+            SpectrogramShiftSelectionCommand,
             SpectrogramCommitSelectionCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

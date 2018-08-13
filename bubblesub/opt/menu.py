@@ -195,10 +195,10 @@ class MenuConfig(BaseConfig):
                 SubMenu('&Timing', [
                     SubMenu('Snap to nearest subtitle', [
                         MenuCommand(
-                            '/audio/snap-sel-to-near-sub -t start -d above'
+                            '/spectrogram-shift-sel --start -d prev-sub-end'
                         ),
                         MenuCommand(
-                            '/audio/snap-sel-to-near-sub -t end -d below'
+                            '/spectrogram-shift-sel --end -d next-sub-start'
                         ),
                         MenuCommand(
                             '/edit/snap-subs-to-near-sub -t start -d above'
@@ -209,21 +209,16 @@ class MenuConfig(BaseConfig):
                     ]),
 
                     SubMenu('Snap to nearest keyframe', [
-                        MenuCommand(
-                            '/audio/snap-sel-to-near-keyframe '
-                            '-t start -d above'
-                        ),
-                        MenuCommand(
-                            '/audio/snap-sel-to-near-keyframe -t end -d below'
-                        ),
+                        MenuCommand('/spectrogram-shift-sel --start -d=-1kf'),
+                        MenuCommand('/spectrogram-shift-sel --end -d=+1kf'),
                     ]),
 
                     SubMenu('Snap to current video frame', [
                         MenuCommand(
-                            '/audio/snap-sel-to-current-video-frame -t start'
+                            '/spectrogram-shift-sel --start -d current-frame'
                         ),
                         MenuCommand(
-                            '/audio/snap-sel-to-current-video-frame -t end'
+                            '/spectrogram-shift-sel --end -d current-frame'
                         ),
                         MenuCommand('/audio/place-sel-at-current-video-frame'),
                         MenuCommand(
@@ -236,18 +231,18 @@ class MenuConfig(BaseConfig):
                     ]),
 
                     SubMenu('Shift', [
-                        MenuCommand('/audio/shift-sel -f -t start -d -10'),
-                        MenuCommand('/audio/shift-sel -f -t start -d 10'),
-                        MenuCommand('/audio/shift-sel -f -t end -d -10'),
-                        MenuCommand('/audio/shift-sel -f -t end -d 10'),
-                        MenuCommand('/audio/shift-sel -f -t start -d -1'),
-                        MenuCommand('/audio/shift-sel -f -t start -d 1'),
-                        MenuCommand('/audio/shift-sel -f -t end -d -1'),
-                        MenuCommand('/audio/shift-sel -f -t end -d 1'),
+                        MenuCommand('/spectrogram-shift-sel --start -d=-10f'),
+                        MenuCommand('/spectrogram-shift-sel --start -d=+10f'),
+                        MenuCommand('/spectrogram-shift-sel --end -d=-10f'),
+                        MenuCommand('/spectrogram-shift-sel --end -d=+10f'),
+                        MenuCommand('/spectrogram-shift-sel --start -d=-1f'),
+                        MenuCommand('/spectrogram-shift-sel --start -d=+1f'),
+                        MenuCommand('/spectrogram-shift-sel --end -d=-1f'),
+                        MenuCommand('/spectrogram-shift-sel --end -d=+1f'),
                         MenuCommand('/edit/shift-subs -t start -d -1000'),
-                        MenuCommand('/edit/shift-subs -t start -d 1000'),
+                        MenuCommand('/edit/shift-subs -t start -d +1000'),
                         MenuCommand('/edit/shift-subs -t end -d -1000'),
-                        MenuCommand('/edit/shift-subs -t end -d 1000'),
+                        MenuCommand('/edit/shift-subs -t end -d +1000'),
                     ]),
 
                     MenuCommand('/spectrogram-commit-sel'),
