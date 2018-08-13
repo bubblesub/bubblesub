@@ -330,7 +330,7 @@ class _AssEvent(ctypes.Structure):
 
     def _style_name_to_style_id(self, name: str) -> int:
         for i, style in enumerate(self._track.styles):
-            if style.name.decode('utf-8') == name:
+            if style.name is not None and style.name.decode('utf-8') == name:
                 return i
         return -1
 
@@ -493,11 +493,11 @@ class AssRenderer:
         self._ctx = _AssContext()
         self._renderer = self._ctx.make_renderer()
         self._renderer.set_fonts()
-        self._track = None
-        self.style_list = None
-        self.event_list = None
-        self.info = None
-        self.video_resolution = None
+        self._track: T.Optional['_AssTrack'] = None
+        self.style_list: T.Optional[bubblesub.ass.style.StyleList] = None
+        self.event_list: T.Optional[bubblesub.ass.event.EventList] = None
+        self.info: T.Optional[bubblesub.ass.info.Metadata] = None
+        self.video_resolution: T.Optional[T.Tuple[int, int]] = None
 
     def set_source(
             self,
@@ -585,5 +585,8 @@ class AssRenderer:
 
         return PIL.Image.fromarray(image_data)
 
-    def render_raw(self, time: int) -> None:
+    def render_raw(self, time: int) -> _AssImageSequence:
+        if self._track is None:
+            raise ValueError('need source to render')
+
         return self._renderer.render_frame(self._track, now=time)

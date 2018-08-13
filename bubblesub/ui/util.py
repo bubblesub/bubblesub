@@ -207,7 +207,7 @@ class _CommandAction(QtWidgets.QAction):
 
 def _build_hotkey_map(
         api: bubblesub.api.Api
-) -> T.Dict[T.Tuple[str, str], str]:
+) -> T.Dict[T.Tuple[HotkeyContext, str], str]:
     ret = {}
     for context, hotkeys in api.opt.hotkeys:
         for hotkey in hotkeys:
@@ -220,7 +220,7 @@ def setup_cmd_menu(
         parent: QtWidgets.QWidget,
         menu_def: T.Sequence[MenuItem],
         context: HotkeyContext,
-        hotkey_map: T.Optional[T.Dict[T.Tuple[str, str], str]] = None
+        hotkey_map: T.Optional[T.Dict[T.Tuple[HotkeyContext, str], str]] = None
 ) -> T.Any:
     if hotkey_map is None:
         hotkey_map = _build_hotkey_map(api)
@@ -258,7 +258,10 @@ def setup_cmd_menu(
 @functools.lru_cache(maxsize=None)
 def get_color(api: bubblesub.api.Api, color_name: str) -> QtGui.QColor:
     current_palette = api.opt.general.gui.current_palette
-    palette_def = api.opt.general.gui.palettes[current_palette]
+    try:
+        palette_def = api.opt.general.gui.palettes[current_palette]
+    except KeyError:
+        return QtGui.QVariant()
     color_value = palette_def[color_name]
     return QtGui.QColor(*color_value)
 

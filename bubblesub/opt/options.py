@@ -16,7 +16,6 @@
 
 """Program options."""
 
-import typing as T
 from pathlib import Path
 
 import xdg
@@ -36,7 +35,7 @@ class Options:
         self.general = GeneralConfig()
         self.hotkeys = HotkeysConfig()
         self.menu = MenuConfig()
-        self.root_dir: T.Optional[Path] = None
+        self.root_dir = Path()
 
     @property
     def _hotkeys_path(self) -> Path:

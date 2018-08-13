@@ -414,7 +414,7 @@ class GuiConfig:
         self.current_palette = (
             cfg.get('gui', 'current_palette', fallback=self.current_palette)
         )
-        if cfg.get('gui', 'grid_columns', fallback=None):
+        if cfg.get('gui', 'grid_columns', fallback=''):
             self.grid_columns = _decompress(cfg.get('gui', 'grid_columns'))
         else:
             self.grid_columns = None

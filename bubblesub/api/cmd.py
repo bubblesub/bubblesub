@@ -48,7 +48,8 @@ class CommandError(RuntimeError):
 class CommandCanceled(CommandError):
     """The given command was canceled by the user."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize self."""
         super().__init__('canceled')
 
 
@@ -113,7 +114,7 @@ class BaseCommand(abc.ABC):
     @bubblesub.model.classproperty
     @abc.abstractproperty
     def names(  # pylint: disable=no-self-argument
-            cls: T.Any
+            cls: T.Type['BaseCommand']
     ) -> T.List[str]:
         """
         Return command names.
@@ -161,9 +162,9 @@ class BaseCommand(abc.ABC):
 
     @classmethod
     def parse_args(
-            cls,
+            cls: T.Type['BaseCommand'],
             api: 'bubblesub.api.Api',
-            invocation: str
+            invocation: T.List[str]
     ) -> argparse.Namespace:
         """
         Convert command invocation.

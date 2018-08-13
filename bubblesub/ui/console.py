@@ -195,7 +195,7 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self._edited = False
 
         self.history_pos = 0
-        self.history = []
+        self.history: T.List[str] = []
 
         self.setObjectName('console-input')
         self.setFont(QtGui.QFontDatabase.systemFont(

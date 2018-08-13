@@ -140,7 +140,7 @@ class UndoApi:
         :param subs_api: subtitles API
         """
         self._subs_api = subs_api
-        self._stack: T.List[T.Tuple[UndoState, UndoState]] = []
+        self._stack: T.List[T.Tuple[T.Optional[UndoState], UndoState]] = []
         self._stack_pos = -1
         self._stack_pos_when_saved = -1
         self._subs_api.loaded.connect(self._on_subtitles_load)
@@ -214,6 +214,7 @@ class UndoApi:
         self._ignore = True
         old_state, _new_state = self._stack[self._stack_pos]
         self._stack_pos -= 1
+        assert old_state
         self._apply_state(old_state)
         self._ignore = False
 
@@ -234,7 +235,7 @@ class UndoApi:
         self._stack_pos = len(self._stack) - 1
 
     def _trim_stack_and_push(
-            self, old_state: UndoState, new_state: UndoState
+            self, old_state: T.Optional[UndoState], new_state: UndoState
     ) -> None:
         """
         Discard any redo information and push given state.
