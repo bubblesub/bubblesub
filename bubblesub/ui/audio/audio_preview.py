@@ -20,7 +20,10 @@ import typing as T
 
 import ffms
 import numpy as np
-import pyfftw
+try:
+    import pyfftw
+except ImportError:
+    pyfftw = None
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -286,7 +289,7 @@ class AudioPreview(BaseAudioWidget):
                 self._spectrum_worker.stop()
                 self._spectrum_worker = None
 
-        elif state == MediaState.Loading:
+        elif state == MediaState.Loading and pyfftw:
             self._spectrum_worker = SpectrumWorker(self._api)
             self._spectrum_worker.task_finished.connect(
                 self._on_spectrum_update
