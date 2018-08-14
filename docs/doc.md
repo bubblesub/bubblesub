@@ -257,14 +257,6 @@ Usage:
 Aliases: `styles-manager`, `style-manager`
 
 Opens up the style manager.
-### <a name="cmd-manage-styles"></a>`manage‑styles`
-Aliases: `styles-manager`, `style-manager`
-
-Opens up the style manager.
-### <a name="cmd-manage-styles"></a>`manage‑styles`
-Aliases: `styles-manager`, `style-manager`
-
-Opens up the style manager.
 ### <a name="cmd-new"></a>`new`
 Opens a new file. Prompts user to save the current file if there are unsaved changes.
 ### <a name="cmd-open"></a>`open`
@@ -344,20 +336,6 @@ Usage:
 
 * `-d`, `--direction`: whether to search forward or backward (`above`, `below`)
 
-### <a name="cmd-search-repeat"></a>`search‑repeat`
-Aliases: `search-again`
-
-Repeats last search operation.
-
-
-
-Usage:
-`search‑repeat -d|--direction=…`
-
-
-
-* `-d`, `--direction`: whether to search forward or backward (`above`, `below`)
-
 ### <a name="cmd-select-subs"></a>`select‑subs`
 Selects given subtitles.
 
@@ -395,37 +373,6 @@ Usage:
 
 
 * `-t`, `--target`: subtitles to commit selection into
-
-### <a name="cmd-spectrogram-commit-sel"></a>`spectrogram‑commit‑sel`
-Aliases: `spectrogram-commit-selection`
-
-Commits the spectrogram selection into given subtitles. The subtitles start and end times are synced to the current spectrogram selection boundaries.
-
-
-
-Usage:
-`spectrogram‑commit‑sel -t|--target=…`
-
-
-
-* `-t`, `--target`: subtitles to commit selection into
-
-### <a name="cmd-spectrogram-shift-sel"></a>`spectrogram‑shift‑sel`
-Aliases: `spectrogram-shift-selection`
-
-Shfits the spectrogram selection.
-
-
-
-Usage:
-`spectrogram‑shift‑sel -d|--delta=… [--start] [--end] [--both]`
-
-
-
-* `-d`, `--delta`: amount to shift the selection
-* `--start`: shift selection start
-* `--end`: shift selection end
-* `--both`: shift whole selection
 
 ### <a name="cmd-spectrogram-shift-sel"></a>`spectrogram‑shift‑sel`
 Aliases: `spectrogram-shift-selection`
