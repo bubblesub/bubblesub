@@ -213,15 +213,11 @@ class MainWindow(QtWidgets.QMainWindow):
             hotkey: Hotkey,
             shortcuts: T.Dict[T.Tuple[str, HotkeyContext], QtWidgets.QShortcut]
     ) -> QtWidgets.QShortcut:
-        def resolve_ambiguity(keys: str) -> None:
-            context = self._widget_to_hotkey_context(
-                QtWidgets.QApplication.focusWidget()
-            )
-            if context and (keys, context) in shortcuts:
-                shortcuts[(keys, context)].activated.emit()
-
         try:
-            command = self._api.cmd.get(hotkey.invocation)
+            commands = [
+                self._api.cmd.get(invocation)
+                for invocation in hotkey.invocations
+            ]
         except bubblesub.api.cmd.CommandError as ex:
             self._api.log.error(str(ex))
             return None
@@ -230,9 +226,16 @@ class MainWindow(QtWidgets.QMainWindow):
             QtGui.QKeySequence(hotkey.shortcut), self
         )
 
-        shortcut.activated.connect(
-            functools.partial(self._api.cmd.run, command)
-        )
+        def activated(commands: T.List[bubblesub.api.cmd.BaseCommand]):
+            for command in commands:
+                self._api.cmd.run(command)
+
+        def activated_ambiguously(keys: str) -> None:
+            context = self._widget_to_hotkey_context(
+                QtWidgets.QApplication.focusWidget()
+            )
+            if context and (keys, context) in shortcuts:
+                shortcuts[(keys, context)].activated.emit()
 
         if context in self._hotkey_context_to_widget_map:
             shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
@@ -242,8 +245,9 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             raise RuntimeError(f'invalid shortcut context "{context}"')
 
+        shortcut.activated.connect(functools.partial(activated, commands))
         shortcut.activatedAmbiguously.connect(
-            functools.partial(resolve_ambiguity, hotkey.shortcut)
+            functools.partial(activated_ambiguously, hotkey.shortcut)
         )
 
         return shortcut

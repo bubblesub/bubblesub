@@ -39,15 +39,15 @@ class MenuItem:
 class MenuCommand(MenuItem):
     """Menu item associated with a bubblesub command."""
 
-    def __init__(self, invocation: str) -> None:
+    def __init__(self, *invocations: T.Iterable[str]) -> None:
         """
         Initialize self.
 
         Menu label is taken from the associated command.
 
-        :param invocation: invocation to execute
+        :param invocations: invocations to execute
         """
-        self.invocation = invocation
+        self.invocations = invocations
 
 
 class MenuSeparator(MenuItem):
@@ -283,7 +283,7 @@ class MenuConfig(BaseConfig):
             target.clear()
             for item in source:
                 if item['type'] == 'command':
-                    target.append(MenuCommand(item['invocation']))
+                    target.append(MenuCommand(*item['invocations']))
                 elif item['type'] == 'separator':
                     target.append(MenuSeparator())
                 elif item['type'] == 'submenu':
@@ -313,7 +313,7 @@ class MenuConfig(BaseConfig):
                 if isinstance(o, MenuCommand):
                     return {
                         'type': 'command',
-                        'invocation': o.invocation
+                        'invocations': o.invocations
                     }
 
                 if isinstance(o, SubMenu):

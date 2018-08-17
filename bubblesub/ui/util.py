@@ -182,8 +182,8 @@ def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
     window = _window_from_menu(menu)
     window.setProperty('focused-widget', window.focusWidget())
     for action in menu.actions():
-        if hasattr(action, 'cmd') and action.cmd:
-            action.setEnabled(action.cmd.is_enabled)
+        if getattr(action, 'commands', None):
+            action.setEnabled(all(cmd.is_enabled for cmd in action.commands))
 
 
 def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
@@ -197,12 +197,17 @@ class _CommandAction(QtWidgets.QAction):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            invocation: str,
+            invocations: T.Iterable[str],
             parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
-        self.cmd = api.cmd.get(invocation)
-        self.triggered.connect(lambda: api.cmd.run(self.cmd))
+        self.api = api
+        self.commands = [api.cmd.get(invocation) for invocation in invocations]
+        self.triggered.connect(self._on_trigger)
+
+    def _on_trigger(self) -> None:
+        for cmd in self.commands:
+            self.api.cmd.run(cmd)
 
 
 def _build_hotkey_map(
@@ -211,7 +216,7 @@ def _build_hotkey_map(
     ret = {}
     for context, hotkeys in api.opt.hotkeys:
         for hotkey in hotkeys:
-            ret[context, hotkey.invocation] = hotkey.shortcut
+            ret[context, hotkey.invocations] = hotkey.shortcut
     return ret
 
 
@@ -240,13 +245,13 @@ def setup_cmd_menu(
             setup_cmd_menu(api, submenu, item.children, context, hotkey_map)
         elif isinstance(item, MenuCommand):
             try:
-                action = _CommandAction(api, item.invocation, parent)
+                action = _CommandAction(api, item.invocations, parent)
             except bubblesub.api.cmd.CommandError as ex:
                 api.log.error(str(ex))
                 continue
 
-            action.setText(action.cmd.menu_name)
-            shortcut = hotkey_map.get((context, item.invocation))
+            action.setText(', '.join(cmd.menu_name for cmd in action.commands))
+            shortcut = hotkey_map.get((context, item.invocations))
             if shortcut is not None:
                 action.setText(action.text() + '\t' + shortcut)
 

@@ -37,16 +37,16 @@ class Hotkey:
     def __init__(
             self,
             shortcut: str,
-            invocation: str,
+            *invocations: T.Iterable[str],
     ) -> None:
         """
         Initialize self.
 
         :param shortcut: key combination that activates the hotkey
-        :param invocation: invocation to execute
+        :param invocations: invocations to execute
         """
         self.shortcut = shortcut
-        self.invocation = invocation
+        self.invocations = invocations
 
 
 _DEFAULT_GLOBAL_HOTKEYS = [
@@ -178,7 +178,7 @@ class HotkeysConfig(BaseConfig):
                 self.hotkeys[context].append(
                     Hotkey(
                         hotkey_obj['shortcut'],
-                        hotkey_obj['invocation']
+                        *hotkey_obj['invocations']
                     )
                 )
 
@@ -194,7 +194,7 @@ class HotkeysConfig(BaseConfig):
                 [
                     {
                         'shortcut': hotkey.shortcut,
-                        'invocation': hotkey.invocation,
+                        'invocations': hotkey.invocations,
                     }
                     for hotkey in hotkeys
                 ]

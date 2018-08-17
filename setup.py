@@ -56,15 +56,20 @@ class GenerateDocumentationCommand(Command):
         table = []
         for context, hotkeys in opt.hotkeys:
             for hotkey in hotkeys:
-                cmd_name, cmd_args = split_invocation(hotkey.invocation)
-                cmd_anchor = self._get_anchor_name('cmd', cmd_name)
+                last_cell = []
+                for invocation in hotkey.invocations:
+                    cmd_name, cmd_args = split_invocation(invocation)
+                    anchor = self._get_anchor_name('cmd', cmd_name)
+                    last_cell.append(
+                        '<code>' +
+                        f'<a href="#user-content-{anchor}">{cmd_name}</a> ' +
+                        ' '.join(shlex.quote(arg) for arg in cmd_args) +
+                        '</code>'
+                    )
                 row = [
                     f'<kbd>{hotkey.shortcut}</kbd>',
                     re.sub('([A-Z])', r' \1', context.name).strip().lower(),
-                    '<code>' +
-                    f'<a href="#user-content-{cmd_anchor}">{cmd_name}</a> ' +
-                    ' '.join(shlex.quote(arg) for arg in cmd_args) +
-                    '</code>'
+                    '<br>'.join(last_cell)
                 ]
                 table.append(row)
 
