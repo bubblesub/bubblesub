@@ -75,11 +75,11 @@ Context refers to the currently focused widget.
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-video-pause">video/pause</a> toggle</code> |
 |<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
 |<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
-|<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-spectrogram">audio/scroll-spectrogram</a> -d -0.05</code> |
-|<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-spectrogram">audio/scroll-spectrogram</a> -d 0.05</code> |
-|<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-spectrogram">audio/zoom-spectrogram</a> -d 1.1</code> |
-|<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-spectrogram">audio/zoom-spectrogram</a> -d 0.9</code> |
-|<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-spectrogram">audio/zoom-spectrogram</a> -d 0.9</code> |
+|<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-scroll">spectrogram-scroll</a> -d -0.05</code> |
+|<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-scroll">spectrogram-scroll</a> -d 0.05</code> |
+|<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 1.1</code> |
+|<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 0.9</code> |
+|<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 0.9</code> |
 |<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d -1</code> |
 |<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d 1</code> |
 |<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d -1500</code> |
@@ -101,30 +101,6 @@ Context refers to the currently focused widget.
 # Default commands
 ### <a name="cmd-audio-place-sel-at-current-video-frame"></a>`audio/place‑sel‑at‑current‑video‑frame`
 Realigns the selection to the current video frame. The selection start is placed at the current video frame and the selection size is set to the default subtitle duration.
-### <a name="cmd-audio-scroll-spectrogram"></a>`audio/scroll‑spectrogram`
-Scrolls the spectrogram horizontally by its width's percentage.
-
-
-
-Usage:
-`audio/scroll‑spectrogram -d|--delta=…`
-
-
-
-* `-d`, `--delta`: factor to shift the view by
-
-### <a name="cmd-audio-zoom-spectrogram"></a>`audio/zoom‑spectrogram`
-Zooms the spectrogram in or out by the specified factor.
-
-
-
-Usage:
-`audio/zoom‑spectrogram -d|--delta=…`
-
-
-
-* `-d`, `--delta`: factor to zoom the view by
-
 ### <a name="cmd-copy-subs"></a>`copy‑subs`
 Copies given subtitles to clipboard.
 
@@ -374,6 +350,18 @@ Usage:
 
 * `-t`, `--target`: subtitles to commit selection into
 
+### <a name="cmd-spectrogram-scroll"></a>`spectrogram‑scroll`
+Scrolls the spectrogram horizontally by its width's percentage.
+
+
+
+Usage:
+`spectrogram‑scroll -d|--delta=…`
+
+
+
+* `-d`, `--delta`: factor to shift the view by
+
 ### <a name="cmd-spectrogram-shift-sel"></a>`spectrogram‑shift‑sel`
 Aliases: `spectrogram-shift-selection`
 
@@ -390,6 +378,18 @@ Usage:
 * `--start`: shift selection start
 * `--end`: shift selection end
 * `--both`: shift whole selection
+
+### <a name="cmd-spectrogram-zoom"></a>`spectrogram‑zoom`
+Zooms the spectrogram in or out by the specified factor.
+
+
+
+Usage:
+`spectrogram‑zoom -d|--delta=…`
+
+
+
+* `-d`, `--delta`: factor to zoom the view by
 
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.

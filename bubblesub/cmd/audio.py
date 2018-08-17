@@ -23,19 +23,10 @@ import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import RelativePts
-from bubblesub.util import ShiftTarget
 
 
-def _fmt_shift_target(shift_target: ShiftTarget) -> str:
-    return {
-        ShiftTarget.Start: 'selection start',
-        ShiftTarget.End: 'selection end',
-        ShiftTarget.Both: 'selection'
-    }[shift_target]
-
-
-class ScrollSpectrogramCommand(BaseCommand):
-    names = ['audio/scroll-spectrogram']
+class SpectrogramScrollCommand(BaseCommand):
+    names = ['spectrogram-scroll']
     help_text = (
         'Scrolls the spectrogram horizontally by its width\'s percentage.'
     )
@@ -62,8 +53,8 @@ class ScrollSpectrogramCommand(BaseCommand):
         )
 
 
-class ZoomSpectrogramCommand(BaseCommand):
-    names = ['audio/zoom-spectrogram']
+class SpectrogramZoomCommand(BaseCommand):
+    names = ['spectrogram-zoom']
     help_text = 'Zooms the spectrogram in or out by the specified factor.'
 
     @property
@@ -223,8 +214,8 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            ScrollSpectrogramCommand,
-            ZoomSpectrogramCommand,
+            SpectrogramScrollCommand,
+            SpectrogramZoomCommand,
             PlaceSpectrogramSelectionAtCurrentVideoFrameCommand,
             SpectrogramShiftSelectionCommand,
             SpectrogramCommitSelectionCommand,

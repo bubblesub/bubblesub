@@ -249,10 +249,10 @@ class MenuConfig(BaseConfig):
                     MenuSeparator(),
                     MenuCommand('/edit/shift-subs-with-gui'),
                     MenuSeparator(),
-                    MenuCommand('/audio/scroll-spectrogram -d -0.05'),
-                    MenuCommand('/audio/scroll-spectrogram -d 0.05'),
-                    MenuCommand('/audio/zoom-spectrogram -d 1.1'),
-                    MenuCommand('/audio/zoom-spectrogram -d 0.9')
+                    MenuCommand('/spectrogram-scroll -d -0.05'),
+                    MenuCommand('/spectrogram-scroll -d 0.05'),
+                    MenuCommand('/spectrogram-zoom -d 1.1'),
+                    MenuCommand('/spectrogram-zoom -d 0.9')
                 ])
             ],
 
