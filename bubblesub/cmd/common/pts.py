@@ -149,7 +149,9 @@ class RelativePts:
             return apply_frame(self.api, origin, 1)
 
         if self.value == 'current-frame':
-            return self.api.media.current_pts
+            return self.api.media.video.align_pts_to_near_frame(
+                self.api.media.current_pts
+            )
 
         if self.value in {'prev-sub-start', 'prev-sub-end'}:
             sub = self.api.subs.selected_events[0].prev

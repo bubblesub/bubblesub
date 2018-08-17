@@ -181,7 +181,7 @@ class MediaApi(QtCore.QObject):
             return
         self._set_end(None)  # mpv refuses to seek beyond --end
         pts = max(0, pts)
-        pts = self.video.align_pts_to_next_frame(pts)
+        pts = self.video.align_pts_to_near_frame(pts)
         if pts != self.current_pts:
             self._mpv.command(
                 'seek',

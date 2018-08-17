@@ -538,8 +538,10 @@ class PlaceSubtitlesAtCurrentVideoFrameCommand(BaseCommand):
     async def run(self) -> None:
         with self.api.undo.capture():
             for sub in self.api.subs.selected_events:
-                sub.start = self.api.media.current_pts
-                sub.end = self.api.media.video.align_pts_to_next_frame(
+                sub.start = self.api.media.video.align_pts_to_near_frame(
+                    self.api.media.current_pts
+                )
+                sub.end = self.api.media.video.align_pts_to_near_frame(
                     sub.start
                     + self.api.opt.general.subs.default_duration
                 )

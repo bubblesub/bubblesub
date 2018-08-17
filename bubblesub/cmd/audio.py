@@ -105,8 +105,10 @@ class PlaceSpectrogramSelectionAtCurrentVideoFrameCommand(BaseCommand):
 
     async def run(self) -> None:
         self.api.media.audio.select(
-            self.api.media.current_pts,
-            self.api.media.video.align_pts_to_next_frame(
+            self.api.media.video.align_pts_to_near_frame(
+                self.api.media.current_pts
+            ),
+            self.api.media.video.align_pts_to_near_frame(
                 self.api.media.current_pts
                 + self.api.opt.general.subs.default_duration
             )

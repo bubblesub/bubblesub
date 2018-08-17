@@ -131,6 +131,17 @@ class VideoApi(QtCore.QObject):
             'subtitles' if include_subtitles else 'video'
         )
 
+    def align_pts_to_near_frame(self, pts: int) -> int:
+        """
+        Align PTS to a frame closest to given PTS.
+
+        :param pts: PTS to align
+        :return: aligned PTS
+        """
+        if not self.timecodes:
+            return pts
+        return min(self.timecodes, key=lambda x: abs(x - pts))
+
     def align_pts_to_prev_frame(self, pts: int) -> int:
         """
         Align PTS to a frame immediately before given PTS.
