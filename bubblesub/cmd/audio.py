@@ -80,32 +80,6 @@ class SpectrogramZoomCommand(BaseCommand):
         )
 
 
-class PlaceSpectrogramSelectionAtCurrentVideoFrameCommand(BaseCommand):
-    names = ['audio/place-sel-at-current-video-frame']
-    menu_name = '&Place selection at current video frame'
-    help_text = (
-        'Realigns the selection to the current video frame. '
-        'The selection start is placed at the current video frame '
-        'and the selection size is set to the default subtitle duration.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.media.audio.has_selection \
-            and self.api.subs.has_selection
-
-    async def run(self) -> None:
-        self.api.media.audio.select(
-            self.api.media.video.align_pts_to_near_frame(
-                self.api.media.current_pts
-            ),
-            self.api.media.video.align_pts_to_near_frame(
-                self.api.media.current_pts
-                + self.api.opt.general.subs.default_duration
-            )
-        )
-
-
 class SpectrogramShiftSelectionCommand(BaseCommand):
     names = ['spectrogram-shift-sel', 'spectrogram-shift-selection']
     help_text = 'Shfits the spectrogram selection.'
@@ -216,7 +190,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             SpectrogramScrollCommand,
             SpectrogramZoomCommand,
-            PlaceSpectrogramSelectionAtCurrentVideoFrameCommand,
             SpectrogramShiftSelectionCommand,
             SpectrogramCommitSelectionCommand,
     ]:

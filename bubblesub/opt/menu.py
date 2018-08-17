@@ -197,7 +197,10 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
         SubMenu('Snap to current video frame', [
             MenuCommand('/spectrogram-shift-sel --start -d current-frame'),
             MenuCommand('/spectrogram-shift-sel --end -d current-frame'),
-            MenuCommand('/audio/place-sel-at-current-video-frame'),
+            MenuCommand(
+                '/spectrogram-shift-sel --both -d current-frame',
+                '/spectrogram-shift-sel --end -d default-sub-duration'
+            ),
             MenuCommand('/edit/snap-subs-to-current-video-frame -t start'),
             MenuCommand('/edit/snap-subs-to-current-video-frame -t end'),
             MenuCommand('/edit/place-subs-at-current-video-frame'),

@@ -43,7 +43,7 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+1f</code> |
 |<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
 |<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
-|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-place-sel-at-current-video-frame">audio/place-sel-at-current-video-frame</a> </code> |
+|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d default-sub-duration</code> |
 |<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
 |<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d below</code> |
@@ -88,7 +88,7 @@ Context refers to the currently focused widget.
 |<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 500</code> |
 |<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
 |<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
-|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-place-sel-at-current-video-frame">audio/place-sel-at-current-video-frame</a> </code> |
+|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d default-sub-duration</code> |
 |<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
 |<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d prev-sub-end</code> |
@@ -99,8 +99,6 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-paste-subs">paste-subs</a> -t selected --after</code> |
 
 # Default commands
-### <a name="cmd-audio-place-sel-at-current-video-frame"></a>`audio/place‑sel‑at‑current‑video‑frame`
-Realigns the selection to the current video frame. The selection start is placed at the current video frame and the selection size is set to the default subtitle duration.
 ### <a name="cmd-copy-subs"></a>`copy‑subs`
 Copies given subtitles to clipboard.
 

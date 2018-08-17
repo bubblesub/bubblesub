@@ -89,7 +89,11 @@ _DEFAULT_GLOBAL_HOTKEYS = [
     Hotkey('Ctrl+4', '/spectrogram-shift-sel --end -d=+1f'),
     Hotkey('Ctrl+B', '/spectrogram-shift-sel --start -d current-frame'),
     Hotkey('Ctrl+M', '/spectrogram-shift-sel --end -d current-frame'),
-    Hotkey('Ctrl+N', '/audio/place-sel-at-current-video-frame'),
+    Hotkey(
+        'Ctrl+N',
+        '/spectrogram-shift-sel --both -d current-frame',
+        '/spectrogram-shift-sel --end -d default-sub-duration'
+    ),
     Hotkey('Ctrl+[', '/video/set-playback-speed {}/1.5'),
     Hotkey('Ctrl+]', '/video/set-playback-speed {}*1.5'),
     Hotkey('F3', '/search-repeat -d below'),
@@ -137,7 +141,11 @@ _DEFAULT_SPECTROGRAM_HOTKEYS = [
     Hotkey('Shift+.', '/video/step-ms -d 500'),
     Hotkey('B', '/spectrogram-shift-sel --start -d current-frame'),
     Hotkey('M', '/spectrogram-shift-sel --end -d current-frame'),
-    Hotkey('N', '/audio/place-sel-at-current-video-frame'),
+    Hotkey(
+        'N',
+        '/spectrogram-shift-sel --both -d current-frame',
+        '/spectrogram-shift-sel --end -d default-sub-duration'
+    ),
     Hotkey('[', '/video/set-playback-speed {}/1.5'),
     Hotkey(']', '/video/set-playback-speed {}*1.5'),
     Hotkey('Alt+Left', '/spectrogram-shift-sel --start -d prev-sub-end'),

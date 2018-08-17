@@ -123,6 +123,9 @@ class RelativePts:
         if self.value == 'next-sub-end':
             return 'next subtitle end'
 
+        if self.value == 'default-sub-duration':
+            return 'default subtitle duration'
+
         raise ValueError(f'unknown relative pts: "{self.value}"')
 
     async def apply(self, origin: int) -> int:
@@ -172,5 +175,8 @@ class RelativePts:
             if self.value == 'next-sub-end':
                 return sub.end
             raise AssertionError
+
+        if self.value == 'default-sub-duration':
+            return origin + self.api.opt.general.subs.default_duration
 
         raise ValueError(f'unknown relative pts: "{self.value}"')
