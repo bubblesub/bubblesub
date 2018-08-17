@@ -74,7 +74,6 @@ def apply_keyframe(api: bubblesub.api.Api, origin: int, delta: int) -> int:
     return bisect_(possible_pts, origin, delta)
 
 
-# TODO: better descriptions
 class RelativePts:
     def __init__(self, api: bubblesub.api.Api, value: str) -> None:
         self.api = api
