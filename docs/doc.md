@@ -368,11 +368,12 @@ Shfits the spectrogram selection.
 
 
 Usage:
-`spectrogram‑shift‑sel -d|--delta=… [--start] [--end] [--both]`
+`spectrogram‑shift‑sel -d|--delta=… [--no-align] [--start] [--end] [--both]`
 
 
 
 * `-d`, `--delta`: amount to shift the selection
+* `--no-align`: don't realign selection to video frames
 * `--start`: shift selection start
 * `--end`: shift selection end
 * `--both`: shift whole selection

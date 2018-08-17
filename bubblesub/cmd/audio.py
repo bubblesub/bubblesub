@@ -101,9 +101,13 @@ class SpectrogramShiftSelectionCommand(BaseCommand):
 
             if self.args.method in {'start', 'both'}:
                 start = await self.args.delta.apply(start)
+                if not self.args.no_align:
+                    start = self.api.media.video.align_pts_to_near_frame(start)
 
             if self.args.method in {'end', 'both'}:
                 end = await self.args.delta.apply(end)
+                if not self.args.no_align:
+                    end = self.api.media.video.align_pts_to_near_frame(end)
 
             self.api.media.audio.select(start, end)
 
@@ -117,6 +121,11 @@ class SpectrogramShiftSelectionCommand(BaseCommand):
             help='amount to shift the selection',
             type=lambda value: RelativePts(api, value),
             default='selected'
+        )
+        parser.add_argument(
+            '--no-align',
+            help='don\'t realign selection to video frames',
+            action='store_true'
         )
 
         group = parser.add_mutually_exclusive_group()
