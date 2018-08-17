@@ -74,6 +74,187 @@ class SubMenu(MenuItem):
         self.children = children
 
 
+_DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
+    SubMenu('&File', [
+        MenuCommand('/new'),
+        MenuCommand('/open'),
+        MenuCommand('/save'),
+        MenuCommand('/save-as'),
+        MenuSeparator(),
+        MenuCommand('/load-video'),
+        MenuCommand('/file-properties'),
+        MenuSeparator(),
+        MenuCommand('/quit'),
+    ]),
+
+    SubMenu('&Edit', [
+        MenuCommand('/undo'),
+        MenuCommand('/redo'),
+        MenuSeparator(),
+        MenuCommand('/search'),
+        MenuCommand('/search-and-replace'),
+        MenuCommand('/search-repeat -d below'),
+        MenuCommand('/search-repeat -d above'),
+        MenuSeparator(),
+        MenuCommand('/edit/insert-sub -d above'),
+        MenuCommand('/edit/insert-sub -d below'),
+        MenuCommand('/edit/move-subs -d above'),
+        MenuCommand('/edit/move-subs -d below'),
+        MenuCommand('/edit/move-subs-to'),
+        MenuCommand('/edit/duplicate-subs'),
+        MenuCommand('/edit/delete-subs'),
+        MenuSeparator(),
+        MenuCommand('/edit/swap-subs-text-and-notes'),
+        MenuCommand('/edit/split-sub-at-current-video-frame'),
+        MenuCommand('/edit/join-subs-keep-first'),
+        MenuCommand('/edit/join-subs-concatenate'),
+        MenuCommand('/edit/join-subs-as-karaoke'),
+        MenuCommand('/edit/join-subs-as-transformation'),
+        MenuCommand('/edit/split-sub-by-karaoke'),
+        MenuSeparator(),
+        MenuCommand('/copy-subs'),
+        MenuCommand('/copy-subs -s times'),
+        MenuCommand('/copy-subs -s text'),
+        MenuCommand('/paste-subs -t selected --before'),
+        MenuCommand('/paste-subs -t selected --after'),
+        MenuCommand('/paste-into-subs -t selected -s times'),
+        MenuCommand('/paste-into-subs -t selected -s text'),
+        MenuSeparator(),
+        MenuCommand('/spell-check'),
+        MenuCommand('/style-manager'),
+    ]),
+
+    SubMenu('Select', [
+        MenuCommand('/select-subs ask-number'),
+        MenuCommand('/select-subs ask-time'),
+        MenuSeparator(),
+        MenuCommand('/select-subs all'),
+        MenuCommand('/select-subs one-above'),
+        MenuCommand('/select-subs one-below'),
+        MenuCommand('/select-subs none'),
+    ]),
+
+    SubMenu('&View', [
+        MenuCommand('/set-palette light'),
+        MenuCommand('/set-palette dark'),
+        MenuSeparator(),
+        MenuCommand('/grid/create-audio-sample'),
+        MenuCommand('/video/screenshot'),
+        MenuCommand('/video/screenshot -i'),
+        MenuSeparator(),
+        MenuCommand('/focus-widget text-editor -s'),
+        MenuCommand('/focus-widget note-editor -s'),
+        MenuCommand('/focus-widget subtitles-grid'),
+        MenuCommand('/focus-widget spectrogram'),
+        MenuCommand('/focus-widget console-input -s'),
+        MenuCommand('/focus-widget console'),
+    ]),
+
+    SubMenu('&Playback', [
+        SubMenu('Play around selection', [
+            MenuCommand('/video/play-around-sel -t start -ds -500'),
+            MenuCommand('/video/play-around-sel -t start -de 500'),
+            MenuCommand('/video/play-around-sel -t end -ds -500'),
+            MenuCommand('/video/play-around-sel -t end -de 500'),
+        ]),
+        MenuCommand('/video/play-around-sel'),
+        MenuCommand('/video/play-current-sub'),
+        MenuCommand('/video/pause disable'),
+        MenuSeparator(),
+        MenuCommand('/video/seek-with-gui'),
+        MenuCommand('/video/step-frame -d -1'),
+        MenuCommand('/video/step-frame -d 1'),
+        MenuCommand('/video/step-frame -d -10'),
+        MenuCommand('/video/step-frame -d 10'),
+        MenuSeparator(),
+        MenuCommand('/video/set-volume 100'),
+        MenuCommand('/video/set-volume {}-5'),
+        MenuCommand('/video/set-volume {}+5'),
+        MenuCommand('/video/mute on'),
+        MenuCommand('/video/mute off'),
+        MenuCommand('/video/mute toggle'),
+        MenuSeparator(),
+        MenuCommand('/video/pause on'),
+        MenuCommand('/video/pause toggle'),
+        MenuSeparator(),
+        MenuCommand('/video/set-playback-speed {}/1.5'),
+        MenuCommand('/video/set-playback-speed {}*1.5'),
+    ]),
+
+    SubMenu('&Timing', [
+        SubMenu('Snap to nearest subtitle', [
+            MenuCommand('/spectrogram-shift-sel --start -d prev-sub-end'),
+            MenuCommand('/spectrogram-shift-sel --end -d next-sub-start'),
+            MenuCommand('/edit/snap-subs-to-near-sub -t start -d above'),
+            MenuCommand('/edit/snap-subs-to-near-sub -t end -d below'),
+        ]),
+
+        SubMenu('Snap to nearest keyframe', [
+            MenuCommand('/spectrogram-shift-sel --start -d=-1kf'),
+            MenuCommand('/spectrogram-shift-sel --end -d=+1kf'),
+        ]),
+
+        SubMenu('Snap to current video frame', [
+            MenuCommand('/spectrogram-shift-sel --start -d current-frame'),
+            MenuCommand('/spectrogram-shift-sel --end -d current-frame'),
+            MenuCommand('/audio/place-sel-at-current-video-frame'),
+            MenuCommand('/edit/snap-subs-to-current-video-frame -t start'),
+            MenuCommand('/edit/snap-subs-to-current-video-frame -t end'),
+            MenuCommand('/edit/place-subs-at-current-video-frame'),
+        ]),
+
+        SubMenu('Shift', [
+            MenuCommand('/spectrogram-shift-sel --start -d=-10f'),
+            MenuCommand('/spectrogram-shift-sel --start -d=+10f'),
+            MenuCommand('/spectrogram-shift-sel --end -d=-10f'),
+            MenuCommand('/spectrogram-shift-sel --end -d=+10f'),
+            MenuCommand('/spectrogram-shift-sel --start -d=-1f'),
+            MenuCommand('/spectrogram-shift-sel --start -d=+1f'),
+            MenuCommand('/spectrogram-shift-sel --end -d=-1f'),
+            MenuCommand('/spectrogram-shift-sel --end -d=+1f'),
+            MenuCommand('/edit/shift-subs -t start -d -1000'),
+            MenuCommand('/edit/shift-subs -t start -d +1000'),
+            MenuCommand('/edit/shift-subs -t end -d -1000'),
+            MenuCommand('/edit/shift-subs -t end -d +1000'),
+        ]),
+
+        MenuCommand('/spectrogram-commit-sel'),
+        MenuSeparator(),
+        MenuCommand('/edit/shift-subs-with-gui'),
+        MenuSeparator(),
+        MenuCommand('/spectrogram-scroll -d -0.05'),
+        MenuCommand('/spectrogram-scroll -d 0.05'),
+        MenuCommand('/spectrogram-zoom -d 1.1'),
+        MenuCommand('/spectrogram-zoom -d 0.9')
+    ])
+]
+
+_DEFAULT_SUBTITLES_GRID_MENU = [
+    MenuCommand('/grid/create-audio-sample'),
+    MenuSeparator(),
+    MenuCommand('/edit/insert-sub -d above'),
+    MenuCommand('/edit/insert-sub -d below'),
+    MenuSeparator(),
+    MenuCommand('/copy-subs'),
+    MenuCommand('/paste-subs -t selected --before'),
+    MenuCommand('/paste-subs -t selected --after'),
+    MenuSeparator(),
+    MenuCommand('/edit/duplicate-subs'),
+    MenuCommand('/edit/split-sub-at-current-video-frame'),
+    MenuCommand('/edit/split-sub-by-karaoke'),
+    MenuSeparator(),
+    MenuCommand('/edit/join-subs-keep-first'),
+    MenuCommand('/edit/join-subs-concatenate'),
+    MenuCommand('/edit/join-subs-as-karaoke'),
+    MenuCommand('/edit/join-subs-as-transformation'),
+    MenuSeparator(),
+    MenuCommand('/edit/snap-subs-to-near-sub -t start -d above'),
+    MenuCommand('/edit/snap-subs-to-near-sub -t end -d below'),
+    MenuSeparator(),
+    MenuCommand('/edit/delete-subs')
+]
+
+
 class MenuConfig(BaseConfig):
     """Configuration for GUI menu."""
 
@@ -82,205 +263,8 @@ class MenuConfig(BaseConfig):
     def __init__(self) -> None:
         """Initialize self."""
         self._menu: T.Dict[MenuContext, T.MutableSequence[MenuItem]] = {
-            MenuContext.MainMenu:
-            [
-                SubMenu('&File', [
-                    MenuCommand('/new'),
-                    MenuCommand('/open'),
-                    MenuCommand('/save'),
-                    MenuCommand('/save-as'),
-                    MenuSeparator(),
-                    MenuCommand('/load-video'),
-                    MenuCommand('/file-properties'),
-                    MenuSeparator(),
-                    MenuCommand('/quit'),
-                ]),
-
-                SubMenu('&Edit', [
-                    MenuCommand('/undo'),
-                    MenuCommand('/redo'),
-                    MenuSeparator(),
-                    MenuCommand('/search'),
-                    MenuCommand('/search-and-replace'),
-                    MenuCommand('/search-repeat -d below'),
-                    MenuCommand('/search-repeat -d above'),
-                    MenuSeparator(),
-                    MenuCommand('/edit/insert-sub -d above'),
-                    MenuCommand('/edit/insert-sub -d below'),
-                    MenuCommand('/edit/move-subs -d above'),
-                    MenuCommand('/edit/move-subs -d below'),
-                    MenuCommand('/edit/move-subs-to'),
-                    MenuCommand('/edit/duplicate-subs'),
-                    MenuCommand('/edit/delete-subs'),
-                    MenuSeparator(),
-                    MenuCommand('/edit/swap-subs-text-and-notes'),
-                    MenuCommand('/edit/split-sub-at-current-video-frame'),
-                    MenuCommand('/edit/join-subs-keep-first'),
-                    MenuCommand('/edit/join-subs-concatenate'),
-                    MenuCommand('/edit/join-subs-as-karaoke'),
-                    MenuCommand('/edit/join-subs-as-transformation'),
-                    MenuCommand('/edit/split-sub-by-karaoke'),
-                    MenuSeparator(),
-                    MenuCommand('/copy-subs'),
-                    MenuCommand('/copy-subs -s times'),
-                    MenuCommand('/copy-subs -s text'),
-                    MenuCommand('/paste-subs -t selected --before'),
-                    MenuCommand('/paste-subs -t selected --after'),
-                    MenuCommand('/paste-into-subs -t selected -s times'),
-                    MenuCommand('/paste-into-subs -t selected -s text'),
-                    MenuSeparator(),
-                    MenuCommand('/spell-check'),
-                    MenuCommand('/style-manager'),
-                ]),
-
-                SubMenu('Select', [
-                    MenuCommand('/select-subs ask-number'),
-                    MenuCommand('/select-subs ask-time'),
-                    MenuSeparator(),
-                    MenuCommand('/select-subs all'),
-                    MenuCommand('/select-subs one-above'),
-                    MenuCommand('/select-subs one-below'),
-                    MenuCommand('/select-subs none'),
-                ]),
-
-                SubMenu('&View', [
-                    MenuCommand('/set-palette light'),
-                    MenuCommand('/set-palette dark'),
-                    MenuSeparator(),
-                    MenuCommand('/grid/create-audio-sample'),
-                    MenuCommand('/video/screenshot'),
-                    MenuCommand('/video/screenshot -i'),
-                    MenuSeparator(),
-                    MenuCommand('/focus-widget text-editor -s'),
-                    MenuCommand('/focus-widget note-editor -s'),
-                    MenuCommand('/focus-widget subtitles-grid'),
-                    MenuCommand('/focus-widget spectrogram'),
-                    MenuCommand('/focus-widget console-input -s'),
-                    MenuCommand('/focus-widget console'),
-                ]),
-
-                SubMenu('&Playback', [
-                    SubMenu('Play around selection', [
-                        MenuCommand(
-                            '/video/play-around-sel -t start -ds -500'
-                        ),
-                        MenuCommand('/video/play-around-sel -t start -de 500'),
-                        MenuCommand('/video/play-around-sel -t end -ds -500'),
-                        MenuCommand('/video/play-around-sel -t end -de 500'),
-                    ]),
-                    MenuCommand('/video/play-around-sel'),
-                    MenuCommand('/video/play-current-sub'),
-                    MenuCommand('/video/pause disable'),
-                    MenuSeparator(),
-                    MenuCommand('/video/seek-with-gui'),
-                    MenuCommand('/video/step-frame -d -1'),
-                    MenuCommand('/video/step-frame -d 1'),
-                    MenuCommand('/video/step-frame -d -10'),
-                    MenuCommand('/video/step-frame -d 10'),
-                    MenuSeparator(),
-                    MenuCommand('/video/set-volume 100'),
-                    MenuCommand('/video/set-volume {}-5'),
-                    MenuCommand('/video/set-volume {}+5'),
-                    MenuCommand('/video/mute on'),
-                    MenuCommand('/video/mute off'),
-                    MenuCommand('/video/mute toggle'),
-                    MenuSeparator(),
-                    MenuCommand('/video/pause on'),
-                    MenuCommand('/video/pause toggle'),
-                    MenuSeparator(),
-                    MenuCommand('/video/set-playback-speed {}/1.5'),
-                    MenuCommand('/video/set-playback-speed {}*1.5'),
-                ]),
-
-                SubMenu('&Timing', [
-                    SubMenu('Snap to nearest subtitle', [
-                        MenuCommand(
-                            '/spectrogram-shift-sel --start -d prev-sub-end'
-                        ),
-                        MenuCommand(
-                            '/spectrogram-shift-sel --end -d next-sub-start'
-                        ),
-                        MenuCommand(
-                            '/edit/snap-subs-to-near-sub -t start -d above'
-                        ),
-                        MenuCommand(
-                            '/edit/snap-subs-to-near-sub -t end -d below'
-                        ),
-                    ]),
-
-                    SubMenu('Snap to nearest keyframe', [
-                        MenuCommand('/spectrogram-shift-sel --start -d=-1kf'),
-                        MenuCommand('/spectrogram-shift-sel --end -d=+1kf'),
-                    ]),
-
-                    SubMenu('Snap to current video frame', [
-                        MenuCommand(
-                            '/spectrogram-shift-sel --start -d current-frame'
-                        ),
-                        MenuCommand(
-                            '/spectrogram-shift-sel --end -d current-frame'
-                        ),
-                        MenuCommand('/audio/place-sel-at-current-video-frame'),
-                        MenuCommand(
-                            '/edit/snap-subs-to-current-video-frame -t start'
-                        ),
-                        MenuCommand(
-                            '/edit/snap-subs-to-current-video-frame -t end'
-                        ),
-                        MenuCommand('/edit/place-subs-at-current-video-frame'),
-                    ]),
-
-                    SubMenu('Shift', [
-                        MenuCommand('/spectrogram-shift-sel --start -d=-10f'),
-                        MenuCommand('/spectrogram-shift-sel --start -d=+10f'),
-                        MenuCommand('/spectrogram-shift-sel --end -d=-10f'),
-                        MenuCommand('/spectrogram-shift-sel --end -d=+10f'),
-                        MenuCommand('/spectrogram-shift-sel --start -d=-1f'),
-                        MenuCommand('/spectrogram-shift-sel --start -d=+1f'),
-                        MenuCommand('/spectrogram-shift-sel --end -d=-1f'),
-                        MenuCommand('/spectrogram-shift-sel --end -d=+1f'),
-                        MenuCommand('/edit/shift-subs -t start -d -1000'),
-                        MenuCommand('/edit/shift-subs -t start -d +1000'),
-                        MenuCommand('/edit/shift-subs -t end -d -1000'),
-                        MenuCommand('/edit/shift-subs -t end -d +1000'),
-                    ]),
-
-                    MenuCommand('/spectrogram-commit-sel'),
-                    MenuSeparator(),
-                    MenuCommand('/edit/shift-subs-with-gui'),
-                    MenuSeparator(),
-                    MenuCommand('/spectrogram-scroll -d -0.05'),
-                    MenuCommand('/spectrogram-scroll -d 0.05'),
-                    MenuCommand('/spectrogram-zoom -d 1.1'),
-                    MenuCommand('/spectrogram-zoom -d 0.9')
-                ])
-            ],
-
-            MenuContext.SubtitlesGrid:
-            [
-                MenuCommand('/grid/create-audio-sample'),
-                MenuSeparator(),
-                MenuCommand('/edit/insert-sub -d above'),
-                MenuCommand('/edit/insert-sub -d below'),
-                MenuSeparator(),
-                MenuCommand('/copy-subs'),
-                MenuCommand('/paste-subs -t selected --before'),
-                MenuCommand('/paste-subs -t selected --after'),
-                MenuSeparator(),
-                MenuCommand('/edit/duplicate-subs'),
-                MenuCommand('/edit/split-sub-at-current-video-frame'),
-                MenuCommand('/edit/split-sub-by-karaoke'),
-                MenuSeparator(),
-                MenuCommand('/edit/join-subs-keep-first'),
-                MenuCommand('/edit/join-subs-concatenate'),
-                MenuCommand('/edit/join-subs-as-karaoke'),
-                MenuCommand('/edit/join-subs-as-transformation'),
-                MenuSeparator(),
-                MenuCommand('/edit/snap-subs-to-near-sub -t start -d above'),
-                MenuCommand('/edit/snap-subs-to-near-sub -t end -d below'),
-                MenuSeparator(),
-                MenuCommand('/edit/delete-subs')
-            ]
+            MenuContext.MainMenu: _DEFAULT_MAIN_MENU,
+            MenuContext.SubtitlesGrid: _DEFAULT_SUBTITLES_GRID_MENU,
         }
 
     def loads(self, text: str) -> None:
