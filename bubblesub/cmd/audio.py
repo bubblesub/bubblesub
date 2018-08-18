@@ -92,7 +92,7 @@ class SpectrogramShiftSelectionCommand(BaseCommand):
             target = 'selection end'
         else:
             target = 'selection'
-        return f'&Shift {target} to {self.args.delta.description}'
+        return f'&Shift {target} {self.args.delta.description}'
 
     async def run(self) -> None:
         with self.api.undo.capture():

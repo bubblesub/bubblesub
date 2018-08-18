@@ -125,7 +125,7 @@ class SeekCommand(BaseCommand):
 
     @property
     def menu_name(self) -> str:
-        return f'&Seek to {self.args.delta.description}'
+        return f'&Seek {self.args.delta.description}'
 
     @property
     def is_enabled(self) -> bool:

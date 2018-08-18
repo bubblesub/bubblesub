@@ -33,13 +33,13 @@ KEYFRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( keyframes?|kf)$')
 
 def _plural_desc(term: str, count: int) -> str:
     if count == -1:
-        return f'previous {term}'
+        return f'to previous {term}'
     if count == 1:
-        return f'next {term}'
+        return f'to next {term}'
     if count < 0:
-        return f'{-count} {term}s back'
+        return f'by {-count} {term}s back'
     if count > 0:
-        return f'{count} {term}s ahead'
+        return f'by {count} {term}s ahead'
     return f'zero {term}s'
 
 
@@ -117,22 +117,22 @@ class RelativePts:
             return _plural_desc('frame', 1)
 
         if self.value == 'current-frame':
-            return 'current frame'
+            return 'to current frame'
 
         if self.value == 'prev-sub-start':
-            return 'previous subtitle start'
+            return 'to previous subtitle start'
 
         if self.value == 'prev-sub-end':
-            return 'previous subtitle end'
+            return 'to previous subtitle end'
 
         if self.value == 'next-sub-start':
-            return 'next subtitle start'
+            return 'to next subtitle start'
 
         if self.value == 'next-sub-end':
-            return 'next subtitle end'
+            return 'to next subtitle end'
 
         if self.value == 'default-sub-duration':
-            return 'default subtitle duration'
+            return 'by default subtitle duration'
 
         if self.value == 'ask':
             return 'interactively'
