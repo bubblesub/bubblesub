@@ -120,7 +120,7 @@ class SpectrogramShiftSelectionCommand(BaseCommand):
             '-d', '--delta',
             help='amount to shift the selection',
             type=lambda value: RelativePts(api, value),
-            default='selected'
+            required=True,
         )
         parser.add_argument(
             '--no-align',
