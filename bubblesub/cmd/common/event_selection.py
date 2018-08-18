@@ -16,15 +16,24 @@
 
 """Subtitles selection, usable as an argument to commands."""
 
-import re
 import typing as T
 
+import regex
 from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
+
+IDX_REGEX = regex.compile(r'^(?P<number>\d+)(?:,(?P<number>\d+))*$')
+
+
+def _match_indexes(target: str) -> T.Optional[T.List[int]]:
+    match = IDX_REGEX.match(target)
+    if not match:
+        return None
+    return [int(num) - 1 for num in match.captures('number')]
 
 
 class EventSelection:
@@ -61,9 +70,9 @@ class EventSelection:
         if self.target == 'selected':
             return 'selected subtitles'
 
-        match = re.match(r'^(\d+)$', self.target)
-        if match:
-            return 'subtitle #' + match.group(1)
+        indexes = _match_indexes(self.target)
+        if indexes:
+            return 'subtitle ' + ', '.join(f'#{idx + 1}' for idx in indexes)
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
@@ -82,10 +91,10 @@ class EventSelection:
         if self.target == 'selected':
             return self.api.subs.has_selection
 
-        match = re.match(r'^(\d+)$', self.target)
-        if match:
-            idx = int(match.group(1)) - 1
-            return idx in range(len(self.api.subs.events))
+        indexes = _match_indexes(self.target)
+        if indexes:
+            valid_indexes = range(len(self.api.subs.events))
+            return all(idx in valid_indexes for idx in indexes)
 
         return False
 
@@ -134,9 +143,9 @@ class EventSelection:
                 raise CommandCanceled
             return [value - 1]
 
-        match = re.match(r'^(\d+)$', self.target)
-        if match:
-            return [int(match.group(0)) - 1]
+        indexes = _match_indexes(self.target)
+        if indexes:
+            return indexes
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
