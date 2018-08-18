@@ -61,7 +61,7 @@ class EventSelection:
         if self.target == 'selected':
             return 'selected subtitles'
 
-        match = re.match(r'(\d+)', self.target)
+        match = re.match(r'^(\d+)$', self.target)
         if match:
             return 'subtitle #' + match.group(1)
 
@@ -82,7 +82,7 @@ class EventSelection:
         if self.target == 'selected':
             return self.api.subs.has_selection
 
-        match = re.match(r'(\d+)', self.target)
+        match = re.match(r'^(\d+)$', self.target)
         if match:
             idx = int(match.group(1)) - 1
             return idx in range(len(self.api.subs.events))
@@ -134,7 +134,7 @@ class EventSelection:
                 raise CommandCanceled
             return [value - 1]
 
-        match = re.match(r'(\d+)', self.target)
+        match = re.match(r'^(\d+)$', self.target)
         if match:
             return [int(match.group(0)) - 1]
 
