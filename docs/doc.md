@@ -9,18 +9,18 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+S</kbd> | global | <code><a href="#user-content-cmd-save">save</a> </code> |
 |<kbd>Ctrl+Shift+S</kbd> | global | <code><a href="#user-content-cmd-save-as">save-as</a> </code> |
 |<kbd>Ctrl+Q</kbd> | global | <code><a href="#user-content-cmd-quit">quit</a> </code> |
-|<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> ask-number</code> |
-|<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> ask-time</code> |
+|<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> ask-number</code> |
+|<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> ask-time</code> |
 |<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=ask</code> |
-|<kbd>Ctrl+K</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
-|<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
-|<kbd>Ctrl+A</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> all</code> |
-|<kbd>Ctrl+Shift+A</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> none</code> |
-|<kbd>Alt+2</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> --start -de=+500ms</code> |
-|<kbd>Alt+1</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> --start -ds=-500ms</code> |
-|<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> --end -ds=-500ms</code> |
-|<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> --end -de=+500ms</code> |
-|<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> </code> |
+|<kbd>Ctrl+K</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
+|<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
+|<kbd>Ctrl+A</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> all</code> |
+|<kbd>Ctrl+Shift+A</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> none</code> |
+|<kbd>Alt+2</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> --start -de=+500ms</code> |
+|<kbd>Alt+1</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> --start -ds=-500ms</code> |
+|<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> --end -ds=-500ms</code> |
+|<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> --end -de=+500ms</code> |
+|<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> </code> |
 |<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-1f</code> |
 |<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+1f</code> |
 |<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
@@ -32,18 +32,18 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-search">search</a> </code> |
 |<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-search-and-replace">search-and-replace</a> </code> |
 |<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
-|<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-delete-subs">delete-subs</a> </code> |
-|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-10f</code> |
-|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+10f</code> |
-|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-10f</code> |
-|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+10f</code> |
-|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-1f</code> |
-|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+1f</code> |
-|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-1f</code> |
-|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+1f</code> |
-|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
-|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
-|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d default-sub-duration</code> |
+|<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-sub-delete">sub-delete</a> </code> |
+|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=-10f</code> |
+|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=+10f</code> |
+|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=-10f</code> |
+|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=+10f</code> |
+|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=-1f</code> |
+|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=+1f</code> |
+|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=-1f</code> |
+|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=+1f</code> |
+|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d current-frame</code> |
+|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d current-frame</code> |
+|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d default-sub-duration</code> |
 |<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
 |<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d below</code> |
@@ -59,70 +59,105 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d above</code> |
 |<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d below</code> |
 |<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file-properties</a> </code> |
-|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-10f</code> |
-|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+10f</code> |
-|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-10f</code> |
-|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+10f</code> |
-|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-1f</code> |
-|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+1f</code> |
-|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-1f</code> |
-|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+1f</code> |
-|<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-commit-sel">spectrogram-commit-sel</a> </code> |
+|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=-10f</code> |
+|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=+10f</code> |
+|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=-10f</code> |
+|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=+10f</code> |
+|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=-1f</code> |
+|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=+1f</code> |
+|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=-1f</code> |
+|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=+1f</code> |
+|<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-commit-sel">audio-commit-sel</a> </code> |
 |<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d above</code> |
 |<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
-|<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> </code> |
+|<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> </code> |
 |<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-play-sub">play-sub</a> </code> |
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
-|<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
-|<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
-|<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-scroll">spectrogram-scroll</a> -d -0.05</code> |
-|<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-scroll">spectrogram-scroll</a> -d 0.05</code> |
-|<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 1.1</code> |
-|<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 0.9</code> |
-|<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 0.9</code> |
+|<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
+|<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
+|<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll">audio-scroll</a> -d -0.05</code> |
+|<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll">audio-scroll</a> -d 0.05</code> |
+|<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d 1.1</code> |
+|<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d 0.9</code> |
+|<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d 0.9</code> |
 |<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-1f</code> |
 |<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+1f</code> |
 |<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-1500ms</code> |
 |<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+1500ms</code> |
 |<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
 |<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
-|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
-|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
-|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d default-sub-duration</code> |
+|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d current-frame</code> |
+|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d current-frame</code> |
+|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d default-sub-duration</code> |
 |<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
-|<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d prev-sub-end</code> |
-|<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d next-sub-start</code> |
-|<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-1kf</code> |
-|<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=+1kf</code> |
-|<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-copy-subs">copy-subs</a> </code> |
-|<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-paste-subs">paste-subs</a> -t selected --after</code> |
+|<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d prev-sub-end</code> |
+|<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d next-sub-start</code> |
+|<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --start -d=-1kf</code> |
+|<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> --end -d=+1kf</code> |
+|<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-copy">sub-copy</a> </code> |
+|<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-paste">sub-paste</a> -t selected --after</code> |
 
 # Default commands
-### <a name="cmd-copy-subs"></a>`copy‑subs`
-Copies given subtitles to clipboard.
+### <a name="cmd-audio-commit-sel"></a>`audio‑commit‑sel`
+Aliases: `audio-commit-selection`, `spectrogram-commit-sel`, `spectrogram-commit-selection`
+
+Commits the spectrogram selection into given subtitles. The subtitles start and end times are synced to the current spectrogram selection boundaries.
 
 
 
 Usage:
-`copy‑subs -t|--target=… -s|--subject=…`
+`audio‑commit‑sel -t|--target=…`
 
 
 
-* `-t`, `--target`: subtitles to select
-* `-s`, `--subject`: subject to copy (`text`, `times`, `all`)
+* `-t`, `--target`: subtitles to commit selection into
 
-### <a name="cmd-delete-subs"></a>`delete‑subs`
-Deletes given subtitles.
+### <a name="cmd-audio-scroll"></a>`audio‑scroll`
+Aliases: `spectrogram-scroll`
+
+Scrolls the spectrogram horizontally by its width's percentage.
 
 
 
 Usage:
-`delete‑subs [target]`
+`audio‑scroll -d|--delta=…`
 
 
 
-* `target`: subtitles to select
+* `-d`, `--delta`: factor to shift the view by
+
+### <a name="cmd-audio-shift-sel"></a>`audio‑shift‑sel`
+Aliases: `audio-shift-selection`, `spectrogram-shift-sel`, `spectrogram-shift-selection`
+
+Shfits the spectrogram selection.
+
+
+
+Usage:
+`audio‑shift‑sel -d|--delta=… [--no-align] [--start] [--end] [--both]`
+
+
+
+* `-d`, `--delta`: amount to shift the selection
+* `--no-align`: don't realign selection to video frames
+* `--start`: shift selection start
+* `--end`: shift selection end
+* `--both`: shift whole selection
+
+### <a name="cmd-audio-zoom"></a>`audio‑zoom`
+Aliases: `spectrogram-zoom`
+
+Zooms the spectrogram in or out by the specified factor.
+
+
+
+Usage:
+`audio‑zoom -d|--delta=…`
+
+
+
+* `-d`, `--delta`: factor to zoom the view by
 
 ### <a name="cmd-edit-duplicate-subs"></a>`edit/duplicate‑subs`
 Duplicates the selected subtitles. The newly created subtitles are interleaved with the current selection.
@@ -267,33 +302,6 @@ Usage:
 
 * `path`: path to load the subtitles from
 
-### <a name="cmd-paste-into-subs"></a>`paste‑into‑subs`
-Pastes text or times into the given subtitles.
-
-
-
-Usage:
-`paste‑into‑subs -t|--target=… -s|--subject=…`
-
-
-
-* `-t`, `--target`: subtitles to paste the subject into
-* `-s`, `--subject`: subject to copy (`text`, `times`)
-
-### <a name="cmd-paste-subs"></a>`paste‑subs`
-Pastes subtitles from clipboard.
-
-
-
-Usage:
-`paste‑subs -t|--target=… [--before] [--after]`
-
-
-
-* `-t`, `--target`: where to paste the subtitles
-* `--before`: paste before target
-* `--after`: paste after target
-
 ### <a name="cmd-pause"></a>`pause`
 Pauses or unpauses the video playback.
 
@@ -306,13 +314,15 @@ Usage:
 
 * `operation`: whether to pause the video
 
-### <a name="cmd-play-spectrogram-sel"></a>`play‑spectrogram‑sel`
+### <a name="cmd-play-audio-sel"></a>`play‑audio‑sel`
+Aliases: `play-audio-selection`, `play-spectrogram-sel`, `play-spectrogram-selection`
+
 Plays a region near the current spectrogram selection.
 
 
 
 Usage:
-`play‑spectrogram‑sel -ds|--delta-start=… -de|--delta-end=… [--start] [--end] [--both]`
+`play‑audio‑sel -ds|--delta-start=… -de|--delta-end=… [--start] [--end] [--both]`
 
 
 
@@ -323,6 +333,8 @@ Usage:
 * `--both`: play around whole selection
 
 ### <a name="cmd-play-sub"></a>`play‑sub`
+Aliases: `play-subtitle`
+
 Plays given subtitle.
 
 
@@ -385,18 +397,6 @@ Usage:
 * `-d`, `--delta`: amount to shift the selection
 * `-p`, `--precise`: whether to use precise seeking at the expense of performance
 
-### <a name="cmd-select-subs"></a>`select‑subs`
-Selects given subtitles.
-
-
-
-Usage:
-`select‑subs target`
-
-
-
-* `target`: subtitles to select
-
 ### <a name="cmd-set-palette"></a>`set‑palette`
 Changes the GUI color theme.
 
@@ -433,64 +433,72 @@ Usage:
 
 * `expression`: expression to calculate new volume
 
-### <a name="cmd-spectrogram-commit-sel"></a>`spectrogram‑commit‑sel`
-Aliases: `spectrogram-commit-selection`
-
-Commits the spectrogram selection into given subtitles. The subtitles start and end times are synced to the current spectrogram selection boundaries.
-
-
-
-Usage:
-`spectrogram‑commit‑sel -t|--target=…`
-
-
-
-* `-t`, `--target`: subtitles to commit selection into
-
-### <a name="cmd-spectrogram-scroll"></a>`spectrogram‑scroll`
-Scrolls the spectrogram horizontally by its width's percentage.
-
-
-
-Usage:
-`spectrogram‑scroll -d|--delta=…`
-
-
-
-* `-d`, `--delta`: factor to shift the view by
-
-### <a name="cmd-spectrogram-shift-sel"></a>`spectrogram‑shift‑sel`
-Aliases: `spectrogram-shift-selection`
-
-Shfits the spectrogram selection.
-
-
-
-Usage:
-`spectrogram‑shift‑sel -d|--delta=… [--no-align] [--start] [--end] [--both]`
-
-
-
-* `-d`, `--delta`: amount to shift the selection
-* `--no-align`: don't realign selection to video frames
-* `--start`: shift selection start
-* `--end`: shift selection end
-* `--both`: shift whole selection
-
-### <a name="cmd-spectrogram-zoom"></a>`spectrogram‑zoom`
-Zooms the spectrogram in or out by the specified factor.
-
-
-
-Usage:
-`spectrogram‑zoom -d|--delta=…`
-
-
-
-* `-d`, `--delta`: factor to zoom the view by
-
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.
+### <a name="cmd-sub-copy"></a>`sub‑copy`
+Copies given subtitles to clipboard.
+
+
+
+Usage:
+`sub‑copy -t|--target=… -s|--subject=…`
+
+
+
+* `-t`, `--target`: subtitles to select
+* `-s`, `--subject`: subject to copy (`text`, `times`, `all`)
+
+### <a name="cmd-sub-delete"></a>`sub‑delete`
+Deletes given subtitles.
+
+
+
+Usage:
+`sub‑delete [target]`
+
+
+
+* `target`: subtitles to select
+
+### <a name="cmd-sub-paste"></a>`sub‑paste`
+Pastes subtitles from clipboard.
+
+
+
+Usage:
+`sub‑paste -t|--target=… [--before] [--after]`
+
+
+
+* `-t`, `--target`: where to paste the subtitles
+* `--before`: paste before target
+* `--after`: paste after target
+
+### <a name="cmd-sub-paste-into"></a>`sub‑paste‑into`
+Pastes text or times into the given subtitles.
+
+
+
+Usage:
+`sub‑paste‑into -t|--target=… -s|--subject=…`
+
+
+
+* `-t`, `--target`: subtitles to paste the subject into
+* `-s`, `--subject`: subject to copy (`text`, `times`)
+
+### <a name="cmd-sub-select"></a>`sub‑select`
+Selects given subtitles.
+
+
+
+Usage:
+`sub‑select target`
+
+
+
+* `target`: subtitles to select
+
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.
 ### <a name="cmd-video-screenshot"></a>`video/screenshot`

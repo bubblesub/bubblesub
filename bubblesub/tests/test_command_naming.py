@@ -22,13 +22,14 @@ from bubblesub.tests.common import api  # pylint: disable=unused-import
 from bubblesub.tests.common import APP_ROOT_DIR
 
 
-def normalize_class_name(name: str) -> T.List[str]:
+def normalize_class_name(name: str) -> T.Iterable[str]:
     def handler(match: T.Match) -> str:
         if match.start() == 0:
             return match.group().lower()
         return '-' + match.group(0).lower()
 
     # exceptions
+    name = name.replace('Subtitles', 'Sub')
     name = name.replace('Subtitle', 'Sub')
     name = name.replace('SpectrogramSelection', 'Sel')
     name = name.replace('Selection', 'Sel')
@@ -37,15 +38,18 @@ def normalize_class_name(name: str) -> T.List[str]:
     name = re.sub('Command$', '', name)
     name = re.sub('[A-Z]', handler, name)
 
-    return [name]
+    yield name
 
 
-def normalize_command_name(name: str) -> T.List[str]:
+def normalize_command_name(name: str) -> T.Iterable[str]:
     match = re.match(r'^((?P<prefix>[^/]*)\/)?(?P<stem>.*)$', name)
     prefix = match.group('prefix')
     stem = match.group('stem').replace('/', '-')
+    stem = stem.replace('subs', 'sub')
 
-    return [stem, f'{prefix}-{stem}'] if prefix else [stem]
+    yield stem
+    if prefix:
+        yield f'{prefix}-{stem}'
 
 
 def verify_name(class_name: str, command_name: str) -> None:

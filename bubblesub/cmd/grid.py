@@ -44,8 +44,8 @@ def _unpickle(text: str) -> T.Any:
     return pickle.loads(zlib.decompress(base64.b64decode(text.encode())))
 
 
-class SelectSubtitlesCommand(BaseCommand):
-    names = ['select-subs']
+class SubtitlesSelectCommand(BaseCommand):
+    names = ['sub-select']
     help_text = 'Selects given subtitles.'
 
     @property
@@ -71,8 +71,8 @@ class SelectSubtitlesCommand(BaseCommand):
         )
 
 
-class CopySubtitlesCommand(BaseCommand):
-    names = ['copy-subs']
+class SubtitlesCopyCommand(BaseCommand):
+    names = ['sub-copy']
     help_text = 'Copies given subtitles to clipboard.'
 
     @property
@@ -129,8 +129,8 @@ class CopySubtitlesCommand(BaseCommand):
         )
 
 
-class PasteSubtitlesCommand(BaseCommand):
-    names = ['paste-subs']
+class SubtitlesPasteCommand(BaseCommand):
+    names = ['sub-paste']
     help_text = 'Pastes subtitles from clipboard.'
 
     @property
@@ -180,8 +180,8 @@ class PasteSubtitlesCommand(BaseCommand):
         )
 
 
-class PasteIntoSubtitlesCommand(BaseCommand):
-    names = ['paste-into-subs']
+class SubtitlesPasteIntoCommand(BaseCommand):
+    names = ['sub-paste-into']
     help_text = 'Pastes text or times into the given subtitles.'
 
     @property
@@ -296,10 +296,10 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            SelectSubtitlesCommand,
-            CopySubtitlesCommand,
-            PasteSubtitlesCommand,
-            PasteIntoSubtitlesCommand,
+            SubtitlesSelectCommand,
+            SubtitlesCopyCommand,
+            SubtitlesPasteCommand,
+            SubtitlesPasteIntoCommand,
             CreateAudioSampleCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

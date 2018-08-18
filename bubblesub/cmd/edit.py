@@ -301,8 +301,8 @@ class DuplicateSubtitlesCommand(BaseCommand):
         self.api.gui.end_update()
 
 
-class DeleteSubtitlesCommand(BaseCommand):
-    names = ['delete-subs']
+class SubtitlesDeleteCommand(BaseCommand):
+    names = ['sub-delete']
     help_text = 'Deletes given subtitles.'
 
     @property
@@ -703,7 +703,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             MoveSubtitlesCommand,
             MoveSubtitlesToCommand,
             DuplicateSubtitlesCommand,
-            DeleteSubtitlesCommand,
+            SubtitlesDeleteCommand,
             SwapSubtitlesTextAndNotesCommand,
             SplitSubtitleAtCurrentVideoFrameCommand,
             JoinSubtitlesKeepFirstCommand,

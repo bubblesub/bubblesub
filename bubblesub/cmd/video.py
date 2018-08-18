@@ -32,7 +32,7 @@ from bubblesub.cmd.common import RelativePts
 
 
 class PlaySubtitleCommand(BaseCommand):
-    names = ['play-sub']
+    names = ['play-sub', 'play-subtitle']
     help_text = 'Plays given subtitle.'
 
     @property
@@ -62,8 +62,13 @@ class PlaySubtitleCommand(BaseCommand):
         )
 
 
-class PlaySpectrogramSelectionCommand(BaseCommand):
-    names = ['play-spectrogram-sel']
+class PlayAudioSelectionCommand(BaseCommand):
+    names = [
+        'play-audio-sel',
+        'play-audio-selection',
+        'play-spectrogram-sel',
+        'play-spectrogram-selection'
+    ]
     help_text = 'Plays a region near the current spectrogram selection.'
 
     @property
@@ -362,7 +367,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     """
     for cls in [
             PlaySubtitleCommand,
-            PlaySpectrogramSelectionCommand,
+            PlayAudioSelectionCommand,
             SeekCommand,
             SetPlaybackSpeedCommand,
             SetVolumeCommand,

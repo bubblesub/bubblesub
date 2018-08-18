@@ -25,8 +25,8 @@ from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import RelativePts
 
 
-class SpectrogramScrollCommand(BaseCommand):
-    names = ['spectrogram-scroll']
+class AudioScrollCommand(BaseCommand):
+    names = ['audio-scroll', 'spectrogram-scroll']
     help_text = (
         'Scrolls the spectrogram horizontally by its width\'s percentage.'
     )
@@ -53,8 +53,8 @@ class SpectrogramScrollCommand(BaseCommand):
         )
 
 
-class SpectrogramZoomCommand(BaseCommand):
-    names = ['spectrogram-zoom']
+class AudioZoomCommand(BaseCommand):
+    names = ['audio-zoom', 'spectrogram-zoom']
     help_text = 'Zooms the spectrogram in or out by the specified factor.'
 
     @property
@@ -80,8 +80,13 @@ class SpectrogramZoomCommand(BaseCommand):
         )
 
 
-class SpectrogramShiftSelectionCommand(BaseCommand):
-    names = ['spectrogram-shift-sel', 'spectrogram-shift-selection']
+class AudioShiftSelectionCommand(BaseCommand):
+    names = [
+        'audio-shift-sel',
+        'audio-shift-selection',
+        'spectrogram-shift-sel',
+        'spectrogram-shift-selection'
+    ]
     help_text = 'Shfits the spectrogram selection.'
 
     @property
@@ -152,8 +157,13 @@ class SpectrogramShiftSelectionCommand(BaseCommand):
         )
 
 
-class SpectrogramCommitSelectionCommand(BaseCommand):
-    names = ['spectrogram-commit-sel', 'spectrogram-commit-selection']
+class AudioCommitSelectionCommand(BaseCommand):
+    names = [
+        'audio-commit-sel',
+        'audio-commit-selection',
+        'spectrogram-commit-sel',
+        'spectrogram-commit-selection'
+    ]
     help_text = (
         'Commits the spectrogram selection into given subtitles. '
         'The subtitles start and end times are synced to the '
@@ -197,9 +207,9 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            SpectrogramScrollCommand,
-            SpectrogramZoomCommand,
-            SpectrogramShiftSelectionCommand,
-            SpectrogramCommitSelectionCommand,
+            AudioScrollCommand,
+            AudioZoomCommand,
+            AudioShiftSelectionCommand,
+            AudioCommitSelectionCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

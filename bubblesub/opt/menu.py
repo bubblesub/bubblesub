@@ -102,7 +102,7 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
         MenuCommand('/edit/move-subs -d below'),
         MenuCommand('/edit/move-subs-to'),
         MenuCommand('/edit/duplicate-subs'),
-        MenuCommand('/delete-subs'),
+        MenuCommand('/sub-delete'),
         MenuSeparator(),
         MenuCommand('/edit/swap-subs-text-and-notes'),
         MenuCommand('/edit/split-sub-at-current-video-frame'),
@@ -112,26 +112,26 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
         MenuCommand('/edit/join-subs-as-transformation'),
         MenuCommand('/edit/split-sub-by-karaoke'),
         MenuSeparator(),
-        MenuCommand('/copy-subs'),
-        MenuCommand('/copy-subs -s times'),
-        MenuCommand('/copy-subs -s text'),
-        MenuCommand('/paste-subs -t selected --before'),
-        MenuCommand('/paste-subs -t selected --after'),
-        MenuCommand('/paste-into-subs -t selected -s times'),
-        MenuCommand('/paste-into-subs -t selected -s text'),
+        MenuCommand('/sub-copy'),
+        MenuCommand('/sub-copy -s times'),
+        MenuCommand('/sub-copy -s text'),
+        MenuCommand('/sub-paste -t selected --before'),
+        MenuCommand('/sub-paste -t selected --after'),
+        MenuCommand('/sub-paste-into -t selected -s times'),
+        MenuCommand('/sub-paste-into -t selected -s text'),
         MenuSeparator(),
         MenuCommand('/spell-check'),
         MenuCommand('/style-manager'),
     ]),
 
     SubMenu('Select', [
-        MenuCommand('/select-subs ask-number'),
-        MenuCommand('/select-subs ask-time'),
+        MenuCommand('/sub-select ask-number'),
+        MenuCommand('/sub-select ask-time'),
         MenuSeparator(),
-        MenuCommand('/select-subs all'),
-        MenuCommand('/select-subs one-above'),
-        MenuCommand('/select-subs one-below'),
-        MenuCommand('/select-subs none'),
+        MenuCommand('/sub-select all'),
+        MenuCommand('/sub-select one-above'),
+        MenuCommand('/sub-select one-below'),
+        MenuCommand('/sub-select none'),
     ]),
 
     SubMenu('&View', [
@@ -152,12 +152,12 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
 
     SubMenu('&Playback', [
         SubMenu('Play around selection', [
-            MenuCommand('/play-spectrogram-sel --start -ds=-500ms'),
-            MenuCommand('/play-spectrogram-sel --start -de=+500ms'),
-            MenuCommand('/play-spectrogram-sel --end -ds=-500ms'),
-            MenuCommand('/play-spectrogram-sel --end -de=+500ms'),
+            MenuCommand('/play-audio-sel --start -ds=-500ms'),
+            MenuCommand('/play-audio-sel --start -de=+500ms'),
+            MenuCommand('/play-audio-sel --end -ds=-500ms'),
+            MenuCommand('/play-audio-sel --end -de=+500ms'),
         ]),
-        MenuCommand('/play-spectrogram-sel'),
+        MenuCommand('/play-audio-sel'),
         MenuCommand('/play-sub'),
         MenuCommand('/pause off'),
         MenuSeparator(),
@@ -183,23 +183,23 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
 
     SubMenu('&Timing', [
         SubMenu('Snap to nearest subtitle', [
-            MenuCommand('/spectrogram-shift-sel --start -d prev-sub-end'),
-            MenuCommand('/spectrogram-shift-sel --end -d next-sub-start'),
+            MenuCommand('/audio-shift-sel --start -d prev-sub-end'),
+            MenuCommand('/audio-shift-sel --end -d next-sub-start'),
             MenuCommand('/edit/snap-subs-to-near-sub -t start -d above'),
             MenuCommand('/edit/snap-subs-to-near-sub -t end -d below'),
         ]),
 
         SubMenu('Snap to nearest keyframe', [
-            MenuCommand('/spectrogram-shift-sel --start -d=-1kf'),
-            MenuCommand('/spectrogram-shift-sel --end -d=+1kf'),
+            MenuCommand('/audio-shift-sel --start -d=-1kf'),
+            MenuCommand('/audio-shift-sel --end -d=+1kf'),
         ]),
 
         SubMenu('Snap to current video frame', [
-            MenuCommand('/spectrogram-shift-sel --start -d current-frame'),
-            MenuCommand('/spectrogram-shift-sel --end -d current-frame'),
+            MenuCommand('/audio-shift-sel --start -d current-frame'),
+            MenuCommand('/audio-shift-sel --end -d current-frame'),
             MenuCommand(
-                '/spectrogram-shift-sel --both -d current-frame',
-                '/spectrogram-shift-sel --end -d default-sub-duration'
+                '/audio-shift-sel --both -d current-frame',
+                '/audio-shift-sel --end -d default-sub-duration'
             ),
             MenuCommand('/edit/snap-subs-to-current-video-frame -t start'),
             MenuCommand('/edit/snap-subs-to-current-video-frame -t end'),
@@ -207,28 +207,28 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
         ]),
 
         SubMenu('Shift', [
-            MenuCommand('/spectrogram-shift-sel --start -d=-10f'),
-            MenuCommand('/spectrogram-shift-sel --start -d=+10f'),
-            MenuCommand('/spectrogram-shift-sel --end -d=-10f'),
-            MenuCommand('/spectrogram-shift-sel --end -d=+10f'),
-            MenuCommand('/spectrogram-shift-sel --start -d=-1f'),
-            MenuCommand('/spectrogram-shift-sel --start -d=+1f'),
-            MenuCommand('/spectrogram-shift-sel --end -d=-1f'),
-            MenuCommand('/spectrogram-shift-sel --end -d=+1f'),
+            MenuCommand('/audio-shift-sel --start -d=-10f'),
+            MenuCommand('/audio-shift-sel --start -d=+10f'),
+            MenuCommand('/audio-shift-sel --end -d=-10f'),
+            MenuCommand('/audio-shift-sel --end -d=+10f'),
+            MenuCommand('/audio-shift-sel --start -d=-1f'),
+            MenuCommand('/audio-shift-sel --start -d=+1f'),
+            MenuCommand('/audio-shift-sel --end -d=-1f'),
+            MenuCommand('/audio-shift-sel --end -d=+1f'),
             MenuCommand('/edit/shift-subs -t start -d -1000'),
             MenuCommand('/edit/shift-subs -t start -d +1000'),
             MenuCommand('/edit/shift-subs -t end -d -1000'),
             MenuCommand('/edit/shift-subs -t end -d +1000'),
         ]),
 
-        MenuCommand('/spectrogram-commit-sel'),
+        MenuCommand('/audio-commit-sel'),
         MenuSeparator(),
         MenuCommand('/edit/shift-subs-with-gui'),
         MenuSeparator(),
-        MenuCommand('/spectrogram-scroll -d -0.05'),
-        MenuCommand('/spectrogram-scroll -d 0.05'),
-        MenuCommand('/spectrogram-zoom -d 1.1'),
-        MenuCommand('/spectrogram-zoom -d 0.9')
+        MenuCommand('/audio-scroll -d -0.05'),
+        MenuCommand('/audio-scroll -d 0.05'),
+        MenuCommand('/audio-zoom -d 1.1'),
+        MenuCommand('/audio-zoom -d 0.9')
     ])
 ]
 
@@ -238,9 +238,9 @@ _DEFAULT_SUBTITLES_GRID_MENU = [
     MenuCommand('/edit/insert-sub -d above'),
     MenuCommand('/edit/insert-sub -d below'),
     MenuSeparator(),
-    MenuCommand('/copy-subs'),
-    MenuCommand('/paste-subs -t selected --before'),
-    MenuCommand('/paste-subs -t selected --after'),
+    MenuCommand('/sub-copy'),
+    MenuCommand('/sub-paste -t selected --before'),
+    MenuCommand('/sub-paste -t selected --after'),
     MenuSeparator(),
     MenuCommand('/edit/duplicate-subs'),
     MenuCommand('/edit/split-sub-at-current-video-frame'),
@@ -254,7 +254,7 @@ _DEFAULT_SUBTITLES_GRID_MENU = [
     MenuCommand('/edit/snap-subs-to-near-sub -t start -d above'),
     MenuCommand('/edit/snap-subs-to-near-sub -t end -d below'),
     MenuSeparator(),
-    MenuCommand('/delete-subs')
+    MenuCommand('/sub-delete')
 ]
 
 
