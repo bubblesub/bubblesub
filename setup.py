@@ -117,12 +117,12 @@ class GenerateDocumentationCommand(Command):
                     file=handle
                 )
 
-            print(cls.help_text, file=handle)
+            print(cls.help_text.rstrip(), file=handle)
             if parser._actions:
-                print('\n\n', file=handle)
+                print(file=handle)
                 print(self._get_usage(cmd_name, parser), file=handle)
-                print('\n\n', file=handle)
                 print(self._get_params_help(cmd_name, parser), file=handle)
+            print(file=handle)
 
     @staticmethod
     def _get_usage(cmd_name, parser):
@@ -141,7 +141,7 @@ class GenerateDocumentationCommand(Command):
                 ret += ']'
             return ret
 
-        desc = 'Usage:\n`'
+        desc = 'Usage: `'
         desc += ' '.join(
             [cmd_name] +
             [format_action(action) for action in parser._actions]
@@ -176,7 +176,7 @@ class GenerateDocumentationCommand(Command):
                     + ')'
                 )
             desc += '\n'
-        return desc
+        return desc.rstrip()
 
     @staticmethod
     def _get_anchor_name(prefix: str, name: str) -> str:
