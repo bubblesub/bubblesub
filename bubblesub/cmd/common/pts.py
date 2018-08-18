@@ -20,9 +20,13 @@ import bisect
 import re
 import typing as T
 
+from PyQt5 import QtWidgets
+
 import bubblesub.api
+from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandError
 
+MS_REGEX = re.compile(r'(?P<delta>[+-]?\d+)( milliseconds|ms)$')
 FRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( frames?|f)$')
 KEYFRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( keyframes?|kf)$')
 
@@ -85,6 +89,11 @@ class RelativePts:
 
     @property
     def description(self) -> str:
+        match = MS_REGEX.match(self.value)
+        if match:
+            delta = int(match.group('delta'))
+            return _plural_desc('millisecond', delta)
+
         match = KEYFRAME_REGEX.match(self.value)
         if match:
             delta = int(match.group('delta'))
@@ -125,9 +134,17 @@ class RelativePts:
         if self.value == 'default-sub-duration':
             return 'default subtitle duration'
 
+        if self.value == 'ask':
+            return 'interactively'
+
         raise ValueError(f'unknown relative pts: "{self.value}"')
 
     async def apply(self, origin: int) -> int:
+        match = MS_REGEX.match(self.value)
+        if match:
+            delta = int(match.group('delta'))
+            return origin + delta
+
         match = KEYFRAME_REGEX.match(self.value)
         if match:
             delta = int(match.group('delta'))
@@ -178,4 +195,33 @@ class RelativePts:
         if self.value == 'default-sub-duration':
             return origin + self.api.opt.general.subs.default_duration
 
+        if self.value == 'ask':
+            value = await self.api.gui.exec(
+                lambda main_window: self._show_dialog(main_window, origin)
+            )
+            if value is None:
+                raise CommandCanceled
+            return value
+
         raise ValueError(f'unknown relative pts: "{self.value}"')
+
+    async def _show_dialog(
+            self,
+            main_window: QtWidgets.QMainWindow,
+            origin: int
+    ) -> T.Optional[int]:
+        ret = bubblesub.ui.util.time_jump_dialog(
+            main_window,
+            absolute_label='Time to jump to:',
+            relative_label='Time to jump by:',
+            relative_checked=False,
+            value=self.api.media.current_pts
+        )
+
+        if ret is None:
+            return None
+        value, is_relative = ret
+
+        if is_relative:
+            return origin + value
+        return value

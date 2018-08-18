@@ -11,7 +11,7 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Q</kbd> | global | <code><a href="#user-content-cmd-quit">quit</a> </code> |
 |<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> ask-number</code> |
 |<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> ask-time</code> |
-|<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-video-seek-with-gui">video/seek-with-gui</a> </code> |
+|<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=ask</code> |
 |<kbd>Ctrl+K</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
 |<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
 |<kbd>Ctrl+A</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> all</code> |
@@ -21,10 +21,10 @@ Context refers to the currently focused widget.
 |<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t end -ds -500</code> |
 |<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t end -de 500</code> |
 |<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> </code> |
-|<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d -1</code> |
-|<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d 1</code> |
-|<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d -500</code> |
-|<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 500</code> |
+|<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-1f</code> |
+|<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+1f</code> |
+|<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
+|<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
 |<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
 |<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-video-pause">video/pause</a> toggle</code> |
 |<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-undo">undo</a> </code> |
@@ -80,12 +80,12 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 1.1</code> |
 |<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 0.9</code> |
 |<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-zoom">spectrogram-zoom</a> -d 0.9</code> |
-|<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d -1</code> |
-|<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-frame">video/step-frame</a> -d 1</code> |
-|<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d -1500</code> |
-|<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 1500</code> |
-|<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d -500</code> |
-|<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-video-step-ms">video/step-ms</a> -d 500</code> |
+|<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-1f</code> |
+|<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+1f</code> |
+|<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-1500ms</code> |
+|<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+1500ms</code> |
+|<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
+|<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
 |<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
 |<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
 |<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d default-sub-duration</code> |
@@ -320,6 +320,19 @@ Usage:
 
 * `-d`, `--direction`: whether to search forward or backward (`above`, `below`)
 
+### <a name="cmd-seek"></a>`seek`
+Changes the video playback position to desired place.
+
+
+
+Usage:
+`seek -d|--delta=… [-p|--precise]`
+
+
+
+* `-d`, `--delta`: amount to shift the selection
+* `-p`, `--precise`: whether to use precise seeking at the expense of performance
+
 ### <a name="cmd-select-subs"></a>`select‑subs`
 Selects given subtitles.
 
@@ -456,8 +469,6 @@ Usage:
 
 * `-i`, `--include-subs`: whether to "burn" the subtitles into the screenshot
 
-### <a name="cmd-video-seek-with-gui"></a>`video/seek‑with‑gui`
-Seeks the video to the desired place. Prompts user for details with a GUI dialog.
 ### <a name="cmd-video-set-playback-speed"></a>`video/set‑playback‑speed`
 Adjusts the video playback speed.
 
@@ -481,28 +492,3 @@ Usage:
 
 
 * `expression`: expression to calculate new volume
-
-### <a name="cmd-video-step-frame"></a>`video/step‑frame`
-Seeks the video by the specified amount of frames.
-
-
-
-Usage:
-`video/step‑frame -d|--delta=…`
-
-
-
-* `-d`, `--delta`: how many frames to step
-
-### <a name="cmd-video-step-ms"></a>`video/step‑ms`
-Seeks the video by the specified milliseconds.
-
-
-
-Usage:
-`video/step‑ms -d|--delta=… [-p|--precise]`
-
-
-
-* `-d`, `--delta`: how many milliseconds to step
-* `-p`, `--precise`: whether to use precise seeking at the expense of performance

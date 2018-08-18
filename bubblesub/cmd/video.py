@@ -17,7 +17,6 @@
 """Commands related to video and playback."""
 
 import argparse
-import bisect
 import typing as T
 from pathlib import Path
 
@@ -27,6 +26,7 @@ import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
+from bubblesub.cmd.common import RelativePts
 from bubblesub.util import ShiftTarget, BooleanOperation
 
 
@@ -119,39 +119,24 @@ class PlayAroundSpectrogramSelectionCommand(BaseCommand):
         )
 
 
-class StepFrameCommand(BaseCommand):
-    names = ['video/step-frame']
-    help_text = 'Seeks the video by the specified amount of frames.'
+class SeekCommand(BaseCommand):
+    names = ['seek']
+    help_text = 'Changes the video playback position to desired place.'
 
     @property
     def menu_name(self) -> str:
-        return 'Step {} &frame{} {}'.format(
-            abs(self.args.delta),
-            's' if abs(self.args.delta) > 1 else '',
-            'forward' if self.args.delta > 0 else 'backward'
-        )
+        return f'&Seek to {self.args.delta.description}'
 
     @property
     def is_enabled(self) -> bool:
         return self.api.media.is_loaded
 
     async def run(self) -> None:
-        if self.args.delta == 1:
-            self.api.media.step_frame_forward()
-        elif self.args.delta == -1:
-            self.api.media.step_frame_backward()
-        else:
-            current_pts = self.api.media.current_pts
-            idx = bisect.bisect_left(
-                self.api.media.video.timecodes, current_pts
-            )
-            if idx + self.args.delta not in range(
-                    len(self.api.media.video.timecodes)
-            ):
-                return
-            self.api.media.seek(
-                self.api.media.video.timecodes[idx + self.args.delta]
-            )
+        pts = self.api.media.current_pts
+        pts = self.api.media.video.align_pts_to_near_frame(pts)
+        pts = await self.args.delta.apply(pts)
+        pts = self.api.media.video.align_pts_to_near_frame(pts)
+        self.api.media.seek(pts, self.args.precise)
 
     @staticmethod
     def _decorate_parser(
@@ -160,42 +145,9 @@ class StepFrameCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             '-d', '--delta',
-            help='how many frames to step',
-            type=int,
-            required=True
-        )
-
-
-class StepMillisecondsCommand(BaseCommand):
-    names = ['video/step-ms']
-    help_text = 'Seeks the video by the specified milliseconds.'
-
-    @property
-    def menu_name(self) -> str:
-        return '&Seek {} by {} ms'.format(
-            ['backward', 'forward'][self.args.delta > 0],
-            abs(self.args.delta)
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.media.is_loaded
-
-    async def run(self) -> None:
-        self.api.media.seek(
-            self.api.media.current_pts + self.args.delta, self.args.precise
-        )
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            '-d', '--delta',
-            help='how many milliseconds to step',
-            type=int,
-            required=True
+            help='amount to shift the selection',
+            type=lambda value: RelativePts(api, value),
+            required=True,
         )
         parser.add_argument(
             '-p', '--precise',
@@ -204,41 +156,6 @@ class StepMillisecondsCommand(BaseCommand):
             ),
             action='store_true'
         )
-
-
-class SeekWithGuiCommand(BaseCommand):
-    names = ['video/seek-with-gui']
-    menu_name = '&Seek to...'
-    help_text = (
-        'Seeks the video to the desired place. '
-        'Prompts user for details with a GUI dialog.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.media.is_loaded
-
-    async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
-
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        ret = bubblesub.ui.util.time_jump_dialog(
-            main_window,
-            absolute_label='Time to jump to:',
-            relative_label='Time to jump by:',
-            relative_checked=False,
-            value=self.api.media.current_pts
-        )
-
-        if ret is not None:
-            value, is_relative = ret
-
-            if is_relative:
-                self.api.media.seek(
-                    self.api.media.current_pts + value
-                )
-            else:
-                self.api.media.seek(value)
 
 
 class SetPlaybackSpeedCommand(BaseCommand):
@@ -444,9 +361,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             PlayCurrentSubtitleCommand,
             PlayAroundSpectrogramSelectionCommand,
-            StepFrameCommand,
-            StepMillisecondsCommand,
-            SeekWithGuiCommand,
+            SeekCommand,
             SetPlaybackSpeedCommand,
             SetVolumeCommand,
             MuteCommand,
