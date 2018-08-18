@@ -23,11 +23,11 @@ import typing as T
 import bubblesub.api
 from bubblesub.api.cmd import CommandError
 
-FRAME_REGEX = r'^(?P<delta>[+-]?\d+)( frames?|f)$'
-KEYFRAME_REGEX = r'^(?P<delta>[+-]?\d+)( keyframes?|kf)$'
+FRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( frames?|f)$')
+KEYFRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( keyframes?|kf)$')
 
 
-def plural_desc(term: str, count: int) -> str:
+def _plural_desc(term: str, count: int) -> str:
     if count == -1:
         return f'previous {term}'
     if count == 1:
@@ -39,7 +39,7 @@ def plural_desc(term: str, count: int) -> str:
     return f'zero {term}s'
 
 
-def bisect_(source: T.List[int], origin: int, delta: int) -> int:
+def _bisect(source: T.List[int], origin: int, delta: int) -> int:
     if delta > 0:
         # find leftmost value greater than origin
         idx = bisect.bisect_right(source, origin)
@@ -55,14 +55,14 @@ def bisect_(source: T.List[int], origin: int, delta: int) -> int:
     return source[idx]
 
 
-def apply_frame(api: bubblesub.api.Api, origin: int, delta: int) -> int:
+def _apply_frame(api: bubblesub.api.Api, origin: int, delta: int) -> int:
     if not api.media.video.timecodes:
         raise CommandError('timecode information is not available')
 
-    return bisect_(api.media.video.timecodes, origin, delta)
+    return _bisect(api.media.video.timecodes, origin, delta)
 
 
-def apply_keyframe(api: bubblesub.api.Api, origin: int, delta: int) -> int:
+def _apply_keyframe(api: bubblesub.api.Api, origin: int, delta: int) -> int:
     if not api.media.video.keyframes:
         raise CommandError('keyframe information is not available')
 
@@ -71,7 +71,7 @@ def apply_keyframe(api: bubblesub.api.Api, origin: int, delta: int) -> int:
         for i in api.media.video.keyframes
     ]
 
-    return bisect_(possible_pts, origin, delta)
+    return _bisect(possible_pts, origin, delta)
 
 
 class RelativePts:
@@ -85,27 +85,27 @@ class RelativePts:
 
     @property
     def description(self) -> str:
-        match = re.match(KEYFRAME_REGEX, self.value)
+        match = KEYFRAME_REGEX.match(self.value)
         if match:
             delta = int(match.group('delta'))
-            return plural_desc('keyframe', delta)
+            return _plural_desc('keyframe', delta)
 
         if self.value == 'prev-keyframe':
-            return plural_desc('keyframe', -1)
+            return _plural_desc('keyframe', -1)
 
         if self.value == 'next-keyframe':
-            return plural_desc('keyframe', 1)
+            return _plural_desc('keyframe', 1)
 
-        match = re.match(FRAME_REGEX, self.value)
+        match = FRAME_REGEX.match(self.value)
         if match:
             delta = int(match.group('delta'))
-            return plural_desc('frame', delta)
+            return _plural_desc('frame', delta)
 
         if self.value == 'prev-frame':
-            return plural_desc('frame', -1)
+            return _plural_desc('frame', -1)
 
         if self.value == 'next-frame':
-            return plural_desc('frame', 1)
+            return _plural_desc('frame', 1)
 
         if self.value == 'current-frame':
             return 'current frame'
@@ -128,27 +128,27 @@ class RelativePts:
         raise ValueError(f'unknown relative pts: "{self.value}"')
 
     async def apply(self, origin: int) -> int:
-        match = re.match(KEYFRAME_REGEX, self.value)
+        match = KEYFRAME_REGEX.match(self.value)
         if match:
             delta = int(match.group('delta'))
-            return apply_keyframe(self.api, origin, delta)
+            return _apply_keyframe(self.api, origin, delta)
 
         if self.value == 'prev-keyframe':
-            return apply_keyframe(self.api, origin, -1)
+            return _apply_keyframe(self.api, origin, -1)
 
         if self.value == 'next-keyframe':
-            return apply_keyframe(self.api, origin, 1)
+            return _apply_keyframe(self.api, origin, 1)
 
-        match = re.match(FRAME_REGEX, self.value)
+        match = FRAME_REGEX.match(self.value)
         if match:
             delta = int(match.group('delta'))
-            return apply_frame(self.api, origin, delta)
+            return _apply_frame(self.api, origin, delta)
 
         if self.value == 'prev-frame':
-            return apply_frame(self.api, origin, -1)
+            return _apply_frame(self.api, origin, -1)
 
         if self.value == 'next-frame':
-            return apply_frame(self.api, origin, 1)
+            return _apply_frame(self.api, origin, 1)
 
         if self.value == 'current-frame':
             return self.api.media.video.align_pts_to_near_frame(
