@@ -27,72 +27,27 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.cmd.common import BooleanOperation
+from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import RelativePts
-from bubblesub.util import ShiftTarget
 
 
-def _fmt_shift_target(shift_target: ShiftTarget) -> str:
-    return {
-        ShiftTarget.Start: 'selection start',
-        ShiftTarget.End: 'selection end',
-        ShiftTarget.Both: 'selection'
-    }[shift_target]
-
-
-class PlayCurrentSubtitleCommand(BaseCommand):
-    names = ['video/play-current-sub']
-    menu_name = '&Play current subtitle'
-    help_text = 'Plays the currently selected subtitle.'
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.media.is_loaded and self.api.subs.has_selection
-
-    async def run(self) -> None:
-        sub = self.api.subs.selected_events[0]
-        self.api.media.play(sub.start, sub.end)
-
-
-class PlayAroundSpectrogramSelectionCommand(BaseCommand):
-    names = ['video/play-around-sel']
-    help_text = 'Plays a region near the current spectrogram selection.'
+class PlaySubtitleCommand(BaseCommand):
+    names = ['play-sub']
+    help_text = 'Plays given subtitle.'
 
     @property
     def menu_name(self) -> str:
-        ret = '&Play '
-        if self.args.delta_start < 0 and self.args.delta_end == 0:
-            ret += f'{-self.args.delta_start} ms before '
-        elif self.args.delta_start == 0 and self.args.delta_end > 0:
-            ret += '{self.args.delta_end} ms after '
-        elif self.args.delta_start != 0 or self.args.delta_end != 0:
-            ret += (
-                '{self.args.delta_start:+} ms / '
-                '{self.args.delta_end:+} ms around '
-            )
-        ret += _fmt_shift_target(self.args.target)
-        return ret
+        return f'&Play {self.args.target.description}'
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.media.is_loaded \
-            and self.api.media.audio.has_selection
+        return self.api.media.is_loaded and self.args.target.makes_sense
 
     async def run(self) -> None:
-        if self.args.target == ShiftTarget.Start:
-            self.api.media.play(
-                self.api.media.audio.selection_start + self.args.delta_start,
-                self.api.media.audio.selection_start + self.args.delta_end
-            )
-        elif self.args.target == ShiftTarget.End:
-            self.api.media.play(
-                self.api.media.audio.selection_end + self.args.delta_start,
-                self.api.media.audio.selection_end + self.args.delta_end
-            )
-        elif self.args.target == ShiftTarget.Both:
-            self.api.media.play(
-                self.api.media.audio.selection_start + self.args.delta_start,
-                self.api.media.audio.selection_end + self.args.delta_end
-            )
+        events = await self.args.target.get_subtitles()
+        start = min(event.start for event in events)
+        end = max(event.end for event in events)
+        self.api.media.play(start, end)
 
     @staticmethod
     def _decorate_parser(
@@ -101,22 +56,84 @@ class PlayAroundSpectrogramSelectionCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             '-t', '--target',
-            help='part of selection to play around',
-            type=ShiftTarget.from_string,
-            choices=list(ShiftTarget),
-            default=ShiftTarget.Both
+            help='subtitle to play',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
         )
+
+
+class PlaySpectrogramSelectionCommand(BaseCommand):
+    names = ['play-spectrogram-sel']
+    help_text = 'Plays a region near the current spectrogram selection.'
+
+    @property
+    def menu_name(self) -> str:
+        ret = '&Play '
+        if self.args.delta_start:
+            ret += f'{self.args.delta_start.description} before '
+        if self.args.delta_end:
+            ret += f'{self.args.delta_end.description} after '
+        ret += 'spectrogram selection'
+        return ret
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.media.is_loaded \
+            and self.api.media.audio.has_selection
+
+    async def run(self) -> None:
+        start = self.api.media.audio.selection_start
+        end = self.api.media.audio.selection_end
+
+        if self.args.method == 'start':
+            end = start
+        elif self.args.method == 'end':
+            start = end
+
+        if self.args.delta_start:
+            start = await self.args.delta_start.apply(start)
+        if self.args.delta_end:
+            end = await self.args.delta_end.apply(end)
+
+        self.api.media.play(start, end)
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
         parser.add_argument(
             '-ds', '--delta-start',
-            help='delta relative to the selection start in milliseconds',
-            type=int,
-            default=0
+            help='delta relative to the selection start',
+            type=lambda value: RelativePts(api, value)
         )
         parser.add_argument(
             '-de', '--delta-end',
-            help='delta relative to the selection end in milliseconds',
-            type=int,
-            default=0
+            help='delta relative to the selection end',
+            type=lambda value: RelativePts(api, value)
+        )
+
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument(
+            '--start',
+            action='store_const',
+            dest='method',
+            const='start',
+            help='play around selection start'
+        )
+        group.add_argument(
+            '--end',
+            action='store_const',
+            dest='method',
+            const='end',
+            help='play around selection end'
+        )
+        group.add_argument(
+            '--both',
+            action='store_const',
+            dest='method',
+            const='both',
+            help='play around whole selection'
         )
 
 
@@ -344,8 +361,8 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            PlayCurrentSubtitleCommand,
-            PlayAroundSpectrogramSelectionCommand,
+            PlaySubtitleCommand,
+            PlaySpectrogramSelectionCommand,
             SeekCommand,
             SetPlaybackSpeedCommand,
             SetVolumeCommand,

@@ -16,16 +16,16 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
 |<kbd>Ctrl+A</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> all</code> |
 |<kbd>Ctrl+Shift+A</kbd> | global | <code><a href="#user-content-cmd-select-subs">select-subs</a> none</code> |
-|<kbd>Alt+2</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t start -de 500</code> |
-|<kbd>Alt+1</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t start -ds -500</code> |
-|<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t end -ds -500</code> |
-|<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> -t end -de 500</code> |
-|<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> </code> |
+|<kbd>Alt+2</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> --start -de=+500ms</code> |
+|<kbd>Alt+1</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> --start -ds=-500ms</code> |
+|<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> --end -ds=-500ms</code> |
+|<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> --end -de=+500ms</code> |
+|<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> </code> |
 |<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-1f</code> |
 |<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+1f</code> |
 |<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
 |<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
-|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
+|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-play-sub">play-sub</a> </code> |
 |<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-undo">undo</a> </code> |
 |<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
@@ -70,8 +70,8 @@ Context refers to the currently focused widget.
 |<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-commit-sel">spectrogram-commit-sel</a> </code> |
 |<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d above</code> |
 |<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
-|<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> </code> |
-|<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
+|<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-spectrogram-sel">play-spectrogram-sel</a> </code> |
+|<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-play-sub">play-sub</a> </code> |
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
 |<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
@@ -306,6 +306,34 @@ Usage:
 
 * `operation`: whether to pause the video
 
+### <a name="cmd-play-spectrogram-sel"></a>`play‑spectrogram‑sel`
+Plays a region near the current spectrogram selection.
+
+
+
+Usage:
+`play‑spectrogram‑sel -ds|--delta-start=… -de|--delta-end=… [--start] [--end] [--both]`
+
+
+
+* `-ds`, `--delta-start`: delta relative to the selection start
+* `-de`, `--delta-end`: delta relative to the selection end
+* `--start`: play around selection start
+* `--end`: play around selection end
+* `--both`: play around whole selection
+
+### <a name="cmd-play-sub"></a>`play‑sub`
+Plays given subtitle.
+
+
+
+Usage:
+`play‑sub -t|--target=…`
+
+
+
+* `-t`, `--target`: subtitle to play
+
 ### <a name="cmd-quit"></a>`quit`
 Quits the application. Prompts user to save the current file if there are unsaved changes.
 ### <a name="cmd-redo"></a>`redo`
@@ -465,22 +493,6 @@ Usage:
 Opens up the spell check dialog.
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.
-### <a name="cmd-video-play-around-sel"></a>`video/play‑around‑sel`
-Plays a region near the current spectrogram selection.
-
-
-
-Usage:
-`video/play‑around‑sel -t|--target=… -ds|--delta-start=… -de|--delta-end=…`
-
-
-
-* `-t`, `--target`: part of selection to play around (`start`, `end`, `both`)
-* `-ds`, `--delta-start`: delta relative to the selection start in milliseconds
-* `-de`, `--delta-end`: delta relative to the selection end in milliseconds
-
-### <a name="cmd-video-play-current-sub"></a>`video/play‑current‑sub`
-Plays the currently selected subtitle.
 ### <a name="cmd-video-screenshot"></a>`video/screenshot`
 Makes a screenshot of the current video frame. Prompts user for the path where to save the screenshot to.
 

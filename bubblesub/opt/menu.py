@@ -152,13 +152,13 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
 
     SubMenu('&Playback', [
         SubMenu('Play around selection', [
-            MenuCommand('/video/play-around-sel -t start -ds -500'),
-            MenuCommand('/video/play-around-sel -t start -de 500'),
-            MenuCommand('/video/play-around-sel -t end -ds -500'),
-            MenuCommand('/video/play-around-sel -t end -de 500'),
+            MenuCommand('/play-spectrogram-sel --start -ds=-500ms'),
+            MenuCommand('/play-spectrogram-sel --start -de=+500ms'),
+            MenuCommand('/play-spectrogram-sel --end -ds=-500ms'),
+            MenuCommand('/play-spectrogram-sel --end -de=+500ms'),
         ]),
-        MenuCommand('/video/play-around-sel'),
-        MenuCommand('/video/play-current-sub'),
+        MenuCommand('/play-spectrogram-sel'),
+        MenuCommand('/play-sub'),
         MenuCommand('/pause off'),
         MenuSeparator(),
         MenuCommand('/seek -d=ask'),
