@@ -78,7 +78,7 @@ _DEFAULT_GLOBAL_HOTKEYS = [
     Hotkey('Ctrl+F', '/search'),
     Hotkey('Ctrl+H', '/search-and-replace'),
     Hotkey('Ctrl+Return', '/edit/insert-sub -d below'),
-    Hotkey('Ctrl+Delete', '/edit/delete-subs'),
+    Hotkey('Ctrl+Delete', '/delete-subs'),
     Hotkey('Ctrl+Shift+1', '/spectrogram-shift-sel --start -d=-10f'),
     Hotkey('Ctrl+Shift+2', '/spectrogram-shift-sel --start -d=+10f'),
     Hotkey('Ctrl+Shift+3', '/spectrogram-shift-sel --end -d=-10f'),

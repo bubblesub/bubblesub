@@ -32,7 +32,7 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-search">search</a> </code> |
 |<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-search-and-replace">search-and-replace</a> </code> |
 |<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
-|<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-edit-delete-subs">edit/delete-subs</a> </code> |
+|<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-delete-subs">delete-subs</a> </code> |
 |<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-10f</code> |
 |<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=+10f</code> |
 |<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d=-10f</code> |
@@ -112,8 +112,18 @@ Usage:
 * `-t`, `--target`: subtitles to select
 * `-s`, `--subject`: subject to copy (`text`, `times`, `all`)
 
-### <a name="cmd-edit-delete-subs"></a>`edit/delete‑subs`
-Deletes the selected subtitles.
+### <a name="cmd-delete-subs"></a>`delete‑subs`
+Deletes given subtitles.
+
+
+
+Usage:
+`delete‑subs [target]`
+
+
+
+* `target`: subtitles to select
+
 ### <a name="cmd-edit-duplicate-subs"></a>`edit/duplicate‑subs`
 Duplicates the selected subtitles. The newly created subtitles are interleaved with the current selection.
 ### <a name="cmd-edit-insert-sub"></a>`edit/insert‑sub`

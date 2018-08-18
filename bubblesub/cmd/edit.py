@@ -25,6 +25,7 @@ from PyQt5 import QtWidgets
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
+from bubblesub.cmd.common import EventSelection
 from bubblesub.util import ShiftTarget, VerticalDirection
 
 
@@ -301,23 +302,46 @@ class DuplicateSubtitlesCommand(BaseCommand):
 
 
 class DeleteSubtitlesCommand(BaseCommand):
-    names = ['edit/delete-subs']
-    menu_name = '&Delete selected subtitles'
-    help_text = 'Deletes the selected subtitles.'
+    names = ['delete-subs']
+    help_text = 'Deletes given subtitles.'
+
+    @property
+    def menu_name(self):
+        return f'&Delete {self.args.target.description}'
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
         with self.api.undo.capture():
+            indexes = await self.args.target.get_indexes()
+            new_selection = (
+                set(self.api.subs.selected_events) -
+                set(self.api.subs.events[idx] for idx in indexes)
+            )
+
+            self.api.subs.selected_indexes = [
+                sub.index for sub in new_selection
+            ]
             for start_idx, count in bubblesub.util.make_ranges(
-                    self.api.subs.selected_indexes,
+                    indexes,
                     reverse=True
             ):
                 self.api.subs.events.remove(start_idx, count)
 
-            self.api.subs.selected_indexes = []
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            'target',
+            help='subtitles to select',
+            type=lambda value: EventSelection(api, value),
+            nargs='?',
+            default='selected'
+        )
 
 
 class SwapSubtitlesTextAndNotesCommand(BaseCommand):

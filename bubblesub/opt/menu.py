@@ -102,7 +102,7 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
         MenuCommand('/edit/move-subs -d below'),
         MenuCommand('/edit/move-subs-to'),
         MenuCommand('/edit/duplicate-subs'),
-        MenuCommand('/edit/delete-subs'),
+        MenuCommand('/delete-subs'),
         MenuSeparator(),
         MenuCommand('/edit/swap-subs-text-and-notes'),
         MenuCommand('/edit/split-sub-at-current-video-frame'),
@@ -254,7 +254,7 @@ _DEFAULT_SUBTITLES_GRID_MENU = [
     MenuCommand('/edit/snap-subs-to-near-sub -t start -d above'),
     MenuCommand('/edit/snap-subs-to-near-sub -t end -d below'),
     MenuSeparator(),
-    MenuCommand('/edit/delete-subs')
+    MenuCommand('/delete-subs')
 ]
 
 
