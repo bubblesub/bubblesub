@@ -59,16 +59,6 @@ class VerticalDirection(_BaseIntEnum):
     Below = 2
 
 
-class BooleanOperation(_BaseIntEnum):
-    """Operation to perform on a boolean."""
-
-    On = 1
-    Off = 2
-    Enable = 1
-    Disable = 2
-    Toggle = 3
-
-
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
     """
     Convert PTS to tuple symbolizing time.

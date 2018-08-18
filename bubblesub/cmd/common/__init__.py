@@ -18,3 +18,4 @@
 
 from .event_selection import EventSelection
 from .pts import RelativePts
+from .bool import BooleanOperation

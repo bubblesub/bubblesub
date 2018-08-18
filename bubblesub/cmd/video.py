@@ -26,8 +26,9 @@ import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
+from bubblesub.cmd.common import BooleanOperation
 from bubblesub.cmd.common import RelativePts
-from bubblesub.util import ShiftTarget, BooleanOperation
+from bubblesub.util import ShiftTarget
 
 
 def _fmt_shift_target(shift_target: ShiftTarget) -> str:
@@ -159,7 +160,7 @@ class SeekCommand(BaseCommand):
 
 
 class SetPlaybackSpeedCommand(BaseCommand):
-    names = ['video/set-playback-speed']
+    names = ['set-playback-speed']
     help_text = 'Adjusts the video playback speed.'
 
     @property
@@ -188,7 +189,7 @@ class SetPlaybackSpeedCommand(BaseCommand):
 
 
 class SetVolumeCommand(BaseCommand):
-    names = ['video/set-volume']
+    names = ['set-volume']
     help_text = 'Adjusts the video volume.'
 
     @property
@@ -217,30 +218,21 @@ class SetVolumeCommand(BaseCommand):
 
 
 class MuteCommand(BaseCommand):
-    names = ['video/mute']
+    names = ['mute']
     help_text = 'Mutes or unmutes the video audio.'
 
     @property
     def menu_name(self) -> str:
-        return {
-            BooleanOperation.Enable: 'Mute',
-            BooleanOperation.Disable: 'Unmute',
-            BooleanOperation.Toggle: 'Toggle mute'
-        }[self.args.operation]
+        return self.args.operation.get_description(
+            'Mute', 'Unmute', 'Toggle mute'
+        )
 
     @property
     def is_enabled(self) -> bool:
         return self.api.media.is_loaded
 
     async def run(self) -> None:
-        if self.args.operation == BooleanOperation.Enable:
-            self.api.media.mute = True
-        elif self.args.operation == BooleanOperation.Disable:
-            self.api.media.mute = False
-        elif self.args.operation == BooleanOperation.Toggle:
-            self.api.media.mute = not self.api.media.mute
-        else:
-            raise AssertionError
+        self.api.media.mute = self.args.operation.apply(self.api.media.mute)
 
     @staticmethod
     def _decorate_parser(
@@ -250,36 +242,30 @@ class MuteCommand(BaseCommand):
         parser.add_argument(
             'operation',
             help='whether to mute the audio',
-            type=BooleanOperation.from_string,
-            choices=list(BooleanOperation)
+            type=BooleanOperation
         )
 
 
 class PauseCommand(BaseCommand):
-    names = ['video/pause']
+    names = ['pause']
     help_text = 'Pauses or unpauses the video playback.'
 
     @property
     def menu_name(self) -> str:
-        return {
-            BooleanOperation.Enable: '&Pause playback',
-            BooleanOperation.Disable: '&Play until end of the file',
-            BooleanOperation.Toggle: '&Toggle pause'
-        }[self.args.operation]
+        return self.args.operation.get_description(
+            '&Pause playback',
+            '&Play until end of the file',
+            '&Toggle pause'
+        )
 
     @property
     def is_enabled(self) -> bool:
         return self.api.media.is_loaded
 
     async def run(self) -> None:
-        if self.args.operation == BooleanOperation.Enable:
-            self.api.media.is_paused = True
-        elif self.args.operation == BooleanOperation.Disable:
-            self.api.media.is_paused = False
-        elif self.args.operation == BooleanOperation.Toggle:
-            self.api.media.is_paused = not self.api.media.is_paused
-        else:
-            raise AssertionError
+        self.api.media.is_paused = (
+            self.args.operation.apply(self.api.media.is_paused)
+        )
 
     @staticmethod
     def _decorate_parser(
@@ -289,8 +275,7 @@ class PauseCommand(BaseCommand):
         parser.add_argument(
             'operation',
             help='whether to pause the video',
-            type=BooleanOperation.from_string,
-            choices=list(BooleanOperation)
+            type=BooleanOperation
         )
 
 

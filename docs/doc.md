@@ -26,7 +26,7 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
 |<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
 |<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
-|<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-video-pause">video/pause</a> toggle</code> |
+|<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-undo">undo</a> </code> |
 |<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
 |<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-search">search</a> </code> |
@@ -44,8 +44,8 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
 |<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
 |<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d default-sub-duration</code> |
-|<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
-|<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
+|<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
+|<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
 |<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d below</code> |
 |<kbd>Shift+F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d above</code> |
 |<kbd>Alt+A</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> spectrogram</code> |
@@ -72,7 +72,7 @@ Context refers to the currently focused widget.
 |<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d below</code> |
 |<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-around-sel">video/play-around-sel</a> </code> |
 |<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-video-play-current-sub">video/play-current-sub</a> </code> |
-|<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-video-pause">video/pause</a> toggle</code> |
+|<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-above</code> |
 |<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-select-subs">select-subs</a> one-below</code> |
 |<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-scroll">spectrogram-scroll</a> -d -0.05</code> |
@@ -89,8 +89,8 @@ Context refers to the currently focused widget.
 |<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d current-frame</code> |
 |<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d current-frame</code> |
 |<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --both -d current-frame</code><br><code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d default-sub-duration</code> |
-|<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}/1.5'</code> |
-|<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-video-set-playback-speed">video/set-playback-speed</a> '{}*1.5'</code> |
+|<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
+|<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
 |<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d prev-sub-end</code> |
 |<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --end -d next-sub-start</code> |
 |<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-spectrogram-shift-sel">spectrogram-shift-sel</a> --start -d=-1kf</code> |
@@ -241,6 +241,18 @@ Usage:
 Aliases: `styles-manager`, `style-manager`
 
 Opens up the style manager.
+### <a name="cmd-mute"></a>`mute`
+Mutes or unmutes the video audio.
+
+
+
+Usage:
+`mute operation`
+
+
+
+* `operation`: whether to mute the audio
+
 ### <a name="cmd-new"></a>`new`
 Opens a new file. Prompts user to save the current file if there are unsaved changes.
 ### <a name="cmd-open"></a>`open`
@@ -281,6 +293,18 @@ Usage:
 * `-t`, `--target`: where to paste the subtitles
 * `--before`: paste before target
 * `--after`: paste after target
+
+### <a name="cmd-pause"></a>`pause`
+Pauses or unpauses the video playback.
+
+
+
+Usage:
+`pause operation`
+
+
+
+* `operation`: whether to pause the video
 
 ### <a name="cmd-quit"></a>`quit`
 Quits the application. Prompts user to save the current file if there are unsaved changes.
@@ -357,6 +381,30 @@ Usage:
 
 * `palette_name`: name of the palette to change to (`dark`, `light`)
 
+### <a name="cmd-set-playback-speed"></a>`set‑playback‑speed`
+Adjusts the video playback speed.
+
+
+
+Usage:
+`set‑playback‑speed expression`
+
+
+
+* `expression`: expression to calculate new playback speed
+
+### <a name="cmd-set-volume"></a>`set‑volume`
+Adjusts the video volume.
+
+
+
+Usage:
+`set‑volume expression`
+
+
+
+* `expression`: expression to calculate new volume
+
 ### <a name="cmd-spectrogram-commit-sel"></a>`spectrogram‑commit‑sel`
 Aliases: `spectrogram-commit-selection`
 
@@ -417,30 +465,6 @@ Usage:
 Opens up the spell check dialog.
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.
-### <a name="cmd-video-mute"></a>`video/mute`
-Mutes or unmutes the video audio.
-
-
-
-Usage:
-`video/mute operation`
-
-
-
-* `operation`: whether to mute the audio (`on`, `off`, `toggle`)
-
-### <a name="cmd-video-pause"></a>`video/pause`
-Pauses or unpauses the video playback.
-
-
-
-Usage:
-`video/pause operation`
-
-
-
-* `operation`: whether to pause the video (`on`, `off`, `toggle`)
-
 ### <a name="cmd-video-play-around-sel"></a>`video/play‑around‑sel`
 Plays a region near the current spectrogram selection.
 
@@ -468,27 +492,3 @@ Usage:
 
 
 * `-i`, `--include-subs`: whether to "burn" the subtitles into the screenshot
-
-### <a name="cmd-video-set-playback-speed"></a>`video/set‑playback‑speed`
-Adjusts the video playback speed.
-
-
-
-Usage:
-`video/set‑playback‑speed expression`
-
-
-
-* `expression`: expression to calculate new playback speed
-
-### <a name="cmd-video-set-volume"></a>`video/set‑volume`
-Adjusts the video volume.
-
-
-
-Usage:
-`video/set‑volume expression`
-
-
-
-* `expression`: expression to calculate new volume
