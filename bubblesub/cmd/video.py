@@ -160,6 +160,7 @@ class SeekCommand(BaseCommand):
         pts = await self.args.delta.apply(pts)
         pts = self.api.media.video.align_pts_to_near_frame(pts)
         self.api.media.seek(pts, self.args.precise)
+        self.api.media.is_paused = True
 
     @staticmethod
     def _decorate_parser(
