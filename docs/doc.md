@@ -21,11 +21,11 @@ Context refers to the currently focused widget.
 |<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> --end -ds=-500ms</code> |
 |<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> --end -de=+500ms</code> |
 |<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> </code> |
+|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=cur-sub-start</code><br><code><a href="#user-content-cmd-pause">pause</a> off</code> |
 |<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-1f</code> |
 |<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+1f</code> |
 |<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
 |<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
-|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-play-sub">play-sub</a> </code> |
 |<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-undo">undo</a> </code> |
 |<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
