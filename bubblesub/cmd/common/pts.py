@@ -29,6 +29,11 @@ from bubblesub.api.cmd import CommandError
 MS_REGEX = re.compile(r'(?P<delta>[+-]?\d+)( milliseconds|ms)$')
 FRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( frames?|f)$')
 KEYFRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( keyframes?|kf)$')
+SUB_BOUNDARY_REGEX = re.compile(
+    r'^(?P<origin>prev|previous|next|cur|current)'
+    r'-sub-'
+    r'(?P<boundary>start|end)$'
+)
 
 
 def _plural_desc(term: str, count: int) -> str:
@@ -172,23 +177,23 @@ class RelativePts:
                 self.api.media.current_pts
             )
 
-        if self.value in {'prev-sub-start', 'prev-sub-end'}:
-            sub = self.api.subs.selected_events[0].prev
+        match = SUB_BOUNDARY_REGEX.match(self.value)
+        if match:
+            if match.group('origin') in {'prev', 'previous'}:
+                sub = self.api.subs.selected_events[0].prev
+            elif match.group('origin') == 'next':
+                sub = self.api.subs.selected_events[-1].next
+            elif match.group('origin') in {'cur', 'current'}:
+                sub = self.api.subs.selected_events[0]
+            else:
+                raise AssertionError
+
             if sub is None:
                 return 0
-            if self.value == 'prev-sub-start':
-                return sub.start
-            if self.value == 'prev-sub-end':
-                return sub.end
-            raise AssertionError
 
-        if self.value in {'next-sub-start', 'next-sub-end'}:
-            sub = self.api.subs.selected_events[-1].next
-            if sub is None:
-                return self.api.media.max_pts
-            if self.value == 'next-sub-start':
+            if match.group('boundary') == 'start':
                 return sub.start
-            if self.value == 'next-sub-end':
+            if match.group('boundary') == 'end':
                 return sub.end
             raise AssertionError
 
