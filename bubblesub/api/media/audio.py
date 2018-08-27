@@ -442,6 +442,8 @@ class AudioApi(QtCore.QObject):
             return False
         while self._audio_source is _LOADING:
             time.sleep(0.01)
+        if self._audio_source is None:
+            return False
         return True
 
     def _clip(self, value: T.Union[int, float]) -> int:
