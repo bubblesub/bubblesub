@@ -218,7 +218,8 @@ class SubsGrid(QtWidgets.QTableView):
         self._subs_grid_delegate.on_palette_change()
 
     def _sync_sub_selection(self) -> None:
-        if self._seek_to is not None:
+        if self._seek_to is not None \
+                and self._api.opt.general.video.sync_pos_to_selection:
             self._api.media.is_paused = True
             self._api.media.seek(self._seek_to)
             self._seek_to = None

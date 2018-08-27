@@ -274,6 +274,7 @@ class VideoConfig:
     def __init__(self) -> None:
         """Initialize self."""
         self.subs_sync_interval = 65
+        self.sync_pos_to_selection = True
 
     def loads(self, cfg: configparser.RawConfigParser) -> None:
         """
@@ -286,6 +287,11 @@ class VideoConfig:
             'subs_sync_interval',
             fallback=self.subs_sync_interval
         )
+        self.sync_pos_to_selection = cfg.getboolean(
+            'video',
+            'sync_pos_to_selection',
+            fallback=self.sync_pos_to_selection
+        )
 
     def dumps(self) -> T.Any:
         """
@@ -296,7 +302,8 @@ class VideoConfig:
         return {
             'video':
             {
-                'subs_sync_interval': self.subs_sync_interval
+                'subs_sync_interval': self.subs_sync_interval,
+                'sync_pos_to_selection': self.sync_pos_to_selection
             }
         }
 

@@ -57,6 +57,13 @@ class _VideoButtons(QtWidgets.QWidget):
         )
         self._pause_btn.setCheckable(True)
 
+        self._sync_video_pos_checkbox = QtWidgets.QCheckBox(
+            'Seek to selected subtitles', self
+        )
+        self._sync_video_pos_checkbox.setChecked(
+            self._api.opt.general.video.sync_pos_to_selection
+        )
+
         self._playback_speed_spinbox = QtWidgets.QDoubleSpinBox()
         self._playback_speed_spinbox.setMinimum(0.1)
         self._playback_speed_spinbox.setMaximum(10.0)
@@ -66,6 +73,7 @@ class _VideoButtons(QtWidgets.QWidget):
         layout.addWidget(self._play_btn)
         layout.addWidget(self._pause_btn)
         layout.addStretch()
+        layout.addWidget(self._sync_video_pos_checkbox)
         layout.addWidget(QtWidgets.QLabel('Playback speed:', self))
         layout.addWidget(self._playback_speed_spinbox)
 
@@ -90,12 +98,18 @@ class _VideoButtons(QtWidgets.QWidget):
         self._playback_speed_spinbox.valueChanged.connect(
             self._on_playback_speed_spinbox_change
         )
+        self._sync_video_pos_checkbox.clicked.connect(
+            self._on_sync_video_pos_checkbox_click
+        )
 
     def _disconnect_ui_signals(self) -> None:
         self._play_btn.clicked.disconnect(self._on_play_btn_click)
         self._pause_btn.clicked.disconnect(self._on_pause_btn_click)
         self._playback_speed_spinbox.valueChanged.disconnect(
             self._on_playback_speed_spinbox_change
+        )
+        self._sync_video_pos_checkbox.clicked.disconnect(
+            self._on_sync_video_pos_checkbox_click
         )
 
     def _on_play_btn_click(self) -> None:
@@ -122,6 +136,11 @@ class _VideoButtons(QtWidgets.QWidget):
         self._disconnect_ui_signals()
         self._playback_speed_spinbox.setValue(self._api.media.playback_speed)
         self._connect_ui_signals()
+
+    def _on_sync_video_pos_checkbox_click(self) -> None:
+        self._api.opt.general.video.sync_pos_to_selection = (
+            self._sync_video_pos_checkbox.isChecked()
+        )
 
 
 class _VideoVolumeControl(QtWidgets.QWidget):
