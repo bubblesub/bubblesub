@@ -357,6 +357,8 @@ class MediaApi(QtCore.QObject):
         if end is None:
             # XXX: mpv doesn't accept None nor "" so we use max pts
             end = self._mpv.get_property('duration') * 1000
+        else:
+            end -= 1
         assert end is not None
         end = max(0, end)
         self._mpv.set_option('end', bubblesub.util.ms_to_str(end))
