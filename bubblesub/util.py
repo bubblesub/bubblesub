@@ -37,21 +37,6 @@ class _BaseIntEnum(enum.IntEnum):
         return self.name.lower()
 
 
-class ShiftTarget(_BaseIntEnum):
-    """What parts to shift in a target that has a start and an end point."""
-
-    Start = 1
-    End = 2
-    Both = 3
-
-
-class HorizontalDirection(_BaseIntEnum):
-    """Generic direction on a horizontal 1D axis."""
-
-    Left = 1
-    Right = 2
-
-
 class VerticalDirection(_BaseIntEnum):
     """Generic direction on a vertical 1D axis."""
 

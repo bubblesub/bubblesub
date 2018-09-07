@@ -27,15 +27,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import RelativePts
-from bubblesub.util import ShiftTarget, VerticalDirection
-
-
-def _fmt_shift_target(shift_target: ShiftTarget) -> str:
-    return {
-        ShiftTarget.Start: 'subtitles start',
-        ShiftTarget.End: 'subtitles end',
-        ShiftTarget.Both: 'subtitles'
-    }[shift_target]
+from bubblesub.util import VerticalDirection
 
 
 class UndoCommand(BaseCommand):
