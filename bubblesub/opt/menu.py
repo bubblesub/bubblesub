@@ -201,8 +201,8 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
                 '/audio-shift-sel -d=cur-frame --both',
                 '/audio-shift-sel -d=default-sub-duration --end'
             ),
-            MenuCommand('/edit/snap-subs-to-current-video-frame -t=start'),
-            MenuCommand('/edit/snap-subs-to-current-video-frame -t=end'),
+            MenuCommand('/sub-shift -d=cur-frame --start'),
+            MenuCommand('/sub-shift -d=cur-frame --end'),
             MenuCommand('/edit/place-subs-at-current-video-frame'),
         ]),
 

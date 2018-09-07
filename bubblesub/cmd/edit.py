@@ -512,48 +512,6 @@ class ShiftSubtitlesWithGuiCommand(BaseCommand):
                 sub.end_update()
 
 
-class SnapSubtitlesToCurrentVideoFrameCommand(BaseCommand):
-    names = ['edit/snap-subs-to-current-video-frame']
-    help_text = 'Snaps selected subtitles to the current video frame.'
-
-    @property
-    def menu_name(self) -> str:
-        return (
-            f'&Snap {_fmt_shift_target(self.args.target)} '
-            'to current video frame'
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
-
-    async def run(self) -> None:
-        with self.api.undo.capture():
-            for sub in self.api.subs.selected_events:
-                if self.args.target == ShiftTarget.Start:
-                    sub.start = self.api.media.current_pts
-                elif self.args.target == ShiftTarget.End:
-                    sub.end = self.api.media.current_pts
-                elif self.args.target == ShiftTarget.Both:
-                    sub.start = self.api.media.current_pts
-                    sub.end = self.api.media.current_pts
-                else:
-                    raise AssertionError
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            '-t', '--target',
-            help='how to snap the selection',
-            type=ShiftTarget.from_string,
-            choices=list(ShiftTarget),
-            required=True
-        )
-
-
 class PlaceSubtitlesAtCurrentVideoFrameCommand(BaseCommand):
     names = ['edit/place-subs-at-current-video-frame']
     menu_name = '&Place subtitles at current video frame'
@@ -756,7 +714,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             JoinSubtitlesConcatenateCommand,
             SubtitlesShiftCommand,
             ShiftSubtitlesWithGuiCommand,
-            SnapSubtitlesToCurrentVideoFrameCommand,
             PlaceSubtitlesAtCurrentVideoFrameCommand,
             SnapSubtitlesToNearSubtitleCommand,
     ]:

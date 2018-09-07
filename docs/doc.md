@@ -168,12 +168,6 @@ Realigns the selected subtitles to the current video frame. The subtitles start 
 ### <a name="cmd-edit-shift-subs-with-gui"></a>`edit/shift‑subs‑with‑gui`
 Shifts the subtitle boundaries by the specified distance. Prompts user for details with a GUI dialog.
 
-### <a name="cmd-edit-snap-subs-to-current-video-frame"></a>`edit/snap‑subs‑to‑current‑video‑frame`
-Snaps selected subtitles to the current video frame.
-
-Usage: `edit/snap‑subs‑to‑current‑video‑frame -t|--target=…`
-* `-t`, `--target`: how to snap the selection (`start`, `end`, `both`)
-
 ### <a name="cmd-edit-snap-subs-to-near-sub"></a>`edit/snap‑subs‑to‑near‑sub`
 Snaps the selected subtitles times to the nearest subtitle.
 
