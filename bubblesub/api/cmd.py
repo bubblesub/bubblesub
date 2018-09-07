@@ -247,11 +247,11 @@ class CommandApi(QtCore.QObject):
 
         self._api.log.info(cmd.invocation)
 
-        if not cmd.is_enabled:
-            self._api.log.info('command not available right now')
-            return False
-
         try:
+            if not cmd.is_enabled:
+                self._api.log.info('command not available right now')
+                return False
+
             await cmd.run()
         except CommandCanceled:
             self._api.log.warn(f'canceled')

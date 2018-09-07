@@ -96,7 +96,7 @@ class EventSelection:
             valid_indexes = range(len(self.api.subs.events))
             return all(idx in valid_indexes for idx in indexes)
 
-        return False
+        raise ValueError(f'unknown selection target: "{self.target}"')
 
     async def get_all_indexes(self):
         if self.target == 'all':
