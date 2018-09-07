@@ -512,76 +512,6 @@ class ShiftSubtitlesWithGuiCommand(BaseCommand):
                 sub.end_update()
 
 
-class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
-    names = ['edit/snap-subs-to-near-sub']
-    help_text = 'Snaps the selected subtitles times to the nearest subtitle.'
-
-    @property
-    def menu_name(self) -> str:
-        return (
-            f'&Snap '
-            f'{_fmt_shift_target(self.args.target)} to subtitle '
-            f'{self.args.direction.name.lower()} '
-        )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self._nearest_sub is not None
-
-    @property
-    def _nearest_sub(self) -> T.Optional[Event]:
-        if not self.api.subs.has_selection:
-            return None
-
-        if self.args.direction == VerticalDirection.Above:
-            return self.api.subs.selected_events[0].prev
-
-        if self.args.direction == VerticalDirection.Below:
-            return self.api.subs.selected_events[-1].next
-
-        raise AssertionError
-
-    async def run(self) -> None:
-        assert self._nearest_sub is not None
-        with self.api.undo.capture():
-            for sub in self.api.subs.selected_events:
-                if self.args.target == ShiftTarget.Start:
-                    sub.start = self._nearest_sub.end
-                elif self.args.target == ShiftTarget.End:
-                    sub.end = self._nearest_sub.start
-                elif self.args.target == ShiftTarget.Both:
-                    if self.args.direction == VerticalDirection.Above:
-                        sub.start = self._nearest_sub.end
-                        sub.end = self._nearest_sub.end
-                    elif self.args.direction == VerticalDirection.Below:
-                        sub.start = self._nearest_sub.start
-                        sub.end = self._nearest_sub.start
-                    else:
-                        raise AssertionError
-                else:
-                    raise AssertionError
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            '-t', '--target',
-            help='how to snap the subtitles',
-            type=ShiftTarget.from_string,
-            choices=list(ShiftTarget),
-            required=True
-        )
-        parser.add_argument(
-            '-d', '--direction',
-            help='direction to snap into',
-            type=VerticalDirection.from_string,
-            choices=list(VerticalDirection),
-            required=True
-        )
-
-
 class SubtitlesShiftCommand(BaseCommand):
     names = ['sub-shift']
     help_text = 'Shifts given subtitles.'
@@ -689,6 +619,5 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             JoinSubtitlesConcatenateCommand,
             SubtitlesShiftCommand,
             ShiftSubtitlesWithGuiCommand,
-            SnapSubtitlesToNearSubtitleCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

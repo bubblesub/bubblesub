@@ -165,13 +165,6 @@ Moves the selected subtitles to the specified position. Asks for the position in
 ### <a name="cmd-edit-shift-subs-with-gui"></a>`edit/shift‑subs‑with‑gui`
 Shifts the subtitle boundaries by the specified distance. Prompts user for details with a GUI dialog.
 
-### <a name="cmd-edit-snap-subs-to-near-sub"></a>`edit/snap‑subs‑to‑near‑sub`
-Snaps the selected subtitles times to the nearest subtitle.
-
-Usage: `edit/snap‑subs‑to‑near‑sub -t|--target=… -d|--direction=…`
-* `-t`, `--target`: how to snap the subtitles (`start`, `end`, `both`)
-* `-d`, `--direction`: direction to snap into (`above`, `below`)
-
 ### <a name="cmd-edit-split-sub-at-current-video-frame"></a>`edit/split‑sub‑at‑current‑video‑frame`
 Splits the selected subtitle into two at the current video frame.
 

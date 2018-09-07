@@ -185,8 +185,8 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
         SubMenu('Snap to nearest subtitle', [
             MenuCommand('/audio-shift-sel -d=prev-sub-end --start'),
             MenuCommand('/audio-shift-sel -d=next-sub-start --end'),
-            MenuCommand('/edit/snap-subs-to-near-sub -t=start -d=above'),
-            MenuCommand('/edit/snap-subs-to-near-sub -t=end -d=below'),
+            MenuCommand('/sub-shift -d=prev-sub-end --start'),
+            MenuCommand('/sub-shift -d=next-sub-start --end'),
         ]),
 
         SubMenu('Snap to nearest keyframe', [
@@ -254,8 +254,8 @@ _DEFAULT_SUBTITLES_GRID_MENU = [
     MenuCommand('/edit/join-subs-as-karaoke'),
     MenuCommand('/edit/join-subs-as-transformation'),
     MenuSeparator(),
-    MenuCommand('/edit/snap-subs-to-near-sub -t=start -d=above'),
-    MenuCommand('/edit/snap-subs-to-near-sub -t=end -d=below'),
+    MenuCommand('/sub-shift -d=prev-sub-end --start'),
+    MenuCommand('/sub-shift -d=next-sub-start --end'),
     MenuSeparator(),
     MenuCommand('/sub-delete')
 ]
