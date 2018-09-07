@@ -512,31 +512,6 @@ class ShiftSubtitlesWithGuiCommand(BaseCommand):
                 sub.end_update()
 
 
-class PlaceSubtitlesAtCurrentVideoFrameCommand(BaseCommand):
-    names = ['edit/place-subs-at-current-video-frame']
-    menu_name = '&Place subtitles at current video frame'
-    help_text = (
-        'Realigns the selected subtitles to the current video frame. '
-        'The subtitles start time is placed at the current video frame '
-        'and the subtitles duration is set to the default subtitle duration.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
-
-    async def run(self) -> None:
-        with self.api.undo.capture():
-            for sub in self.api.subs.selected_events:
-                sub.start = self.api.media.video.align_pts_to_near_frame(
-                    self.api.media.current_pts
-                )
-                sub.end = self.api.media.video.align_pts_to_near_frame(
-                    sub.start
-                    + self.api.opt.general.subs.default_duration
-                )
-
-
 class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
     names = ['edit/snap-subs-to-near-sub']
     help_text = 'Snaps the selected subtitles times to the nearest subtitle.'
@@ -714,7 +689,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             JoinSubtitlesConcatenateCommand,
             SubtitlesShiftCommand,
             ShiftSubtitlesWithGuiCommand,
-            PlaceSubtitlesAtCurrentVideoFrameCommand,
             SnapSubtitlesToNearSubtitleCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

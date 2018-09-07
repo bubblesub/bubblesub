@@ -162,9 +162,6 @@ Usage: `edit/move‑subs -d|--direction=…`
 ### <a name="cmd-edit-move-subs-to"></a>`edit/move‑subs‑to`
 Moves the selected subtitles to the specified position. Asks for the position interactively.
 
-### <a name="cmd-edit-place-subs-at-current-video-frame"></a>`edit/place‑subs‑at‑current‑video‑frame`
-Realigns the selected subtitles to the current video frame. The subtitles start time is placed at the current video frame and the subtitles duration is set to the default subtitle duration.
-
 ### <a name="cmd-edit-shift-subs-with-gui"></a>`edit/shift‑subs‑with‑gui`
 Shifts the subtitle boundaries by the specified distance. Prompts user for details with a GUI dialog.
 

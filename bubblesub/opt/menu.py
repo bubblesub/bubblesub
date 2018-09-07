@@ -203,7 +203,10 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
             ),
             MenuCommand('/sub-shift -d=cur-frame --start'),
             MenuCommand('/sub-shift -d=cur-frame --end'),
-            MenuCommand('/edit/place-subs-at-current-video-frame'),
+            MenuCommand(
+                '/sub-shift -d=cur-frame --both',
+                '/sub-shift -d=default-sub-duration --end'
+            ),
         ]),
 
         SubMenu('Shift', [
