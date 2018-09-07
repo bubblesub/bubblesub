@@ -41,9 +41,9 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1f --start</code> |
 |<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-1f --end</code> |
 |<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1f --end</code> |
-|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=current-frame --start</code> |
-|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=current-frame --end</code> |
-|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=current-frame --both</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=default-sub-duration --end</code> |
+|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cur-frame --start</code> |
+|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cur-frame --end</code> |
+|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cur-frame --both</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=default-sub-duration --end</code> |
 |<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
 |<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d=below</code> |
@@ -86,9 +86,9 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+1500ms</code> |
 |<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
 |<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
-|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=current-frame --start</code> |
-|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=current-frame --end</code> |
-|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=current-frame --both</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=default-sub-duration --end</code> |
+|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cur-frame --start</code> |
+|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cur-frame --end</code> |
+|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cur-frame --both</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=default-sub-duration --end</code> |
 |<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
 |<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=prev-sub-end --start</code> |
@@ -164,13 +164,6 @@ Moves the selected subtitles to the specified position. Asks for the position in
 
 ### <a name="cmd-edit-place-subs-at-current-video-frame"></a>`edit/place‑subs‑at‑current‑video‑frame`
 Realigns the selected subtitles to the current video frame. The subtitles start time is placed at the current video frame and the subtitles duration is set to the default subtitle duration.
-
-### <a name="cmd-edit-shift-subs"></a>`edit/shift‑subs`
-Shifts selected subtitles times by the specified distance.
-
-Usage: `edit/shift‑subs -t|--target=… -d|--delta=…`
-* `-t`, `--target`: how to shift the subtitles (`start`, `end`, `both`)
-* `-d`, `--delta`: milliseconds to shift the subtitles by
 
 ### <a name="cmd-edit-shift-subs-with-gui"></a>`edit/shift‑subs‑with‑gui`
 Shifts the subtitle boundaries by the specified distance. Prompts user for details with a GUI dialog.
@@ -363,6 +356,17 @@ Selects given subtitles.
 
 Usage: `sub‑select target`
 * `target`: subtitles to select
+
+### <a name="cmd-sub-shift"></a>`sub‑shift`
+Shifts given subtitles.
+
+Usage: `sub‑shift [-t|--target=…] -d|--delta=… [--no-align] [--start] [--end] [--both]`
+* `-t`, `--target`: subtitles to shift
+* `-d`, `--delta`: amount to shift the subtitles
+* `--no-align`: don't realign subtitles to video frames
+* `--start`: shift subtitles start
+* `--end`: shift subtitles end
+* `--both`: shift whole subtitles
 
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.

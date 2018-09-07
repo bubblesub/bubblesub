@@ -26,6 +26,7 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import RelativePts
 from bubblesub.util import ShiftTarget, VerticalDirection
 
 
@@ -648,34 +649,44 @@ class SnapSubtitlesToNearSubtitleCommand(BaseCommand):
         )
 
 
-class ShiftSubtitlesCommand(BaseCommand):
-    names = ['edit/shift-subs']
-    help_text = 'Shifts selected subtitles times by the specified distance.'
+class SubtitlesShiftCommand(BaseCommand):
+    names = ['sub-shift']
+    help_text = 'Shifts given subtitles.'
 
     @property
     def menu_name(self) -> str:
-        return (
-            '&Shift '
-            f'{_fmt_shift_target(self.args.target)} '
-            f'({self.args.delta:+} ms)'
-        )
+        if self.args.method == 'start':
+            target = self.args.target.description + ' start'
+        elif self.args.method == 'end':
+            target = self.args.target.description + ' end'
+        else:
+            target = self.args.target.description
+        return f'&Shift {target} {self.args.delta.description}'
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_events:
-                if self.args.target == ShiftTarget.Start:
-                    sub.start = max(0, sub.start + self.args.delta)
-                elif self.args.target == ShiftTarget.End:
-                    sub.end = max(0, sub.end + self.args.delta)
-                elif self.args.target == ShiftTarget.Both:
-                    sub.start = max(0, sub.start + self.args.delta)
-                    sub.end = max(0, sub.end + self.args.delta)
-                else:
-                    raise AssertionError
+            for event in await self.args.target.get_subtitles():
+                start = event.start
+                end = event.end
+
+                if self.args.method in {'start', 'both'}:
+                    start = await self.args.delta.apply(start)
+                    if not self.args.no_align:
+                        start = self.api.media.video.align_pts_to_near_frame(
+                            start
+                        )
+
+                if self.args.method in {'end', 'both'}:
+                    end = await self.args.delta.apply(end)
+                    if not self.args.no_align:
+                        end = self.api.media.video.align_pts_to_near_frame(end)
+
+                event.start = start
+                event.end = end
 
     @staticmethod
     def _decorate_parser(
@@ -684,16 +695,44 @@ class ShiftSubtitlesCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             '-t', '--target',
-            help='how to shift the subtitles',
-            type=ShiftTarget.from_string,
-            choices=list(ShiftTarget),
-            required=True
+            help='subtitles to shift',
+            type=lambda value: EventSelection(api, value),
+            nargs='?',
+            default='selected'
         )
         parser.add_argument(
             '-d', '--delta',
-            help='milliseconds to shift the subtitles by',
-            type=int,
-            required=True
+            help='amount to shift the subtitles',
+            type=lambda value: RelativePts(api, value),
+            required=True,
+        )
+        parser.add_argument(
+            '--no-align',
+            help='don\'t realign subtitles to video frames',
+            action='store_true'
+        )
+
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument(
+            '--start',
+            action='store_const',
+            dest='method',
+            const='start',
+            help='shift subtitles start'
+        )
+        group.add_argument(
+            '--end',
+            action='store_const',
+            dest='method',
+            const='end',
+            help='shift subtitles end'
+        )
+        group.add_argument(
+            '--both',
+            action='store_const',
+            dest='method',
+            const='both',
+            help='shift whole subtitles'
         )
 
 
@@ -715,10 +754,10 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SplitSubtitleAtCurrentVideoFrameCommand,
             JoinSubtitlesKeepFirstCommand,
             JoinSubtitlesConcatenateCommand,
+            SubtitlesShiftCommand,
             ShiftSubtitlesWithGuiCommand,
             SnapSubtitlesToCurrentVideoFrameCommand,
             PlaceSubtitlesAtCurrentVideoFrameCommand,
             SnapSubtitlesToNearSubtitleCommand,
-            ShiftSubtitlesCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))
