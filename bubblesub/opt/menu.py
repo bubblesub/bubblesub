@@ -226,7 +226,7 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
 
         MenuCommand('/audio-commit-sel'),
         MenuSeparator(),
-        MenuCommand('/edit/shift-subs-with-gui'),
+        MenuCommand('/sub-shift --gui --no-align'),
         MenuSeparator(),
         MenuCommand('/audio-scroll -d=-0.05'),
         MenuCommand('/audio-scroll -d=0.05'),

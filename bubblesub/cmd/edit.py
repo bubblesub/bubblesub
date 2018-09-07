@@ -24,6 +24,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import RelativePts
@@ -465,83 +466,81 @@ class JoinSubtitlesConcatenateCommand(BaseCommand):
             self.api.subs.selected_indexes = [idx]
 
 
-class ShiftSubtitlesWithGuiCommand(BaseCommand):
-    names = ['edit/shift-subs-with-gui']
-    menu_name = '&Shift times...'
-    help_text = (
-        'Shifts the subtitle boundaries by the specified distance. '
-        'Prompts user for details with a GUI dialog.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
-
-    async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
-
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        ret = bubblesub.ui.util.time_jump_dialog(
-            main_window,
-            absolute_label='Time to move to:',
-            relative_label='Time to add:',
-            relative_checked=True
-        )
-
-        if ret is None:
-            return
-
-        delta, is_relative = ret
-
-        if not is_relative:
-            delta -= self.api.subs.selected_events[0].start
-
-        with self.api.undo.capture():
-            for sub in self.api.subs.selected_events:
-                sub.begin_update()
-                sub.start += delta
-                sub.end += delta
-                sub.end_update()
-
-
 class SubtitlesShiftCommand(BaseCommand):
     names = ['sub-shift']
     help_text = 'Shifts given subtitles.'
 
     @property
     def menu_name(self) -> str:
-        if self.args.method == 'start':
-            target = self.args.target.description + ' start'
-        elif self.args.method == 'end':
-            target = self.args.target.description + ' end'
-        else:
+        if self.args.method in {'start', 'end'}:
+            target = self.args.target.description + ' ' + self.args.method
+        elif self.args.method == 'both':
             target = self.args.target.description
-        return f'&Shift {target} {self.args.delta.description}'
+        else:
+            raise AssertionError
+
+        if self.args.delta:
+            return f'&Shift {target} {self.args.delta.description}'
+        if self.args.gui:
+            return f'&Shift {target}...'
+        raise AssertionError
 
     @property
     def is_enabled(self) -> bool:
         return self.args.target.makes_sense
 
     async def run(self) -> None:
+        await self.api.gui.exec(self._run_with_gui)
+
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        events = await self.args.target.get_subtitles()
+        delta = await self._get_delta(events, main_window)
+
         with self.api.undo.capture():
-            for event in await self.args.target.get_subtitles():
+            for event in events:
                 start = event.start
                 end = event.end
 
                 if self.args.method in {'start', 'both'}:
-                    start = await self.args.delta.apply(start)
+                    start = await delta.apply(start)
                     if not self.args.no_align:
                         start = self.api.media.video.align_pts_to_near_frame(
                             start
                         )
 
                 if self.args.method in {'end', 'both'}:
-                    end = await self.args.delta.apply(end)
+                    end = await delta.apply(end)
                     if not self.args.no_align:
                         end = self.api.media.video.align_pts_to_near_frame(end)
 
+                event.begin_update()
                 event.start = start
                 event.end = end
+                event.end_update()
+
+    async def _get_delta(
+            self,
+            events: T.List[Event],
+            main_window: QtWidgets.QMainWindow
+    ) -> RelativePts:
+        if self.args.delta:
+            return self.args.delta
+        if self.args.gui:
+            ret = bubblesub.ui.util.time_jump_dialog(
+                main_window,
+                absolute_label='Time to move to:',
+                relative_label='Time to add:',
+                relative_checked=True
+            )
+            if ret is None:
+                raise CommandCanceled
+
+            delta, is_relative = ret
+            if not is_relative and events:
+                delta -= events[0].start
+
+            return RelativePts(self.api, str(delta) + 'ms')
+        raise AssertionError
 
     @staticmethod
     def _decorate_parser(
@@ -555,12 +554,19 @@ class SubtitlesShiftCommand(BaseCommand):
             nargs='?',
             default='selected'
         )
-        parser.add_argument(
+
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument(
+            '-g', '--gui',
+            action='store_true',
+            help='prompt user for shift amount with a GUI dialog'
+        )
+        group.add_argument(
             '-d', '--delta',
             help='amount to shift the subtitles',
             type=lambda value: RelativePts(api, value),
-            required=True,
         )
+
         parser.add_argument(
             '--no-align',
             help='don\'t realign subtitles to video frames',
@@ -611,6 +617,5 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             JoinSubtitlesKeepFirstCommand,
             JoinSubtitlesConcatenateCommand,
             SubtitlesShiftCommand,
-            ShiftSubtitlesWithGuiCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

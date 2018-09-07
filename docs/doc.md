@@ -162,9 +162,6 @@ Usage: `edit/move‑subs -d|--direction=…`
 ### <a name="cmd-edit-move-subs-to"></a>`edit/move‑subs‑to`
 Moves the selected subtitles to the specified position. Asks for the position interactively.
 
-### <a name="cmd-edit-shift-subs-with-gui"></a>`edit/shift‑subs‑with‑gui`
-Shifts the subtitle boundaries by the specified distance. Prompts user for details with a GUI dialog.
-
 ### <a name="cmd-edit-split-sub-at-current-video-frame"></a>`edit/split‑sub‑at‑current‑video‑frame`
 Splits the selected subtitle into two at the current video frame.
 
@@ -344,8 +341,9 @@ Usage: `sub‑select target`
 ### <a name="cmd-sub-shift"></a>`sub‑shift`
 Shifts given subtitles.
 
-Usage: `sub‑shift [-t|--target=…] -d|--delta=… [--no-align] [--start] [--end] [--both]`
+Usage: `sub‑shift [-t|--target=…] [-g|--gui] -d|--delta=… [--no-align] [--start] [--end] [--both]`
 * `-t`, `--target`: subtitles to shift
+* `-g`, `--gui`: prompt user for shift amount with a GUI dialog
 * `-d`, `--delta`: amount to shift the subtitles
 * `--no-align`: don't realign subtitles to video frames
 * `--start`: shift subtitles start
