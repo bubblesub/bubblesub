@@ -26,9 +26,9 @@ import bubblesub.api
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandError
 
-MS_REGEX = re.compile(r'(?P<delta>[+-]?\d+)( milliseconds|ms)$')
-FRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( frames?|f)$')
-KEYFRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( keyframes?|kf)$')
+MS_REGEX = re.compile(r'(?P<delta>[+-]?\d+)( milliseconds| ?ms)$')
+FRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( frames?| ?f)$')
+KEYFRAME_REGEX = re.compile(r'^(?P<delta>[+-]?\d+)( keyframes?| ?kf)$')
 SUB_BOUNDARY_REGEX = re.compile(
     r'^(?P<origin>prev|previous|next|cur|current)'
     r'-sub-'
