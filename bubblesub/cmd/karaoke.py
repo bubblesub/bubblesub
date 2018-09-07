@@ -51,8 +51,7 @@ class SplitSubtitleByKaraokeCommand(BaseCommand):
         end = sub.end
         syllables = self._get_syllables(sub.text)
 
-        self.api.gui.begin_update()
-        with self.api.undo.capture():
+        with self.api.undo.capture(), self.api.gui.throttle_updates():
             self.api.subs.events.remove(idx, 1)
 
             new_subs: T.List[bubblesub.ass.event.Event] = []
@@ -68,7 +67,6 @@ class SplitSubtitleByKaraokeCommand(BaseCommand):
             self.api.subs.selected_indexes = list(
                 range(idx, idx + len(syllables))
             )
-        self.api.gui.end_update()
 
     def _get_syllables(self, text: str) -> T.List[_Syllable]:
         syllables = [_Syllable(text='', duration=0)]

@@ -286,8 +286,7 @@ class SubtitlesCloneCommand(BaseCommand):
         return self.args.target.makes_sense
 
     async def run(self) -> None:
-        self.api.gui.begin_update()
-        with self.api.undo.capture():
+        with self.api.undo.capture(), self.api.gui.throttle_updates():
             sub_copies: T.List[Event] = []
 
             for idx in reversed(await self.args.target.get_indexes()):
@@ -296,7 +295,6 @@ class SubtitlesCloneCommand(BaseCommand):
                 sub_copies.append(sub_copy)
 
             self.api.subs.selected_indexes = [sub.index for sub in sub_copies]
-        self.api.gui.end_update()
 
     @staticmethod
     def _decorate_parser(
@@ -391,13 +389,11 @@ class SplitSubtitleAtCurrentVideoFrameCommand(BaseCommand):
         split_pos = self.api.media.current_pts
         if split_pos < sub.start or split_pos > sub.end:
             return
-        self.api.gui.begin_update()
-        with self.api.undo.capture():
+        with self.api.undo.capture(), self.api.gui.throttle_updates():
             self.api.subs.events.insert(idx + 1, [copy(sub)])
             self.api.subs.events[idx].end = split_pos
             self.api.subs.events[idx + 1].start = split_pos
             self.api.subs.selected_indexes = [idx, idx + 1]
-        self.api.gui.end_update()
 
 
 class JoinSubtitlesKeepFirstCommand(BaseCommand):

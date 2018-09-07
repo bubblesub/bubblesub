@@ -16,6 +16,7 @@
 
 """GUI API."""
 
+import contextlib
 import typing as T
 
 from PyQt5 import QtCore
@@ -66,10 +67,9 @@ class GuiApi(QtCore.QObject):
         """Exit the application."""
         self.quit_requested.emit()
 
-    def begin_update(self) -> None:
-        """Throttle updates to GUI, reducing effects such as flickering."""
+    @contextlib.contextmanager
+    def throttle_updates(self) -> T.Any:
+        """Throttle updates to GUI."""
         self.begin_update_requested.emit()
-
-    def end_update(self) -> None:
-        """Stop throttling GUI updates."""
+        yield
         self.end_update_requested.emit()
