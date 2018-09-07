@@ -573,7 +573,8 @@ class SubtitlesShiftCommand(BaseCommand):
             action='store_const',
             dest='method',
             const='start',
-            help='shift subtitles start'
+            help='shift subtitles start',
+            default='both'
         )
         group.add_argument(
             '--end',

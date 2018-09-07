@@ -139,7 +139,8 @@ class AudioShiftSelectionCommand(BaseCommand):
             action='store_const',
             dest='method',
             const='start',
-            help='shift selection start'
+            help='shift selection start',
+            default='both'
         )
         group.add_argument(
             '--end',

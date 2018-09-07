@@ -124,7 +124,8 @@ class PlayAudioSelectionCommand(BaseCommand):
             action='store_const',
             dest='method',
             const='start',
-            help='play around selection start'
+            help='play around selection start',
+            default='both'
         )
         group.add_argument(
             '--end',
