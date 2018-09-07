@@ -94,6 +94,8 @@ class PlayAudioSelectionCommand(BaseCommand):
             end = start
         elif self.args.method == 'end':
             start = end
+        elif self.args.method != 'both':
+            raise AssertionError
 
         if self.args.delta_start:
             start = await self.args.delta_start.apply(start)

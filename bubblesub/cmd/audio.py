@@ -91,12 +91,11 @@ class AudioShiftSelectionCommand(BaseCommand):
 
     @property
     def menu_name(self) -> str:
-        if self.args.method == 'start':
-            target = 'selection start'
-        elif self.args.method == 'end':
-            target = 'selection end'
-        else:
-            target = 'selection'
+        target = 'selection'
+        if self.args.method in {'start', 'end'}:
+            target += f' {self.args.method}'
+        elif self.args.method != 'both':
+            raise AssertionError
         return f'&Shift {target} {self.args.delta.description}'
 
     async def run(self) -> None:

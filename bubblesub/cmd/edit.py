@@ -472,11 +472,10 @@ class SubtitlesShiftCommand(BaseCommand):
 
     @property
     def menu_name(self) -> str:
+        target = self.args.target.description
         if self.args.method in {'start', 'end'}:
-            target = self.args.target.description + ' ' + self.args.method
-        elif self.args.method == 'both':
-            target = self.args.target.description
-        else:
+            target += f' {self.args.method}'
+        elif self.args.method != 'both':
             raise AssertionError
 
         if self.args.delta:
