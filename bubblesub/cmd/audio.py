@@ -105,14 +105,14 @@ class AudioShiftSelectionCommand(BaseCommand):
             end = self.api.media.audio.selection_end
 
             if self.args.method in {'start', 'both'}:
-                start = await self.args.delta.apply(start)
-                if not self.args.no_align:
-                    start = self.api.media.video.align_pts_to_near_frame(start)
+                start = await self.args.delta.apply(
+                    start, align_to_near_frame=not self.args.no_align
+                )
 
             if self.args.method in {'end', 'both'}:
-                end = await self.args.delta.apply(end)
-                if not self.args.no_align:
-                    end = self.api.media.video.align_pts_to_near_frame(end)
+                end = await self.args.delta.apply(
+                    end, align_to_near_frame=not self.args.no_align
+                )
 
             self.api.media.audio.select(start, end)
 

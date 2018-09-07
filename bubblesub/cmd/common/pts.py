@@ -145,7 +145,16 @@ class RelativePts:
 
         raise ValueError(f'unknown relative pts: "{self.value}"')
 
-    async def apply(self, origin: int) -> int:
+    async def apply(
+            self, origin: int,
+            align_to_near_frame: bool = False
+    ) -> int:
+        ret = await self._apply(origin)
+        if align_to_near_frame:
+            ret = self.api.media.video.align_pts_to_near_frame(ret)
+        return ret
+
+    async def _apply(self, origin: int) -> int:
         match = MS_REGEX.match(self.value)
         if match:
             delta = int(match.group('delta'))
@@ -174,9 +183,7 @@ class RelativePts:
             return _apply_frame(self.api, origin, 1)
 
         if self.value == 'cur-frame':
-            return self.api.media.video.align_pts_to_near_frame(
-                self.api.media.current_pts
-            )
+            return self.api.media.current_pts
 
         match = SUB_BOUNDARY_REGEX.match(self.value)
         if match:

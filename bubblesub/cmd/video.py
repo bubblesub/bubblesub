@@ -157,9 +157,7 @@ class SeekCommand(BaseCommand):
 
     async def run(self) -> None:
         pts = self.api.media.current_pts
-        pts = self.api.media.video.align_pts_to_near_frame(pts)
-        pts = await self.args.delta.apply(pts)
-        pts = self.api.media.video.align_pts_to_near_frame(pts)
+        pts = await self.args.delta.apply(pts, align_to_near_frame=True)
         self.api.media.seek(pts, self.args.precise)
         self.api.media.is_paused = True
 

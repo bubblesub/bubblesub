@@ -502,16 +502,14 @@ class SubtitlesShiftCommand(BaseCommand):
                 end = event.end
 
                 if self.args.method in {'start', 'both'}:
-                    start = await delta.apply(start)
-                    if not self.args.no_align:
-                        start = self.api.media.video.align_pts_to_near_frame(
-                            start
-                        )
+                    start = await delta.apply(
+                        start, align_to_near_frame=not self.args.no_align
+                    )
 
                 if self.args.method in {'end', 'both'}:
-                    end = await delta.apply(end)
-                    if not self.args.no_align:
-                        end = self.api.media.video.align_pts_to_near_frame(end)
+                    end = await delta.apply(
+                        end, align_to_near_frame=not self.args.no_align
+                    )
 
                 event.begin_update()
                 event.start = start
