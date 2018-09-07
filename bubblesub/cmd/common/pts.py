@@ -90,6 +90,7 @@ class RelativePts:
             value
             .replace('previous', 'prev')
             .replace('subtitle', 'sub')
+            .replace('current', 'cur')
         )
 
     @property
@@ -121,7 +122,7 @@ class RelativePts:
         if self.value == 'next-frame':
             return _plural_desc('frame', 1)
 
-        if self.value == 'current-frame':
+        if self.value == 'cur-frame':
             return 'to current frame'
 
         if self.value == 'prev-sub-start':
@@ -172,7 +173,7 @@ class RelativePts:
         if self.value == 'next-frame':
             return _apply_frame(self.api, origin, 1)
 
-        if self.value == 'current-frame':
+        if self.value == 'cur-frame':
             return self.api.media.video.align_pts_to_near_frame(
                 self.api.media.current_pts
             )

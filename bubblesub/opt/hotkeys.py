@@ -87,11 +87,11 @@ _DEFAULT_GLOBAL_HOTKEYS = [
     Hotkey('Ctrl+2', '/audio-shift-sel -d=+1f --start'),
     Hotkey('Ctrl+3', '/audio-shift-sel -d=-1f --end'),
     Hotkey('Ctrl+4', '/audio-shift-sel -d=+1f --end'),
-    Hotkey('Ctrl+B', '/audio-shift-sel -d=current-frame --start'),
-    Hotkey('Ctrl+M', '/audio-shift-sel -d=current-frame --end'),
+    Hotkey('Ctrl+B', '/audio-shift-sel -d=cur-frame --start'),
+    Hotkey('Ctrl+M', '/audio-shift-sel -d=cur-frame --end'),
     Hotkey(
         'Ctrl+N',
-        '/audio-shift-sel -d=current-frame --both',
+        '/audio-shift-sel -d=cur-frame --both',
         '/audio-shift-sel -d=default-sub-duration --end'
     ),
     Hotkey('Ctrl+[', '/set-playback-speed {}/1.5'),
@@ -139,11 +139,11 @@ _DEFAULT_SPECTROGRAM_HOTKEYS = [
     Hotkey('Ctrl+Shift+.', '/seek -d=+1500ms'),
     Hotkey('Shift+,', '/seek -d=-500ms'),
     Hotkey('Shift+.', '/seek -d=+500ms'),
-    Hotkey('B', '/audio-shift-sel -d=current-frame --start'),
-    Hotkey('M', '/audio-shift-sel -d=current-frame --end'),
+    Hotkey('B', '/audio-shift-sel -d=cur-frame --start'),
+    Hotkey('M', '/audio-shift-sel -d=cur-frame --end'),
     Hotkey(
         'N',
-        '/audio-shift-sel -d=current-frame --both',
+        '/audio-shift-sel -d=cur-frame --both',
         '/audio-shift-sel -d=default-sub-duration --end'
     ),
     Hotkey('[', '/set-playback-speed {}/1.5'),
