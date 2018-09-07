@@ -270,35 +270,46 @@ class MoveSubtitlesToCommand(BaseCommand):
         return None
 
 
-class DuplicateSubtitlesCommand(BaseCommand):
-    names = ['edit/duplicate-subs']
-    menu_name = '&Duplicate selected subtitles'
+class SubtitlesCloneCommand(BaseCommand):
+    names = ['sub-clone', 'sub-duplicate']
     help_text = (
-        'Duplicates the selected subtitles. The newly created subtitles '
-        'are interleaved with the current selection.'
+        'Duplicates given subtitles. Duplicated subtitles '
+        'are interleaved with the source subtitles.'
     )
 
     @property
+    def menu_name(self):
+        return f'&Duplicate {self.args.target.description}'
+
+    @property
     def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
         self.api.gui.begin_update()
         with self.api.undo.capture():
-            new_selection: T.List[int] = []
+            sub_copies: T.List[Event] = []
 
-            for idx in reversed(self.api.subs.selected_indexes):
-                self.api.subs.events.insert(
-                    idx + 1, [copy(self.api.subs.events[idx])]
-                )
-                new_selection.append(
-                    idx
-                    + len(self.api.subs.selected_indexes)
-                    - len(new_selection)
-                )
+            for idx in reversed(await self.args.target.get_indexes()):
+                sub_copy = copy(self.api.subs.events[idx])
+                self.api.subs.events.insert(idx + 1, [sub_copy])
+                sub_copies.append(sub_copy)
 
-            self.api.subs.selected_indexes = new_selection
+            self.api.subs.selected_indexes = [sub.index for sub in sub_copies]
         self.api.gui.end_update()
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to clone',
+            type=lambda value: EventSelection(api, value),
+            nargs='?',
+            default='selected'
+        )
 
 
 class SubtitlesDeleteCommand(BaseCommand):
@@ -337,7 +348,7 @@ class SubtitlesDeleteCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             'target',
-            help='subtitles to select',
+            help='subtitles to delete',
             type=lambda value: EventSelection(api, value),
             nargs='?',
             default='selected'
@@ -702,7 +713,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             InsertSubtitleCommand,
             MoveSubtitlesCommand,
             MoveSubtitlesToCommand,
-            DuplicateSubtitlesCommand,
+            SubtitlesCloneCommand,
             SubtitlesDeleteCommand,
             SwapSubtitlesTextAndNotesCommand,
             SplitSubtitleAtCurrentVideoFrameCommand,

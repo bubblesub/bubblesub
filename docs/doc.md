@@ -135,9 +135,6 @@ Zooms the spectrogram in or out by the specified factor.
 Usage: `audio‑zoom -d|--delta=…`
 * `-d`, `--delta`: factor to zoom the view by
 
-### <a name="cmd-edit-duplicate-subs"></a>`edit/duplicate‑subs`
-Duplicates the selected subtitles. The newly created subtitles are interleaved with the current selection.
-
 ### <a name="cmd-edit-insert-sub"></a>`edit/insert‑sub`
 Inserts one empty subtitle near the current subtitle selection.
 
@@ -325,6 +322,14 @@ Usage: `set‑volume expression`
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.
 
+### <a name="cmd-sub-clone"></a>`sub‑clone`
+Aliases: `sub-duplicate`
+
+Duplicates given subtitles. Duplicated subtitles are interleaved with the source subtitles.
+
+Usage: `sub‑clone [-t|--target=…]`
+* `-t`, `--target`: subtitles to clone
+
 ### <a name="cmd-sub-copy"></a>`sub‑copy`
 Copies given subtitles to clipboard.
 
@@ -336,7 +341,7 @@ Usage: `sub‑copy -t|--target=… -s|--subject=…`
 Deletes given subtitles.
 
 Usage: `sub‑delete [target]`
-* `target`: subtitles to select
+* `target`: subtitles to delete
 
 ### <a name="cmd-sub-paste"></a>`sub‑paste`
 Pastes subtitles from clipboard.
