@@ -185,7 +185,6 @@ class EventSelection:
                 if self.api.subs.has_selection else
                 0
             ),
-            absolute_label='Time to jump to:',
             relative_checked=False,
             show_radio=False
         )

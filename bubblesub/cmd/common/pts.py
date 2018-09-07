@@ -218,8 +218,6 @@ class RelativePts:
     ) -> T.Optional[int]:
         ret = bubblesub.ui.util.time_jump_dialog(
             main_window,
-            absolute_label='Time to jump to:',
-            relative_label='Time to jump by:',
             relative_checked=False,
             value=self.api.media.current_pts
         )
