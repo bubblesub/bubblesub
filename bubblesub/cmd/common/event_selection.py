@@ -16,6 +16,7 @@
 
 """Subtitles selection, usable as an argument to commands."""
 
+import itertools
 import typing as T
 
 import regex
@@ -26,14 +27,42 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
 
-IDX_REGEX = regex.compile(r'^(?P<number>\d+)(?:,(?P<number>\d+))*$')
+IDX_REGEX = regex.compile(
+    r'^(?P<token>\d+)(?:(?P<token>\.\.\.?|,)(?P<token>\d+))*$'
+)
+
+
+def _split_by_delim(source: T.List, delim: str) -> T.Iterable[T.List]:
+    return (
+        list(chunk)
+        for is_delim, chunk in itertools.groupby(
+            source, lambda item: item == delim
+        )
+        if not is_delim
+    )
 
 
 def _match_indexes(target: str) -> T.Optional[T.List[int]]:
     match = IDX_REGEX.match(target)
     if not match:
         return None
-    return [int(num) - 1 for num in match.captures('number')]
+
+    ret: T.List[int] = []
+
+    for group in _split_by_delim(match.captures('token'), ','):
+        if len(group) == 1:
+            idx = int(group[0]) - 1
+            ret.append(idx)
+        elif len(group) == 3:
+            low = int(group[0]) - 1
+            high = int(group[2]) - 1
+            if low > high:
+                low, high = high, low
+            ret += list(range(low, high + 1))
+        else:
+            raise AssertionError
+
+    return ret
 
 
 class EventSelection:
@@ -71,8 +100,8 @@ class EventSelection:
             return 'selected subtitles'
 
         indexes = _match_indexes(self.target)
-        if indexes:
-            return 'subtitle ' + ', '.join(f'#{idx + 1}' for idx in indexes)
+        if indexes is not None:
+            return 'subtitle #' + self.target
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
@@ -92,7 +121,7 @@ class EventSelection:
             return self.api.subs.has_selection
 
         indexes = _match_indexes(self.target)
-        if indexes:
+        if indexes is not None:
             valid_indexes = range(len(self.api.subs.events))
             return all(idx in valid_indexes for idx in indexes)
 
@@ -144,7 +173,7 @@ class EventSelection:
             return [value - 1]
 
         indexes = _match_indexes(self.target)
-        if indexes:
+        if indexes is not None:
             return indexes
 
         raise ValueError(f'unknown selection target: "{self.target}"')
