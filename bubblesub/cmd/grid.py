@@ -257,6 +257,7 @@ class CreateAudioSampleCommand(BaseCommand):
         start_pts = self.api.subs.selected_events[0].start
         end_pts = self.api.subs.selected_events[-1].end
 
+        assert self.api.media.path
         file_name = bubblesub.util.sanitize_file_name(
             'audio-{}-{}..{}.wav'.format(
                 self.api.media.path.name,

@@ -180,7 +180,7 @@ class SubtitlesMoveCommand(BaseCommand):
         if indexes[0] == 0:
             raise CommandUnavailable
         for idx, count in make_ranges(indexes):
-            chunk = list(map(copy, self.api.subs.events[idx:idx + count]))
+            chunk = [copy(s) for s in self.api.subs.events[idx:idx + count]]
             self.api.subs.events.insert(idx - 1, chunk)
             self.api.subs.events.remove(idx + count, count)
             yield from chunk
@@ -189,7 +189,7 @@ class SubtitlesMoveCommand(BaseCommand):
         if indexes[-1] + 1 == len(self.api.subs.events):
             raise CommandUnavailable
         for idx, count in make_ranges(indexes, reverse=True):
-            chunk = list(map(copy, self.api.subs.events[idx:idx + count]))
+            chunk = [copy(s) for s in self.api.subs.events[idx:idx + count]]
             self.api.subs.events.insert(idx + count + 1, chunk)
             self.api.subs.events.remove(idx, count)
             yield from chunk
@@ -202,9 +202,7 @@ class SubtitlesMoveCommand(BaseCommand):
         sub_copies: T.List[Event] = []
 
         for idx, count in make_ranges(indexes, reverse=True):
-            chunk = list(map(
-                copy, self.api.subs.events[idx:idx + count]
-            ))
+            chunk = [copy(s) for s in self.api.subs.events[idx:idx + count]]
             chunk.reverse()
             sub_copies += chunk
             self.api.subs.events.remove(idx, count)

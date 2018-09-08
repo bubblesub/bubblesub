@@ -40,7 +40,7 @@ class MenuItem:
 class MenuCommand(MenuItem):
     """Menu item associated with a bubblesub command."""
 
-    def __init__(self, name: str, *invocations: T.Iterable[str]) -> None:
+    def __init__(self, name: str, *invocations: str) -> None:
         """
         Initialize self.
 
@@ -50,7 +50,7 @@ class MenuCommand(MenuItem):
         :param invocations: invocations to execute
         """
         self.name = name
-        self.invocations = invocations
+        self.invocations: T.Tuple[str, ...] = invocations
 
 
 class MenuSeparator(MenuItem):

@@ -226,7 +226,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QtGui.QKeySequence(hotkey.shortcut), self
         )
 
-        def activated(commands: T.List[bubblesub.api.cmd.BaseCommand]):
+        def activated(commands: T.List[bubblesub.api.cmd.BaseCommand]) -> None:
             for command in commands:
                 self._api.cmd.run(command)
 

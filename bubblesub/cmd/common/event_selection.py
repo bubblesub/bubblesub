@@ -92,7 +92,7 @@ class EventSelection:
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
-    async def get_all_indexes(self):
+    async def get_all_indexes(self) -> T.List[int]:
         if self.target == 'all':
             return list(range(len(self.api.subs.events)))
 
@@ -143,7 +143,7 @@ class EventSelection:
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
-    async def get_indexes(self):
+    async def get_indexes(self) -> T.List[int]:
         return [
             idx
             for idx in await self.get_all_indexes()

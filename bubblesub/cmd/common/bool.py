@@ -39,7 +39,7 @@ class BooleanOperation:
             return toggle_desc
         raise ValueError(f'unknown operation: "{self.operation}"')
 
-    def apply(self, origin: bool):
+    def apply(self, origin: bool) -> bool:
         if self.operation in _YES:
             return True
         if self.operation in _NO:

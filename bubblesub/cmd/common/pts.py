@@ -23,6 +23,7 @@ import typing as T
 from PyQt5 import QtWidgets
 
 import bubblesub.api
+import bubblesub.ui.util
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandError
 

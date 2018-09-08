@@ -38,7 +38,7 @@ class Hotkey:
     def __init__(
             self,
             shortcut: str,
-            *invocations: T.Iterable[str],
+            *invocations: str,
     ) -> None:
         """
         Initialize self.
@@ -47,7 +47,7 @@ class Hotkey:
         :param invocations: invocations to execute
         """
         self.shortcut = shortcut
-        self.invocations = invocations
+        self.invocations: T.Tuple[str, ...] = invocations
 
 
 class HotkeysConfig(BaseConfig):

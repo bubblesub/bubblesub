@@ -285,7 +285,9 @@ class CommandApi(QtCore.QObject):
 
         :return: list of types
         """
-        return set(cls for cls, _is_plugin in self._command_registry.values())
+        return list(set(
+            cls for cls, _is_plugin in self._command_registry.values()
+        ))
 
     def load_commands(self, path: Path) -> None:
         """

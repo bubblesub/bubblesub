@@ -217,7 +217,27 @@ class ObservableList(T.Generic[TItem]):
         """
         return len(self._items)
 
+    @T.overload
+    def __getitem__(self, idx: slice) -> T.List[TItem]:
+        """
+        Retrieve item at given position.
+
+        :param idx: item position
+        :return: value at given position
+        """
+        ...
+
+    @T.overload
     def __getitem__(self, idx: int) -> TItem:
+        """
+        Retrieve item at given position.
+
+        :param idx: item position
+        :return: value at given position
+        """
+        ...
+
+    def __getitem__(self, idx):
         """
         Retrieve item at given position.
 

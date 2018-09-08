@@ -189,7 +189,11 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
 
 
 class ConsoleInput(QtWidgets.QLineEdit):
-    def __init__(self, api, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            parent: QtWidgets.QWidget
+    ) -> None:
         super().__init__(parent)
         self._api = api
         self._edited = False
@@ -278,10 +282,10 @@ class Console(QtWidgets.QWidget):
         layout.addWidget(self.log_window)
         layout.addWidget(strip)
 
-    def _on_text_edit_scroll_lock_change(self):
+    def _on_text_edit_scroll_lock_change(self) -> None:
         self.auto_scroll_chkbox.setChecked(not self.log_window.scroll_lock)
 
-    def _on_auto_scroll_chkbox_change(self):
+    def _on_auto_scroll_chkbox_change(self) -> None:
         self.log_window.scroll_lock = not self.auto_scroll_chkbox.isChecked()
         if self.auto_scroll_chkbox.isChecked():
             self.log_window.horizontalScrollBar().setValue(
@@ -291,5 +295,5 @@ class Console(QtWidgets.QWidget):
                 self.log_window.verticalScrollBar().maximum()
             )
 
-    def _on_clear_btn_click(self):
+    def _on_clear_btn_click(self) -> None:
         self.log_window.document().setPlainText('')

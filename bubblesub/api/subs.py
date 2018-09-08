@@ -87,7 +87,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: path of the associated video file or None if no video
         """
-        path: str = self.info.get('Video File', '')
+        path: str = T.cast(str, self.info.get('Video File', ''))
         if not path:
             return None
         if not self._path:

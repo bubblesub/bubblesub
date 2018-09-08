@@ -247,10 +247,10 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
     def _load(self) -> None:
         self._options_group_box.res_x_edit.setValue(
-            int(self._api.subs.info.get('PlayResX', '0'))
+            int(T.cast(str, self._api.subs.info.get('PlayResX', '0')))
         )
         self._options_group_box.res_y_edit.setValue(
-            int(self._api.subs.info.get('PlayResY', '0'))
+            int(T.cast(str, self._api.subs.info.get('PlayResY', '0')))
         )
 
         self._options_group_box.ycbcr_matrix_combo_box.setCurrentIndex(
@@ -285,8 +285,8 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
     def _commit(self) -> None:
         old_res = (
-            int(self._api.subs.info.get('PlayResX', 0)),
-            int(self._api.subs.info.get('PlayResY', 0))
+            int(T.cast(str, self._api.subs.info.get('PlayResX', '0'))),
+            int(T.cast(str, self._api.subs.info.get('PlayResY', '0')))
         )
 
         self._api.subs.info.clear()
@@ -310,8 +310,8 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
         self._api.subs.info.update(self._metadata_group_box.get_data())
 
         new_res = (
-            int(self._api.subs.info.get('PlayResX', 0)),
-            int(self._api.subs.info.get('PlayResY', 0))
+            int(T.cast(str, self._api.subs.info.get('PlayResX', '0'))),
+            int(T.cast(str, self._api.subs.info.get('PlayResY', '0')))
         )
         if old_res != new_res \
                 and old_res[0] and old_res[1] \

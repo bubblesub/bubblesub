@@ -214,10 +214,11 @@ class _CommandAction(QtWidgets.QAction):
             self.api.cmd.run(cmd)
 
 
-def _build_hotkey_map(
-        api: bubblesub.api.Api
-) -> T.Dict[T.Tuple[HotkeyContext, str], str]:
-    ret = {}
+HotkeyMap = T.Dict[T.Tuple[HotkeyContext, T.Tuple[str, ...]], str]
+
+
+def _build_hotkey_map(api: bubblesub.api.Api) -> HotkeyMap:
+    ret: HotkeyMap = {}
     for context, hotkeys in api.opt.hotkeys:
         for hotkey in hotkeys:
             ret[context, hotkey.invocations] = hotkey.shortcut
@@ -229,7 +230,7 @@ def setup_cmd_menu(
         parent: QtWidgets.QWidget,
         menu_def: T.Sequence[MenuItem],
         context: HotkeyContext,
-        hotkey_map: T.Optional[T.Dict[T.Tuple[HotkeyContext, str], str]] = None
+        hotkey_map: T.Optional[HotkeyMap] = None
 ) -> T.Any:
     if hotkey_map is None:
         hotkey_map = _build_hotkey_map(api)
