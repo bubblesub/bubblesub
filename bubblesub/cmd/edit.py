@@ -25,11 +25,12 @@ from PyQt5 import QtWidgets
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
+from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import AbsolutePts
 from bubblesub.cmd.common import RelativePts
-from bubblesub.util import VerticalDirection
+from bubblesub.util import make_ranges
 
 
 class UndoCommand(BaseCommand):
@@ -151,63 +152,82 @@ class SubtitleInsertCommand(BaseCommand):
         )
 
 
-class MoveSubtitlesCommand(BaseCommand):
-    names = ['edit/move-subs']
-    help_text = 'Moves the selected subtitles above or below.'
+class SubtitlesMoveCommand(BaseCommand):
+    names = ['sub-move']
+    help_text = 'Moves given subtitles around.'
 
     @property
     def is_enabled(self) -> bool:
-        if not self.api.subs.selected_indexes:
-            return False
-
-        if self.args.direction == VerticalDirection.Above:
-            return self.api.subs.selected_indexes[0] > 0
-
-        if self.args.direction == VerticalDirection.Below:
-            return (
-                self.api.subs.selected_indexes[-1]
-                < len(self.api.subs.events) - 1
-            )
-
-        raise AssertionError
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
         with self.api.undo.capture():
-            indexes: T.List[int] = []
+            indexes = await self.args.target.get_indexes()
 
-            if self.args.direction == VerticalDirection.Above:
-                for start_idx, count in bubblesub.util.make_ranges(
-                        self.api.subs.selected_indexes
-                ):
-                    self.api.subs.events.insert(
-                        start_idx - 1,
-                        [
-                            copy(self.api.subs.events[idx])
-                            for idx in range(start_idx, start_idx + count)
-                        ]
-                    )
-                    self.api.subs.events.remove(start_idx + count, count)
-                    indexes += [start_idx + i - 1 for i in range(count)]
-
-            elif self.args.direction == VerticalDirection.Below:
-                for start_idx, count in bubblesub.util.make_ranges(
-                        self.api.subs.selected_indexes,
-                        reverse=True
-                ):
-                    self.api.subs.events.insert(
-                        start_idx + count + 1,
-                        [
-                            copy(self.api.subs.events[idx])
-                            for idx in range(start_idx, start_idx + count)
-                        ]
-                    )
-                    self.api.subs.events.remove(start_idx, count)
-                    indexes += [start_idx + i + 1 for i in range(count)]
-
+            if self.args.method == 'above':
+                sub_copies = list(self._move_above(indexes))
+            elif self.args.method == 'below':
+                sub_copies = list(self._move_below(indexes))
+            elif self.args.method == 'gui':
+                base_idx = await self.api.gui.exec(self._show_dialog, indexes)
+                sub_copies = list(self._move_to(indexes, base_idx))
             else:
                 raise AssertionError
 
-            self.api.subs.selected_indexes = indexes
+            self.api.subs.selected_indexes = [sub.index for sub in sub_copies]
+
+    def _move_above(self, indexes: T.List[int]) -> T.Iterable[Event]:
+        if indexes[0] == 0:
+            raise CommandUnavailable
+        for idx, count in make_ranges(indexes):
+            chunk = list(map(copy, self.api.subs.events[idx:idx + count]))
+            self.api.subs.events.insert(idx - 1, chunk)
+            self.api.subs.events.remove(idx + count, count)
+            yield from chunk
+
+    def _move_below(self, indexes: T.List[int]) -> T.Iterable[Event]:
+        if indexes[-1] + 1 == len(self.api.subs.events):
+            raise CommandUnavailable
+        for idx, count in make_ranges(indexes, reverse=True):
+            chunk = list(map(copy, self.api.subs.events[idx:idx + count]))
+            self.api.subs.events.insert(idx + count + 1, chunk)
+            self.api.subs.events.remove(idx, count)
+            yield from chunk
+
+    def _move_to(
+            self,
+            indexes: T.List[int],
+            base_idx: int
+    ) -> T.Iterable[Event]:
+        sub_copies: T.List[Event] = []
+
+        for idx, count in make_ranges(indexes, reverse=True):
+            chunk = list(map(
+                copy, self.api.subs.events[idx:idx + count]
+            ))
+            chunk.reverse()
+            sub_copies += chunk
+            self.api.subs.events.remove(idx, count)
+
+        sub_copies.reverse()
+        self.api.subs.events.insert(base_idx, sub_copies)
+        return sub_copies
+
+    async def _show_dialog(
+            self,
+            main_window: QtWidgets.QMainWindow,
+            indexes: T.List[int]
+    ) -> int:
+        dialog = QtWidgets.QInputDialog(main_window)
+        dialog.setLabelText('Line number to move subtitles to:')
+        dialog.setIntMinimum(1)
+        dialog.setIntMaximum(len(self.api.subs.events))
+        if indexes:
+            dialog.setIntValue(indexes[0] + 1)
+        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+        if not dialog.exec_():
+            raise CommandCanceled
+        return T.cast(int, dialog.intValue()) - 1
 
     @staticmethod
     def _decorate_parser(
@@ -215,63 +235,34 @@ class MoveSubtitlesCommand(BaseCommand):
             parser: argparse.ArgumentParser
     ) -> None:
         parser.add_argument(
-            '-d', '--direction',
-            help='how to move the subtitles',
-            type=VerticalDirection.from_string,
-            choices=list(VerticalDirection),
-            required=True
+            '-t', '--target',
+            help='subtitles to move',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
         )
 
-
-class MoveSubtitlesToCommand(BaseCommand):
-    names = ['edit/move-subs-to']
-    help_text = (
-        'Moves the selected subtitles to the specified position. '
-        'Asks for the position interactively.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return len(self.api.subs.selected_indexes) > 0
-
-    async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
-
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        base_idx = self._show_dialog(main_window)
-        if base_idx is None:
-            return
-
-        with self.api.undo.capture():
-            sub_copies: T.List[Event] = []
-
-            for start_idx, count in bubblesub.util.make_ranges(
-                    self.api.subs.selected_indexes,
-                    reverse=True
-            ):
-                sub_copies += list(reversed([
-                    copy(self.api.subs.events[idx])
-                    for idx in range(start_idx, start_idx + count)
-                ]))
-                self.api.subs.events.remove(start_idx, count)
-
-            sub_copies.reverse()
-            self.api.subs.events.insert(base_idx, sub_copies)
-
-    def _show_dialog(
-            self,
-            main_window: QtWidgets.QMainWindow
-    ) -> T.Optional[int]:
-        dialog = QtWidgets.QInputDialog(main_window)
-        dialog.setLabelText('Line number to move selected subtitles to:')
-        dialog.setIntMinimum(1)
-        dialog.setIntMaximum(len(self.api.subs.events))
-        if self.api.subs.has_selection:
-            dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
-        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-        if dialog.exec_():
-            return T.cast(int, dialog.intValue()) - 1
-        return None
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument(
+            '--above',
+            dest='method',
+            action='store_const',
+            const='above',
+            help='move subtitles up'
+        )
+        group.add_argument(
+            '--below',
+            dest='method',
+            action='store_const',
+            const='below',
+            help='move subtitles down'
+        )
+        group.add_argument(
+            '--gui',
+            dest='method',
+            action='store_const',
+            const='gui',
+            help='prompt user for placement position with a GUI dialog'
+        )
 
 
 class SubtitlesCloneCommand(BaseCommand):
@@ -328,10 +319,7 @@ class SubtitlesDeleteCommand(BaseCommand):
             self.api.subs.selected_indexes = [
                 sub.index for sub in new_selection
             ]
-            for start_idx, count in bubblesub.util.make_ranges(
-                    indexes,
-                    reverse=True
-            ):
+            for start_idx, count in make_ranges(indexes, reverse=True):
                 self.api.subs.events.remove(start_idx, count)
 
     @staticmethod
@@ -661,8 +649,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             UndoCommand,
             RedoCommand,
             SubtitleInsertCommand,
-            MoveSubtitlesCommand,
-            MoveSubtitlesToCommand,
+            SubtitlesMoveCommand,
             SubtitlesCloneCommand,
             SubtitlesDeleteCommand,
             SubtitlesSetCommand,

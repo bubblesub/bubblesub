@@ -53,6 +53,14 @@ class CommandCanceled(CommandError):
         super().__init__('canceled')
 
 
+class CommandUnavailable(CommandError):
+    """The given command cannot be evaluated."""
+
+    def __init__(self) -> None:
+        """Initialize self."""
+        super().__init__('command not available right now')
+
+
 class CommandNotFound(CommandError):
     """The given command was not found."""
 
@@ -234,23 +242,21 @@ class CommandApi(QtCore.QObject):
         :return: whether the command was executed without problems
         """
         start_time = time.time()
-
         self._api.log.info(cmd.invocation)
 
         try:
             if not cmd.is_enabled:
-                self._api.log.info('command not available right now')
-                return False
-
+                raise CommandUnavailable
             await cmd.run()
-        except CommandCanceled:
-            self._api.log.warn(f'canceled')
+        except (CommandCanceled, CommandUnavailable) as ex:
+            self._api.log.warn(str(ex))
             return False
         except Exception as ex:  # pylint: disable=broad-except
             self._api.log.error(f'problem running {cmd.invocation}:')
             self._api.log.error(f'{ex}')
             traceback.print_exc()
             return False
+
         end_time = time.time()
         took = end_time - start_time
         self._api.log.debug(f'{cmd.invocation}: took {took:.04f} s')

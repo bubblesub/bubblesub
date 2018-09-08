@@ -56,8 +56,8 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console</code> |
 |<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-sub-split">sub-split</a> -p=cur-frame</code> |
 |<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-edit-join-subs-concatenate">edit/join-subs-concatenate</a> </code> |
-|<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d=above</code> |
-|<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d=below</code> |
+|<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --above</code> |
+|<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --below</code> |
 |<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file-properties</a> </code> |
 |<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-10f --start</code> |
 |<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+10f --start</code> |
@@ -146,15 +146,6 @@ Joins the selected subtitles together. Keeps the first subtitle's properties and
 
 ### <a name="cmd-edit-join-subs-keep-first"></a>`edit/join‑subs‑keep‑first`
 Joins the selected subtitles together. Keeps only the first subtitle's properties.
-
-### <a name="cmd-edit-move-subs"></a>`edit/move‑subs`
-Moves the selected subtitles above or below.
-
-Usage: `edit/move‑subs -d|--direction=…`
-* `-d`, `--direction`: how to move the subtitles (`above`, `below`)
-
-### <a name="cmd-edit-move-subs-to"></a>`edit/move‑subs‑to`
-Moves the selected subtitles to the specified position. Asks for the position interactively.
 
 ### <a name="cmd-edit-split-sub-by-karaoke"></a>`edit/split‑sub‑by‑karaoke`
 Splits the selected subtitles according to the karaoke tags inside.
@@ -313,6 +304,15 @@ Usage: `sub‑insert -o|--origin=… [--no-align] [--before] [--after]`
 * `--no-align`: don't realign subtitle to video frames
 * `--before`: insert before origin
 * `--after`: insert after origin
+
+### <a name="cmd-sub-move"></a>`sub‑move`
+Moves given subtitles around.
+
+Usage: `sub‑move -t|--target=… [--above] [--below] [--gui]`
+* `-t`, `--target`: subtitles to move
+* `--above`: move subtitles up
+* `--below`: move subtitles down
+* `--gui`: prompt user for placement position with a GUI dialog
 
 ### <a name="cmd-sub-paste"></a>`sub‑paste`
 Pastes subtitles from clipboard.
