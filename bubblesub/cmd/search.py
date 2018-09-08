@@ -31,7 +31,6 @@ import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 from bubblesub.opt.general import SearchMode
-from bubblesub.util import VerticalDirection
 
 MAX_HISTORY_ENTRIES = 25
 
@@ -177,51 +176,42 @@ def _narrow_match(
         matches: T.List[T.Match[str]],
         idx: int,
         selected_idx: T.Optional[int],
-        direction: VerticalDirection
+        reverse: bool
 ) -> T.Optional[T.Match[str]]:
     if idx == selected_idx:
         selection_start, selection_end = handler.get_selection_from_widget()
         if selection_end == selection_start:
-            if direction == VerticalDirection.Below:
-                return matches[0]
-            if direction == VerticalDirection.Above:
-                return None
-            raise AssertionError
+            return None if reverse else matches[0]
 
-        if direction == VerticalDirection.Below:
-            for match in matches:
-                if match.end() > selection_end:
-                    return match
-            return None
-        if direction == VerticalDirection.Above:
+        if reverse:
             for match in reversed(matches):
                 if match.start() < selection_start:
                     return match
-            return None
-        raise AssertionError
+        else:
+            for match in matches:
+                if match.end() > selection_end:
+                    return match
 
-    if direction == VerticalDirection.Below:
-        return matches[0]
-    if direction == VerticalDirection.Above:
-        return matches[-1]
-    raise AssertionError
+        return None
+
+    return matches[-1] if reverse else matches[0]
 
 
 def _search(
         api: bubblesub.api.Api,
         handler: _SearchModeHandler,
         regex: T.Pattern[str],
-        direction: VerticalDirection
+        reverse: bool
 ) -> bool:
     num_lines = len(api.subs.events)
     if not api.subs.has_selection:
         selected_idx = None
         iterator = list(range(num_lines))
-        if direction == VerticalDirection.Above:
+        if reverse:
             iterator.reverse()
     else:
         selected_idx = api.subs.selected_indexes[0]
-        mul = 1 if direction == VerticalDirection.Below else -1
+        mul = -1 if reverse else 1
         iterator = list(
             (selected_idx + mul * i) % num_lines
             for i in range(num_lines)
@@ -234,7 +224,7 @@ def _search(
             continue
 
         final_match = _narrow_match(
-            handler, matches, idx, selected_idx, direction
+            handler, matches, idx, selected_idx, reverse
         )
 
         if not final_match:
@@ -413,9 +403,9 @@ class _SearchDialog(QtWidgets.QDialog):
             elif sender == self.replace_all_btn:
                 self._replace_all()
             elif sender == self.find_prev_btn:
-                self._search(VerticalDirection.Above)
+                self._search(reverse=True)
             elif sender == self.find_next_btn:
-                self._search(VerticalDirection.Below)
+                self._search(reverse=False)
             elif sender == self.count_btn:
                 self._count()
         except Exception as ex:  # pylint: disable=broad-except
@@ -437,10 +427,10 @@ class _SearchDialog(QtWidgets.QDialog):
             'No occurences found.'
         )
 
-    def _search(self, direction: VerticalDirection) -> None:
+    def _search(self, reverse: bool) -> None:
         self._push_search_history()
         result = _search(
-            self._api, self._handler, self._search_regex, direction
+            self._api, self._handler, self._search_regex, reverse
         )
         if not result:
             bubblesub.ui.util.notice('No occurences found.')
@@ -569,7 +559,7 @@ class SearchRepeatCommand(BaseCommand):
                 self.api.opt.general.search.case_sensitive,
                 self.api.opt.general.search.use_regexes
             ),
-            self.args.direction
+            self.args.reverse
         )
         if not result:
             bubblesub.ui.util.notice('No occurences found.')
@@ -579,12 +569,18 @@ class SearchRepeatCommand(BaseCommand):
             api: bubblesub.api.Api,
             parser: argparse.ArgumentParser
     ) -> None:
-        parser.add_argument(
-            '-d', '--direction',
-            help='whether to search forward or backward',
-            type=VerticalDirection.from_string,
-            choices=list(VerticalDirection),
-            default=VerticalDirection.Below
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument(
+            '--above',
+            dest='reverse',
+            action='store_true',
+            help='search forward'
+        )
+        group.add_argument(
+            '--below',
+            dest='reverse',
+            action='store_false',
+            help='search backward'
         )
 
 

@@ -46,8 +46,8 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cur-frame --both</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=default-sub-duration --end</code> |
 |<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
-|<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d=below</code> |
-|<kbd>Shift+F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> -d=above</code> |
+|<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> --below</code> |
+|<kbd>Shift+F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> --above</code> |
 |<kbd>Alt+A</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> spectrogram</code> |
 |<kbd>Alt+S</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> subtitles-grid</code> |
 |<kbd>Alt+D</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> text-editor -s</code> |
@@ -244,8 +244,9 @@ Aliases: `search-again`
 
 Repeats last search operation.
 
-Usage: `search‑repeat -d|--direction=…`
-* `-d`, `--direction`: whether to search forward or backward (`above`, `below`)
+Usage: `search‑repeat [--above] [--below]`
+* `--above`: search forward
+* `--below`: search backward
 
 ### <a name="cmd-seek"></a>`seek`
 Changes the video playback position to desired place.

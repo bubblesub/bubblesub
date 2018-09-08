@@ -16,31 +16,11 @@
 
 """Miscellaneous functions and classes for general purpose usage."""
 
-import enum
 import fractions
 import hashlib
 import itertools
 import re
 import typing as T
-
-
-class _BaseIntEnum(enum.IntEnum):
-    @classmethod
-    def from_string(cls, name: str) -> None:
-        try:
-            return cls[name.title()]
-        except KeyError:
-            raise ValueError
-
-    def __str__(self) -> str:
-        return self.name.lower()
-
-
-class VerticalDirection(_BaseIntEnum):
-    """Generic direction on a vertical 1D axis."""
-
-    Above = 1
-    Below = 2
 
 
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
