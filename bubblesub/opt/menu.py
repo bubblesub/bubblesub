@@ -110,7 +110,10 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
         MenuCommand('/sub-clone'),
         MenuCommand('/sub-delete'),
         MenuSeparator(),
-        MenuCommand('/edit/swap-subs-text-and-notes'),
+        MenuCommand(
+            '/sub-set --note={text} --text={note}',
+            name='&Swap notes with subtitle text'
+        ),
         MenuCommand('/edit/split-sub-at-current-video-frame'),
         MenuCommand('/edit/join-subs-keep-first'),
         MenuCommand('/edit/join-subs-concatenate'),

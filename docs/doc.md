@@ -162,9 +162,6 @@ Splits the selected subtitle into two at the current video frame.
 ### <a name="cmd-edit-split-sub-by-karaoke"></a>`edit/split‑sub‑by‑karaoke`
 Splits the selected subtitles according to the karaoke tags inside.
 
-### <a name="cmd-edit-swap-subs-text-and-notes"></a>`edit/swap‑subs‑text‑and‑notes`
-Swaps subtitle text with their notes in the selected subtitles.
-
 ### <a name="cmd-file-properties"></a>`file‑properties`
 Opens up the metadata editor dialog.
 
@@ -340,6 +337,14 @@ Selects given subtitles.
 
 Usage: `sub‑select target`
 * `target`: subtitles to select
+
+### <a name="cmd-sub-set"></a>`sub‑set`
+Updates given subtitles parameters.
+
+Usage: `sub‑set -t|--target=… --text=… --note=…`
+* `-t`, `--target`: subtitles to delete
+* `--text`: new subtitles text
+* `--note`: new subtitles note
 
 ### <a name="cmd-sub-shift"></a>`sub‑shift`
 Shifts given subtitles.

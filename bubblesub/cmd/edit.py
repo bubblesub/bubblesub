@@ -367,23 +367,67 @@ class SubtitlesDeleteCommand(BaseCommand):
         )
 
 
-class SwapSubtitlesTextAndNotesCommand(BaseCommand):
-    names = ['edit/swap-subs-text-and-notes']
-    menu_name = '&Swap notes with subtitle text'
-    help_text = (
-        'Swaps subtitle text with their notes in the selected subtitles.'
-    )
+class SubtitlesSetCommand(BaseCommand):
+    names = ['sub-set']
+    help_text = 'Updates given subtitles parameters.'
+
+    @property
+    def menu_name(self):
+        chunks = []
+
+        for text, param in {
+                'note': self.args.note,
+                'text': self.args.text,
+        }.items():
+            chunks.append(f'{text} to {param!r}')
+
+        desc = f'&Set {self.args.target.description} '
+        if len(chunks) > 1:
+            desc += ', '.join(chunks[0:-1])
+            desc += ' and ' + chunks[-1]
+        elif len(chunks) == 1:
+            desc += desc[0]
+        else:
+            return 'Do nothing'
+        return desc
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.subs.has_selection
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
         with self.api.undo.capture():
-            for sub in self.api.subs.selected_events:
+            for sub in await self.args.target.get_subtitles():
+                params = {
+                    'text': sub.text,
+                    'note': sub.note,
+                }
+
                 sub.begin_update()
-                sub.text, sub.note = sub.note, sub.text
+
+                if self.args.text:
+                    sub.text = self.args.text.format(**params)
+
+                if self.args.note:
+                    sub.note = self.args.note.format(**params)
+
                 sub.end_update()
+
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to delete',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
+
+        parser.add_argument('--text', help='new subtitles text')
+        parser.add_argument('--note', help='new subtitles note')
 
 
 class SplitSubtitleAtCurrentVideoFrameCommand(BaseCommand):
@@ -628,7 +672,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             MoveSubtitlesToCommand,
             SubtitlesCloneCommand,
             SubtitlesDeleteCommand,
-            SwapSubtitlesTextAndNotesCommand,
+            SubtitlesSetCommand,
             SplitSubtitleAtCurrentVideoFrameCommand,
             JoinSubtitlesKeepFirstCommand,
             JoinSubtitlesConcatenateCommand,
