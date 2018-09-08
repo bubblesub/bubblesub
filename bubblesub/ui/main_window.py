@@ -273,7 +273,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _update_title(self) -> None:
         self.setWindowTitle(
-            'bubblesub - {}'.format(self._api.subs.path)
+            f'bubblesub - {self._api.subs.path}'
             if self._api.subs.path else
             'bubblesub'
         )

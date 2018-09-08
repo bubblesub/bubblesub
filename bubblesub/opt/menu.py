@@ -116,9 +116,7 @@ class MenuConfig(BaseConfig):
                     load_menu(sub_menu.children, item['children'])
                     target.append(sub_menu)
                 else:
-                    raise ValueError(
-                        'unknown menu type "{}"'.format(item['type'])
-                    )
+                    raise ValueError(f'unknown menu type "{item["type"]}"')
 
         obj = json.loads(text)
         for context in MenuContext:

@@ -115,43 +115,6 @@ def hash_digest(subject: T.Any) -> str:
     return hashlib.md5(str(subject).encode('utf-8')).hexdigest()
 
 
-class Benchmark:
-    """Tracks execution time of Python code."""
-
-    def __init__(self, msg: str) -> None:
-        """
-        Initialize self.
-
-        :param msg: message to print for benchmark start and end
-        """
-        self._msg = msg
-        self._time = time.time()
-
-    def __enter__(self) -> 'Benchmark':
-        """
-        Start counting time.
-
-        :return: self
-        """
-        self._time = time.time()
-        print('{}: started'.format(self._msg))
-        return self
-
-    def __exit__(self, *args: T.Any, **kwargs: T.Any) -> None:
-        """Stop counting time."""
-        difference = time.time() - self._time
-        print(f'{self._msg}: ended {difference:.04f} s')
-
-    def mark(self, msg: str) -> None:
-        """
-        Print current elapsed time and restart time counting.
-
-        :param msg: message to print
-        """
-        print('{}: {:.04f} s'.format(msg, time.time() - self._time))
-        self._time = time.time()
-
-
 def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
     """
     Evaluate simple expression.

@@ -45,7 +45,8 @@ def _get_cps(subtitle: bubblesub.ass.event.Event) -> str:
     return (
         '{:.1f}'.format(
             bubblesub.ass.util.character_count(subtitle.text) /
-            max(1, subtitle.duration / 1000.0))
+            max(1, subtitle.duration / 1000.0)
+        )
         if subtitle.duration > 0 else
         '-'
     )
