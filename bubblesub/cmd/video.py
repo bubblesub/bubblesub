@@ -36,10 +36,6 @@ class PlaySubtitleCommand(BaseCommand):
     help_text = 'Plays given subtitle.'
 
     @property
-    def menu_name(self) -> str:
-        return f'&Play {self.args.target.description}'
-
-    @property
     def is_enabled(self) -> bool:
         return self.api.media.is_loaded and self.args.target.makes_sense
 
@@ -70,16 +66,6 @@ class PlayAudioSelectionCommand(BaseCommand):
         'play-spectrogram-selection'
     ]
     help_text = 'Plays a region near the current spectrogram selection.'
-
-    @property
-    def menu_name(self) -> str:
-        ret = '&Play '
-        if self.args.delta_start:
-            ret += f'{self.args.delta_start.description} before '
-        if self.args.delta_end:
-            ret += f'{self.args.delta_end.description} after '
-        ret += 'spectrogram selection'
-        return ret
 
     @property
     def is_enabled(self) -> bool:
@@ -150,10 +136,6 @@ class SeekCommand(BaseCommand):
     help_text = 'Changes the video playback position to desired place.'
 
     @property
-    def menu_name(self) -> str:
-        return f'&Seek {self.args.delta.description}'
-
-    @property
     def is_enabled(self) -> bool:
         return self.api.media.is_loaded
 
@@ -187,12 +169,6 @@ class SetPlaybackSpeedCommand(BaseCommand):
     names = ['set-playback-speed']
     help_text = 'Adjusts the video playback speed.'
 
-    @property
-    def menu_name(self) -> str:
-        return '&Set playback speed to {}'.format(
-            self.args.expression.format('current speed')
-        )
-
     async def run(self) -> None:
         new_value = bubblesub.util.eval_expr(
             self.args.expression.format(self.api.media.playback_speed)
@@ -215,12 +191,6 @@ class SetPlaybackSpeedCommand(BaseCommand):
 class SetVolumeCommand(BaseCommand):
     names = ['set-volume']
     help_text = 'Adjusts the video volume.'
-
-    @property
-    def menu_name(self) -> str:
-        return '&Set volume to {}'.format(
-            self.args.expression.format('current volume')
-        )
 
     async def run(self) -> None:
         new_value = bubblesub.util.eval_expr(
@@ -246,12 +216,6 @@ class MuteCommand(BaseCommand):
     help_text = 'Mutes or unmutes the video audio.'
 
     @property
-    def menu_name(self) -> str:
-        return self.args.operation.get_description(
-            'Mute', 'Unmute', 'Toggle mute'
-        )
-
-    @property
     def is_enabled(self) -> bool:
         return self.api.media.is_loaded
 
@@ -273,14 +237,6 @@ class MuteCommand(BaseCommand):
 class PauseCommand(BaseCommand):
     names = ['pause']
     help_text = 'Pauses or unpauses the video playback.'
-
-    @property
-    def menu_name(self) -> str:
-        return self.args.operation.get_description(
-            '&Pause playback',
-            '&Play until end of the file',
-            '&Toggle pause'
-        )
 
     @property
     def is_enabled(self) -> bool:
@@ -313,12 +269,6 @@ class ScreenshotCommand(BaseCommand):
     @property
     def is_enabled(self) -> bool:
         return self.api.media.is_loaded
-
-    @property
-    def menu_name(self) -> str:
-        return '&Save screenshot ({} subtitles)'.format(
-            'with' if self.args.include_subs else 'without'
-        )
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)

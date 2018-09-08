@@ -207,9 +207,7 @@ class _CommandAction(QtWidgets.QAction):
             for invocation in item.invocations
         ]
         self.triggered.connect(self._on_trigger)
-        self.setText(
-            item.name or ', '.join(cmd.menu_name for cmd in self.commands)
-        )
+        self.setText(item.name)
 
     def _on_trigger(self) -> None:
         for cmd in self.commands:

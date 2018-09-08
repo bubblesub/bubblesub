@@ -739,7 +739,6 @@ class _StylesManagerDialog(QtWidgets.QDialog):
 
 class ManageStylesCommand(BaseCommand):
     names = ['manage-styles', 'styles-manager', 'style-manager']
-    menu_name = '&Manage styles...'
     help_text = 'Opens up the style manager.'
 
     @property

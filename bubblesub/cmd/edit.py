@@ -34,7 +34,6 @@ from bubblesub.util import VerticalDirection
 
 class UndoCommand(BaseCommand):
     names = ['undo']
-    menu_name = '&Undo'
     help_text = 'Undoes last edit operation.'
 
     @property
@@ -47,7 +46,6 @@ class UndoCommand(BaseCommand):
 
 class RedoCommand(BaseCommand):
     names = ['redo']
-    menu_name = '&Redo'
     help_text = 'Redoes last edit operation.'
 
     @property
@@ -61,12 +59,6 @@ class RedoCommand(BaseCommand):
 class SubtitleInsertCommand(BaseCommand):
     names = ['sub-insert']
     help_text = 'Inserts one empty subtitle.'
-
-    @property
-    def menu_name(self) -> str:
-        return (
-            f'&Insert subtitle {self.args.dir} {self.args.origin.description}'
-        )
 
     @property
     def is_enabled(self) -> bool:
@@ -164,10 +156,6 @@ class MoveSubtitlesCommand(BaseCommand):
     help_text = 'Moves the selected subtitles above or below.'
 
     @property
-    def menu_name(self) -> str:
-        return f'&Move selected subtitles {self.args.direction.name.lower()}'
-
-    @property
     def is_enabled(self) -> bool:
         if not self.api.subs.selected_indexes:
             return False
@@ -237,7 +225,6 @@ class MoveSubtitlesCommand(BaseCommand):
 
 class MoveSubtitlesToCommand(BaseCommand):
     names = ['edit/move-subs-to']
-    menu_name = '&Move selected subtitles to...'
     help_text = (
         'Moves the selected subtitles to the specified position. '
         'Asks for the position interactively.'
@@ -295,10 +282,6 @@ class SubtitlesCloneCommand(BaseCommand):
     )
 
     @property
-    def menu_name(self):
-        return f'&Duplicate {self.args.target.description}'
-
-    @property
     def is_enabled(self) -> bool:
         return self.args.target.makes_sense
 
@@ -329,10 +312,6 @@ class SubtitlesCloneCommand(BaseCommand):
 class SubtitlesDeleteCommand(BaseCommand):
     names = ['sub-delete']
     help_text = 'Deletes given subtitles.'
-
-    @property
-    def menu_name(self):
-        return f'&Delete {self.args.target.description}'
 
     @property
     def is_enabled(self) -> bool:
@@ -371,36 +350,6 @@ class SubtitlesDeleteCommand(BaseCommand):
 class SubtitlesSetCommand(BaseCommand):
     names = ['sub-set']
     help_text = 'Updates given subtitles parameters.'
-
-    @property
-    def menu_name(self):
-        chunks = []
-
-        for text, param in {
-                'note': self.args.note,
-                'text': self.args.text,
-                'actor': self.args.actor,
-                'style': self.args.style,
-        }.items():
-            if param:
-                chunks.append(f'{text} to {param!r}')
-
-        for text, param in {
-                'a comment': self.args.comment,
-                'a non-comment': self.args.no_comment,
-        }.items():
-            if param:
-                chunks.append(f'as {text}')
-
-        desc = f'&Set {self.args.target.description} '
-        if len(chunks) > 1:
-            desc += ', '.join(chunks[0:-1])
-            desc += ' and ' + chunks[-1]
-        elif len(chunks) == 1:
-            desc += desc[0]
-        else:
-            return 'Do nothing'
-        return desc
 
     @property
     def is_enabled(self) -> bool:
@@ -471,17 +420,6 @@ class SubtitlesSplitCommand(BaseCommand):
     help_text = 'Splits given subtitles at specified time.'
 
     @property
-    def menu_name(self) -> str:
-        target = self.args.target.description
-        # XXX: meh
-        position = (
-            self.args.position.description
-            .replace('to ', '')
-            .replace('by ', '')
-        )
-        return f'&Split {target} at {position}'
-
-    @property
     def is_enabled(self) -> bool:
         return self.args.target.makes_sense
 
@@ -527,7 +465,6 @@ class SubtitlesSplitCommand(BaseCommand):
 
 class JoinSubtitlesKeepFirstCommand(BaseCommand):
     names = ['edit/join-subs-keep-first']
-    menu_name = '&Join subtitles (keep first)'
     help_text = (
         'Joins the selected subtitles together. '
         'Keeps only the first subtitle\'s properties.'
@@ -558,7 +495,6 @@ class JoinSubtitlesKeepFirstCommand(BaseCommand):
 
 class JoinSubtitlesConcatenateCommand(BaseCommand):
     names = ['edit/join-subs-concatenate']
-    menu_name = '&Join subtitles (concatenate)'
     help_text = (
         'Joins the selected subtitles together. Keeps the first subtitle\'s '
         'properties and concatenates the text and notes of the consecutive '
@@ -604,20 +540,6 @@ class JoinSubtitlesConcatenateCommand(BaseCommand):
 class SubtitlesShiftCommand(BaseCommand):
     names = ['sub-shift']
     help_text = 'Shifts given subtitles.'
-
-    @property
-    def menu_name(self) -> str:
-        target = self.args.target.description
-        if self.args.method in {'start', 'end'}:
-            target += f' {self.args.method}'
-        elif self.args.method != 'both':
-            raise AssertionError
-
-        if self.args.delta:
-            return f'&Shift {target} {self.args.delta.description}'
-        if self.args.gui:
-            return f'&Shift {target}...'
-        raise AssertionError
 
     @property
     def is_enabled(self) -> bool:

@@ -93,16 +93,6 @@ class AbsolutePts:
             .replace('current', 'cur')
         )
 
-    @property
-    def description(self) -> str:
-        if self.value == 'cur-frame':
-            return 'to current frame'
-
-        if self.value == 'ask':
-            return 'interactively'
-
-        raise ValueError(f'unknown absolute pts: "{self.value}"')
-
     async def get(self, align_to_near_frame: bool = False) -> int:
         ret = await self._get()
         if align_to_near_frame:
@@ -134,58 +124,6 @@ class AbsolutePts:
 
 
 class RelativePts(AbsolutePts):
-    @property
-    def description(self) -> str:
-        match = MS_REGEX.match(self.value)
-        if match:
-            delta = int(match.group('delta'))
-            return _plural_desc('millisecond', delta)
-
-        match = KEYFRAME_REGEX.match(self.value)
-        if match:
-            delta = int(match.group('delta'))
-            return _plural_desc('keyframe', delta)
-
-        if self.value == 'prev-keyframe':
-            return _plural_desc('keyframe', -1)
-
-        if self.value == 'next-keyframe':
-            return _plural_desc('keyframe', 1)
-
-        match = FRAME_REGEX.match(self.value)
-        if match:
-            delta = int(match.group('delta'))
-            return _plural_desc('frame', delta)
-
-        if self.value == 'prev-frame':
-            return _plural_desc('frame', -1)
-
-        if self.value == 'next-frame':
-            return _plural_desc('frame', 1)
-
-        if self.value == 'prev-sub-start':
-            return 'to previous subtitle start'
-
-        if self.value == 'prev-sub-end':
-            return 'to previous subtitle end'
-
-        if self.value == 'next-sub-start':
-            return 'to next subtitle start'
-
-        if self.value == 'next-sub-end':
-            return 'to next subtitle end'
-
-        if self.value == 'default-sub-duration':
-            return 'by default subtitle duration'
-
-        if self.value == 'ask':
-            return 'interactively'
-
-        try:
-            return super().description
-        except ValueError:
-            raise ValueError(f'unknown relative pts: "{self.value}"')
-
     async def apply(
             self, origin: int,
             align_to_near_frame: bool = False

@@ -71,41 +71,6 @@ class EventSelection:
         self.target = target
 
     @property
-    def description(self) -> str:
-        if self.target == 'all':
-            return 'all subtitles'
-
-        if self.target == 'none':
-            return 'no subtitles'
-
-        if self.target == 'one-above':
-            return 'subtitle above'
-
-        if self.target == 'one-below':
-            return 'subtitle below'
-
-        if self.target == 'first':
-            return 'first subtitle'
-
-        if self.target == 'last':
-            return 'last subtitle'
-
-        if self.target == 'ask-number':
-            return 'subtitle by number'
-
-        if self.target == 'ask-time':
-            return 'subtitle by time'
-
-        if self.target == 'selected':
-            return 'selected subtitles'
-
-        indexes = _match_indexes(self.target)
-        if indexes is not None:
-            return 'subtitle #' + self.target
-
-        raise ValueError(f'unknown selection target: "{self.target}"')
-
-    @property
     def makes_sense(self) -> bool:
         if self.target in {'all', 'none'}:
             return True

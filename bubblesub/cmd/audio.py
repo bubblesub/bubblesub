@@ -31,11 +31,6 @@ class AudioScrollCommand(BaseCommand):
         'Scrolls the spectrogram horizontally by its width\'s percentage.'
     )
 
-    @property
-    def menu_name(self) -> str:
-        direction = 'forward' if self.args.delta > 0 else 'backward'
-        return f'&Scroll spectrogram {direction} by {self.args.delta*100}%'
-
     async def run(self) -> None:
         distance = int(self.args.delta * self.api.media.audio.view_size)
         self.api.media.audio.move_view(distance)
@@ -56,10 +51,6 @@ class AudioScrollCommand(BaseCommand):
 class AudioZoomCommand(BaseCommand):
     names = ['audio-zoom', 'spectrogram-zoom']
     help_text = 'Zooms the spectrogram in or out by the specified factor.'
-
-    @property
-    def menu_name(self) -> str:
-        return '&Zoom spectrogram %s' % ['in', 'out'][self.args.delta > 1]
 
     async def run(self) -> None:
         mouse_x = 0.5
@@ -88,15 +79,6 @@ class AudioShiftSelectionCommand(BaseCommand):
         'spectrogram-shift-selection'
     ]
     help_text = 'Shfits the spectrogram selection.'
-
-    @property
-    def menu_name(self) -> str:
-        target = 'selection'
-        if self.args.method in {'start', 'end'}:
-            target += f' {self.args.method}'
-        elif self.args.method != 'both':
-            raise AssertionError
-        return f'&Shift {target} {self.args.delta.description}'
 
     async def run(self) -> None:
         with self.api.undo.capture():
@@ -173,10 +155,6 @@ class AudioCommitSelectionCommand(BaseCommand):
     @property
     def is_enabled(self) -> bool:
         return self.args.target.makes_sense
-
-    @property
-    def menu_name(self) -> str:
-        return '&Commit selection to ' + self.args.target.description
 
     async def run(self) -> None:
         with self.api.undo.capture():

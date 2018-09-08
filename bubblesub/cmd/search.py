@@ -524,7 +524,6 @@ class _SearchDialog(QtWidgets.QDialog):
 
 class SearchCommand(BaseCommand):
     names = ['search']
-    menu_name = '&Search...'
     help_text = 'Opens up the search dialog.'
 
     async def run(self) -> None:
@@ -538,7 +537,6 @@ class SearchCommand(BaseCommand):
 
 class SearchAndReplaceCommand(BaseCommand):
     names = ['search-and-replace']
-    menu_name = '&Search and replace...'
     help_text = 'Opens up the search and replace dialog.'
 
     async def run(self) -> None:
@@ -553,14 +551,6 @@ class SearchAndReplaceCommand(BaseCommand):
 class SearchRepeatCommand(BaseCommand):
     names = ['search-repeat', 'search-again']
     help_text = 'Repeats last search operation.'
-
-    @property
-    def menu_name(self) -> str:
-        if self.args.direction == VerticalDirection.Above:
-            return '&Search previous'
-        if self.args.direction == VerticalDirection.Below:
-            return '&Search next'
-        raise AssertionError
 
     @property
     def is_enabled(self) -> bool:

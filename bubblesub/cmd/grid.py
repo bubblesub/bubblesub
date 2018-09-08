@@ -49,10 +49,6 @@ class SubtitlesSelectCommand(BaseCommand):
     help_text = 'Selects given subtitles.'
 
     @property
-    def menu_name(self) -> str:
-        return 'Select ' + self.args.target.description
-
-    @property
     def is_enabled(self) -> bool:
         return self.args.target.makes_sense
 
@@ -74,17 +70,6 @@ class SubtitlesSelectCommand(BaseCommand):
 class SubtitlesCopyCommand(BaseCommand):
     names = ['sub-copy']
     help_text = 'Copies given subtitles to clipboard.'
-
-    @property
-    def menu_name(self):
-        target_desc = self.args.target.description
-        if self.args.subject == 'text':
-            return f'Copy {target_desc} text to clipboard'
-        if self.args.subject == 'times':
-            return f'Copy {target_desc} times to clipboard'
-        if self.args.subject == 'all':
-            return f'Copy {target_desc} to clipboard'
-        raise AssertionError
 
     @property
     def is_enabled(self) -> bool:
@@ -132,10 +117,6 @@ class SubtitlesCopyCommand(BaseCommand):
 class SubtitlesPasteCommand(BaseCommand):
     names = ['sub-paste']
     help_text = 'Pastes subtitles from clipboard.'
-
-    @property
-    def menu_name(self) -> str:
-        return f'Paste subtitles from clipboard ({self.args.dir})'
 
     @property
     def is_enabled(self) -> bool:
@@ -193,11 +174,6 @@ class SubtitlesPasteCommand(BaseCommand):
 class SubtitlesPasteIntoCommand(BaseCommand):
     names = ['sub-paste-into']
     help_text = 'Pastes text or times into the given subtitles.'
-
-    @property
-    def menu_name(self) -> str:
-        target_desc = self.args.target.description
-        return f'Paste {self.args.subject} to {target_desc} from clipboard'
 
     @property
     def is_enabled(self) -> bool:
@@ -263,7 +239,6 @@ class SubtitlesPasteIntoCommand(BaseCommand):
 
 class CreateAudioSampleCommand(BaseCommand):
     names = ['grid/create-audio-sample']
-    menu_name = 'Create audio sample'
     help_text = (
         'Saves current subtitle selection to a WAV file. '
         'The audio starts at the first selected subtitle start and ends at '

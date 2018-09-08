@@ -53,10 +53,6 @@ class SetPaletteCommand(BaseCommand):
     names = ['set-palette']
     help_text = 'Changes the GUI color theme.'
 
-    @property
-    def menu_name(self) -> str:
-        return '&Switch to {} color scheme'.format(self.args.palette_name)
-
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
@@ -82,28 +78,6 @@ class FocusWidgetCommand(BaseCommand):
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
-
-    @property
-    def menu_name(self) -> str:
-        widget_name = {
-            TargetWidget.TextEditor: 'text editor',
-            TargetWidget.NoteEditor: 'note editor',
-            TargetWidget.StyleEditor: 'style editor',
-            TargetWidget.ActorEditor: 'actor editor',
-            TargetWidget.LayerEditor: 'layer editor',
-            TargetWidget.MarginLeftEditor: 'left margin editor',
-            TargetWidget.MarginRightEditor: 'right margin editor',
-            TargetWidget.MarginVerticalEditor: 'vertical margin editor',
-            TargetWidget.StartTimeEditor: 'start time editor',
-            TargetWidget.EndTimeEditor: 'end time editor',
-            TargetWidget.DurationEditor: 'duration editor',
-            TargetWidget.CommentCheckbox: 'comment checkbox',
-            TargetWidget.SubtitlesGrid: 'subtitles grid',
-            TargetWidget.Spectrogram: 'spectrogram',
-            TargetWidget.Console: 'console',
-            TargetWidget.ConsoleInput: 'console prompt'
-        }[self.args.target]
-        return '&Focus ' + widget_name
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         widget = main_window.findChild(

@@ -58,14 +58,6 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import SubMenu
 
-_CODE_TO_NAME = {
-    'ja': 'Japanese',
-    'de': 'German',
-    'fr': 'French',
-    'it': 'Italian',
-    'auto': 'Automatic'
-}
-
 
 async def _work(language, api, line):
     api.log.info(f'line #{line.number} - analyzing')
@@ -102,10 +94,6 @@ class SpeechRecognitionCommand(BaseCommand):
     )
 
     @property
-    def menu_name(self):
-        return '&' + _CODE_TO_NAME[self.args.code]
-
-    @property
     def is_enabled(self):
         return self.api.subs.has_selection \
             and self.api.media.audio.has_audio_source
@@ -116,11 +104,7 @@ class SpeechRecognitionCommand(BaseCommand):
 
     @staticmethod
     def _decorate_parser(parser: argparse.ArgumentParser) -> None:
-        parser.add_argument(
-            'code',
-            help='language code',
-            choices=list(_CODE_TO_NAME.keys())
-        )
+        parser.add_argument('code', help='language code')
 
 
 def register(cmd_api):
@@ -129,11 +113,11 @@ def register(cmd_api):
         SubMenu(
             '&Speech recognition',
             [
-                MenuCommand('/google-speech-recognition ja'),
-                MenuCommand('/google-speech-recognition de'),
-                MenuCommand('/google-speech-recognition fr'),
-                MenuCommand('/google-speech-recognition it'),
-                MenuCommand('/google-speech-recognition auto')
+                MenuCommand('&Japanese', '/google-speech-recognition ja'),
+                MenuCommand('&German', '/google-speech-recognition de'),
+                MenuCommand('&French', '/google-speech-recognition fr'),
+                MenuCommand('&Italian', '/google-speech-recognition it'),
+                MenuCommand('&Auto', '/google-speech-recognition auto')
             ]
         )
     )

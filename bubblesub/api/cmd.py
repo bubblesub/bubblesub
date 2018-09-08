@@ -126,16 +126,6 @@ class BaseCommand(abc.ABC):
         """
         raise NotImplementedError('command has no name')
 
-    @property
-    @abc.abstractproperty
-    def menu_name(self) -> str:
-        """
-        Return name shown in the GUI menus.
-
-        :return: name shown in GUI menu
-        """
-        raise NotImplementedError('command has no menu name')
-
     @bubblesub.model.classproperty
     @abc.abstractproperty
     def help_text(self) -> str:
