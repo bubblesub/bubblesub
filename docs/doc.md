@@ -341,10 +341,14 @@ Usage: `sub‑select target`
 ### <a name="cmd-sub-set"></a>`sub‑set`
 Updates given subtitles parameters.
 
-Usage: `sub‑set -t|--target=… --text=… --note=…`
-* `-t`, `--target`: subtitles to delete
+Usage: `sub‑set -t|--target=… --text=… --note=… --actor=… --style=… [--comment] [--no-comment]`
+* `-t`, `--target`: subtitles to change
 * `--text`: new subtitles text
 * `--note`: new subtitles note
+* `--actor`: new subtitles actor
+* `--style`: new subtitles style
+* `--comment`: mark subtitles as a comment
+* `--no-comment`: mark subtitles as a non-comment
 
 ### <a name="cmd-sub-shift"></a>`sub‑shift`
 Shifts given subtitles.

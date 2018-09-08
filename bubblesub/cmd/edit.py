@@ -378,8 +378,18 @@ class SubtitlesSetCommand(BaseCommand):
         for text, param in {
                 'note': self.args.note,
                 'text': self.args.text,
+                'actor': self.args.actor,
+                'style': self.args.style,
         }.items():
-            chunks.append(f'{text} to {param!r}')
+            if param:
+                chunks.append(f'{text} to {param!r}')
+
+        for text, param in {
+                'a comment': self.args.comment,
+                'a non-comment': self.args.no_comment,
+        }.items():
+            if param:
+                chunks.append(f'as {text}')
 
         desc = f'&Set {self.args.target.description} '
         if len(chunks) > 1:
@@ -401,6 +411,8 @@ class SubtitlesSetCommand(BaseCommand):
                 params = {
                     'text': sub.text,
                     'note': sub.note,
+                    'actor': sub.actor,
+                    'style': sub.style,
                 }
 
                 sub.begin_update()
@@ -411,8 +423,19 @@ class SubtitlesSetCommand(BaseCommand):
                 if self.args.note:
                     sub.note = self.args.note.format(**params)
 
-                sub.end_update()
+                if self.args.actor:
+                    sub.actor = self.args.actor.format(**params)
 
+                if self.args.style:
+                    sub.style = self.args.style.format(**params)
+
+                if self.args.comment:
+                    sub.is_comment = True
+
+                if self.args.no_comment:
+                    sub.is_comment = False
+
+                sub.end_update()
 
     @staticmethod
     def _decorate_parser(
@@ -421,13 +444,25 @@ class SubtitlesSetCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             '-t', '--target',
-            help='subtitles to delete',
+            help='subtitles to change',
             type=lambda value: EventSelection(api, value),
             default='selected'
         )
 
         parser.add_argument('--text', help='new subtitles text')
         parser.add_argument('--note', help='new subtitles note')
+        parser.add_argument('--actor', help='new subtitles actor')
+        parser.add_argument('--style', help='new subtitles style')
+        parser.add_argument(
+            '--comment',
+            action='store_true',
+            help='mark subtitles as a comment'
+        )
+        parser.add_argument(
+            '--no-comment',
+            action='store_true',
+            help='mark subtitles as a non-comment'
+        )
 
 
 class SplitSubtitleAtCurrentVideoFrameCommand(BaseCommand):
