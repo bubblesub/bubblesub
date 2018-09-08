@@ -306,7 +306,7 @@ setup(
     },
 
     package_dir={'bubblesub': 'bubblesub'},
-    package_data={'bubblesub': ['data/**/*']},
+    package_data={'bubblesub': ['data/*', 'data/**/*']},
 
     install_requires=[
         'ffms',

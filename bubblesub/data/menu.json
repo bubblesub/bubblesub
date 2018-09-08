@@ -1,0 +1,217 @@
+{
+    "main": [
+        {
+            "type": "submenu",
+            "name": "&File",
+            "children": [
+                {"type": "command", "name": "&New", "invocations": ["/new"]},
+                {"type": "command", "name": "&Open", "invocations": ["/open"]},
+                {"type": "command", "name": "&Save", "invocations": ["/save"]},
+                {"type": "command", "name": "&Save as", "invocations": ["/save-as"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Load video", "invocations": ["/load-video"]},
+                {"type": "command", "name": "&Properties...", "invocations": ["/file-properties"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Quit", "invocations": ["/quit"]}
+            ]
+        },
+        {
+            "type": "submenu",
+            "name": "&Edit",
+            "children": [
+                {"type": "command", "name": "&Undo", "invocations": ["/undo"]},
+                {"type": "command", "name": "&Redo", "invocations": ["/redo"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Find...", "invocations": ["/search"]},
+                {"type": "command", "name": "&Find and replace...", "invocations": ["/search-and-replace"]},
+                {"type": "command", "name": "&Find previous", "invocations": ["/search-repeat -d=below"]},
+                {"type": "command", "name": "&Find next", "invocations": ["/search-repeat -d=above"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Insert subtitle above", "invocations": ["/sub-insert --before"]},
+                {"type": "command", "name": "&Insert subtitle below", "invocations": ["/sub-insert --after"]},
+                {"type": "command", "name": "&Move selected subtitles above", "invocations": ["/edit/move-subs -d=above"]},
+                {"type": "command", "name": "&Move selected subtitles below", "invocations": ["/edit/move-subs -d=below"]},
+                {"type": "command", "name": "&Move selected subtitles to...", "invocations": ["/edit/move-subs-to"]},
+                {"type": "command", "name": "&Duplicate selected subtitles", "invocations": ["/sub-clone"]},
+                {"type": "command", "name": "&Delete selected subtitles", "invocations": ["/sub-delete"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Swap selected subtitles notes with text", "invocations": ["/sub-set --note={text} --text={note}"]},
+                {"type": "command", "name": "&Split selected subtitles at current video frame", "invocations": ["/sub-split -p=cur-frame"]},
+                {"type": "command", "name": "&Join selected subtitles (keep first)", "invocations": ["/edit/join-subs-keep-first"]},
+                {"type": "command", "name": "&Join selected subtitles (concatenate)", "invocations": ["/edit/join-subs-concatenate"]},
+                {"type": "command", "name": "&Join selected subtitles (as karaoke)", "invocations": ["/edit/join-subs-as-karaoke"]},
+                {"type": "command", "name": "&Join selected subtitles (as transformation)", "invocations": ["/edit/join-subs-as-transformation"]},
+                {"type": "command", "name": "Split selected subtitles as karaoke", "invocations": ["/edit/split-sub-by-karaoke"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Copy selected subtitles to clipboard", "invocations": ["/sub-copy"]},
+                {"type": "command", "name": "&Copy selected subtitles times to clipboard", "invocations": ["/sub-copy -s=times"]},
+                {"type": "command", "name": "&Copy selected subtitles text to clipboard", "invocations": ["/sub-copy -s=text"]},
+                {"type": "command", "name": "&Paste subtitles from clipboard above", "invocations": ["/sub-paste --before"]},
+                {"type": "command", "name": "&Paste subtitles from clipboard below", "invocations": ["/sub-paste --after"]},
+                {"type": "command", "name": "&Paste text from clipboard into selected subtitles", "invocations": ["/sub-paste-into -s=times"]},
+                {"type": "command", "name": "&Paste times from clipboard into selected subtitles", "invocations": ["/sub-paste-into -s=text"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Check spelling...", "invocations": ["/spell-check"]},
+                {"type": "command", "name": "&Manage styles...", "invocations": ["/style-manager"]}
+            ]
+        },
+        {
+            "type": "submenu",
+            "name": "Select",
+            "children": [
+                {"type": "command", "name": "&Jump to subtitle (by number)...", "invocations": ["/sub-select ask-number"]},
+                {"type": "command", "name": "&Jump to subtitle (by time)...", "invocations": ["/sub-select ask-time"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Select all", "invocations": ["/sub-select all"]},
+                {"type": "command", "name": "&Select previous subtitle", "invocations": ["/sub-select one-above"]},
+                {"type": "command", "name": "&Select next subtitle", "invocations": ["/sub-select one-below"]},
+                {"type": "command", "name": "&Select none", "invocations": ["/sub-select none"]}
+            ]
+        },
+        {
+            "type": "submenu",
+            "name": "&View",
+            "children": [
+                {"type": "command", "name": "&Switch to light color theme", "invocations": ["/set-palette light"]},
+                {"type": "command", "name": "&Switch to dark color theme", "invocations": ["/set-palette dark"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Create audio sample", "invocations": ["/grid/create-audio-sample"]},
+                {"type": "command", "name": "&Save screenshot (without subtitles)", "invocations": ["/video/screenshot"]},
+                {"type": "command", "name": "&Save screenshot (with subtitles)", "invocations": ["/video/screenshot -i"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Focus text editor", "invocations": ["/focus-widget text-editor -s"]},
+                {"type": "command", "name": "&Focus note editor", "invocations": ["/focus-widget note-editor -s"]},
+                {"type": "command", "name": "&Focus subtitles grid", "invocations": ["/focus-widget subtitles-grid"]},
+                {"type": "command", "name": "&Focus spectrogram", "invocations": ["/focus-widget spectrogram"]},
+                {"type": "command", "name": "&Focus console prompt", "invocations": ["/focus-widget console-input -s"]},
+                {"type": "command", "name": "&Focus console window", "invocations": ["/focus-widget console"]}
+            ]
+        },
+        {
+            "type": "submenu",
+            "name": "&Playback",
+            "children": [
+                {
+                    "type": "submenu",
+                    "name": "Play around spectrogram selection",
+                    "children": [
+                        {"type": "command", "name": "Play 0.5 second before spectrogram selection start", "invocations": ["/play-audio-sel -ds=-500ms --start"]},
+                        {"type": "command", "name": "Play 0.5 second after spectrogram selection start", "invocations": ["/play-audio-sel -de=+500ms --start"]},
+                        {"type": "command", "name": "Play 0.5 second before spectrogram selection end", "invocations": ["/play-audio-sel -ds=-500ms --end"]},
+                        {"type": "command", "name": "Play 0.5 second after spectrogram selection end", "invocations": ["/play-audio-sel -de=+500ms --end"]}
+                    ]
+                },
+                {"type": "command", "name": "&Play spectrogram selection", "invocations": ["/play-audio-sel"]},
+                {"type": "command", "name": "&Play selected subtitle", "invocations": ["/play-sub"]},
+                {"type": "command", "name": "&Play until end of file", "invocations": ["/pause off"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Seek to...", "invocations": ["/seek -d=ask"]},
+                {"type": "command", "name": "&Seek 1 frame behind", "invocations": ["/seek -d=-1f"]},
+                {"type": "command", "name": "&Seek 1 frame ahead", "invocations": ["/seek -d=+1f"]},
+                {"type": "command", "name": "&Seek 10 frames behind", "invocations": ["/seek -d=-10f"]},
+                {"type": "command", "name": "&Seek 10 frames ahead", "invocations": ["/seek -d=+10f"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Reset volume to 100%", "invocations": ["/set-volume 100"]},
+                {"type": "command", "name": "&Increase volume by 5%", "invocations": ["/set-volume {}-5"]},
+                {"type": "command", "name": "&Decrease volume by 5%", "invocations": ["/set-volume {}+5"]},
+                {"type": "command", "name": "&Mute", "invocations": ["/mute on"]},
+                {"type": "command", "name": "&Unmute", "invocations": ["/mute off"]},
+                {"type": "command", "name": "&Toggle mute", "invocations": ["/mute toggle"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Pause", "invocations": ["/pause on"]},
+                {"type": "command", "name": "&Toggle pause", "invocations": ["/pause toggle"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Speed up playback speed by 50%", "invocations": ["/set-playback-speed {}/1.5"]},
+                {"type": "command", "name": "&Slow down playback speed by 50%", "invocations": ["/set-playback-speed {}*1.5"]}
+            ]
+        },
+        {
+            "type": "submenu",
+            "name": "&Timing",
+            "children": [
+                {
+                    "type": "submenu",
+                    "name": "Snap to nearest subtitle",
+                    "children": [
+                        {"type": "command", "name": "Snap spectrogram selection start to previous subtitle start", "invocations": ["/audio-shift-sel -d=prev-sub-end --start"]},
+                        {"type": "command", "name": "Snap spectrogram selection end to next subtitle end", "invocations": ["/audio-shift-sel -d=next-sub-start --end"]},
+                        {"type": "command", "name": "Snap selected subtitles start to previous subtitle end", "invocations": ["/sub-shift -d=prev-sub-end --start"]},
+                        {"type": "command", "name": "Snap selected subtitles end to next subtitle start", "invocations": ["/sub-shift -d=next-sub-start --end"]}
+                    ]
+                },
+                {
+                    "type": "submenu",
+                    "name": "Snap to nearest keyframe",
+                    "children": [
+                        {"type": "command", "name": "Snap spectrogram selection start to previous keyframe", "invocations": ["/audio-shift-sel -d=-1kf --start"]},
+                        {"type": "command", "name": "Snap spectrogram selection end to next keyframe", "invocations": ["/audio-shift-sel -d=+1kf --end"]},
+                        {"type": "command", "name": "Snap selected subtitles start to previous keyframe", "invocations": ["/sub-shift -d=-1kf --start"]},
+                        {"type": "command", "name": "Snap selected subtitles end to next keyframe", "invocations": ["/sub-shift -d=+1kf --end"]}
+                    ]
+                },
+                {
+                    "type": "submenu",
+                    "name": "Snap to current video frame",
+                    "children": [
+                        {"type": "command", "name": "Snap spectrogram selection start to current video frame", "invocations": ["/audio-shift-sel -d=cur-frame --start"]},
+                        {"type": "command", "name": "Snap spectrogram selection end to current video frame", "invocations": ["/audio-shift-sel -d=cur-frame --end"]},
+                        {"type": "command", "name": "Place spectrogram selection at current video frame", "invocations": ["/audio-shift-sel -d=cur-frame --both", "/audio-shift-sel -d=default-sub-duration --end"]},
+                        {"type": "command", "name": "Snap selected subtitles start to current video frame", "invocations": ["/sub-shift -d=cur-frame --start"]},
+                        {"type": "command", "name": "Snap selected subtitles end to current video frame", "invocations": ["/sub-shift -d=cur-frame --end"]},
+                        {"type": "command", "name": "Place selected subtitles at current video frame", "invocations": ["/sub-shift -d=cur-frame --both", "/sub-shift -d=default-sub-duration --end"]}
+                    ]
+                },
+                {
+                    "type": "submenu",
+                    "name": "Shift",
+                    "children": [
+                        {"type": "command", "name": "Shift spectrogram selection start 10 frames back", "invocations": ["/audio-shift-sel -d=-10f --start"]},
+                        {"type": "command", "name": "Shift spectrogram selection start 10 frames ahead", "invocations": ["/audio-shift-sel -d=+10f --start"]},
+                        {"type": "command", "name": "Shift spectrogram selection end 10 frames back", "invocations": ["/audio-shift-sel -d=-10f --end"]},
+                        {"type": "command", "name": "Shift spectrogram selection end 10 frames ahead", "invocations": ["/audio-shift-sel -d=+10f --end"]},
+                        {"type": "command", "name": "Shift spectrogram selection start 1 frame back", "invocations": ["/audio-shift-sel -d=-1f --start"]},
+                        {"type": "command", "name": "Shift spectrogram selection start 1 frame ahead", "invocations": ["/audio-shift-sel -d=+1f --start"]},
+                        {"type": "command", "name": "Shift spectrogram selection end 1 frame back", "invocations": ["/audio-shift-sel -d=-1f --end"]},
+                        {"type": "command", "name": "Shift spectrogram selection end 1 frame ahead", "invocations": ["/audio-shift-sel -d=+1f --end"]},
+                        {"type": "command", "name": "Shift selected subtitles start 1 second back", "invocations": ["/sub-shift -d=-1000ms --start"]},
+                        {"type": "command", "name": "Shift selected subtitles start 1 second ahead", "invocations": ["/sub-shift -d=+1000ms --start"]},
+                        {"type": "command", "name": "Shift selected subtitles end 1 second back", "invocations": ["/sub-shift -d=-1000ms --end"]},
+                        {"type": "command", "name": "Shift selected subtitles end 1 second ahead", "invocations": ["/sub-shift -d=+1000ms --end"]}
+                    ]
+                },
+                {"type": "command", "name": "&Commit spectrogram selection", "invocations": ["/audio-commit-sel"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Shift selected subtitles...", "invocations": ["/sub-shift --gui --no-align"]},
+                {"type": "separator"},
+                {"type": "command", "name": "&Scroll spectrogram forward by 5%", "invocations": ["/audio-scroll -d=-0.05"]},
+                {"type": "command", "name": "&Scroll spectrogram backward by 5%", "invocations": ["/audio-scroll -d=0.05"]},
+                {"type": "command", "name": "&Zoom spectrogram in by 10%", "invocations": ["/audio-zoom -d=1.1"]},
+                {"type": "command", "name": "&Zoom spectrogram out by 10%", "invocations": ["/audio-zoom -d=0.9"]}
+            ]
+        }
+    ],
+    "subtitles_grid": [
+        {"type": "command", "name": "&Create audio sample", "invocations": ["/grid/create-audio-sample"]},
+        {"type": "separator"},
+        {"type": "command", "name": "&Insert subtitle above", "invocations": ["/sub-insert --before"]},
+        {"type": "command", "name": "&Insert subtitle below", "invocations": ["/sub-insert --after"]},
+        {"type": "separator"},
+        {"type": "command", "name": "&Copy to clipboard", "invocations": ["/sub-copy"]},
+        {"type": "command", "name": "&Paste from clipboard above", "invocations": ["/sub-paste --before"]},
+        {"type": "command", "name": "&Paste from clipboard below", "invocations": ["/sub-paste --after"]},
+        {"type": "separator"},
+        {"type": "command", "name": "&Duplicate", "invocations": ["/sub-clone"]},
+        {"type": "command", "name": "&Split at current video frame", "invocations": ["/sub-split -p=cur-frame"]},
+        {"type": "command", "name": "&Split as karaoke", "invocations": ["/edit/split-sub-by-karaoke"]},
+        {"type": "separator"},
+        {"type": "command", "name": "&Join (keep first)", "invocations": ["/edit/join-subs-keep-first"]},
+        {"type": "command", "name": "&Join (concatenate)", "invocations": ["/edit/join-subs-concatenate"]},
+        {"type": "command", "name": "&Join (as karaoke)", "invocations": ["/edit/join-subs-as-karaoke"]},
+        {"type": "command", "name": "&Join (as transformation)", "invocations": ["/edit/join-subs-as-transformation"]},
+        {"type": "separator"},
+        {"type": "command", "name": "&Snap to previous subtitle", "invocations": ["/sub-shift -d=prev-sub-end --start"]},
+        {"type": "command", "name": "&Snap to next subtitle", "invocations": ["/sub-shift -d=next-sub-start --end"]},
+        {"type": "separator"},
+        {"type": "command", "name": "&Delete", "invocations": ["/sub-delete"]}
+    ]
+}

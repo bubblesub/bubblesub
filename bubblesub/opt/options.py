@@ -16,10 +16,12 @@
 
 """Program options."""
 
+import typing as T
 from pathlib import Path
 
 import xdg
 
+from bubblesub.data import ROOT_DIR
 from bubblesub.opt.general import GeneralConfig
 from bubblesub.opt.hotkeys import HotkeysConfig
 from bubblesub.opt.menu import MenuConfig
@@ -36,18 +38,6 @@ class Options:
         self.hotkeys = HotkeysConfig()
         self.menu = MenuConfig()
         self.root_dir = Path()
-
-    @property
-    def _hotkeys_path(self) -> Path:
-        return self.root_dir / 'hotkey.json'
-
-    @property
-    def _menu_path(self) -> Path:
-        return self.root_dir / 'menu.json'
-
-    @property
-    def _general_path(self) -> Path:
-        return self.root_dir / 'general.ini'
 
     def load(self, root_dir: Path) -> None:
         """
@@ -69,3 +59,18 @@ class Options:
         self.general.save(root_dir)
         self.hotkeys.save(root_dir)
         self.menu.save(root_dir)
+
+    def get_assets(self, directory_name: str) -> T.Iterable[Path]:
+        """
+        Get path to all static assets under given directory name.
+
+        :param directory_name: directory that contains relevant assets
+        :return: list of paths found in the user and built-in asset directories
+        """
+        for path in [ROOT_DIR, self.root_dir]:
+            if path is None:
+                continue
+
+            path /= directory_name
+            if path.exists():
+                yield from path.iterdir()

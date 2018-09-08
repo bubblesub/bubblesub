@@ -61,7 +61,7 @@ class _StylePreview(QtWidgets.QGroupBox):
 
         self._background_combobox = QtWidgets.QComboBox()
         for i, path in enumerate(
-                bubblesub.data.get_all(api.opt, 'style_preview_bk')
+                api.opt.get_assets('style_preview_bk')
         ):
             self._background_combobox.addItem(path.name, path.resolve())
             if path.name == api.opt.general.styles.preview_background:

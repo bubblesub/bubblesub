@@ -20,6 +20,7 @@ import enum
 import json
 import typing as T
 
+from bubblesub.data import ROOT_DIR
 from bubblesub.opt.base import BaseConfig
 
 
@@ -76,195 +77,6 @@ class SubMenu(MenuItem):
         self.children = children
 
 
-_DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
-    SubMenu('&File', [
-        MenuCommand('&New', '/new'),
-        MenuCommand('&Open', '/open'),
-        MenuCommand('&Save', '/save'),
-        MenuCommand('&Save as', '/save-as'),
-        MenuSeparator(),
-        MenuCommand('&Load video', '/load-video'),
-        MenuCommand('&Properties...', '/file-properties'),
-        MenuSeparator(),
-        MenuCommand('&Quit', '/quit'),
-    ]),
-
-    SubMenu('&Edit', [
-        MenuCommand('&Undo', '/undo'),
-        MenuCommand('&Redo', '/redo'),
-        MenuSeparator(),
-        MenuCommand('&Find...', '/search'),
-        MenuCommand('&Find and replace...', '/search-and-replace'),
-        MenuCommand('&Find previous', '/search-repeat -d=below'),
-        MenuCommand('&Find next', '/search-repeat -d=above'),
-        MenuSeparator(),
-        MenuCommand('&Insert subtitle above', '/sub-insert --before'),
-        MenuCommand('&Insert subtitle below', '/sub-insert --after'),
-        MenuCommand('&Move selected subtitles above', '/edit/move-subs -d=above'),
-        MenuCommand('&Move selected subtitles below', '/edit/move-subs -d=below'),
-        MenuCommand('&Move selected subtitles to...', '/edit/move-subs-to'),
-        MenuCommand('&Duplicate selected subtitles', '/sub-clone'),
-        MenuCommand('&Delete selected subtitles', '/sub-delete'),
-        MenuSeparator(),
-        MenuCommand('&Swap selected subtitles notes with text', '/sub-set --note={text} --text={note}'),
-        MenuCommand('&Split selected subtitles at current video frame', '/sub-split -p=cur-frame'),
-        MenuCommand('&Join selected subtitles (keep first)', '/edit/join-subs-keep-first'),
-        MenuCommand('&Join selected subtitles (concatenate)', '/edit/join-subs-concatenate'),
-        MenuCommand('&Join selected subtitles (as karaoke)', '/edit/join-subs-as-karaoke'),
-        MenuCommand('&Join selected subtitles (as transformation)', '/edit/join-subs-as-transformation'),
-        MenuCommand('Split selected subtitles as karaoke', '/edit/split-sub-by-karaoke'),
-        MenuSeparator(),
-        MenuCommand('&Copy selected subtitles to clipboard', '/sub-copy'),
-        MenuCommand('&Copy selected subtitles times to clipboard', '/sub-copy -s=times'),
-        MenuCommand('&Copy selected subtitles text to clipboard', '/sub-copy -s=text'),
-        MenuCommand('&Paste subtitles from clipboard above', '/sub-paste --before'),
-        MenuCommand('&Paste subtitles from clipboard below', '/sub-paste --after'),
-        MenuCommand('&Paste text from clipboard into selected subtitles', '/sub-paste-into -s=times'),
-        MenuCommand('&Paste times from clipboard into selected subtitles', '/sub-paste-into -s=text'),
-        MenuSeparator(),
-        MenuCommand('&Check spelling...', '/spell-check'),
-        MenuCommand('&Manage styles...', '/style-manager'),
-    ]),
-
-    SubMenu('Select', [
-        MenuCommand('&Jump to subtitle (by number)...', '/sub-select ask-number'),
-        MenuCommand('&Jump to subtitle (by time)...', '/sub-select ask-time'),
-        MenuSeparator(),
-        MenuCommand('&Select all', '/sub-select all'),
-        MenuCommand('&Select previous subtitle', '/sub-select one-above'),
-        MenuCommand('&Select next subtitle', '/sub-select one-below'),
-        MenuCommand('&Select none', '/sub-select none'),
-    ]),
-
-    SubMenu('&View', [
-        MenuCommand('&Switch to light color theme', '/set-palette light'),
-        MenuCommand('&Switch to dark color theme', '/set-palette dark'),
-        MenuSeparator(),
-        MenuCommand('&Create audio sample', '/grid/create-audio-sample'),
-        MenuCommand('&Save screenshot (without subtitles)', '/video/screenshot'),
-        MenuCommand('&Save screenshot (with subtitles)', '/video/screenshot -i'),
-        MenuSeparator(),
-        MenuCommand('&Focus text editor', '/focus-widget text-editor -s'),
-        MenuCommand('&Focus note editor', '/focus-widget note-editor -s'),
-        MenuCommand('&Focus subtitles grid', '/focus-widget subtitles-grid'),
-        MenuCommand('&Focus spectrogram', '/focus-widget spectrogram'),
-        MenuCommand('&Focus console prompt', '/focus-widget console-input -s'),
-        MenuCommand('&Focus console window', '/focus-widget console'),
-    ]),
-
-    SubMenu('&Playback', [
-        SubMenu('Play around spectrogram selection', [
-            MenuCommand('Play 0.5 second before spectrogram selection start', '/play-audio-sel -ds=-500ms --start'),
-            MenuCommand('Play 0.5 second after spectrogram selection start', '/play-audio-sel -de=+500ms --start'),
-            MenuCommand('Play 0.5 second before spectrogram selection end', '/play-audio-sel -ds=-500ms --end'),
-            MenuCommand('Play 0.5 second after spectrogram selection end', '/play-audio-sel -de=+500ms --end'),
-        ]),
-        MenuCommand('&Play spectrogram selection', '/play-audio-sel'),
-        MenuCommand('&Play selected subtitle', '/play-sub'),
-        MenuCommand('&Play until end of file', '/pause off'),
-        MenuSeparator(),
-        MenuCommand('&Seek to...', '/seek -d=ask'),
-        MenuCommand('&Seek 1 frame behind', '/seek -d=-1f'),
-        MenuCommand('&Seek 1 frame ahead', '/seek -d=+1f'),
-        MenuCommand('&Seek 10 frames behind', '/seek -d=-10f'),
-        MenuCommand('&Seek 10 frames ahead', '/seek -d=+10f'),
-        MenuSeparator(),
-        MenuCommand('&Reset volume to 100%', '/set-volume 100'),
-        MenuCommand('&Increase volume by 5%', '/set-volume {}-5'),
-        MenuCommand('&Decrease volume by 5%', '/set-volume {}+5'),
-        MenuCommand('&Mute', '/mute on'),
-        MenuCommand('&Unmute', '/mute off'),
-        MenuCommand('&Toggle mute', '/mute toggle'),
-        MenuSeparator(),
-        MenuCommand('&Pause', '/pause on'),
-        MenuCommand('&Toggle pause', '/pause toggle'),
-        MenuSeparator(),
-        MenuCommand('&Speed up playback speed by 50%', '/set-playback-speed {}/1.5'),
-        MenuCommand('&Slow down playback speed by 50%', '/set-playback-speed {}*1.5'),
-    ]),
-
-    SubMenu('&Timing', [
-        SubMenu('Snap to nearest subtitle', [
-            MenuCommand('Snap spectrogram selection start to previous subtitle start', '/audio-shift-sel -d=prev-sub-end --start'),
-            MenuCommand('Snap spectrogram selection end to next subtitle end', '/audio-shift-sel -d=next-sub-start --end'),
-            MenuCommand('Snap selected subtitles start to previous subtitle end', '/sub-shift -d=prev-sub-end --start'),
-            MenuCommand('Snap selected subtitles end to next subtitle start', '/sub-shift -d=next-sub-start --end'),
-        ]),
-
-        SubMenu('Snap to nearest keyframe', [
-            MenuCommand('Snap spectrogram selection start to previous keyframe', '/audio-shift-sel -d=-1kf --start'),
-            MenuCommand('Snap spectrogram selection end to next keyframe', '/audio-shift-sel -d=+1kf --end'),
-            MenuCommand('Snap selected subtitles start to previous keyframe', '/sub-shift -d=-1kf --start'),
-            MenuCommand('Snap selected subtitles end to next keyframe', '/sub-shift -d=+1kf --end'),
-        ]),
-
-        SubMenu('Snap to current video frame', [
-            MenuCommand('Snap spectrogram selection start to current video frame', '/audio-shift-sel -d=cur-frame --start'),
-            MenuCommand('Snap spectrogram selection end to current video frame', '/audio-shift-sel -d=cur-frame --end'),
-            MenuCommand('Place spectrogram selection at current video frame', '/audio-shift-sel -d=cur-frame --both', '/audio-shift-sel -d=default-sub-duration --end'),
-            MenuCommand('Snap selected subtitles start to current video frame', '/sub-shift -d=cur-frame --start'),
-            MenuCommand('Snap selected subtitles end to current video frame', '/sub-shift -d=cur-frame --end'),
-            MenuCommand('Place selected subtitles at current video frame', '/sub-shift -d=cur-frame --both', '/sub-shift -d=default-sub-duration --end'),
-        ]),
-
-        SubMenu('Shift', [
-            MenuCommand('Shift spectrogram selection start 10 frames back', '/audio-shift-sel -d=-10f --start'),
-            MenuCommand('Shift spectrogram selection start 10 frames ahead', '/audio-shift-sel -d=+10f --start'),
-            MenuCommand('Shift spectrogram selection end 10 frames back', '/audio-shift-sel -d=-10f --end'),
-            MenuCommand('Shift spectrogram selection end 10 frames ahead', '/audio-shift-sel -d=+10f --end'),
-            MenuCommand('Shift spectrogram selection start 1 frame back', '/audio-shift-sel -d=-1f --start'),
-            MenuCommand('Shift spectrogram selection start 1 frame ahead', '/audio-shift-sel -d=+1f --start'),
-            MenuCommand('Shift spectrogram selection end 1 frame back', '/audio-shift-sel -d=-1f --end'),
-            MenuCommand('Shift spectrogram selection end 1 frame ahead', '/audio-shift-sel -d=+1f --end'),
-            MenuCommand('Shift selected subtitles start 1 second back', '/sub-shift -d=-1000ms --start'),
-            MenuCommand('Shift selected subtitles start 1 second ahead', '/sub-shift -d=+1000ms --start'),
-            MenuCommand('Shift selected subtitles end 1 second back', '/sub-shift -d=-1000ms --end'),
-            MenuCommand('Shift selected subtitles end 1 second ahead', '/sub-shift -d=+1000ms --end'),
-        ]),
-
-        MenuCommand('&Commit spectrogram selection', '/audio-commit-sel'),
-        MenuSeparator(),
-        MenuCommand('&Shift selected subtitles...', '/sub-shift --gui --no-align'),
-        MenuSeparator(),
-        MenuCommand(
-            '&Scroll spectrogram forward by 5%',
-            '/audio-scroll -d=-0.05'
-        ),
-        MenuCommand(
-            '&Scroll spectrogram backward by 5%',
-            '/audio-scroll -d=0.05'
-        ),
-        MenuCommand('&Zoom spectrogram in by 10%', '/audio-zoom -d=1.1'),
-        MenuCommand('&Zoom spectrogram out by 10%', '/audio-zoom -d=0.9')
-    ])
-]
-
-_DEFAULT_SUBTITLES_GRID_MENU = [
-    MenuCommand('&Create audio sample', '/grid/create-audio-sample'),
-    MenuSeparator(),
-    MenuCommand('&Insert subtitle above', '/sub-insert --before'),
-    MenuCommand('&Insert subtitle below', '/sub-insert --after'),
-    MenuSeparator(),
-    MenuCommand('&Copy to clipboard', '/sub-copy'),
-    MenuCommand('&Paste from clipboard above', '/sub-paste --before'),
-    MenuCommand('&Paste from clipboard below', '/sub-paste --after'),
-    MenuSeparator(),
-    MenuCommand('&Duplicate', '/sub-clone'),
-    MenuCommand('&Split at current video frame','/sub-split -p=cur-frame'),
-    MenuCommand('&Split as karaoke', '/edit/split-sub-by-karaoke'),
-    MenuSeparator(),
-    MenuCommand('&Join (keep first)', '/edit/join-subs-keep-first'),
-    MenuCommand('&Join (concatenate)', '/edit/join-subs-concatenate'),
-    MenuCommand('&Join (as karaoke)', '/edit/join-subs-as-karaoke'),
-    MenuCommand('&Join (as transformation)', '/edit/join-subs-as-transformation'),
-    MenuSeparator(),
-    MenuCommand('&Snap to previous subtitle', '/sub-shift -d=prev-sub-end --start'),
-    MenuCommand('&Snap to next subtitle', '/sub-shift -d=next-sub-start --end'),
-    MenuSeparator(),
-    MenuCommand('&Delete', '/sub-delete')
-]
-
-
 class MenuConfig(BaseConfig):
     """Configuration for GUI menu."""
 
@@ -273,9 +85,10 @@ class MenuConfig(BaseConfig):
     def __init__(self) -> None:
         """Initialize self."""
         self._menu: T.Dict[MenuContext, T.MutableSequence[MenuItem]] = {
-            MenuContext.MainMenu: _DEFAULT_MAIN_MENU,
-            MenuContext.SubtitlesGrid: _DEFAULT_SUBTITLES_GRID_MENU,
+            MenuContext.MainMenu: [],
+            MenuContext.SubtitlesGrid: [],
         }
+        self.loads((ROOT_DIR / 'menu.json').read_text())
 
     def loads(self, text: str) -> None:
         """
