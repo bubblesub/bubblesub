@@ -57,64 +57,32 @@ class RedoCommand(BaseCommand):
         self.api.undo.redo()
 
 
-class InsertSubtitleCommand(BaseCommand):
-    names = ['edit/insert-sub']
-    help_text = (
-        'Inserts one empty subtitle near the current subtitle selection.'
-    )
+class SubtitleInsertCommand(BaseCommand):
+    names = ['sub-insert']
+    help_text = 'Inserts one empty subtitle.'
 
     @property
     def menu_name(self) -> str:
-        return f'&Insert subtitle ({self.args.direction.name.lower()})'
+        return (
+            f'&Insert subtitle {self.args.dir} {self.args.origin.description}'
+        )
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.args.origin.makes_sense
 
     async def run(self) -> None:
-        if self.args.direction == VerticalDirection.Above:
-            if not self.api.subs.selected_indexes:
-                idx = 0
-                prev_sub = None
-                cur_sub = None
-            else:
-                idx = self.api.subs.selected_indexes[0]
-                prev_sub = self.api.subs.events.get(idx - 1)
-                cur_sub = self.api.subs.events[idx]
-
-            if cur_sub:
-                end = cur_sub.start
-                start = self.api.media.video.align_pts_to_prev_frame(
-                    max(0, end - self.api.opt.general.subs.default_duration)
-                )
-            else:
-                start = 0
-                end = self.api.media.video.align_pts_to_next_frame(
-                    self.api.opt.general.subs.default_duration
-                )
-
-            if prev_sub and start < prev_sub.end:
-                start = prev_sub.end
-            if start > end:
-                start = end
-
-        elif self.args.direction == VerticalDirection.Below:
-            if not self.api.subs.selected_indexes:
-                idx = 0
-                cur_sub = None
-                next_sub = self.api.subs.events.get(0)
-            else:
-                idx = self.api.subs.selected_indexes[-1]
-                cur_sub = self.api.subs.events[idx]
-                idx += 1
-                next_sub = self.api.subs.events.get(idx)
-
-            start = cur_sub.end if cur_sub else 0
-            end = start + self.api.opt.general.subs.default_duration
-            end = self.api.media.video.align_pts_to_next_frame(end)
-            if next_sub and end > next_sub.start:
-                end = next_sub.start
-            if end < start:
-                end = start
-
+        indexes = await self.args.origin.get_indexes()
+        if self.args.dir == 'before':
+            idx, start, end = self._insert_before(indexes)
+        elif self.args.dir == 'after':
+            idx, start, end = self._insert_after(indexes)
         else:
             raise AssertionError
+
+        if not self.args.no_align:
+            start = self.api.media.video.align_pts_to_near_frame(start)
+            end = self.api.media.video.align_pts_to_near_frame(end)
 
         with self.api.undo.capture():
             self.api.subs.events.insert_one(
@@ -122,17 +90,71 @@ class InsertSubtitleCommand(BaseCommand):
             )
             self.api.subs.selected_indexes = [idx]
 
+    def _insert_before(self, indexes: T.List[int]) -> T.Tuple[int, int, int]:
+        if indexes:
+            idx = indexes[0]
+            cur_sub = self.api.subs.events[idx]
+            prev_sub = cur_sub.prev
+        else:
+            idx = 0
+            cur_sub = self.api.subs.events.get(0)
+            prev_sub = None
+
+        end = cur_sub.start if cur_sub else 0
+        start = end - self.api.opt.general.subs.default_duration
+        if prev_sub and start < prev_sub.end:
+            start = min(prev_sub.end, end)
+        return idx, start, end
+
+    def _insert_after(self, indexes: T.List[int]) -> T.Tuple[int, int, int]:
+        if indexes:
+            idx = indexes[-1]
+            cur_sub = self.api.subs.events[idx]
+            next_sub = cur_sub.next
+            idx += 1
+        else:
+            idx = 0
+            cur_sub = None
+            next_sub = self.api.subs.events.get(0)
+
+        start = cur_sub.end if cur_sub else 0
+        end = start + self.api.opt.general.subs.default_duration
+        if next_sub and end > next_sub.start:
+            end = max(next_sub.start, start)
+        return idx, start, end
+
     @staticmethod
     def _decorate_parser(
             api: bubblesub.api.Api,
             parser: argparse.ArgumentParser
     ) -> None:
         parser.add_argument(
-            '-d', '--direction',
-            help='how to insert the subtitle',
-            type=VerticalDirection.from_string,
-            choices=list(VerticalDirection),
-            required=True
+            '-o', '--origin',
+            help='where to insert the subtitle',
+            type=lambda value: EventSelection(api, value),
+            default='selected',
+        )
+
+        parser.add_argument(
+            '--no-align',
+            help='don\'t realign subtitle to video frames',
+            action='store_true'
+        )
+
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument(
+            '--before',
+            dest='dir',
+            action='store_const',
+            const='before',
+            help='insert before origin'
+        )
+        group.add_argument(
+            '--after',
+            dest='dir',
+            action='store_const',
+            const='after',
+            help='insert after origin'
         )
 
 
@@ -601,7 +623,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     for cls in [
             UndoCommand,
             RedoCommand,
-            InsertSubtitleCommand,
+            SubtitleInsertCommand,
             MoveSubtitlesCommand,
             MoveSubtitlesToCommand,
             SubtitlesCloneCommand,

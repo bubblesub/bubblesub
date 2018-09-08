@@ -31,7 +31,7 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
 |<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-search">search</a> </code> |
 |<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-search-and-replace">search-and-replace</a> </code> |
-|<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d=below</code> |
+|<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
 |<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-sub-delete">sub-delete</a> </code> |
 |<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-10f --start</code> |
 |<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+10f --start</code> |
@@ -68,8 +68,8 @@ Context refers to the currently focused widget.
 |<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-1f --end</code> |
 |<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1f --end</code> |
 |<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-commit-sel">audio-commit-sel</a> </code> |
-|<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d=above</code> |
-|<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-edit-insert-sub">edit/insert-sub</a> -d=below</code> |
+|<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
+|<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
 |<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> </code> |
 |<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-play-sub">play-sub</a> </code> |
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
@@ -134,12 +134,6 @@ Zooms the spectrogram in or out by the specified factor.
 
 Usage: `audio‑zoom -d|--delta=…`
 * `-d`, `--delta`: factor to zoom the view by
-
-### <a name="cmd-edit-insert-sub"></a>`edit/insert‑sub`
-Inserts one empty subtitle near the current subtitle selection.
-
-Usage: `edit/insert‑sub -d|--direction=…`
-* `-d`, `--direction`: how to insert the subtitle (`above`, `below`)
 
 ### <a name="cmd-edit-join-subs-as-karaoke"></a>`edit/join‑subs‑as‑karaoke`
 Joins the selected subtitles adding karaoke timing tags inbetween.
@@ -316,6 +310,15 @@ Deletes given subtitles.
 
 Usage: `sub‑delete -t|--target=…`
 * `-t`, `--target`: subtitles to delete
+
+### <a name="cmd-sub-insert"></a>`sub‑insert`
+Inserts one empty subtitle.
+
+Usage: `sub‑insert -o|--origin=… [--no-align] [--before] [--after]`
+* `-o`, `--origin`: where to insert the subtitle
+* `--no-align`: don't realign subtitle to video frames
+* `--before`: insert before origin
+* `--after`: insert after origin
 
 ### <a name="cmd-sub-paste"></a>`sub‑paste`
 Pastes subtitles from clipboard.
