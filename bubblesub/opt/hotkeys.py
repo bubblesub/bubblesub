@@ -156,7 +156,7 @@ _DEFAULT_SPECTROGRAM_HOTKEYS = [
 
 _DEFAULT_SUBTITLES_GRID_HOTKEYS = [
     Hotkey('Ctrl+C', '/sub-copy'),
-    Hotkey('Ctrl+V', '/sub-paste -t=selected --after'),
+    Hotkey('Ctrl+V', '/sub-paste --after'),
 ]
 
 

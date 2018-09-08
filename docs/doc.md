@@ -96,7 +96,7 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-1kf --start</code> |
 |<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1kf --end</code> |
 |<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-copy">sub-copy</a> </code> |
-|<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-paste">sub-paste</a> -t=selected --after</code> |
+|<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-paste">sub-paste</a> --after</code> |
 
 # Default commands
 ### <a name="cmd-audio-commit-sel"></a>`audio‑commit‑sel`
@@ -308,7 +308,7 @@ Usage: `sub‑clone [-t|--target=…]`
 Copies given subtitles to clipboard.
 
 Usage: `sub‑copy -t|--target=… -s|--subject=…`
-* `-t`, `--target`: subtitles to select
+* `-t`, `--target`: subtitles to paste into
 * `-s`, `--subject`: subject to copy (`text`, `times`, `all`)
 
 ### <a name="cmd-sub-delete"></a>`sub‑delete`
@@ -320,10 +320,10 @@ Usage: `sub‑delete [target]`
 ### <a name="cmd-sub-paste"></a>`sub‑paste`
 Pastes subtitles from clipboard.
 
-Usage: `sub‑paste -t|--target=… [--before] [--after]`
-* `-t`, `--target`: where to paste the subtitles
-* `--before`: paste before target
-* `--after`: paste after target
+Usage: `sub‑paste -o|--origin=… [--before] [--after]`
+* `-o`, `--origin`: where to paste the subtitles
+* `--before`: paste before origin
+* `--after`: paste after origin
 
 ### <a name="cmd-sub-paste-into"></a>`sub‑paste‑into`
 Pastes text or times into the given subtitles.

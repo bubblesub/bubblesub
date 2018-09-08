@@ -117,7 +117,7 @@ class SubtitlesCopyCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             '-t', '--target',
-            help='subtitles to select',
+            help='subtitles to paste into',
             type=lambda value: EventSelection(api, value),
             default='selected'
         )
@@ -135,16 +135,17 @@ class SubtitlesPasteCommand(BaseCommand):
 
     @property
     def menu_name(self) -> str:
-        direction = 'before' if self.args.before else 'after'
-        return f'Paste subtitles from clipboard ({direction})'
+        return f'Paste subtitles from clipboard ({self.args.dir})'
 
     async def run(self) -> None:
-        indexes = await self.args.target.get_indexes()
+        indexes = await self.args.origin.get_indexes()
 
-        if self.args.before:
+        if self.args.dir == 'before':
             self._paste_from_clipboard(indexes[0] if indexes else 0)
-        else:
+        elif self.args.dir == 'after':
             self._paste_from_clipboard(indexes[-1] + 1 if indexes else 0)
+        else:
+            raise AssertionError
 
     def _paste_from_clipboard(self, idx: int) -> None:
         text = QtWidgets.QApplication.clipboard().text()
@@ -162,21 +163,26 @@ class SubtitlesPasteCommand(BaseCommand):
             parser: argparse.ArgumentParser
     ) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-o', '--origin',
             help='where to paste the subtitles',
-            type=lambda value: EventSelection(api, value)
+            type=lambda value: EventSelection(api, value),
+            default='selected',
         )
 
-        group = parser.add_mutually_exclusive_group()
+        group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument(
             '--before',
-            action='store_true',
-            help='paste before target'
+            dest='dir',
+            action='store_const',
+            const='before',
+            help='paste before origin'
         )
         group.add_argument(
             '--after',
-            action='store_false', dest='before',
-            help='paste after target'
+            dest='dir',
+            action='store_const',
+            const='after',
+            help='paste after origin'
         )
 
 
