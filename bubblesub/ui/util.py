@@ -197,13 +197,19 @@ class _CommandAction(QtWidgets.QAction):
     def __init__(
             self,
             api: bubblesub.api.Api,
-            invocations: T.Iterable[str],
+            item: MenuCommand,
             parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
-        self.commands = [api.cmd.get(invocation) for invocation in invocations]
+        self.commands = [
+            api.cmd.get(invocation)
+            for invocation in item.invocations
+        ]
         self.triggered.connect(self._on_trigger)
+        self.setText(
+            item.name or ', '.join(cmd.menu_name for cmd in self.commands)
+        )
 
     def _on_trigger(self) -> None:
         for cmd in self.commands:
@@ -237,6 +243,7 @@ def setup_cmd_menu(
         parent.aboutToHide.connect(
             functools.partial(_on_menu_about_to_hide, parent)
         )
+
     for item in menu_def:
         if isinstance(item, MenuSeparator):
             parent.addSeparator()
@@ -245,12 +252,11 @@ def setup_cmd_menu(
             setup_cmd_menu(api, submenu, item.children, context, hotkey_map)
         elif isinstance(item, MenuCommand):
             try:
-                action = _CommandAction(api, item.invocations, parent)
+                action = _CommandAction(api, item, parent)
             except bubblesub.api.cmd.CommandError as ex:
                 api.log.error(str(ex))
                 continue
 
-            action.setText(', '.join(cmd.menu_name for cmd in action.commands))
             shortcut = hotkey_map.get((context, item.invocations))
             if shortcut is not None:
                 action.setText(action.text() + '\t' + shortcut)
