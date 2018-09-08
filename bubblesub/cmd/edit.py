@@ -299,7 +299,6 @@ class SubtitlesCloneCommand(BaseCommand):
             '-t', '--target',
             help='subtitles to clone',
             type=lambda value: EventSelection(api, value),
-            nargs='?',
             default='selected'
         )
 
@@ -339,10 +338,9 @@ class SubtitlesDeleteCommand(BaseCommand):
             parser: argparse.ArgumentParser
     ) -> None:
         parser.add_argument(
-            'target',
+            '-t', '--target',
             help='subtitles to delete',
             type=lambda value: EventSelection(api, value),
-            nargs='?',
             default='selected'
         )
 
@@ -548,7 +546,6 @@ class SubtitlesShiftCommand(BaseCommand):
             '-t', '--target',
             help='subtitles to shift',
             type=lambda value: EventSelection(api, value),
-            nargs='?',
             default='selected'
         )
 

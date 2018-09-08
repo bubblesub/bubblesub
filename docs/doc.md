@@ -301,7 +301,7 @@ Aliases: `sub-duplicate`
 
 Duplicates given subtitles. Duplicated subtitles are interleaved with the source subtitles.
 
-Usage: `sub‑clone [-t|--target=…]`
+Usage: `sub‑clone -t|--target=…`
 * `-t`, `--target`: subtitles to clone
 
 ### <a name="cmd-sub-copy"></a>`sub‑copy`
@@ -314,8 +314,8 @@ Usage: `sub‑copy -t|--target=… -s|--subject=…`
 ### <a name="cmd-sub-delete"></a>`sub‑delete`
 Deletes given subtitles.
 
-Usage: `sub‑delete [target]`
-* `target`: subtitles to delete
+Usage: `sub‑delete -t|--target=…`
+* `-t`, `--target`: subtitles to delete
 
 ### <a name="cmd-sub-paste"></a>`sub‑paste`
 Pastes subtitles from clipboard.
@@ -341,7 +341,7 @@ Usage: `sub‑select target`
 ### <a name="cmd-sub-shift"></a>`sub‑shift`
 Shifts given subtitles.
 
-Usage: `sub‑shift [-t|--target=…] [-g|--gui] -d|--delta=… [--no-align] [--start] [--end] [--both]`
+Usage: `sub‑shift -t|--target=… [-g|--gui] -d|--delta=… [--no-align] [--start] [--end] [--both]`
 * `-t`, `--target`: subtitles to shift
 * `-g`, `--gui`: prompt user for shift amount with a GUI dialog
 * `-d`, `--delta`: amount to shift the subtitles
