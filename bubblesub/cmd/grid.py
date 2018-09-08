@@ -137,6 +137,10 @@ class SubtitlesPasteCommand(BaseCommand):
     def menu_name(self) -> str:
         return f'Paste subtitles from clipboard ({self.args.dir})'
 
+    @property
+    def is_enabled(self) -> bool:
+        return self.args.origin.makes_sense
+
     async def run(self) -> None:
         indexes = await self.args.origin.get_indexes()
 
