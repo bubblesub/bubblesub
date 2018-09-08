@@ -54,7 +54,7 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Shift+D</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> note-editor -s</code> |
 |<kbd>Alt+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console-input -s</code> |
 |<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console</code> |
-|<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-edit-split-sub-at-current-video-frame">edit/split-sub-at-current-video-frame</a> </code> |
+|<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-sub-split">sub-split</a> -p=cur-frame</code> |
 |<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-edit-join-subs-concatenate">edit/join-subs-concatenate</a> </code> |
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d=above</code> |
 |<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-edit-move-subs">edit/move-subs</a> -d=below</code> |
@@ -155,9 +155,6 @@ Usage: `edit/move‑subs -d|--direction=…`
 
 ### <a name="cmd-edit-move-subs-to"></a>`edit/move‑subs‑to`
 Moves the selected subtitles to the specified position. Asks for the position interactively.
-
-### <a name="cmd-edit-split-sub-at-current-video-frame"></a>`edit/split‑sub‑at‑current‑video‑frame`
-Splits the selected subtitle into two at the current video frame.
 
 ### <a name="cmd-edit-split-sub-by-karaoke"></a>`edit/split‑sub‑by‑karaoke`
 Splits the selected subtitles according to the karaoke tags inside.
@@ -361,6 +358,14 @@ Usage: `sub‑shift -t|--target=… [-g|--gui] -d|--delta=… [--no-align] [--st
 * `--start`: shift subtitles start
 * `--end`: shift subtitles end
 * `--both`: shift whole subtitles
+
+### <a name="cmd-sub-split"></a>`sub‑split`
+Splits given subtitles at specified time.
+
+Usage: `sub‑split -t|--target=… [--no-align] -p|--position=…`
+* `-t`, `--target`: subtitles to split
+* `--no-align`: don't align split position to video frames
+* `-p`, `--position`: position to split the subtitles at
 
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.

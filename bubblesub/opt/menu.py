@@ -114,7 +114,7 @@ _DEFAULT_MAIN_MENU: T.MutableSequence[MenuItem] = [
             '/sub-set --note={text} --text={note}',
             name='&Swap notes with subtitle text'
         ),
-        MenuCommand('/edit/split-sub-at-current-video-frame'),
+        MenuCommand('/sub-split -p=cur-frame'),
         MenuCommand('/edit/join-subs-keep-first'),
         MenuCommand('/edit/join-subs-concatenate'),
         MenuCommand('/edit/join-subs-as-karaoke'),
@@ -255,7 +255,7 @@ _DEFAULT_SUBTITLES_GRID_MENU = [
     MenuCommand('/sub-paste --after'),
     MenuSeparator(),
     MenuCommand('/sub-clone'),
-    MenuCommand('/edit/split-sub-at-current-video-frame'),
+    MenuCommand('/sub-split -p=cur-frame'),
     MenuCommand('/edit/split-sub-by-karaoke'),
     MenuSeparator(),
     MenuCommand('/edit/join-subs-keep-first'),

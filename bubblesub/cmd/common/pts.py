@@ -83,7 +83,7 @@ def _apply_keyframe(api: bubblesub.api.Api, origin: int, delta: int) -> int:
     return _bisect(possible_pts, origin, delta)
 
 
-class RelativePts:
+class AbsolutePts:
     def __init__(self, api: bubblesub.api.Api, value: str) -> None:
         self.api = api
         self.value = (
@@ -93,6 +93,47 @@ class RelativePts:
             .replace('current', 'cur')
         )
 
+    @property
+    def description(self) -> str:
+        if self.value == 'cur-frame':
+            return 'to current frame'
+
+        if self.value == 'ask':
+            return 'interactively'
+
+        raise ValueError(f'unknown absolute pts: "{self.value}"')
+
+    async def get(self, align_to_near_frame: bool = False) -> int:
+        ret = await self._get()
+        if align_to_near_frame:
+            ret = self.api.media.video.align_pts_to_near_frame(ret)
+        return ret
+
+    async def _get(self) -> int:
+        if self.value == 'cur-frame':
+            return self.api.media.current_pts
+
+        if self.value == 'ask':
+            return await self.api.gui.exec(self._show_abs_dialog)
+
+        raise ValueError(f'unknown relative pts: "{self.value}"')
+
+    async def _show_abs_dialog(
+            self, main_window: QtWidgets.QMainWindow
+    ) -> int:
+        ret = bubblesub.ui.util.time_jump_dialog(
+            main_window,
+            relative_checked=False,
+            value=self.api.media.current_pts,
+            show_radio=False,
+        )
+        if ret is None:
+            raise CommandCanceled
+        value, _is_relative = ret
+        return value
+
+
+class RelativePts(AbsolutePts):
     @property
     def description(self) -> str:
         match = MS_REGEX.match(self.value)
@@ -122,9 +163,6 @@ class RelativePts:
         if self.value == 'next-frame':
             return _plural_desc('frame', 1)
 
-        if self.value == 'cur-frame':
-            return 'to current frame'
-
         if self.value == 'prev-sub-start':
             return 'to previous subtitle start'
 
@@ -143,13 +181,19 @@ class RelativePts:
         if self.value == 'ask':
             return 'interactively'
 
-        raise ValueError(f'unknown relative pts: "{self.value}"')
+        try:
+            return super().description
+        except ValueError:
+            raise ValueError(f'unknown relative pts: "{self.value}"')
 
     async def apply(
             self, origin: int,
             align_to_near_frame: bool = False
     ) -> int:
-        ret = await self._apply(origin)
+        try:
+            ret = await self._apply(origin)
+        except ValueError:
+            ret = await super().get()
         if align_to_near_frame:
             ret = self.api.media.video.align_pts_to_near_frame(ret)
         return ret
@@ -182,9 +226,6 @@ class RelativePts:
         if self.value == 'next-frame':
             return _apply_frame(self.api, origin, 1)
 
-        if self.value == 'cur-frame':
-            return self.api.media.current_pts
-
         match = SUB_BOUNDARY_REGEX.match(self.value)
         if match:
             if match.group('origin') in {'prev', 'previous'}:
@@ -209,16 +250,13 @@ class RelativePts:
             return origin + self.api.opt.general.subs.default_duration
 
         if self.value == 'ask':
-            value = await self.api.gui.exec(
-                lambda main_window: self._show_dialog(main_window, origin)
+            return await self.api.gui.exec(
+                lambda main_window: self._show_rel_dialog(main_window, origin)
             )
-            if value is None:
-                raise CommandCanceled
-            return value
 
         raise ValueError(f'unknown relative pts: "{self.value}"')
 
-    async def _show_dialog(
+    async def _show_rel_dialog(
             self,
             main_window: QtWidgets.QMainWindow,
             origin: int
@@ -228,11 +266,10 @@ class RelativePts:
             relative_checked=False,
             value=self.api.media.current_pts
         )
-
         if ret is None:
-            return None
-        value, is_relative = ret
+            raise CommandCanceled
 
+        value, is_relative = ret
         if is_relative:
             return origin + value
         return value

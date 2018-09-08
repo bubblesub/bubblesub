@@ -27,6 +27,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import AbsolutePts
 from bubblesub.cmd.common import RelativePts
 from bubblesub.util import VerticalDirection
 
@@ -465,28 +466,63 @@ class SubtitlesSetCommand(BaseCommand):
         )
 
 
-class SplitSubtitleAtCurrentVideoFrameCommand(BaseCommand):
-    names = ['edit/split-sub-at-current-video-frame']
-    menu_name = '&Split selected subtitle at video frame'
-    help_text = (
-        'Splits the selected subtitle into two at the current video frame.'
-    )
+class SubtitlesSplitCommand(BaseCommand):
+    names = ['sub-split']
+    help_text = 'Splits given subtitles at specified time.'
+
+    @property
+    def menu_name(self) -> str:
+        target = self.args.target.description
+        # XXX: meh
+        position = (
+            self.args.position.description
+            .replace('to ', '')
+            .replace('by ', '')
+        )
+        return f'&Split {target} at {position}'
 
     @property
     def is_enabled(self) -> bool:
-        return len(self.api.subs.selected_indexes) == 1
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
-        idx = self.api.subs.selected_indexes[0]
-        sub = self.api.subs.events[idx]
-        split_pos = self.api.media.current_pts
-        if split_pos < sub.start or split_pos > sub.end:
-            return
+        split_pos = await self.args.position.get(
+            align_to_near_frame=not self.args.no_align
+        )
+
         with self.api.undo.capture(), self.api.gui.throttle_updates():
-            self.api.subs.events.insert(idx + 1, [copy(sub)])
-            self.api.subs.events[idx].end = split_pos
-            self.api.subs.events[idx + 1].start = split_pos
-            self.api.subs.selected_indexes = [idx, idx + 1]
+            for sub in reversed(await self.args.target.get_subtitles()):
+                if split_pos < sub.start or split_pos > sub.end:
+                    continue
+                idx = sub.index
+                self.api.subs.events.insert(idx + 1, [copy(sub)])
+                self.api.subs.events[idx].end = split_pos
+                self.api.subs.events[idx + 1].start = split_pos
+                self.api.subs.selected_indexes = [idx, idx + 1]
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to split',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
+
+        parser.add_argument(
+            '--no-align',
+            help='don\'t align split position to video frames',
+            action='store_true'
+        )
+
+        parser.add_argument(
+            '-p', '--position',
+            help='position to split the subtitles at',
+            type=lambda value: AbsolutePts(api, value),
+        )
 
 
 class JoinSubtitlesKeepFirstCommand(BaseCommand):
@@ -708,7 +744,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SubtitlesCloneCommand,
             SubtitlesDeleteCommand,
             SubtitlesSetCommand,
-            SplitSubtitleAtCurrentVideoFrameCommand,
+            SubtitlesSplitCommand,
             JoinSubtitlesKeepFirstCommand,
             JoinSubtitlesConcatenateCommand,
             SubtitlesShiftCommand,

@@ -104,7 +104,7 @@ _DEFAULT_GLOBAL_HOTKEYS = [
     Hotkey('Alt+Shift+D', '/focus-widget note-editor -s'),
     Hotkey('Alt+C', '/focus-widget console-input -s'),
     Hotkey('Alt+Shift+C', '/focus-widget console'),
-    Hotkey('Alt+X', '/edit/split-sub-at-current-video-frame'),
+    Hotkey('Alt+X', '/sub-split -p=cur-frame'),
     Hotkey('Alt+J', '/edit/join-subs-concatenate'),
     Hotkey('Alt+Up', '/edit/move-subs -d=above'),
     Hotkey('Alt+Down', '/edit/move-subs -d=below'),
