@@ -96,7 +96,7 @@ class OpenCommand(BaseCommand):
 class LoadVideoCommand(BaseCommand):
     names = ['load-video']
     help_text = (
-        'Loads a video file for the audio/video playback. '
+        'Loads a video file for audio/video playback. '
         'Prompts user to choose where to load the file from if the path '
         'wasn\'t specified in the command arguments.'
     )

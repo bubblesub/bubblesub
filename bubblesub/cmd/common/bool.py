@@ -22,6 +22,8 @@ _TOGGLE = ('toggle',)
 
 
 class BooleanOperation:
+    choices = _YES + _NO + _TOGGLE
+
     def __init__(self, operation: str) -> None:
         self.operation = operation
 

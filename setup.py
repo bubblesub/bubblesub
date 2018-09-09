@@ -128,7 +128,7 @@ class GenerateDocumentationCommand(Command):
     def _get_usage(cmd_name, parser):
         def format_action(action):
             ret = ''
-            if action.nargs in {'?', 0}:
+            if not action.required:
                 ret += '['
             ret += (
                 '|'.join(action.option_strings)
@@ -136,8 +136,8 @@ class GenerateDocumentationCommand(Command):
                 or ''
             )
             if action.option_strings and action.nargs != 0:
-                ret += '=…'
-            if action.nargs in {'?', 0}:
+                ret += f'={action.default or "…"}'
+            if not action.required:
                 ret += ']'
             return ret
 
@@ -169,7 +169,7 @@ class GenerateDocumentationCommand(Command):
             desc += action.help
             if action.choices:
                 desc += (
-                    ' ('
+                    ' (can be '
                     + ', '.join(
                         f'`{choice!s}`' for choice in action.choices
                     )

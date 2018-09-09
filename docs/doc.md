@@ -104,7 +104,7 @@ Aliases: `audio-commit-selection`, `spectrogram-commit-sel`, `spectrogram-commit
 
 Commits the spectrogram selection into given subtitles. The subtitles start and end times are synced to the current spectrogram selection boundaries.
 
-Usage: `audio‑commit‑sel -t|--target=…`
+Usage: `audio‑commit‑sel [-t|--target=selected]`
 * `-t`, `--target`: subtitles to commit selection into
 
 ### <a name="cmd-audio-scroll"></a>`audio‑scroll`
@@ -121,7 +121,7 @@ Aliases: `audio-shift-selection`, `spectrogram-shift-sel`, `spectrogram-shift-se
 Shfits the spectrogram selection.
 
 Usage: `audio‑shift‑sel -d|--delta=… [--no-align] [--start] [--end] [--both]`
-* `-d`, `--delta`: amount to shift the selection
+* `-d`, `--delta`: amount to shift the selection by
 * `--no-align`: don't realign selection to video frames
 * `--start`: shift selection start
 * `--end`: shift selection end
@@ -139,16 +139,16 @@ Usage: `audio‑zoom -d|--delta=…`
 Opens up the metadata editor dialog.
 
 ### <a name="cmd-focus-widget"></a>`focus‑widget`
-Focuses the target widget.
+Focuses given widget.
 
 Usage: `focus‑widget target [-s|--select]`
-* `target`: which widget to focus (`text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
+* `target`: which widget to focus (can be `text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
 * `-s`, `--select`: whether to select the text
 
 ### <a name="cmd-load-video"></a>`load‑video`
-Loads a video file for the audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
+Loads a video file for audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 
-Usage: `load‑video -p|--path=…`
+Usage: `load‑video [-p|--path=…]`
 * `-p`, `--path`: path to load the video from
 
 ### <a name="cmd-manage-styles"></a>`manage‑styles`
@@ -160,7 +160,7 @@ Opens up the style manager.
 Mutes or unmutes the video audio.
 
 Usage: `mute operation`
-* `operation`: whether to mute the audio
+* `operation`: whether to mute the audio (can be `1`, `yes`, `y`, `on`, `enable`, `0`, `no`, `n`, `off`, `disable`, `toggle`)
 
 ### <a name="cmd-new"></a>`new`
 Opens a new file. Prompts user to save the current file if there are unsaved changes.
@@ -168,21 +168,21 @@ Opens a new file. Prompts user to save the current file if there are unsaved cha
 ### <a name="cmd-open"></a>`open`
 Opens an existing subtitles file. Prompts user to save the current file if there are unsaved changes. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 
-Usage: `open -p|--path=…`
+Usage: `open [-p|--path=…]`
 * `-p`, `--path`: path to load the subtitles from
 
 ### <a name="cmd-pause"></a>`pause`
 Pauses or unpauses the video playback.
 
 Usage: `pause operation`
-* `operation`: whether to pause the video
+* `operation`: whether to pause the video (can be `1`, `yes`, `y`, `on`, `enable`, `0`, `no`, `n`, `off`, `disable`, `toggle`)
 
 ### <a name="cmd-play-audio-sel"></a>`play‑audio‑sel`
 Aliases: `play-audio-selection`, `play-spectrogram-sel`, `play-spectrogram-selection`
 
 Plays a region near the current spectrogram selection.
 
-Usage: `play‑audio‑sel -ds|--delta-start=… -de|--delta-end=… [--start] [--end] [--both]`
+Usage: `play‑audio‑sel [-ds|--delta-start=…] [-de|--delta-end=…] [--start] [--end] [--both]`
 * `-ds`, `--delta-start`: delta relative to the selection start
 * `-de`, `--delta-end`: delta relative to the selection end
 * `--start`: play around selection start
@@ -192,9 +192,9 @@ Usage: `play‑audio‑sel -ds|--delta-start=… -de|--delta-end=… [--start] [
 ### <a name="cmd-play-sub"></a>`play‑sub`
 Aliases: `play-subtitle`
 
-Plays given subtitle.
+Plays given subtitle. If multiple subtitles are selected, plays a region from the start of the earliest subtitle to the end of the latest one.
 
-Usage: `play‑sub -t|--target=…`
+Usage: `play‑sub [-t|--target=selected]`
 * `-t`, `--target`: subtitle to play
 
 ### <a name="cmd-quit"></a>`quit`
@@ -212,20 +212,20 @@ Saves the current subtitles to an ASS file. If the currently loaded subtitles we
 ### <a name="cmd-save-as"></a>`save‑as`
 Saves the current subtitles to an ASS file. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
 
-Usage: `save‑as -p|--path=…`
+Usage: `save‑as [-p|--path=…]`
 * `-p`, `--path`: optional path to save the subtitles to
 
 ### <a name="cmd-save-audio-sample"></a>`save‑audio‑sample`
 Saves given subtitles to a WAV file. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
 
-Usage: `save‑audio‑sample -t|--target=… -p|--path=…`
+Usage: `save‑audio‑sample [-t|--target=selected] [-p|--path=…]`
 * `-t`, `--target`: subtitles to save audio from
 * `-p`, `--path`: path to save the sample to
 
 ### <a name="cmd-save-screenshot"></a>`save‑screenshot`
 Makes a screenshot of the current video frame. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
 
-Usage: `save‑screenshot -p|--path=… [-i|--include-subs]`
+Usage: `save‑screenshot [-p|--path=…] [-i|--include-subs]`
 * `-p`, `--path`: path to save the screenshot to
 * `-i`, `--include-subs`: whether to "burn" the subtitles into the screenshot
 
@@ -248,14 +248,14 @@ Usage: `search‑repeat [--above] [--below]`
 Changes the video playback position to desired place.
 
 Usage: `seek -d|--delta=… [-p|--precise]`
-* `-d`, `--delta`: amount to shift the selection
+* `-d`, `--delta`: amount to seek by
 * `-p`, `--precise`: whether to use precise seeking at the expense of performance
 
 ### <a name="cmd-set-palette"></a>`set‑palette`
 Changes the GUI color theme.
 
 Usage: `set‑palette palette_name`
-* `palette_name`: name of the palette to change to (`dark`, `light`)
+* `palette_name`: name of the palette to change to (can be `dark`, `light`)
 
 ### <a name="cmd-set-playback-speed"></a>`set‑playback‑speed`
 Adjusts the video playback speed.
@@ -277,28 +277,28 @@ Aliases: `sub-duplicate`
 
 Duplicates given subtitles. Duplicated subtitles are interleaved with the source subtitles.
 
-Usage: `sub‑clone -t|--target=…`
+Usage: `sub‑clone [-t|--target=selected]`
 * `-t`, `--target`: subtitles to clone
 
 ### <a name="cmd-sub-copy"></a>`sub‑copy`
 Copies given subtitles to clipboard.
 
-Usage: `sub‑copy -t|--target=… -s|--subject=…`
+Usage: `sub‑copy [-t|--target=selected] [-s|--subject=all]`
 * `-t`, `--target`: subtitles to paste into
-* `-s`, `--subject`: subject to copy (`text`, `times`, `all`)
+* `-s`, `--subject`: subject to copy (can be `text`, `times`, `all`)
 
 ### <a name="cmd-sub-delete"></a>`sub‑delete`
 Deletes given subtitles.
 
-Usage: `sub‑delete -t|--target=…`
+Usage: `sub‑delete [-t|--target=selected]`
 * `-t`, `--target`: subtitles to delete
 
 ### <a name="cmd-sub-insert"></a>`sub‑insert`
 Inserts one empty subtitle.
 
-Usage: `sub‑insert -o|--origin=… [--no-align] [--before] [--after]`
+Usage: `sub‑insert [-o|--origin=selected] [--no-align] [--before] [--after]`
 * `-o`, `--origin`: where to insert the subtitle
-* `--no-align`: don't realign subtitle to video frames
+* `--no-align`: don't realign the subtitle to video frames
 * `--before`: insert before origin
 * `--after`: insert after origin
 
@@ -307,23 +307,23 @@ Aliases: `sub-join`
 
 Merges given subtitles together.
 
-Usage: `sub‑merge -t|--target=… [--concat|--concatenate]`
+Usage: `sub‑merge [-t|--target=selected] [--concat|--concatenate]`
 * `-t`, `--target`: subtitles to merge
-* `--concat`, `--concatenate`: merge subtitles text
+* `--concat`, `--concatenate`: merge the subtitles text (otherwise keep only the first subtitle)
 
 ### <a name="cmd-sub-merge-karaoke"></a>`sub‑merge‑karaoke`
 Aliases: `sub-join-karaoke`
 
 Merges given subtitles adding karaoke timing tags inbetween.
 
-Usage: `sub‑merge‑karaoke -t|--target=… [--invisible]`
+Usage: `sub‑merge‑karaoke [-t|--target=selected] [--invisible]`
 * `-t`, `--target`: subtitles to merge
 * `--invisible`: use alternative karaoke transformation
 
 ### <a name="cmd-sub-move"></a>`sub‑move`
 Moves given subtitles around.
 
-Usage: `sub‑move -t|--target=… [--above] [--below] [--gui]`
+Usage: `sub‑move [-t|--target=selected] [--above] [--below] [--gui]`
 * `-t`, `--target`: subtitles to move
 * `--above`: move subtitles up
 * `--below`: move subtitles down
@@ -332,7 +332,7 @@ Usage: `sub‑move -t|--target=… [--above] [--below] [--gui]`
 ### <a name="cmd-sub-paste"></a>`sub‑paste`
 Pastes subtitles from clipboard.
 
-Usage: `sub‑paste -o|--origin=… [--before] [--after]`
+Usage: `sub‑paste [-o|--origin=selected] [--before] [--after]`
 * `-o`, `--origin`: where to paste the subtitles
 * `--before`: paste before origin
 * `--after`: paste after origin
@@ -340,9 +340,9 @@ Usage: `sub‑paste -o|--origin=… [--before] [--after]`
 ### <a name="cmd-sub-paste-into"></a>`sub‑paste‑into`
 Pastes text or times into the given subtitles.
 
-Usage: `sub‑paste‑into -t|--target=… -s|--subject=…`
+Usage: `sub‑paste‑into [-t|--target=selected] -s|--subject=…`
 * `-t`, `--target`: subtitles to paste the subject into
-* `-s`, `--subject`: subject to copy (`text`, `times`)
+* `-s`, `--subject`: subject to copy (can be `text`, `times`)
 
 ### <a name="cmd-sub-select"></a>`sub‑select`
 Selects given subtitles.
@@ -353,7 +353,7 @@ Usage: `sub‑select target`
 ### <a name="cmd-sub-set"></a>`sub‑set`
 Updates given subtitles parameters.
 
-Usage: `sub‑set -t|--target=… --text=… --note=… --actor=… --style=… [--comment] [--no-comment]`
+Usage: `sub‑set [-t|--target=selected] [--text=…] [--note=…] [--actor=…] [--style=…] [--comment] [--no-comment]`
 * `-t`, `--target`: subtitles to change
 * `--text`: new subtitles text
 * `--note`: new subtitles note
@@ -365,10 +365,10 @@ Usage: `sub‑set -t|--target=… --text=… --note=… --actor=… --style=… 
 ### <a name="cmd-sub-shift"></a>`sub‑shift`
 Shifts given subtitles.
 
-Usage: `sub‑shift -t|--target=… [-g|--gui] -d|--delta=… [--no-align] [--start] [--end] [--both]`
+Usage: `sub‑shift [-t|--target=selected] [-g|--gui] [-d|--delta=…] [--no-align] [--start] [--end] [--both]`
 * `-t`, `--target`: subtitles to shift
 * `-g`, `--gui`: prompt user for shift amount with a GUI dialog
-* `-d`, `--delta`: amount to shift the subtitles
+* `-d`, `--delta`: amount to shift the subtitles by
 * `--no-align`: don't realign subtitles to video frames
 * `--start`: shift subtitles start
 * `--end`: shift subtitles end
@@ -377,7 +377,7 @@ Usage: `sub‑shift -t|--target=… [-g|--gui] -d|--delta=… [--no-align] [--st
 ### <a name="cmd-sub-split"></a>`sub‑split`
 Splits given subtitles at specified time.
 
-Usage: `sub‑split -t|--target=… [--no-align] -p|--position=…`
+Usage: `sub‑split [-t|--target=selected] [--no-align] [-p|--position=…]`
 * `-t`, `--target`: subtitles to split
 * `--no-align`: don't align split position to video frames
 * `-p`, `--position`: position to split the subtitles at
@@ -385,7 +385,7 @@ Usage: `sub‑split -t|--target=… [--no-align] -p|--position=…`
 ### <a name="cmd-sub-split-karaoke"></a>`sub‑split‑karaoke`
 Splits given subtitles according to the karaoke tags inside.
 
-Usage: `sub‑split‑karaoke -t|--target=…`
+Usage: `sub‑split‑karaoke [-t|--target=selected]`
 * `-t`, `--target`: subtitles to split
 
 ### <a name="cmd-undo"></a>`undo`

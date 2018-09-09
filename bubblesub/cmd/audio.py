@@ -105,7 +105,7 @@ class AudioShiftSelectionCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             '-d', '--delta',
-            help='amount to shift the selection',
+            help='amount to shift the selection by',
             type=lambda value: RelativePts(api, value),
             required=True,
         )

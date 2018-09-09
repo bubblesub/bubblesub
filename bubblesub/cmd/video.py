@@ -31,7 +31,11 @@ from bubblesub.cmd.common import RelativePts
 
 class PlaySubtitleCommand(BaseCommand):
     names = ['play-sub', 'play-subtitle']
-    help_text = 'Plays given subtitle.'
+    help_text = (
+        'Plays given subtitle. If multiple subtitles are selected, plays '
+        'a region from the start of the earliest subtitle to the end '
+        'of the latest one.'
+    )
 
     @property
     def is_enabled(self) -> bool:
@@ -153,7 +157,7 @@ class SeekCommand(BaseCommand):
     ) -> None:
         parser.add_argument(
             '-d', '--delta',
-            help='amount to shift the selection',
+            help='amount to seek by',
             type=lambda value: RelativePts(api, value),
             required=True,
         )
@@ -231,7 +235,8 @@ class MuteCommand(BaseCommand):
         parser.add_argument(
             'operation',
             help='whether to mute the audio',
-            type=BooleanOperation
+            type=BooleanOperation,
+            choices=BooleanOperation.choices
         )
 
 
@@ -256,7 +261,8 @@ class PauseCommand(BaseCommand):
         parser.add_argument(
             'operation',
             help='whether to pause the video',
-            type=BooleanOperation
+            type=BooleanOperation,
+            choices=BooleanOperation.choices
         )
 
 

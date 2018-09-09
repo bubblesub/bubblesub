@@ -18,7 +18,7 @@ Simple extensible ASS subtitle editor for Linux
 - **Simple architecture** (Commands ↔ API ↔ GUI)
 - Separate control for persistent inline comments (useful for translating)
 - Newlines support in the editor
-- Seeking is aligned to video frames
+- Everything is aligned to video frames
 - Style editor with realistic preview
 - No bloat
 
@@ -103,7 +103,7 @@ class SpeechRecognitionCommand(BaseCommand):
             await _work(self.args.code, self.api, line)
 
     @staticmethod
-    def _decorate_parser(parser: argparse.ArgumentParser) -> None:
+    def _decorate_parser(api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument('code', help='language code')
 
 

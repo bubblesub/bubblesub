@@ -131,7 +131,7 @@ class SubtitleInsertCommand(BaseCommand):
 
         parser.add_argument(
             '--no-align',
-            help='don\'t realign subtitle to video frames',
+            help='don\'t realign the subtitle to video frames',
             action='store_true'
         )
 
@@ -454,7 +454,10 @@ class SubtitlesMergeCommand(BaseCommand):
         )
         parser.add_argument(
             '--concat', '--concatenate',
-            help='merge subtitles text',
+            help=(
+                'merge the subtitles text '
+                '(otherwise keep only the first subtitle)'
+            ),
             action='store_true'
         )
 
@@ -593,7 +596,7 @@ class SubtitlesShiftCommand(BaseCommand):
         )
         group.add_argument(
             '-d', '--delta',
-            help='amount to shift the subtitles',
+            help='amount to shift the subtitles by',
             type=lambda value: RelativePts(api, value),
         )
 

@@ -74,7 +74,7 @@ class SetPaletteCommand(BaseCommand):
 
 class FocusWidgetCommand(BaseCommand):
     names = ['focus-widget']
-    help_text = 'Focuses the target widget.'
+    help_text = 'Focuses given widget.'
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
