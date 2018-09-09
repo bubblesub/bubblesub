@@ -16,12 +16,15 @@
 
 """Commands related to karaoke."""
 
+import argparse
 import re
 import typing as T
 from copy import copy
 
 import bubblesub.ass.event
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.cmd.common import EventSelection
 
 
 class _Syllable:
@@ -30,42 +33,45 @@ class _Syllable:
         self.duration = duration
 
 
-class SplitSubtitleByKaraokeCommand(BaseCommand):
-    names = ['edit/split-sub-by-karaoke']
-    help_text = (
-        'Splits the selected subtitles according to the karaoke tags inside.'
-    )
+class SubtitlesSplitKaraokeCommand(BaseCommand):
+    names = ['sub-split-karaoke']
+    help_text = 'Splits given subtitles according to the karaoke tags inside.'
 
     @property
     def is_enabled(self) -> bool:
-        return (
-            len(self.api.subs.selected_indexes) == 1
-            and '\\k' in self.api.subs.selected_events[0].text
-        )
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
-        idx = self.api.subs.selected_indexes[0]
-        sub = self.api.subs.events[idx]
-        start = sub.start
-        end = sub.end
-        syllables = self._get_syllables(sub.text)
+        subs = await self.args.target.get_subtitles()
 
+        new_selection: T.List[bubblesub.ass.event.Event] = []
         with self.api.undo.capture(), self.api.gui.throttle_updates():
-            self.api.subs.events.remove(idx, 1)
+            for sub in subs:
+                if '\\k' not in sub.text:
+                    continue
 
-            new_subs: T.List[bubblesub.ass.event.Event] = []
-            for syllable in syllables:
-                sub_copy = copy(sub)
-                sub_copy.text = syllable.text
-                sub_copy.start = start
-                sub_copy.end = min(end, start + syllable.duration * 10)
-                start = sub_copy.end
-                new_subs.append(sub_copy)
+                start = sub.start
+                end = sub.end
+                syllables = self._get_syllables(sub.text)
 
-            self.api.subs.events.insert(idx, new_subs)
-            self.api.subs.selected_indexes = list(
-                range(idx, idx + len(syllables))
-            )
+                idx = sub.index
+                self.api.subs.events.remove(idx, 1)
+
+                new_subs: T.List[bubblesub.ass.event.Event] = []
+                for syllable in syllables:
+                    sub_copy = copy(sub)
+                    sub_copy.text = syllable.text
+                    sub_copy.start = start
+                    sub_copy.end = min(end, start + syllable.duration * 10)
+                    start = sub_copy.end
+                    new_subs.append(sub_copy)
+
+                self.api.subs.events.insert(idx, new_subs)
+                new_selection += new_subs
+
+            self.api.subs.selected_indexes = [
+                sub.index for sub in new_selection
+            ]
 
     def _get_syllables(self, text: str) -> T.List[_Syllable]:
         syllables = [_Syllable(text='', duration=0)]
@@ -88,67 +94,76 @@ class SplitSubtitleByKaraokeCommand(BaseCommand):
             syllables = syllables[1:]
         return syllables
 
-
-class JoinSubtitlesAsKaraokeCommand(BaseCommand):
-    names = ['edit/join-subs-as-karaoke']
-    help_text = (
-        'Joins the selected subtitles adding karaoke timing tags inbetween.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return len(self.api.subs.selected_indexes) > 1
-
-    async def run(self) -> None:
-        subs = self.api.subs.selected_events
-        with self.api.undo.capture():
-            for idx in reversed(self.api.subs.selected_indexes[1:]):
-                self.api.subs.events.remove(idx, 1)
-
-            text = ''
-            for sub in subs:
-                text += ('{\\k%d}' % (sub.duration // 10)) + sub.text
-            subs[0].text = text
-            subs[0].end = subs[-1].end
-
-            assert subs[0].index is not None
-            self.api.subs.selected_indexes = [subs[0].index]
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to split',
+            type=lambda value: EventSelection(api, value),
+            default='selected',
+        )
 
 
-class JoinSubtitlesAsTransformationCommand(BaseCommand):
-    names = ['edit/join-subs-as-transformation']
-    help_text = (
-        'Joins the selected subtitles adding animation timing tags inbetween. '
-        'The syllables appear one after another.'
-    )
+class SubtitlesMergeKaraokeCommand(BaseCommand):
+    names = ['sub-merge-karaoke', 'sub-join-karaoke']
+    help_text = 'Merges given subtitles adding karaoke timing tags inbetween.'
 
     @property
     def is_enabled(self) -> bool:
         return len(self.api.subs.selected_indexes) > 1
 
     async def run(self) -> None:
-        subs = self.api.subs.selected_events
-        with self.api.undo.capture():
-            for idx in reversed(self.api.subs.selected_indexes[1:]):
-                self.api.subs.events.remove(idx, 1)
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable
 
-            text = ''
-            note = ''
-            pos = 0
-            for i, sub in enumerate(subs):
-                pos += sub.duration
-                text += sub.text
-                note += sub.note
-                if i != len(subs) - 1:
-                    text += (
-                        '{\\alpha&HFF&\\t(%d,%d,\\alpha&H00&)}' % (pos, pos)
-                    )
-            subs[0].text = text
-            subs[0].note = note
+        with self.api.undo.capture():
+            subs[0].begin_update()
+
+            if self.args.invisible:
+                text = ''
+                pos = 0
+                for i, sub in enumerate(subs):
+                    pos += sub.duration
+                    text += sub.text
+                    if i != len(subs) - 1:
+                        text += (
+                            r'{\alpha&HFF&\t(%d,%d,\alpha&H00&)}' % (pos, pos)
+                        )
+                subs[0].text = text
+            else:
+                subs[0].text = ''.join(
+                    ('{\\k%d}' % (sub.duration // 10)) + sub.text
+                    for sub in subs
+                )
+
+            subs[0].note = ''.join(sub.note for sub in subs)
             subs[0].end = subs[-1].end
+            subs[0].end_update()
 
             assert subs[0].index is not None
+            self.api.subs.events.remove(subs[0].index + 1, len(subs) - 1)
             self.api.subs.selected_indexes = [subs[0].index]
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to merge',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
+        parser.add_argument(
+            '--invisible',
+            help='use alternative karaoke transformation',
+            action='store_true'
+        )
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
@@ -158,8 +173,7 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
     :param cmd_api: command API
     """
     for cls in [
-            SplitSubtitleByKaraokeCommand,
-            JoinSubtitlesAsKaraokeCommand,
-            JoinSubtitlesAsTransformationCommand,
+            SubtitlesSplitKaraokeCommand,
+            SubtitlesMergeKaraokeCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

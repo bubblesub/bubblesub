@@ -135,15 +135,6 @@ Zooms the spectrogram in or out by the specified factor.
 Usage: `audio‑zoom -d|--delta=…`
 * `-d`, `--delta`: factor to zoom the view by
 
-### <a name="cmd-edit-join-subs-as-karaoke"></a>`edit/join‑subs‑as‑karaoke`
-Joins the selected subtitles adding karaoke timing tags inbetween.
-
-### <a name="cmd-edit-join-subs-as-transformation"></a>`edit/join‑subs‑as‑transformation`
-Joins the selected subtitles adding animation timing tags inbetween. The syllables appear one after another.
-
-### <a name="cmd-edit-split-sub-by-karaoke"></a>`edit/split‑sub‑by‑karaoke`
-Splits the selected subtitles according to the karaoke tags inside.
-
 ### <a name="cmd-file-properties"></a>`file‑properties`
 Opens up the metadata editor dialog.
 
@@ -309,6 +300,15 @@ Usage: `sub‑merge -t|--target=… [--concat|--concatenate]`
 * `-t`, `--target`: subtitles to merge
 * `--concat`, `--concatenate`: merge subtitles text
 
+### <a name="cmd-sub-merge-karaoke"></a>`sub‑merge‑karaoke`
+Aliases: `sub-join-karaoke`
+
+Merges given subtitles adding karaoke timing tags inbetween.
+
+Usage: `sub‑merge‑karaoke -t|--target=… [--invisible]`
+* `-t`, `--target`: subtitles to merge
+* `--invisible`: use alternative karaoke transformation
+
 ### <a name="cmd-sub-move"></a>`sub‑move`
 Moves given subtitles around.
 
@@ -370,6 +370,12 @@ Usage: `sub‑split -t|--target=… [--no-align] -p|--position=…`
 * `-t`, `--target`: subtitles to split
 * `--no-align`: don't align split position to video frames
 * `-p`, `--position`: position to split the subtitles at
+
+### <a name="cmd-sub-split-karaoke"></a>`sub‑split‑karaoke`
+Splits given subtitles according to the karaoke tags inside.
+
+Usage: `sub‑split‑karaoke -t|--target=…`
+* `-t`, `--target`: subtitles to split
 
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.
