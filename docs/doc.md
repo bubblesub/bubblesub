@@ -222,6 +222,13 @@ Usage: `save‑audio‑sample -t|--target=… -p|--path=…`
 * `-t`, `--target`: subtitles to save audio from
 * `-p`, `--path`: path to save the sample to
 
+### <a name="cmd-save-screenshot"></a>`save‑screenshot`
+Makes a screenshot of the current video frame.
+
+Usage: `save‑screenshot -p|--path=… [-i|--include-subs]`
+* `-p`, `--path`: path to save the screenshot to
+* `-i`, `--include-subs`: whether to "burn" the subtitles into the screenshot
+
 ### <a name="cmd-search"></a>`search`
 Opens up the search dialog.
 
@@ -383,9 +390,3 @@ Usage: `sub‑split‑karaoke -t|--target=…`
 
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.
-
-### <a name="cmd-video-screenshot"></a>`video/screenshot`
-Makes a screenshot of the current video frame. Prompts user for the path where to save the screenshot to.
-
-Usage: `video/screenshot [-i|--include-subs]`
-* `-i`, `--include-subs`: whether to "burn" the subtitles into the screenshot

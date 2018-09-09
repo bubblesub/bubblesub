@@ -29,6 +29,7 @@ from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import BooleanOperation
 from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import FancyPath
 from bubblesub.cmd.common import RelativePts
 
 
@@ -263,51 +264,38 @@ class PauseCommand(BaseCommand):
         )
 
 
-class ScreenshotCommand(BaseCommand):
-    names = ['video/screenshot']
-    help_text = (
-        'Makes a screenshot of the current video frame. '
-        'Prompts user for the path where to save the screenshot to.'
-    )
+class SaveScreenshotCommand(BaseCommand):
+    names = ['save-screenshot']
+    help_text = 'Makes a screenshot of the current video frame.'
 
     @property
     def is_enabled(self) -> bool:
         return self.api.media.is_loaded
 
     async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
-
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        path = self._show_dialog(main_window)
-        if path is None:
-            raise CommandCanceled
-        self.api.media.video.screenshot(path, self.args.include_subs)
-        self.api.log.info(f'saved screenshot to {path}')
-
-    def _show_dialog(
-            self,
-            main_window: QtWidgets.QMainWindow
-    ) -> T.Optional[Path]:
-        assert self.api.media.path is not None
-
-        file_name = bubblesub.util.sanitize_file_name(
-            'shot-{}-{}.png'.format(
+        assert self.api.media.path
+        path = await self.args.path.get_save_path(
+            file_filter='Portable Network Graphics (*.png)',
+            default_file_name='shot-{}-{}.png'.format(
                 self.api.media.path.name,
                 bubblesub.util.ms_to_str(self.api.media.current_pts)
             )
         )
 
-        return bubblesub.ui.util.save_dialog(
-            main_window,
-            'Portable Network Graphics (*.png)',
-            file_name=file_name
-        )
+        self.api.media.video.screenshot(path, self.args.include_subs)
+        self.api.log.info(f'saved screenshot to {path}')
 
     @staticmethod
     def _decorate_parser(
             api: bubblesub.api.Api,
             parser: argparse.ArgumentParser
     ) -> None:
+        parser.add_argument(
+            '-p', '--path',
+            help='path to save the screenshot to',
+            type=lambda value: FancyPath(api, value),
+            default='ask'
+        )
         parser.add_argument(
             '-i', '--include-subs',
             help='whether to "burn" the subtitles into the screenshot',
@@ -329,6 +317,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SetVolumeCommand,
             MuteCommand,
             PauseCommand,
-            ScreenshotCommand,
+            SaveScreenshotCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))
