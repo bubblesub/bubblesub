@@ -55,7 +55,7 @@ Context refers to the currently focused widget.
 |<kbd>Alt+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console-input -s</code> |
 |<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console</code> |
 |<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-sub-split">sub-split</a> -p=cur-frame</code> |
-|<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-edit-join-subs-concatenate">edit/join-subs-concatenate</a> </code> |
+|<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-sub-merge">sub-merge</a> --concat</code> |
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --above</code> |
 |<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --below</code> |
 |<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file-properties</a> </code> |
@@ -140,12 +140,6 @@ Joins the selected subtitles adding karaoke timing tags inbetween.
 
 ### <a name="cmd-edit-join-subs-as-transformation"></a>`edit/join‑subs‑as‑transformation`
 Joins the selected subtitles adding animation timing tags inbetween. The syllables appear one after another.
-
-### <a name="cmd-edit-join-subs-concatenate"></a>`edit/join‑subs‑concatenate`
-Joins the selected subtitles together. Keeps the first subtitle's properties and concatenates the text and notes of the consecutive subtitles.
-
-### <a name="cmd-edit-join-subs-keep-first"></a>`edit/join‑subs‑keep‑first`
-Joins the selected subtitles together. Keeps only the first subtitle's properties.
 
 ### <a name="cmd-edit-split-sub-by-karaoke"></a>`edit/split‑sub‑by‑karaoke`
 Splits the selected subtitles according to the karaoke tags inside.
@@ -305,6 +299,15 @@ Usage: `sub‑insert -o|--origin=… [--no-align] [--before] [--after]`
 * `--no-align`: don't realign subtitle to video frames
 * `--before`: insert before origin
 * `--after`: insert after origin
+
+### <a name="cmd-sub-merge"></a>`sub‑merge`
+Aliases: `sub-join`
+
+Merges given subtitles together.
+
+Usage: `sub‑merge -t|--target=… [--concat|--concatenate]`
+* `-t`, `--target`: subtitles to merge
+* `--concat`, `--concatenate`: merge subtitles text
 
 ### <a name="cmd-sub-move"></a>`sub‑move`
 Moves given subtitles around.

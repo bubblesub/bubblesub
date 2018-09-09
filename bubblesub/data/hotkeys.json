@@ -51,7 +51,7 @@
         {"shortcut": "Alt+C", "invocations": ["/focus-widget console-input -s"]},
         {"shortcut": "Alt+Shift+C", "invocations": ["/focus-widget console"]},
         {"shortcut": "Alt+X", "invocations": ["/sub-split -p=cur-frame"]},
-        {"shortcut": "Alt+J", "invocations": ["/edit/join-subs-concatenate"]},
+        {"shortcut": "Alt+J", "invocations": ["/sub-merge --concat"]},
         {"shortcut": "Alt+Up", "invocations": ["/sub-move --above"]},
         {"shortcut": "Alt+Down", "invocations": ["/sub-move --below"]},
         {"shortcut": "Alt+Return", "invocations": ["/file-properties"]}

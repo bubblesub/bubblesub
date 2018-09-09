@@ -401,6 +401,52 @@ class SubtitlesSetCommand(BaseCommand):
         )
 
 
+class SubtitlesMergeCommand(BaseCommand):
+    names = ['sub-merge', 'sub-join']
+    help_text = 'Merges given subtitles together.'
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.args.target.makes_sense
+
+    async def run(self) -> None:
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable
+        if len(subs) == 1:
+            if not subs[0].next:
+                raise CommandUnavailable
+            subs.append(subs[0].next)
+
+        with self.api.undo.capture():
+            subs[0].begin_update()
+            subs[0].end = subs[-1].end
+            if self.args.concat:
+                subs[0].text = ''.join(sub.text for sub in subs)
+                subs[0].note = ''.join(sub.note for sub in subs)
+            subs[0].end_update()
+
+            self.api.subs.events.remove(subs[0].index + 1, len(subs) - 1)
+            self.api.subs.selected_indexes = [subs[0].index]
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to merge',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
+        parser.add_argument(
+            '--concat', '--concatenate',
+            help='merge subtitles text',
+            action='store_true'
+        )
+
+
 class SubtitlesSplitCommand(BaseCommand):
     names = ['sub-split']
     help_text = 'Splits given subtitles at specified time.'
@@ -447,80 +493,6 @@ class SubtitlesSplitCommand(BaseCommand):
             help='position to split the subtitles at',
             type=lambda value: AbsolutePts(api, value),
         )
-
-
-class JoinSubtitlesKeepFirstCommand(BaseCommand):
-    names = ['edit/join-subs-keep-first']
-    help_text = (
-        'Joins the selected subtitles together. '
-        'Keeps only the first subtitle\'s properties.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        if len(self.api.subs.selected_indexes) > 1:
-            return True
-        if len(self.api.subs.selected_indexes) == 1:
-            return (
-                self.api.subs.selected_indexes[0] + 1
-                < len(self.api.subs.events)
-            )
-        return False
-
-    async def run(self) -> None:
-        idx = self.api.subs.selected_indexes[0]
-        with self.api.undo.capture():
-            if len(self.api.subs.selected_indexes) == 1:
-                self.api.subs.selected_indexes = [idx, idx + 1]
-            last_idx = self.api.subs.selected_indexes[-1]
-            self.api.subs.events[idx].end = self.api.subs.events[last_idx].end
-            for i in reversed(self.api.subs.selected_indexes[1:]):
-                self.api.subs.events.remove(i, 1)
-            self.api.subs.selected_indexes = [idx]
-
-
-class JoinSubtitlesConcatenateCommand(BaseCommand):
-    names = ['edit/join-subs-concatenate']
-    help_text = (
-        'Joins the selected subtitles together. Keeps the first subtitle\'s '
-        'properties and concatenates the text and notes of the consecutive '
-        'subtitles.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        if len(self.api.subs.selected_indexes) > 1:
-            return True
-        if len(self.api.subs.selected_indexes) == 1:
-            return (
-                self.api.subs.selected_indexes[0] + 1
-                < len(self.api.subs.events)
-            )
-        return False
-
-    async def run(self) -> None:
-        with self.api.undo.capture():
-            idx = self.api.subs.selected_indexes[0]
-            if len(self.api.subs.selected_indexes) == 1:
-                self.api.subs.selected_indexes = [idx, idx + 1]
-            last_idx = self.api.subs.selected_indexes[-1]
-
-            sub = self.api.subs.events[idx]
-            sub.begin_update()
-            sub.end = self.api.subs.events[last_idx].end
-
-            new_text = ''
-            new_note = ''
-            for i in reversed(self.api.subs.selected_indexes[1:]):
-                new_text = self.api.subs.events[i].text + new_text
-                new_note = self.api.subs.events[i].note + new_note
-                self.api.subs.events.remove(i, 1)
-
-            sub.text += new_text
-            sub.note += new_note
-            sub.end_update()
-
-            self.api.subs.selected_indexes = [idx]
 
 
 class SubtitlesShiftCommand(BaseCommand):
@@ -651,9 +623,8 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SubtitlesCloneCommand,
             SubtitlesDeleteCommand,
             SubtitlesSetCommand,
+            SubtitlesMergeCommand,
             SubtitlesSplitCommand,
-            JoinSubtitlesKeepFirstCommand,
-            JoinSubtitlesConcatenateCommand,
             SubtitlesShiftCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))
