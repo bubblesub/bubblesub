@@ -50,7 +50,12 @@ class GuiApi(QtCore.QObject):
         """
         self._main_window = main_window
 
-    async def exec(self, func: T.Callable, *args: T.Any) -> T.Any:
+    async def exec(
+            self,
+            func: T.Callable,
+            *args: T.Any,
+            **kwargs: T.Any
+    ) -> T.Any:
         """
         Execute function in GUI thread.
 
@@ -58,7 +63,7 @@ class GuiApi(QtCore.QObject):
         :param args: arguments passed to the function
         :param kwargs: keyword arguments passed to the function
         """
-        return await func(self._main_window, *args)
+        return await func(self._main_window, *args, **kwargs)
 
     def quit(self) -> None:
         """Exit the application."""

@@ -295,7 +295,7 @@ def load_dialog(
 
 def save_dialog(
         parent: QtWidgets.QWidget,
-        file_filter: str,
+        file_filter: T.Optional[str],
         directory: T.Optional[Path] = None,
         file_name: T.Optional[str] = None
 ) -> T.Optional[Path]:
@@ -309,7 +309,7 @@ def save_dialog(
     path, _ = QtWidgets.QFileDialog.getSaveFileName(
         parent,
         directory=real_directory,
-        filter=file_filter
+        filter=file_filter or 'Any file (*)'
     )
     return Path(path) if path else None
 

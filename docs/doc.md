@@ -145,9 +145,6 @@ Usage: `focus‑widget target [-s|--select]`
 * `target`: which widget to focus (`text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
 * `-s`, `--select`: whether to select the text
 
-### <a name="cmd-grid-create-audio-sample"></a>`grid/create‑audio‑sample`
-Saves current subtitle selection to a WAV file. The audio starts at the first selected subtitle start and ends at the last selected subtitle end.
-
 ### <a name="cmd-load-video"></a>`load‑video`
 Loads a video file for the audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 
@@ -217,6 +214,13 @@ Saves the current subtitles to an ASS file. Prompts user to choose where to save
 
 Usage: `save‑as [path]`
 * `path`: optional path to save the subtitles to
+
+### <a name="cmd-save-audio-sample"></a>`save‑audio‑sample`
+Saves given subtitles to a WAV file.
+
+Usage: `save‑audio‑sample -t|--target=… -p|--path=…`
+* `-t`, `--target`: subtitles to save audio from
+* `-p`, `--path`: path to save the sample to
 
 ### <a name="cmd-search"></a>`search`
 Opens up the search dialog.

@@ -25,11 +25,13 @@ import zlib
 from PyQt5 import QtWidgets
 
 import bubblesub.api
-import bubblesub.ui.util
+import bubblesub.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
+from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import FancyPath
 
 
 def _pickle(data: T.Any) -> str:
@@ -237,42 +239,53 @@ class SubtitlesPasteIntoCommand(BaseCommand):
         )
 
 
-class CreateAudioSampleCommand(BaseCommand):
-    names = ['grid/create-audio-sample']
-    help_text = (
-        'Saves current subtitle selection to a WAV file. '
-        'The audio starts at the first selected subtitle start and ends at '
-        'the last selected subtitle end.'
-    )
+class SaveAudioSampleCommand(BaseCommand):
+    names = ['save-audio-sample']
+    help_text = 'Saves given subtitles to a WAV file.'
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.subs.has_selection \
+        return self.args.target.makes_sense \
             and self.api.media.audio.has_audio_source
 
     async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        start_pts = self.api.subs.selected_events[0].start
-        end_pts = self.api.subs.selected_events[-1].end
+        start_pts = subs[0].start
+        end_pts = subs[-1].end
 
         assert self.api.media.path
-        file_name = bubblesub.util.sanitize_file_name(
-            'audio-{}-{}..{}.wav'.format(
+        path = await self.args.path.get_save_path(
+            file_filter='Waveform Audio File (*.wav)',
+            default_file_name='audio-{}-{}..{}.wav'.format(
                 self.api.media.path.name,
                 bubblesub.util.ms_to_str(start_pts),
                 bubblesub.util.ms_to_str(end_pts)
             )
         )
 
-        path = bubblesub.ui.util.save_dialog(
-            main_window, 'Waveform Audio File (*.wav)', file_name=file_name
-        )
-        if path is None:
-            raise CommandCanceled
         self.api.media.audio.save_wav(path, start_pts, end_pts)
         self.api.log.info(f'saved audio sample to {path}')
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to save audio from',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
+        parser.add_argument(
+            '-p', '--path',
+            help='path to save the sample to',
+            type=lambda value: FancyPath(api, value),
+            default='ask'
+        )
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
@@ -286,6 +299,6 @@ def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
             SubtitlesCopyCommand,
             SubtitlesPasteCommand,
             SubtitlesPasteIntoCommand,
-            CreateAudioSampleCommand,
+            SaveAudioSampleCommand,
     ]:
         cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))

@@ -75,7 +75,7 @@
                 {"type": "command", "name": "&Switch to light color theme", "invocations": ["/set-palette light"]},
                 {"type": "command", "name": "&Switch to dark color theme", "invocations": ["/set-palette dark"]},
                 {"type": "separator"},
-                {"type": "command", "name": "&Create audio sample", "invocations": ["/grid/create-audio-sample"]},
+                {"type": "command", "name": "&Create audio sample", "invocations": ["/save-audio-sample"]},
                 {"type": "command", "name": "&Save screenshot (without subtitles)", "invocations": ["/video/screenshot"]},
                 {"type": "command", "name": "&Save screenshot (with subtitles)", "invocations": ["/video/screenshot -i"]},
                 {"type": "separator"},
@@ -191,7 +191,7 @@
         }
     ],
     "subtitles_grid": [
-        {"type": "command", "name": "&Create audio sample", "invocations": ["/grid/create-audio-sample"]},
+        {"type": "command", "name": "&Create audio sample", "invocations": ["/save-audio-sample"]},
         {"type": "separator"},
         {"type": "command", "name": "&Insert subtitle above", "invocations": ["/sub-insert --before"]},
         {"type": "command", "name": "&Insert subtitle below", "invocations": ["/sub-insert --after"]},
