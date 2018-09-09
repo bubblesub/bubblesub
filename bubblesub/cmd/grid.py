@@ -261,20 +261,18 @@ class SaveAudioSampleCommand(BaseCommand):
         if not subs:
             raise CommandUnavailable('nothing to sample')
 
-        start_pts = subs[0].start
-        end_pts = subs[-1].end
-
         assert self.api.media.path
         path = await self.args.path.get_save_path(
             file_filter='Waveform Audio File (*.wav)',
             default_file_name='audio-{}-{}..{}.wav'.format(
                 self.api.media.path.name,
-                bubblesub.util.ms_to_str(start_pts),
-                bubblesub.util.ms_to_str(end_pts)
+                bubblesub.util.ms_to_str(subs[0].start),
+                bubblesub.util.ms_to_str(subs[-1].end)
             )
         )
 
-        self.api.media.audio.save_wav(path, start_pts, end_pts)
+        pts_ranges = [(sub.start, sub.end) for sub in subs]
+        self.api.media.audio.save_wav(path, pts_ranges)
         self.api.log.info(f'saved audio sample to {path}')
 
     @staticmethod

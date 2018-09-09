@@ -376,38 +376,49 @@ class AudioApi(QtCore.QObject):
             if start_frame + count > self.sample_count:
                 count = max(0, self.sample_count - start_frame)
             if not count:
-                return np.zeros(0).reshape(0, max(1, self.channel_count))
+                return self._create_empty_sample_buffer()
             self._audio_source.init_buffer(count)
             return self._audio_source.get_audio(start_frame)
 
     def save_wav(
             self,
             path_or_handle: T.Union[Path, T.IO],
-            start_pts: int,
-            end_pts: int
+            pts_ranges: T.List[T.Tuple[int, int]],
     ) -> None:
         """
         Save samples for the currently loaded audio source as WAV file.
 
         :param path_or_handle: where to put the WAV file in
-        :param start_pts: start PTS
-        :param end_pts: end PTS
+        :param pts_ranges: list of start PTS / end PTS pairs to sample
         """
-        start_frame = int(start_pts * self.sample_rate / 1000)
-        end_frame = int(end_pts * self.sample_rate / 1000)
-        frame_count = end_frame - start_frame
+        samples = self._create_empty_sample_buffer()
 
-        samples = self.get_samples(start_frame, frame_count)
+        for pts_range in pts_ranges:
+            start_pts, end_pts = pts_range
+            start_frame = int(start_pts * self.sample_rate / 1000)
+            end_frame = int(end_pts * self.sample_rate / 1000)
+            frame_count = end_frame - start_frame
+            samples = np.concatenate(
+                (samples, self.get_samples(start_frame, frame_count))
+            )
+
         # increase compatibility with external programs
         if samples.dtype.name in ('float32', 'float64'):
             samples = (samples * (1 << 31)).astype(np.int32)
 
         # pylint: disable=no-member
-        scipy.io.wavfile.write(
-            path_or_handle,
-            self.sample_rate,
-            samples
-        )
+        scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
+
+    def _create_empty_sample_buffer(self) -> np.array:
+        return np.zeros(
+            0, dtype={
+                ffms.FFMS_FMT_U8: np.uint8,
+                ffms.FFMS_FMT_S16: np.int16,
+                ffms.FFMS_FMT_S32: np.int32,
+                ffms.FFMS_FMT_FLT: np.float32,
+                ffms.FFMS_FMT_DBL: np.float64,
+            }[self.sample_format]
+        ).reshape(0, max(1, self.channel_count))
 
     def _on_media_state_change(self, state: MediaState) -> None:
         if state == MediaState.Unloaded:
