@@ -56,9 +56,13 @@ class CommandCanceled(CommandError):
 class CommandUnavailable(CommandError):
     """The given command cannot be evaluated."""
 
-    def __init__(self) -> None:
-        """Initialize self."""
-        super().__init__('command not available right now')
+    def __init__(self, text: T.Optional[str] = None) -> None:
+        """
+        Initialize self.
+
+        :param text: optional text error
+        """
+        super().__init__(text or 'command not available right now')
 
 
 class CommandNotFound(CommandError):

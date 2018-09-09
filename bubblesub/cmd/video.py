@@ -26,6 +26,7 @@ import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
+from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import BooleanOperation
 from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import RelativePts
@@ -40,9 +41,12 @@ class PlaySubtitleCommand(BaseCommand):
         return self.api.media.is_loaded and self.args.target.makes_sense
 
     async def run(self) -> None:
-        events = await self.args.target.get_subtitles()
-        start = min(event.start for event in events)
-        end = max(event.end for event in events)
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable('nothing to play')
+
+        start = min(sub.start for sub in subs)
+        end = max(sub.end for sub in subs)
         self.api.media.play(start, end)
 
     @staticmethod

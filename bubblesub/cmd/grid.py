@@ -27,7 +27,7 @@ from PyQt5 import QtWidgets
 import bubblesub.api
 import bubblesub.util
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandCanceled
+from bubblesub.api.cmd import CommandError
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
@@ -78,22 +78,26 @@ class SubtitlesCopyCommand(BaseCommand):
         return self.args.target.makes_sense
 
     async def run(self) -> None:
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable('nothing to copy')
+
         if self.args.subject == 'text':
-            QtWidgets.QApplication.clipboard().setText('\n'.join(
-                event.text for event in await self.args.target.get_subtitles()
-            ))
-        elif self.args.subject == 'times':
-            QtWidgets.QApplication.clipboard().setText('\n'.join(
-                '{} - {}'.format(
-                    bubblesub.util.ms_to_str(event.start),
-                    bubblesub.util.ms_to_str(event.end)
-                )
-                for event in await self.args.target.get_subtitles()
-            ))
-        elif self.args.subject == 'all':
             QtWidgets.QApplication.clipboard().setText(
-                _pickle(await self.args.target.get_subtitles())
+                '\n'.join(sub.text for sub in subs)
             )
+        elif self.args.subject == 'times':
+            QtWidgets.QApplication.clipboard().setText(
+                '\n'.join(
+                    '{} - {}'.format(
+                        bubblesub.util.ms_to_str(sub.start),
+                        bubblesub.util.ms_to_str(sub.end)
+                    )
+                    for sub in subs
+                )
+            )
+        elif self.args.subject == 'all':
+            QtWidgets.QApplication.clipboard().setText(_pickle(subs))
         else:
             raise AssertionError
 
@@ -137,8 +141,8 @@ class SubtitlesPasteCommand(BaseCommand):
     def _paste_from_clipboard(self, idx: int) -> None:
         text = QtWidgets.QApplication.clipboard().text()
         if not text:
-            self.api.log.error('clipboard is empty, aborting')
-            return
+            raise CommandUnavailable('clipboard is empty, aborting')
+
         items = T.cast(T.List[Event], _unpickle(text))
         with self.api.undo.capture():
             self.api.subs.events.insert(idx, items)
@@ -188,18 +192,22 @@ class SubtitlesPasteIntoCommand(BaseCommand):
             return
 
         lines = text.split('\n')
-        events = await self.args.target.get_subtitles()
-        if len(lines) != len(events):
-            self.api.log.error(
-                'size mismatch (selected {} lines, got {} lines in clipboard'
-                .format(len(events), len(lines))
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable('nothing to paste into')
+
+        if len(lines) != len(subs):
+            raise CommandError(
+                f'size mismatch ('
+                f'selected {len(subs)} lines, '
+                f'got {len(lines)} lines in clipboard)'
+                .format(len(subs), len(lines))
             )
-            return
 
         with self.api.undo.capture():
             if self.args.subject == 'text':
-                for i, event in enumerate(events):
-                    event.text = lines[i]
+                for line, sub in zip(lines, subs):
+                    sub.text = line
 
             elif self.args.subject == 'times':
                 times: T.List[T.Tuple[int, int]] = []
@@ -213,9 +221,9 @@ class SubtitlesPasteIntoCommand(BaseCommand):
                     except ValueError:
                         raise ValueError(f'invalid time format: {line}')
 
-                for i, event in enumerate(events):
-                    event.start = times[i][0]
-                    event.end = times[i][1]
+                for time, sub in zip(times, subs):
+                    sub.start = time[0]
+                    sub.end = time[1]
 
             else:
                 raise AssertionError
@@ -251,7 +259,7 @@ class SaveAudioSampleCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable
+            raise CommandUnavailable('nothing to sample')
 
         start_pts = subs[0].start
         end_pts = subs[-1].end

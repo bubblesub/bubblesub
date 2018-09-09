@@ -21,6 +21,7 @@ import typing as T
 
 import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import RelativePts
 
@@ -158,8 +159,11 @@ class AudioCommitSelectionCommand(BaseCommand):
 
     async def run(self) -> None:
         with self.api.undo.capture():
-            target_subtitles = await self.args.target.get_subtitles()
-            for sub in target_subtitles:
+            subs = await self.args.target.get_subtitles()
+            if not subs:
+                raise CommandUnavailable('nothing to update')
+
+            for sub in subs:
                 sub.begin_update()
                 sub.start = self.api.media.audio.selection_start
                 sub.end = self.api.media.audio.selection_end

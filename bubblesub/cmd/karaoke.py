@@ -43,6 +43,8 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
 
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable('nothing to split')
 
         new_selection: T.List[bubblesub.ass.event.Event] = []
         with self.api.undo.capture(), self.api.gui.throttle_updates():
@@ -118,7 +120,7 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable
+            raise CommandUnavailable('nothing to merge')
 
         with self.api.undo.capture():
             subs[0].begin_update()

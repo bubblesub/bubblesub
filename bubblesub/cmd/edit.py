@@ -163,6 +163,8 @@ class SubtitlesMoveCommand(BaseCommand):
     async def run(self) -> None:
         with self.api.undo.capture():
             indexes = await self.args.target.get_indexes()
+            if not indexes:
+                raise CommandUnavailable('nothing to move')
 
             if self.args.method == 'above':
                 sub_copies = list(self._move_above(indexes))
@@ -178,7 +180,7 @@ class SubtitlesMoveCommand(BaseCommand):
 
     def _move_above(self, indexes: T.List[int]) -> T.Iterable[Event]:
         if indexes[0] == 0:
-            raise CommandUnavailable
+            raise CommandUnavailable('cannot move further up')
         for idx, count in make_ranges(indexes):
             chunk = [copy(s) for s in self.api.subs.events[idx:idx + count]]
             self.api.subs.events.insert(idx - 1, chunk)
@@ -187,7 +189,7 @@ class SubtitlesMoveCommand(BaseCommand):
 
     def _move_below(self, indexes: T.List[int]) -> T.Iterable[Event]:
         if indexes[-1] + 1 == len(self.api.subs.events):
-            raise CommandUnavailable
+            raise CommandUnavailable('cannot move further down')
         for idx, count in make_ranges(indexes, reverse=True):
             chunk = [copy(s) for s in self.api.subs.events[idx:idx + count]]
             self.api.subs.events.insert(idx + count + 1, chunk)
@@ -276,13 +278,15 @@ class SubtitlesCloneCommand(BaseCommand):
 
     async def run(self) -> None:
         with self.api.undo.capture(), self.api.gui.throttle_updates():
-            sub_copies: T.List[Event] = []
+            indexes = await self.args.target.get_indexes()
+            if not indexes:
+                raise CommandUnavailable('nothing to clone')
 
-            for idx in reversed(await self.args.target.get_indexes()):
+            sub_copies: T.List[Event] = []
+            for idx in reversed(indexes):
                 sub_copy = copy(self.api.subs.events[idx])
                 self.api.subs.events.insert(idx + 1, [sub_copy])
                 sub_copies.append(sub_copy)
-
             self.api.subs.selected_indexes = [sub.index for sub in sub_copies]
 
     @staticmethod
@@ -309,6 +313,9 @@ class SubtitlesDeleteCommand(BaseCommand):
     async def run(self) -> None:
         with self.api.undo.capture():
             indexes = await self.args.target.get_indexes()
+            if not indexes:
+                raise CommandUnavailable('nothing to delete')
+
             new_selection = (
                 set(self.api.subs.selected_events) -
                 set(self.api.subs.events[idx] for idx in indexes)
@@ -342,8 +349,12 @@ class SubtitlesSetCommand(BaseCommand):
         return self.args.target.makes_sense
 
     async def run(self) -> None:
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable('nothing to update')
+
         with self.api.undo.capture():
-            for sub in await self.args.target.get_subtitles():
+            for sub in subs:
                 params = {
                     'text': sub.text,
                     'note': sub.note,
@@ -412,10 +423,11 @@ class SubtitlesMergeCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable
+            raise CommandUnavailable('nothing to merge')
+
         if len(subs) == 1:
             if not subs[0].next:
-                raise CommandUnavailable
+                raise CommandUnavailable('nothing to merge')
             subs.append(subs[0].next)
 
         with self.api.undo.capture():
@@ -456,12 +468,16 @@ class SubtitlesSplitCommand(BaseCommand):
         return self.args.target.makes_sense
 
     async def run(self) -> None:
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable('nothing to split')
+
         split_pos = await self.args.position.get(
             align_to_near_frame=not self.args.no_align
         )
 
         with self.api.undo.capture(), self.api.gui.throttle_updates():
-            for sub in reversed(await self.args.target.get_subtitles()):
+            for sub in reversed(subs):
                 if split_pos < sub.start or split_pos > sub.end:
                     continue
                 idx = sub.index
@@ -507,13 +523,16 @@ class SubtitlesShiftCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        events = await self.args.target.get_subtitles()
-        delta = await self._get_delta(events, main_window)
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable('nothing to update')
+
+        delta = await self._get_delta(subs, main_window)
 
         with self.api.undo.capture():
-            for event in events:
-                start = event.start
-                end = event.end
+            for sub in subs:
+                start = sub.start
+                end = sub.end
 
                 if self.args.method in {'start', 'both'}:
                     start = await delta.apply(
@@ -525,14 +544,14 @@ class SubtitlesShiftCommand(BaseCommand):
                         end, align_to_near_frame=not self.args.no_align
                     )
 
-                event.begin_update()
-                event.start = start
-                event.end = end
-                event.end_update()
+                sub.begin_update()
+                sub.start = start
+                sub.end = end
+                sub.end_update()
 
     async def _get_delta(
             self,
-            events: T.List[Event],
+            subs: T.List[Event],
             main_window: QtWidgets.QMainWindow
     ) -> RelativePts:
         if self.args.delta:
@@ -548,8 +567,8 @@ class SubtitlesShiftCommand(BaseCommand):
                 raise CommandCanceled
 
             delta, is_relative = ret
-            if not is_relative and events:
-                delta -= events[0].start
+            if not is_relative and subs:
+                delta -= subs[0].start
 
             return RelativePts(self.api, str(delta) + 'ms')
         raise AssertionError
