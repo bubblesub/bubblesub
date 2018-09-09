@@ -125,11 +125,10 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
 
             if self.args.invisible:
                 text = ''
-                pos = 0
                 for i, sub in enumerate(subs):
-                    pos += sub.duration
                     text += sub.text
                     if i != len(subs) - 1:
+                        pos = subs[i + 1].start - subs[0].start
                         text += (
                             r'{\alpha&HFF&\t(%d,%d,\alpha&H00&)}' % (pos, pos)
                         )
