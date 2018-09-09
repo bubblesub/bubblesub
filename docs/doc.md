@@ -148,8 +148,8 @@ Usage: `focus‑widget target [-s|--select]`
 ### <a name="cmd-load-video"></a>`load‑video`
 Loads a video file for the audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 
-Usage: `load‑video [path]`
-* `path`: optional path to load the video from
+Usage: `load‑video -p|--path=…`
+* `-p`, `--path`: path to load the video from
 
 ### <a name="cmd-manage-styles"></a>`manage‑styles`
 Aliases: `styles-manager`, `style-manager`
@@ -168,8 +168,8 @@ Opens a new file. Prompts user to save the current file if there are unsaved cha
 ### <a name="cmd-open"></a>`open`
 Opens an existing subtitles file. Prompts user to save the current file if there are unsaved changes. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 
-Usage: `open [path]`
-* `path`: path to load the subtitles from
+Usage: `open -p|--path=…`
+* `-p`, `--path`: path to load the subtitles from
 
 ### <a name="cmd-pause"></a>`pause`
 Pauses or unpauses the video playback.
@@ -212,18 +212,18 @@ Saves the current subtitles to an ASS file. If the currently loaded subtitles we
 ### <a name="cmd-save-as"></a>`save‑as`
 Saves the current subtitles to an ASS file. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
 
-Usage: `save‑as [path]`
-* `path`: optional path to save the subtitles to
+Usage: `save‑as -p|--path=…`
+* `-p`, `--path`: optional path to save the subtitles to
 
 ### <a name="cmd-save-audio-sample"></a>`save‑audio‑sample`
-Saves given subtitles to a WAV file.
+Saves given subtitles to a WAV file. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
 
 Usage: `save‑audio‑sample -t|--target=… -p|--path=…`
 * `-t`, `--target`: subtitles to save audio from
 * `-p`, `--path`: path to save the sample to
 
 ### <a name="cmd-save-screenshot"></a>`save‑screenshot`
-Makes a screenshot of the current video frame.
+Makes a screenshot of the current video frame. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
 
 Usage: `save‑screenshot -p|--path=… [-i|--include-subs]`
 * `-p`, `--path`: path to save the screenshot to

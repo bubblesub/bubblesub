@@ -24,8 +24,9 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
-from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.api.cmd import CommandCanceled
+from bubblesub.cmd.common import FancyPath
 
 VIDEO_FILE_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'
 SUBS_FILE_FILTER = 'Advanced Substation Alpha (*.ass)'
@@ -68,22 +69,16 @@ class OpenCommand(BaseCommand):
     )
 
     async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
+        if not _ask_about_unsaved_changes(self.api):
+            return
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        if _ask_about_unsaved_changes(self.api):
-            if self.args.path:
-                path = self.args.path
-            else:
-                path = bubblesub.ui.util.load_dialog(
-                    main_window,
-                    SUBS_FILE_FILTER,
-                    directory=_get_dialog_dir(self.api)
-                )
-            if not path:
-                raise CommandCanceled
-            self.api.subs.load_ass(path)
-            self.api.log.info(f'opened {path}')
+        path = await self.args.path.get_load_path(
+            file_filter=SUBS_FILE_FILTER,
+            directory=_get_dialog_dir(self.api)
+        )
+
+        self.api.subs.load_ass(path)
+        self.api.log.info(f'opened {path}')
 
     @staticmethod
     def _decorate_parser(
@@ -91,10 +86,10 @@ class OpenCommand(BaseCommand):
             parser: argparse.ArgumentParser
     ) -> None:
         parser.add_argument(
-            'path',
+            '-p', '--path',
             help='path to load the subtitles from',
-            type=Path,
-            nargs='?'
+            type=lambda value: FancyPath(api, value),
+            default=''
         )
 
 
@@ -107,19 +102,11 @@ class LoadVideoCommand(BaseCommand):
     )
 
     async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
+        path = await self.args.path.get_load_path(
+            file_filter=VIDEO_FILE_FILTER,
+            directory=_get_dialog_dir(self.api)
+        )
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        if self.args.path:
-            path = self.args.path
-        else:
-            path = bubblesub.ui.util.load_dialog(
-                main_window,
-                VIDEO_FILE_FILTER,
-                directory=_get_dialog_dir(self.api)
-            )
-        if not path:
-            raise CommandCanceled
         self.api.media.load(path)
         self.api.log.info(f'loading {path}')
 
@@ -129,10 +116,10 @@ class LoadVideoCommand(BaseCommand):
             parser: argparse.ArgumentParser
     ) -> None:
         parser.add_argument(
-            'path',
-            help='optional path to load the video from',
-            type=Path,
-            nargs='?'
+            '-p', '--path',
+            help='path to load the video from',
+            type=lambda value: FancyPath(api, value),
+            default=''
         )
 
 
@@ -152,11 +139,12 @@ class SaveCommand(BaseCommand):
         if not path:
             path = bubblesub.ui.util.save_dialog(
                 main_window,
-                SUBS_FILE_FILTER,
+                file_filter=SUBS_FILE_FILTER,
                 directory=_get_dialog_dir(self.api)
             )
-        if not path:
-            raise CommandCanceled
+            if not path:
+                raise CommandCanceled
+
         self.api.subs.save_ass(path, remember_path=True)
         self.api.log.info(f'saved subtitles to {path}')
 
@@ -170,19 +158,14 @@ class SaveAsCommand(BaseCommand):
     )
 
     async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
-
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        if self.args.path:
-            path = self.args.path
-        else:
-            path = bubblesub.ui.util.save_dialog(
-                main_window,
-                SUBS_FILE_FILTER,
-                directory=_get_dialog_dir(self.api)
+        path = await self.args.path.get_save_path(
+            file_filter=SUBS_FILE_FILTER,
+            directory=_get_dialog_dir(self.api),
+            default_file_name=(
+                self.api.subs.path.name if self.api.subs.path else None
             )
-        if not path:
-            raise CommandCanceled
+        )
+
         self.api.subs.save_ass(path, remember_path=True)
         self.api.log.info(f'saved subtitles to {path}')
 
@@ -192,10 +175,10 @@ class SaveAsCommand(BaseCommand):
             parser: argparse.ArgumentParser
     ) -> None:
         parser.add_argument(
-            'path',
+            '-p', '--path',
             help='optional path to save the subtitles to',
-            type=Path,
-            nargs='?'
+            type=lambda value: FancyPath(api, value),
+            default=''
         )
 
 

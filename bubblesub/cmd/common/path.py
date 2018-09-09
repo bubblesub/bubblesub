@@ -31,24 +31,60 @@ class FancyPath:
         self.api = api
         self.value = value
 
+    async def get_load_path(
+            self,
+            file_filter: T.Optional[str] = None,
+            directory: T.Optional[Path] = None,
+    ) -> Path:
+        if self.value:
+            path = Path(self.value).expanduser()
+            if not path.exists():
+                raise CommandUnavailable(f'file "{path}" does not exist')
+            return path
+
+        path = await self.api.gui.exec(
+            self._show_load_dialog,
+            file_filter=file_filter,
+            directory=directory,
+        )
+        if path:
+            return path
+
+        raise CommandCanceled
+
     async def get_save_path(
             self,
             file_filter: T.Optional[str] = None,
+            directory: T.Optional[Path] = None,
             default_file_name: T.Optional[str] = None
     ) -> Path:
-        if self.value == 'ask':
-            self.value = await self.api.gui.exec(
-                self._show_dialog,
-                file_filter=file_filter,
-                file_name=bubblesub.util.sanitize_file_name(default_file_name)
+        if self.value:
+            return Path(self.value).expanduser()
+
+        path = await self.api.gui.exec(
+            self._show_save_dialog,
+            file_filter=file_filter,
+            directory=directory,
+            file_name=(
+                None if default_file_name is None else
+                bubblesub.util.sanitize_file_name(default_file_name)
             )
-            if self.value is None:
-                raise CommandCanceled
+        )
+        if path:
+            return path
 
-        if not self.value:
-            raise CommandUnavailable
+        raise CommandCanceled
 
-        return Path(self.value).expanduser()
+    async def _show_load_dialog(
+            self,
+            *args: T.Any,
+            **kwargs: T.Any
+    ) -> T.Optional[Path]:
+        return bubblesub.ui.util.load_dialog(*args, **kwargs)
 
-    async def _show_dialog(self, *args, **kwargs) -> T.Optional[Path]:
+    async def _show_save_dialog(
+            self,
+            *args: T.Any,
+            **kwargs: T.Any
+    ) -> T.Optional[Path]:
         return bubblesub.ui.util.save_dialog(*args, **kwargs)

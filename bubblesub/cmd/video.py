@@ -18,14 +18,10 @@
 
 import argparse
 import typing as T
-from pathlib import Path
-
-from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import BooleanOperation
 from bubblesub.cmd.common import EventSelection
@@ -266,7 +262,11 @@ class PauseCommand(BaseCommand):
 
 class SaveScreenshotCommand(BaseCommand):
     names = ['save-screenshot']
-    help_text = 'Makes a screenshot of the current video frame.'
+    help_text = (
+        'Makes a screenshot of the current video frame. '
+        'Prompts user to choose where to save the file to if the path wasn\'t '
+        'specified in the command arguments.'
+    )
 
     @property
     def is_enabled(self) -> bool:
@@ -294,7 +294,7 @@ class SaveScreenshotCommand(BaseCommand):
             '-p', '--path',
             help='path to save the screenshot to',
             type=lambda value: FancyPath(api, value),
-            default='ask'
+            default=''
         )
         parser.add_argument(
             '-i', '--include-subs',
