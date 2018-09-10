@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Commands related to files."""
-
 import argparse
 import typing as T
 from pathlib import Path
@@ -182,29 +180,9 @@ class SaveAsCommand(BaseCommand):
         )
 
 
-class QuitCommand(BaseCommand):
-    names = ['quit']
-    help_text = (
-        'Quits the application. '
-        'Prompts user to save the current file if there are unsaved changes.'
-    )
-
-    async def run(self) -> None:
-        self.api.gui.quit()
-
-
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    """
-    Register commands in this file into the command API.
-
-    :param cmd_api: command API
-    """
-    for cls in [
-            NewCommand,
-            OpenCommand,
-            LoadVideoCommand,
-            SaveCommand,
-            SaveAsCommand,
-            QuitCommand,
-    ]:
-        cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))
+    cmd_api.register_core_command(NewCommand)
+    cmd_api.register_core_command(OpenCommand)
+    cmd_api.register_core_command(LoadVideoCommand)
+    cmd_api.register_core_command(SaveCommand)
+    cmd_api.register_core_command(SaveAsCommand)

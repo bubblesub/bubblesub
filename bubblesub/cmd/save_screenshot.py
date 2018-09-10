@@ -1,0 +1,69 @@
+# bubblesub - ASS subtitle editor
+# Copyright (C) 2018 Marcin Kurczewski
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import argparse
+
+import bubblesub.api
+import bubblesub.ui.util
+from bubblesub.api.cmd import BaseCommand
+from bubblesub.cmd.common import FancyPath
+
+
+class SaveScreenshotCommand(BaseCommand):
+    names = ['save-screenshot']
+    help_text = (
+        'Makes a screenshot of the current video frame. '
+        'Prompts user to choose where to save the file to if the path wasn\'t '
+        'specified in the command arguments.'
+    )
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.media.is_loaded
+
+    async def run(self) -> None:
+        assert self.api.media.path
+        path = await self.args.path.get_save_path(
+            file_filter='Portable Network Graphics (*.png)',
+            default_file_name='shot-{}-{}.png'.format(
+                self.api.media.path.name,
+                bubblesub.util.ms_to_str(self.api.media.current_pts)
+            )
+        )
+
+        self.api.media.video.screenshot(path, self.args.include_subs)
+        self.api.log.info(f'saved screenshot to {path}')
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-p', '--path',
+            help='path to save the screenshot to',
+            type=lambda value: FancyPath(api, value),
+            default=''
+        )
+        parser.add_argument(
+            '-i', '--include-subs',
+            help='whether to "burn" the subtitles into the screenshot',
+            action='store_true'
+        )
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    cmd_api.register_core_command(SaveScreenshotCommand)

@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""General GUI commands."""
-
 import argparse
 import enum
 
@@ -25,7 +23,7 @@ import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 
 
-class TargetWidget(enum.Enum):
+class _TargetWidget(enum.Enum):
     """Known widgets in GUI."""
 
     def __str__(self) -> str:
@@ -47,29 +45,6 @@ class TargetWidget(enum.Enum):
     Spectrogram = 'spectrogram'
     Console = 'console'
     ConsoleInput = 'console-input'
-
-
-class SetPaletteCommand(BaseCommand):
-    names = ['set-palette']
-    help_text = 'Changes the GUI color theme.'
-
-    async def run(self) -> None:
-        await self.api.gui.exec(self._run_with_gui)
-
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        main_window.apply_palette(self.args.palette_name)
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            'palette_name',
-            help='name of the palette to change to',
-            type=str,
-            choices=list(api.opt.general.gui.palettes.keys())
-        )
 
 
 class FocusWidgetCommand(BaseCommand):
@@ -95,8 +70,8 @@ class FocusWidgetCommand(BaseCommand):
         parser.add_argument(
             'target',
             help='which widget to focus',
-            type=TargetWidget,
-            choices=list(TargetWidget)
+            type=_TargetWidget,
+            choices=list(_TargetWidget)
         )
         parser.add_argument(
             '-s', '--select',
@@ -106,10 +81,4 @@ class FocusWidgetCommand(BaseCommand):
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    """
-    Register commands in this file into the command API.
-
-    :param cmd_api: command API
-    """
-    cmd_api.register_core_command(SetPaletteCommand)
     cmd_api.register_core_command(FocusWidgetCommand)

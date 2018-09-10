@@ -1,0 +1,98 @@
+# bubblesub - ASS subtitle editor
+# Copyright (C) 2018 Marcin Kurczewski
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import argparse
+
+import bubblesub.api
+from bubblesub.api.cmd import BaseCommand
+from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.cmd.common import EventSelection
+
+
+class SubtitlesSetCommand(BaseCommand):
+    names = ['sub-set']
+    help_text = 'Updates given subtitles parameters.'
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.args.target.makes_sense
+
+    async def run(self) -> None:
+        subs = await self.args.target.get_subtitles()
+        if not subs:
+            raise CommandUnavailable('nothing to update')
+
+        with self.api.undo.capture():
+            for sub in subs:
+                params = {
+                    'text': sub.text,
+                    'note': sub.note,
+                    'actor': sub.actor,
+                    'style': sub.style,
+                }
+
+                sub.begin_update()
+
+                if self.args.text:
+                    sub.text = self.args.text.format(**params)
+
+                if self.args.note:
+                    sub.note = self.args.note.format(**params)
+
+                if self.args.actor:
+                    sub.actor = self.args.actor.format(**params)
+
+                if self.args.style:
+                    sub.style = self.args.style.format(**params)
+
+                if self.args.comment:
+                    sub.is_comment = True
+
+                if self.args.no_comment:
+                    sub.is_comment = False
+
+                sub.end_update()
+
+    @staticmethod
+    def _decorate_parser(
+            api: bubblesub.api.Api,
+            parser: argparse.ArgumentParser
+    ) -> None:
+        parser.add_argument(
+            '-t', '--target',
+            help='subtitles to change',
+            type=lambda value: EventSelection(api, value),
+            default='selected'
+        )
+
+        parser.add_argument('--text', help='new subtitles text')
+        parser.add_argument('--note', help='new subtitles note')
+        parser.add_argument('--actor', help='new subtitles actor')
+        parser.add_argument('--style', help='new subtitles style')
+        parser.add_argument(
+            '--comment',
+            action='store_true',
+            help='mark subtitles as a comment'
+        )
+        parser.add_argument(
+            '--no-comment',
+            action='store_true',
+            help='mark subtitles as a non-comment'
+        )
+
+
+def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
+    cmd_api.register_core_command(SubtitlesSetCommand)

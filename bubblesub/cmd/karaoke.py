@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Commands related to karaoke."""
-
 import argparse
 import re
 import typing as T
@@ -168,13 +166,5 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    """
-    Register commands in this file into the command API.
-
-    :param cmd_api: command API
-    """
-    for cls in [
-            SubtitlesSplitKaraokeCommand,
-            SubtitlesMergeKaraokeCommand,
-    ]:
-        cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))
+    cmd_api.register_core_command(SubtitlesSplitKaraokeCommand)
+    cmd_api.register_core_command(SubtitlesMergeKaraokeCommand)

@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Spell check command."""
-
 import typing as T
 
 import enchant
@@ -198,9 +196,4 @@ class SpellCheckCommand(BaseCommand):
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    """
-    Register commands in this file into the command API.
-
-    :param cmd_api: command API
-    """
     cmd_api.register_core_command(SpellCheckCommand)

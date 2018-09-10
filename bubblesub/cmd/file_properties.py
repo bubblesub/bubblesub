@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""File properties command."""
-
 from collections import OrderedDict
 import typing as T
 
@@ -339,9 +337,4 @@ class FilePropertiesCommand(BaseCommand):
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    """
-    Register commands in this file into the command API.
-
-    :param cmd_api: command API
-    """
     cmd_api.register_core_command(FilePropertiesCommand)

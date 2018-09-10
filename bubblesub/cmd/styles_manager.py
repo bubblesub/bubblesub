@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Styles manager command."""
-
 import re
 import typing as T
 from copy import copy
@@ -754,9 +752,4 @@ class ManageStylesCommand(BaseCommand):
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    """
-    Register commands in this file into the command API.
-
-    :param cmd_api: command API
-    """
     cmd_api.register_core_command(ManageStylesCommand)

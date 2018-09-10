@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Commands related to the subtitle grid."""
-
 import argparse
 import base64
 import pickle
@@ -31,7 +29,6 @@ from bubblesub.api.cmd import CommandError
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
-from bubblesub.cmd.common import FancyPath
 
 
 def _pickle(data: T.Any) -> str:
@@ -44,29 +41,6 @@ def _pickle(data: T.Any) -> str:
 
 def _unpickle(text: str) -> T.Any:
     return pickle.loads(zlib.decompress(base64.b64decode(text.encode())))
-
-
-class SubtitlesSelectCommand(BaseCommand):
-    names = ['sub-select']
-    help_text = 'Selects given subtitles.'
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.args.target.makes_sense
-
-    async def run(self) -> None:
-        self.api.subs.selected_indexes = await self.args.target.get_indexes()
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            'target',
-            help='subtitles to select',
-            type=lambda value: EventSelection(api, value)
-        )
 
 
 class SubtitlesCopyCommand(BaseCommand):
@@ -247,68 +221,7 @@ class SubtitlesPasteIntoCommand(BaseCommand):
         )
 
 
-class SaveAudioSampleCommand(BaseCommand):
-    names = ['save-audio-sample']
-    help_text = (
-        'Saves given subtitles to a WAV file. '
-        'Prompts user to choose where to save the file to if the path wasn\'t '
-        'specified in the command arguments.'
-    )
-
-    @property
-    def is_enabled(self) -> bool:
-        return self.args.target.makes_sense \
-            and self.api.media.audio.has_audio_source
-
-    async def run(self) -> None:
-        subs = await self.args.target.get_subtitles()
-        if not subs:
-            raise CommandUnavailable('nothing to sample')
-
-        assert self.api.media.path
-        path = await self.args.path.get_save_path(
-            file_filter='Waveform Audio File (*.wav)',
-            default_file_name='audio-{}-{}..{}.wav'.format(
-                self.api.media.path.name,
-                bubblesub.util.ms_to_str(subs[0].start),
-                bubblesub.util.ms_to_str(subs[-1].end)
-            )
-        )
-
-        pts_ranges = [(sub.start, sub.end) for sub in subs]
-        self.api.media.audio.save_wav(path, pts_ranges)
-        self.api.log.info(f'saved audio sample to {path}')
-
-    @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
-        parser.add_argument(
-            '-t', '--target',
-            help='subtitles to save audio from',
-            type=lambda value: EventSelection(api, value),
-            default='selected'
-        )
-        parser.add_argument(
-            '-p', '--path',
-            help='path to save the sample to',
-            type=lambda value: FancyPath(api, value),
-            default=''
-        )
-
-
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    """
-    Register commands in this file into the command API.
-
-    :param cmd_api: command API
-    """
-    for cls in [
-            SubtitlesSelectCommand,
-            SubtitlesCopyCommand,
-            SubtitlesPasteCommand,
-            SubtitlesPasteIntoCommand,
-            SaveAudioSampleCommand,
-    ]:
-        cmd_api.register_core_command(T.cast(T.Type[BaseCommand], cls))
+    cmd_api.register_core_command(SubtitlesCopyCommand)
+    cmd_api.register_core_command(SubtitlesPasteCommand)
+    cmd_api.register_core_command(SubtitlesPasteIntoCommand)

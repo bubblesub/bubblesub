@@ -14,26 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Miscellaneous commands."""
-
 import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 
 
-class ReloadPluginsCommand(BaseCommand):
-    names = ['reload-plugins']
-    help_text = 'Reloads the user plugins.'
+class QuitCommand(BaseCommand):
+    names = ['quit']
+    help_text = (
+        'Quits the application. '
+        'Prompts user to save the current file if there are unsaved changes.'
+    )
 
     async def run(self) -> None:
-        if self.api.opt.root_dir:
-            self.api.cmd.unload_plugin_commands()
-            self.api.cmd.load_commands(self.api.opt.root_dir / 'scripts')
+        self.api.gui.quit()
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    """
-    Register commands in this file into the command API.
-
-    :param cmd_api: command API
-    """
-    cmd_api.register_core_command(ReloadPluginsCommand)
+    cmd_api.register_core_command(QuitCommand)
