@@ -160,7 +160,7 @@ Opens up the style manager.
 Mutes or unmutes the video audio.
 
 Usage: `mute operation`
-* `operation`: whether to mute the audio (can be `1`, `yes`, `y`, `on`, `enable`, `0`, `no`, `n`, `off`, `disable`, `toggle`)
+* `operation`: whether to mute the audio
 
 ### <a name="cmd-new"></a>`new`
 Opens a new file. Prompts user to save the current file if there are unsaved changes.
@@ -175,7 +175,7 @@ Usage: `open [-p|--path=…]`
 Pauses or unpauses the video playback.
 
 Usage: `pause operation`
-* `operation`: whether to pause the video (can be `1`, `yes`, `y`, `on`, `enable`, `0`, `no`, `n`, `off`, `disable`, `toggle`)
+* `operation`: whether to pause the video
 
 ### <a name="cmd-play-audio-sel"></a>`play‑audio‑sel`
 Aliases: `play-audio-selection`, `play-spectrogram-sel`, `play-spectrogram-selection`

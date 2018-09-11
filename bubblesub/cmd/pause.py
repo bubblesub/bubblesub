@@ -42,8 +42,7 @@ class PauseCommand(BaseCommand):
         parser.add_argument(
             'operation',
             help='whether to pause the video',
-            type=BooleanOperation,
-            choices=BooleanOperation.choices
+            type=BooleanOperation
         )
 
 
