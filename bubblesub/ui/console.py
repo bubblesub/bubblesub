@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import argparse
 import datetime
 import re
 import typing as T
@@ -228,31 +229,13 @@ class ConsoleInput(QtWidgets.QLineEdit):
             return super().event(event)
 
         if self._compl is None:
-            compl = Completion(
-                prefix=self.text()[:self.cursorPosition()],
-                suffix=self.text()[self.cursorPosition():],
-                suggestions=[],
-                index=0 if event.key() == QtCore.Qt.Key_Tab else -1,
-                start_pos=0
-            )
-
-            match = re.match('^\/(?P<cmd>[^ ]+) ?$', compl.prefix)
-            if match:
-                compl.start_pos = 1
-                for cls in self._api.cmd.get_all():
-                    for name in cls.names:
-                        if name.startswith(match.group('cmd')):
-                            compl.suggestions.append(name + ' ')
-
-            compl.suggestions.sort()
+            compl = self._make_autocomplete()
             if not compl.suggestions:
                 return True
-
             self._compl = compl
+            self._compl.index = 0 if event.key() == QtCore.Qt.Key_Tab else -1
         else:
-            self._compl.index += (
-                -1 if event.key() == QtCore.Qt.Key_Backtab else 1
-            )
+            self._compl.index += 1 if event.key() == QtCore.Qt.Key_Tab else 1
 
         self._compl.index %= len(self._compl.suggestions)
         self.setText(
@@ -293,6 +276,53 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self._api.cmd.execute(self.text())
         self.setText('')
         self._edited = False
+
+    def _make_autocomplete(self) -> Completion:
+        compl = Completion(
+            prefix=self.text()[:self.cursorPosition()],
+            suffix=self.text()[self.cursorPosition():],
+            suggestions=[],
+            index=0,
+            start_pos=0
+        )
+
+        # command names
+        match = re.match('^/(?P<cmd>[^ ]+) ?$', compl.prefix)
+        if match:
+            compl.start_pos = 1
+            for cls in self._api.cmd.get_all():
+                for name in cls.names:
+                    if name.startswith(match.group('cmd')):
+                        compl.suggestions.append(name + ' ')
+            compl.suggestions.sort()
+
+        # command arguments
+        match = re.match(
+            '^/(?P<cmd>[^ ]+) (?:.*)(?P<arg>-[^ =]*)$', compl.prefix
+        )
+        if match:
+            cls = None
+            for test_cls in self._api.cmd.get_all():
+                for name in test_cls.names:
+                    if name == match.group('cmd'):
+                        cls = test_cls
+                        break
+            if cls:
+                parser = argparse.ArgumentParser(
+                    add_help=False, prog=match.group('cmd')
+                )
+                cls._decorate_parser(self._api, parser)
+                for action in parser._actions:
+                    if any(
+                            opt.startswith(match.group('arg'))
+                            for opt in action.option_strings
+                    ):
+                        compl.start_pos = match.start('arg')
+                        compl.suggestions.append(
+                            list(sorted(action.option_strings, key=len))[-1]
+                        )
+
+        return compl
 
 
 class Console(QtWidgets.QWidget):
