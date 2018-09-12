@@ -273,7 +273,7 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self._history.append(self.text())
         self._history_pos = len(self._history)
 
-        self._api.cmd.execute(self.text())
+        self._api.cmd.run_invocation(self.text())
         self.setText('')
         self._edited = False
 
@@ -301,16 +301,9 @@ class ConsoleInput(QtWidgets.QLineEdit):
             '^/(?P<cmd>[^ ]+) (?:.*)(?P<arg>-[^ =]*)$', compl.prefix
         )
         if match:
-            cls = None
-            for test_cls in self._api.cmd.get_all():
-                for name in test_cls.names:
-                    if name == match.group('cmd'):
-                        cls = test_cls
-                        break
+            cls = self._api.cmd.get(match.group('cmd'))
             if cls:
-                parser = argparse.ArgumentParser(
-                    add_help=False, prog=match.group('cmd')
-                )
+                parser = argparse.ArgumentParser(add_help=False)
                 cls._decorate_parser(self._api, parser)
                 for action in parser._actions:
                     if any(
@@ -320,6 +313,7 @@ class ConsoleInput(QtWidgets.QLineEdit):
                         compl.start_pos = match.start('arg')
                         compl.suggestions.append(
                             list(sorted(action.option_strings, key=len))[-1]
+                            + ' '
                         )
 
         return compl

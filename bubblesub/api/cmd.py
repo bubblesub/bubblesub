@@ -212,7 +212,7 @@ class CommandApi(QtCore.QObject):
         ] = {}
         self._plugin_menu: T.List[MenuItem] = []
 
-    def execute(self, invocation: T.Union[T.List[str], str]) -> None:
+    def run_invocation(self, invocation: T.Union[T.List[str], str]) -> None:
         """
         Execute given invocation.
 
@@ -224,21 +224,21 @@ class CommandApi(QtCore.QObject):
             invocation = '/' + ' '.join(shlex.quote(arg) for arg in invocation)
 
         try:
-            cmd = self.get(invocation)
+            cmd = self.instantiate(invocation)
         except Exception as ex:  # pylint: disable=broad-except
             self._api.log.error(str(ex))
         else:
-            self.run(cmd)
+            self.run_cmd(cmd)
 
-    def run(self, cmd: BaseCommand) -> None:
+    def run_cmd(self, cmd: BaseCommand) -> None:
         """
         Execute given command.
 
         :param cmd: command to run
         """
-        asyncio.ensure_future(self.run_async(cmd))
+        asyncio.ensure_future(self.run_cmd_async(cmd))
 
-    async def run_async(self, cmd: BaseCommand) -> bool:
+    async def run_cmd_async(self, cmd: BaseCommand) -> bool:
         """
         Execute given command asynchronously.
 
@@ -266,7 +266,9 @@ class CommandApi(QtCore.QObject):
         self._api.log.debug(f'{cmd.invocation}: took {took:.04f} s')
         return True
 
-    def get(self, invocation: T.Union[T.List[str], str]) -> BaseCommand:
+    def instantiate(
+            self, invocation: T.Union[T.List[str], str]
+    ) -> BaseCommand:
         """
         Retrieve command instance by its name and arguments.
 
@@ -277,11 +279,21 @@ class CommandApi(QtCore.QObject):
             invocation = '/' + ' '.join(shlex.quote(arg) for arg in invocation)
 
         name, _args = split_invocation(invocation)
-        cls, _is_plugin = self._command_registry.get(name, (None, False))
+        cls = self.get(name)
         if not cls:
             raise CommandNotFound(f'no command named "{name}"')
         instance = cls(self._api, invocation)
         return T.cast(BaseCommand, instance)
+
+    def get(self, name: str) -> T.Optional[T.Type[BaseCommand]]:
+        """
+        Return class by command name.
+
+        :param name: name to search for
+        :return: type if command found, None otherwise
+        """
+        cls, _is_plugin = self._command_registry.get(name, (None, False))
+        return cls
 
     def get_all(self) -> T.List[T.Type[BaseCommand]]:
         """

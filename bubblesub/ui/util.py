@@ -203,7 +203,7 @@ class _CommandAction(QtWidgets.QAction):
         super().__init__(parent)
         self.api = api
         self.commands = [
-            api.cmd.get(invocation)
+            api.cmd.instantiate(invocation)
             for invocation in item.invocations
         ]
         self.triggered.connect(self._on_trigger)
@@ -211,7 +211,7 @@ class _CommandAction(QtWidgets.QAction):
 
     def _on_trigger(self) -> None:
         for cmd in self.commands:
-            self.api.cmd.run(cmd)
+            self.api.cmd.run_cmd(cmd)
 
 
 HotkeyMap = T.Dict[T.Tuple[HotkeyContext, T.Tuple[str, ...]], str]

@@ -215,7 +215,7 @@ class MainWindow(QtWidgets.QMainWindow):
     ) -> QtWidgets.QShortcut:
         try:
             commands = [
-                self._api.cmd.get(invocation)
+                self._api.cmd.instantiate(invocation)
                 for invocation in hotkey.invocations
             ]
         except bubblesub.api.cmd.CommandError as ex:
@@ -228,7 +228,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         def activated(commands: T.List[bubblesub.api.cmd.BaseCommand]) -> None:
             for command in commands:
-                self._api.cmd.run(command)
+                self._api.cmd.run_cmd(command)
 
         def activated_ambiguously(keys: str) -> None:
             context = self._widget_to_hotkey_context(
