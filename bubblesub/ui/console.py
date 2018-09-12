@@ -17,6 +17,7 @@
 import datetime
 import re
 import typing as T
+from dataclasses import dataclass
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -188,6 +189,15 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         self.scroll_lock_changed.emit()
 
 
+@dataclass
+class Completion:
+    prefix: str
+    suffix: str
+    index: int
+    start_pos: int
+    suggestions: T.List[str]
+
+
 class ConsoleInput(QtWidgets.QLineEdit):
     def __init__(
             self,
@@ -197,9 +207,10 @@ class ConsoleInput(QtWidgets.QLineEdit):
         super().__init__(parent)
         self._api = api
         self._edited = False
+        self._compl: T.Optional[Completion] = None
 
-        self.history_pos = 0
-        self.history: T.List[str] = []
+        self._history_pos = 0
+        self._history: T.List[str] = []
 
         self.setObjectName('console-input')
         self.setFont(QtGui.QFontDatabase.systemFont(
@@ -209,19 +220,60 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self.returnPressed.connect(self._on_return_press)
         self.textEdited.connect(self._on_edit)
 
+    def event(self, event: QtCore.QEvent) -> bool:
+        if event.type() != QtCore.QEvent.KeyPress:
+            return super().event(event)
+
+        if event.key() not in {QtCore.Qt.Key_Tab, QtCore.Qt.Key_Backtab}:
+            return super().event(event)
+
+        if self._compl is None:
+            compl = Completion(
+                prefix=self.text()[:self.cursorPosition()],
+                suffix=self.text()[self.cursorPosition():],
+                suggestions=[],
+                index=0 if event.key() == QtCore.Qt.Key_Tab else -1,
+                start_pos=0
+            )
+
+            match = re.match('^\/(?P<cmd>[^ ]+) ?$', compl.prefix)
+            if match:
+                compl.start_pos = 1
+                for cls in self._api.cmd.get_all():
+                    for name in cls.names:
+                        if name.startswith(match.group('cmd')):
+                            compl.suggestions.append(name + ' ')
+
+            compl.suggestions.sort()
+            if not compl.suggestions:
+                return True
+
+            self._compl = compl
+        else:
+            self._compl.index += (
+                -1 if event.key() == QtCore.Qt.Key_Backtab else 1
+            )
+
+        self._compl.index %= len(self._compl.suggestions)
+        self.setText(
+            self._compl.prefix[:self._compl.start_pos] +
+            self._compl.suggestions[self._compl.index]
+        )
+        return True
+
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         if not self._edited or not self.text():
             if event.key() == QtCore.Qt.Key_Up:
-                if self.history_pos > 0:
-                    self.history_pos -= 1
-                    self.setText(self.history[self.history_pos])
+                if self._history_pos > 0:
+                    self._history_pos -= 1
+                    self.setText(self._history[self._history_pos])
                     self._edited = False
                 return
 
             if event.key() == QtCore.Qt.Key_Down:
-                if self.history_pos + 1 < len(self.history):
-                    self.history_pos += 1
-                    self.setText(self.history[self.history_pos])
+                if self._history_pos + 1 < len(self._history):
+                    self._history_pos += 1
+                    self.setText(self._history[self._history_pos])
                     self._edited = False
                 return
 
@@ -229,13 +281,14 @@ class ConsoleInput(QtWidgets.QLineEdit):
 
     def _on_edit(self) -> None:
         self._edited = True
+        self._compl = None
 
     def _on_return_press(self) -> None:
         if not self.text():
             return
 
-        self.history.append(self.text())
-        self.history_pos = len(self.history)
+        self._history.append(self.text())
+        self._history_pos = len(self._history)
 
         self._api.cmd.execute(self.text())
         self.setText('')
