@@ -26,10 +26,6 @@ class SubtitleInsertCommand(BaseCommand):
     names = ['sub-insert']
     help_text = 'Inserts one empty subtitle.'
 
-    @property
-    def is_enabled(self) -> bool:
-        return self.args.origin.makes_sense
-
     async def run(self) -> None:
         indexes = await self.args.origin.get_indexes()
         if self.args.dir == 'before':
