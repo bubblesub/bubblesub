@@ -33,8 +33,8 @@ from bubblesub.opt.hotkeys import Hotkey
 from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import MenuContext
-from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuSeparator
+from bubblesub.opt.menu import SubMenu
 from bubblesub.ui.menu import setup_cmd_menu
 
 
@@ -57,7 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
             lambda: self.setUpdatesEnabled(True)
         )
         api.subs.loaded.connect(self._update_title)
-        api.cmd.commands_loaded.connect(self._setup_plugins_menu)
+        api.cmd.commands_loaded.connect(self._rebuild_menu)
 
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
@@ -98,9 +98,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_splitter.setStretchFactor(0, 1)
         self.main_splitter.setStretchFactor(1, 5)
 
-        self._setup_menu()
+        self._rebuild_menu()
         self._setup_hotkeys()
-        self._setup_plugins_menu()
 
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
@@ -154,27 +153,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.update()
 
-    def _setup_menu(self) -> T.Any:
-        return setup_cmd_menu(
+    def _rebuild_menu(self) -> None:
+        for action in self.menuBar().actions():
+            self.menuBar().removeAction(action)
+
+        setup_cmd_menu(
             self._api,
             self.menuBar(),
-            self._api.opt.menu[MenuContext.MainMenu],
+            self._api.opt.menu[MenuContext.MainMenu] +
+            [
+                SubMenu(
+                    'Pl&ugins',
+                    [
+                        MenuCommand('Reload plugins', '/reload-cmds'),
+                        MenuSeparator(),
+                    ] + self._api.cmd.get_plugin_menu_items()
+                )
+            ],
             HotkeyContext.Global
-        )
-
-    def _setup_plugins_menu(self) -> None:
-        plugins_menu_def: T.List[MenuItem] = [
-            MenuCommand('Reload plugins', '/reload-cmds'),
-            MenuSeparator(),
-        ]
-        plugins_menu_def += self._api.cmd.get_plugin_menu_items()
-        for action in self.menuBar().children():
-            if action.objectName() == 'plugins-menu':
-                self.menuBar().removeAction(action.menuAction())
-        plugins_menu = self.menuBar().addMenu('Pl&ugins')
-        plugins_menu.setObjectName('plugins-menu')
-        setup_cmd_menu(
-            self._api, plugins_menu, plugins_menu_def, HotkeyContext.Global
         )
 
     @property
