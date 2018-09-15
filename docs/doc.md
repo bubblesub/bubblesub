@@ -31,7 +31,7 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
 |<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-search">search</a> </code> |
 |<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-search-and-replace">search-and-replace</a> </code> |
-|<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
+|<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
 |<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-sub-delete">sub-delete</a> </code> |
 |<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-10f --start</code> |
 |<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+10f --start</code> |

@@ -27,7 +27,7 @@
         {"shortcut": "Ctrl+Y", "invocations": ["/redo"]},
         {"shortcut": "Ctrl+F", "invocations": ["/search"]},
         {"shortcut": "Ctrl+H", "invocations": ["/search-and-replace"]},
-        {"shortcut": "Ctrl+Return", "invocations": ["/sub-insert --before"]},
+        {"shortcut": "Ctrl+Return", "invocations": ["/sub-insert --after"]},
         {"shortcut": "Ctrl+Delete", "invocations": ["/sub-delete"]},
         {"shortcut": "Ctrl+Shift+1", "invocations": ["/audio-shift-sel -d=-10f --start"]},
         {"shortcut": "Ctrl+Shift+2", "invocations": ["/audio-shift-sel -d=+10f --start"]},
