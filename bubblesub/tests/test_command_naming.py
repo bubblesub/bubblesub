@@ -19,7 +19,6 @@ import typing as T
 
 import bubblesub.api
 from bubblesub.tests.common import api  # pylint: disable=unused-import
-from bubblesub.tests.common import APP_ROOT_DIR
 
 
 def normalize_class_name(name: str) -> T.Iterable[str]:

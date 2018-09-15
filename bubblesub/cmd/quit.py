@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 
 
@@ -29,5 +28,4 @@ class QuitCommand(BaseCommand):
         self.api.gui.quit()
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(QuitCommand)
+COMMANDS = [QuitCommand]

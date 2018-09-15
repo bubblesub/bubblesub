@@ -16,9 +16,9 @@
 
 import argparse
 
-import bubblesub.api
-import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.util import eval_expr
 
 
 class SetVolumeCommand(BaseCommand):
@@ -26,17 +26,14 @@ class SetVolumeCommand(BaseCommand):
     help_text = 'Adjusts the video volume.'
 
     async def run(self) -> None:
-        new_value = bubblesub.util.eval_expr(
+        new_value = eval_expr(
             self.args.expression.format(self.api.media.volume)
         )
         assert isinstance(new_value, type(self.api.media.volume))
         self.api.media.volume = new_value
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'expression',
             help='expression to calculate new volume',
@@ -44,5 +41,4 @@ class SetVolumeCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SetVolumeCommand)
+COMMANDS = [SetVolumeCommand]

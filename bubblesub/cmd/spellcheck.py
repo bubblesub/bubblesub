@@ -21,17 +21,16 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-import bubblesub.api
 import bubblesub.ass.util
 import bubblesub.ui.util
-import bubblesub.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 
 
 class _SpellCheckDialog(QtWidgets.QDialog):
     def __init__(
             self,
-            api: bubblesub.api.Api,
+            api: Api,
             main_window: QtWidgets.QMainWindow,
             dictionary: enchant.Dict
     ) -> None:
@@ -195,5 +194,4 @@ class SpellCheckCommand(BaseCommand):
         _SpellCheckDialog(self.api, main_window, dictionary)
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SpellCheckCommand)
+COMMANDS = [SpellCheckCommand]

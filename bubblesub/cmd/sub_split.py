@@ -17,7 +17,7 @@
 import argparse
 from copy import copy
 
-import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import EventSelection
@@ -52,10 +52,7 @@ class SubtitlesSplitCommand(BaseCommand):
                 self.api.subs.selected_indexes = [idx, idx + 1]
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to split',
@@ -76,5 +73,4 @@ class SubtitlesSplitCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SubtitlesSplitCommand)
+COMMANDS = [SubtitlesSplitCommand]

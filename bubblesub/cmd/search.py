@@ -24,8 +24,8 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-import bubblesub.api
 import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 from bubblesub.opt.general import SearchMode
@@ -196,7 +196,7 @@ def _narrow_match(
 
 
 def _search(
-        api: bubblesub.api.Api,
+        api: Api,
         handler: _SearchModeHandler,
         regex: T.Pattern[str],
         reverse: bool
@@ -248,7 +248,7 @@ def _replace_selection(handler: _SearchModeHandler, new_text: str) -> None:
 
 
 def _replace_all(
-        api: bubblesub.api.Api,
+        api: Api,
         handler: _SearchModeHandler,
         regex: T.Pattern[str],
         new_text: str
@@ -267,7 +267,7 @@ def _replace_all(
 
 
 def _count(
-        api: bubblesub.api.Api,
+        api: Api,
         handler: _SearchModeHandler,
         regex: T.Pattern[str]
 ) -> int:
@@ -320,7 +320,7 @@ class _SearchTextEdit(QtWidgets.QComboBox):
 class _SearchDialog(QtWidgets.QDialog):
     def __init__(
             self,
-            api: bubblesub.api.Api,
+            api: Api,
             main_window: QtWidgets.QMainWindow,
             show_replace_controls: bool,
             parent: QtWidgets.QWidget = None
@@ -563,10 +563,7 @@ class SearchRepeatCommand(BaseCommand):
             bubblesub.ui.util.notice('No occurences found.')
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument(
             '--above',
@@ -582,7 +579,8 @@ class SearchRepeatCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SearchCommand)
-    cmd_api.register_core_command(SearchAndReplaceCommand)
-    cmd_api.register_core_command(SearchRepeatCommand)
+COMMANDS = [
+    SearchCommand,
+    SearchAndReplaceCommand,
+    SearchRepeatCommand
+]

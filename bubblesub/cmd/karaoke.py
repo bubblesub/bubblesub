@@ -19,9 +19,10 @@ import re
 import typing as T
 from copy import copy
 
-import bubblesub.ass.event
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
 
 
@@ -44,7 +45,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
         if not subs:
             raise CommandUnavailable('nothing to split')
 
-        new_selection: T.List[bubblesub.ass.event.Event] = []
+        new_selection: T.List[Event] = []
         with self.api.undo.capture(), self.api.gui.throttle_updates():
             for sub in subs:
                 if '\\k' not in sub.text:
@@ -57,7 +58,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 idx = sub.index
                 self.api.subs.events.remove(idx, 1)
 
-                new_subs: T.List[bubblesub.ass.event.Event] = []
+                new_subs: T.List[Event] = []
                 for syllable in syllables:
                     sub_copy = copy(sub)
                     sub_copy.text = syllable.text
@@ -95,10 +96,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
         return syllables
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to split',
@@ -148,10 +146,7 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
             self.api.subs.selected_indexes = [subs[0].index]
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to merge',
@@ -165,6 +160,7 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SubtitlesSplitKaraokeCommand)
-    cmd_api.register_core_command(SubtitlesMergeKaraokeCommand)
+COMMANDS = [
+    SubtitlesSplitKaraokeCommand,
+    SubtitlesMergeKaraokeCommand
+]

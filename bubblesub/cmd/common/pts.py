@@ -22,8 +22,8 @@ import typing as T
 
 from PyQt5 import QtWidgets
 
-import bubblesub.api
 import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandError
 
@@ -65,14 +65,14 @@ def _bisect(source: T.List[int], origin: int, delta: int) -> int:
     return source[idx]
 
 
-def _apply_frame(api: bubblesub.api.Api, origin: int, delta: int) -> int:
+def _apply_frame(api: Api, origin: int, delta: int) -> int:
     if not api.media.video.timecodes:
         raise CommandError('timecode information is not available')
 
     return _bisect(api.media.video.timecodes, origin, delta)
 
 
-def _apply_keyframe(api: bubblesub.api.Api, origin: int, delta: int) -> int:
+def _apply_keyframe(api: Api, origin: int, delta: int) -> int:
     if not api.media.video.keyframes:
         raise CommandError('keyframe information is not available')
 
@@ -85,7 +85,7 @@ def _apply_keyframe(api: bubblesub.api.Api, origin: int, delta: int) -> int:
 
 
 class AbsolutePts:
-    def __init__(self, api: bubblesub.api.Api, value: str) -> None:
+    def __init__(self, api: Api, value: str) -> None:
         self.api = api
         self.value = (
             value

@@ -16,7 +16,7 @@
 
 import argparse
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import RelativePts
 
@@ -54,10 +54,7 @@ class PlayAudioSelectionCommand(BaseCommand):
         self.api.media.play(start, end)
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-ds', '--delta-start',
             help='delta relative to the selection start',
@@ -94,5 +91,4 @@ class PlayAudioSelectionCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(PlayAudioSelectionCommand)
+COMMANDS = [PlayAudioSelectionCommand]

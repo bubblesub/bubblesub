@@ -16,7 +16,7 @@
 
 import argparse
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import EventSelection
@@ -52,10 +52,7 @@ class AudioCommitSelectionCommand(BaseCommand):
                 sub.end_update()
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to commit selection into',
@@ -64,5 +61,4 @@ class AudioCommitSelectionCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(AudioCommitSelectionCommand)
+COMMANDS = [AudioCommitSelectionCommand]

@@ -17,7 +17,7 @@
 import argparse
 import typing as T
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import EventSelection
 
@@ -83,10 +83,7 @@ class SubtitleInsertCommand(BaseCommand):
         return self.api.opt.general.subs.default_duration
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-o', '--origin',
             help='where to insert the subtitle',
@@ -117,5 +114,4 @@ class SubtitleInsertCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SubtitleInsertCommand)
+COMMANDS = [SubtitleInsertCommand]

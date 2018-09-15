@@ -22,21 +22,17 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-import bubblesub.api
 import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 
 
-def _rescale_styles(api: bubblesub.api.Api, factor: float) -> None:
+def _rescale_styles(api: Api, factor: float) -> None:
     for style in api.subs.styles:
         style.scale(factor)
 
 
-def _rescale_ass_tags(
-        api: bubblesub.api.Api,
-        x_factor: float,
-        y_factor: float
-) -> None:
+def _rescale_ass_tags(api: Api, x_factor: float, y_factor: float) -> None:
     for event in api.subs.events:
         try:
             ass_struct = ass_tag_parser.parse_ass(event.text)
@@ -76,11 +72,7 @@ def _rescale_ass_tags(
 
 
 class _OptionsGropuBox(QtWidgets.QGroupBox):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__('Options:', parent)
         self._api = api
 
@@ -209,11 +201,7 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
 
 
 class _FilePropertiesDialog(QtWidgets.QDialog):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            main_window: QtWidgets.QMainWindow
-    ) -> None:
+    def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
         super().__init__(main_window)
         self._main_window = main_window
         self._api = api
@@ -336,5 +324,4 @@ class FilePropertiesCommand(BaseCommand):
             _FilePropertiesDialog(self.api, main_window)
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(FilePropertiesCommand)
+COMMANDS = [FilePropertiesCommand]

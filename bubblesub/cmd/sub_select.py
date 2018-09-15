@@ -16,7 +16,7 @@
 
 import argparse
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import EventSelection
 
@@ -33,10 +33,7 @@ class SubtitlesSelectCommand(BaseCommand):
         self.api.subs.selected_indexes = await self.args.target.get_indexes()
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'target',
             help='subtitles to select',
@@ -44,5 +41,4 @@ class SubtitlesSelectCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SubtitlesSelectCommand)
+COMMANDS = [SubtitlesSelectCommand]

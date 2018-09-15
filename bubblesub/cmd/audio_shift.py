@@ -16,7 +16,7 @@
 
 import argparse
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import RelativePts
 
@@ -48,10 +48,7 @@ class AudioShiftSelectionCommand(BaseCommand):
             self.api.media.audio.select(start, end)
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='amount to shift the selection by',
@@ -89,5 +86,4 @@ class AudioShiftSelectionCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(AudioShiftSelectionCommand)
+COMMANDS = [AudioShiftSelectionCommand]

@@ -112,7 +112,7 @@ def split_invocation(invocation: str) -> T.Tuple[str, T.List[str]]:
 class BaseCommand(abc.ABC):
     """Base class for all commands."""
 
-    def __init__(self, api: 'bubblesub.api.api.Api', invocation: str) -> None:
+    def __init__(self, api: 'bubblesub.api.Api', invocation: str) -> None:
         """
         Initialize self.
 
@@ -205,8 +205,7 @@ class CommandApi(QtCore.QObject):
         """
         super().__init__()
         self._api = api
-        self._thread = None
-        self._command_registry: T.Dict[str, T.Type[BaseCommand]] = {}
+        self._registry: T.Dict[str, T.Type[BaseCommand]] = {}
         self._plugin_menu: T.List[MenuItem] = []
 
     def run_invocation(self, invocation: T.Union[T.List[str], str]) -> None:
@@ -289,7 +288,7 @@ class CommandApi(QtCore.QObject):
         :param name: name to search for
         :return: type if command found, None otherwise
         """
-        return self._command_registry.get(name, None)
+        return self._registry.get(name, None)
 
     def get_all(self) -> T.List[T.Type[BaseCommand]]:
         """
@@ -297,7 +296,7 @@ class CommandApi(QtCore.QObject):
 
         :return: list of types
         """
-        return list(set(self._command_registry.values()))
+        return list(set(self._registry.values()))
 
     def reload_commands(self) -> None:
         """Rescans filesystem for commands."""
@@ -305,34 +304,7 @@ class CommandApi(QtCore.QObject):
         self._load_commands(Path(__file__).parent.parent / 'cmd')
         if self._api.opt.root_dir:
             self._load_commands(self._api.opt.root_dir / 'scripts')
-
-    def register_core_command(self, cls: T.Type[BaseCommand]) -> None:
-        """
-        Register a core command to the registry.
-
-        :param cls: type inheriting from BaseCommand
-        """
-        for name in cls.names:
-            self._api.log.debug(f'registering {cls} as {name}')
-            self._command_registry[name] = cls
-
-    def register_plugin_command(
-            self, cls: T.Type[BaseCommand], menu_item: MenuItem
-    ) -> None:
-        """
-        Register a plugin command to the registry.
-
-        User commands can be accessed from the 'plugins' menu and reloaded at
-        runtime. Unlike core commands, for which the menu is constructed via
-        opt.menu.MenuConfig, the plugins build the menu by themselves.
-
-        :param cls: type inheriting from BaseCommand
-        :param menu_item: menu item to show in the plugins menu
-        """
-        for name in cls.names:
-            self._api.log.debug(f'registering {cls} as {name}')
-            self._command_registry[name] = cls
-        self._plugin_menu.append(menu_item)
+        self.commands_loaded.emit()
 
     def get_plugin_menu_items(self) -> T.List[MenuItem]:
         """
@@ -345,18 +317,19 @@ class CommandApi(QtCore.QObject):
     def _unload_commands(self) -> None:
         """Unloads registered commands.."""
         self._plugin_menu[:] = []
-        self._command_registry.clear()
-        for name, cls in list(self._command_registry.items()):
+        for name, cls in list(self._registry.items()):
             self._api.log.debug(f'unregistering {cls} as {name}')
+        self._registry.clear()
 
     def _load_commands(self, path: Path) -> None:
         """
         Load commands from the specified path.
 
-        The file must have a `register` function that receives a reference to
-        the `CommandApi`. This function should register all the commands
-        within that file with the `CommandApi.register_plugin_command` or
-        `CommandApi.register_core_command` method.
+        Each file must have a `COMMANDS` global constant that contains
+        a collection of commands inheriting from BaseCommand.
+
+        Optionally, it can have a `MENU` global constant that contains
+        menu item collection that get put in the plugin menu.
 
         :param path: dictionary containing plugin definitions
         """
@@ -380,8 +353,16 @@ class CommandApi(QtCore.QObject):
             try:
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)
-                mod.register(self)
+                for cls in mod.COMMANDS:
+                    for name in cls.names:
+                        self._api.log.debug(f'registering {cls} as {name}')
+                        self._registry[name] = cls
+                try:
+                    menu = mod.MENU
+                except AttributeError:
+                    pass
+                else:
+                    self._plugin_menu += menu
             except Exception as ex:  # pylint: disable=broad-except
                 self._api.log.error(str(ex))
                 traceback.print_exc()
-        self.commands_loaded.emit()

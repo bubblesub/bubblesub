@@ -16,12 +16,12 @@
 
 import argparse
 
-import bubblesub.api
-import bubblesub.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import FancyPath
+from bubblesub.util import ms_to_str
 
 
 class SaveAudioSampleCommand(BaseCommand):
@@ -47,8 +47,8 @@ class SaveAudioSampleCommand(BaseCommand):
             file_filter='Waveform Audio File (*.wav)',
             default_file_name='audio-{}-{}..{}.wav'.format(
                 self.api.media.path.name,
-                bubblesub.util.ms_to_str(subs[0].start),
-                bubblesub.util.ms_to_str(subs[-1].end)
+                ms_to_str(subs[0].start),
+                ms_to_str(subs[-1].end)
             )
         )
 
@@ -57,10 +57,7 @@ class SaveAudioSampleCommand(BaseCommand):
         self.api.log.info(f'saved audio sample to {path}')
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to save audio from',
@@ -75,5 +72,4 @@ class SaveAudioSampleCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SaveAudioSampleCommand)
+COMMANDS = [SaveAudioSampleCommand]

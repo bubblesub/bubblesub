@@ -20,8 +20,8 @@ from pathlib import Path
 
 from PyQt5 import QtWidgets
 
-import bubblesub.api
 import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.cmd.common import FancyPath
@@ -30,13 +30,13 @@ VIDEO_FILE_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'
 SUBS_FILE_FILTER = 'Advanced Substation Alpha (*.ass)'
 
 
-def _get_dialog_dir(api: bubblesub.api.Api) -> T.Optional[Path]:
+def _get_dialog_dir(api: Api) -> T.Optional[Path]:
     if api.subs.path:
         return api.subs.path.parent
     return None
 
 
-def _ask_about_unsaved_changes(api: bubblesub.api.Api) -> bool:
+def _ask_about_unsaved_changes(api: Api) -> bool:
     if not api.undo.needs_save:
         return True
     return bubblesub.ui.util.ask(
@@ -79,10 +79,7 @@ class OpenCommand(BaseCommand):
         self.api.log.info(f'opened {path}')
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-p', '--path',
             help='path to load the subtitles from',
@@ -109,10 +106,7 @@ class LoadVideoCommand(BaseCommand):
         self.api.log.info(f'loading {path}')
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-p', '--path',
             help='path to load the video from',
@@ -168,10 +162,7 @@ class SaveAsCommand(BaseCommand):
         self.api.log.info(f'saved subtitles to {path}')
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-p', '--path',
             help='optional path to save the subtitles to',
@@ -180,9 +171,10 @@ class SaveAsCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(NewCommand)
-    cmd_api.register_core_command(OpenCommand)
-    cmd_api.register_core_command(LoadVideoCommand)
-    cmd_api.register_core_command(SaveCommand)
-    cmd_api.register_core_command(SaveAsCommand)
+COMMANDS = [
+    NewCommand,
+    OpenCommand,
+    LoadVideoCommand,
+    SaveCommand,
+    SaveAsCommand
+]

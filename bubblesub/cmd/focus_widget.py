@@ -19,7 +19,7 @@ import enum
 
 from PyQt5 import QtWidgets
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 
 
@@ -63,10 +63,7 @@ class FocusWidgetCommand(BaseCommand):
             widget.selectAll()
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'target',
             help='which widget to focus',
@@ -80,5 +77,4 @@ class FocusWidgetCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(FocusWidgetCommand)
+COMMANDS = [FocusWidgetCommand]

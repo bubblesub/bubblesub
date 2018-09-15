@@ -18,7 +18,7 @@ import argparse
 
 from PyQt5 import QtWidgets
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 
 
@@ -33,10 +33,7 @@ class SetPaletteCommand(BaseCommand):
         main_window.apply_palette(self.args.palette_name)
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'palette_name',
             help='name of the palette to change to',
@@ -45,5 +42,4 @@ class SetPaletteCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SetPaletteCommand)
+COMMANDS = [SetPaletteCommand]

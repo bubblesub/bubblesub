@@ -751,5 +751,4 @@ class ManageStylesCommand(BaseCommand):
             _StylesManagerDialog(self.api, main_window).exec_()
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(ManageStylesCommand)
+COMMANDS = [ManageStylesCommand]

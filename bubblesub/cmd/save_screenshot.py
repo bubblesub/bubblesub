@@ -16,10 +16,10 @@
 
 import argparse
 
-import bubblesub.api
-import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import FancyPath
+from bubblesub.util import ms_to_str
 
 
 class SaveScreenshotCommand(BaseCommand):
@@ -40,7 +40,7 @@ class SaveScreenshotCommand(BaseCommand):
             file_filter='Portable Network Graphics (*.png)',
             default_file_name='shot-{}-{}.png'.format(
                 self.api.media.path.name,
-                bubblesub.util.ms_to_str(self.api.media.current_pts)
+                ms_to_str(self.api.media.current_pts)
             )
         )
 
@@ -48,10 +48,7 @@ class SaveScreenshotCommand(BaseCommand):
         self.api.log.info(f'saved screenshot to {path}')
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-p', '--path',
             help='path to save the screenshot to',
@@ -65,5 +62,4 @@ class SaveScreenshotCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SaveScreenshotCommand)
+COMMANDS = [SaveScreenshotCommand]

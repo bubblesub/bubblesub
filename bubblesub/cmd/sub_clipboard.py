@@ -22,13 +22,14 @@ import zlib
 
 from PyQt5 import QtWidgets
 
-import bubblesub.api
-import bubblesub.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
+from bubblesub.util import ms_to_str
+from bubblesub.util import str_to_ms
 
 
 def _pickle(data: T.Any) -> str:
@@ -64,8 +65,8 @@ class SubtitlesCopyCommand(BaseCommand):
             QtWidgets.QApplication.clipboard().setText(
                 '\n'.join(
                     '{} - {}'.format(
-                        bubblesub.util.ms_to_str(sub.start),
-                        bubblesub.util.ms_to_str(sub.end)
+                        ms_to_str(sub.start),
+                        ms_to_str(sub.end)
                     )
                     for sub in subs
                 )
@@ -76,10 +77,7 @@ class SubtitlesCopyCommand(BaseCommand):
             raise AssertionError
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to paste into',
@@ -123,10 +121,7 @@ class SubtitlesPasteCommand(BaseCommand):
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-o', '--origin',
             help='where to paste the subtitles',
@@ -189,8 +184,8 @@ class SubtitlesPasteIntoCommand(BaseCommand):
                     try:
                         start, end = line.split('-', 1)
                         times.append((
-                            bubblesub.util.str_to_ms(start.strip()),
-                            bubblesub.util.str_to_ms(end.strip())
+                            str_to_ms(start.strip()),
+                            str_to_ms(end.strip())
                         ))
                     except ValueError:
                         raise ValueError(f'invalid time format: {line}')
@@ -203,10 +198,7 @@ class SubtitlesPasteIntoCommand(BaseCommand):
                 raise AssertionError
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to paste the subject into',
@@ -221,7 +213,8 @@ class SubtitlesPasteIntoCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SubtitlesCopyCommand)
-    cmd_api.register_core_command(SubtitlesPasteCommand)
-    cmd_api.register_core_command(SubtitlesPasteIntoCommand)
+COMMANDS = [
+    SubtitlesCopyCommand,
+    SubtitlesPasteCommand,
+    SubtitlesPasteIntoCommand
+]

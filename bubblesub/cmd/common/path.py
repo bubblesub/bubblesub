@@ -19,15 +19,15 @@
 import typing as T
 from pathlib import Path
 
-import bubblesub.api
-import bubblesub.util
 import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.util import sanitize_file_name
 
 
 class FancyPath:
-    def __init__(self, api: bubblesub.api.Api, value: str) -> None:
+    def __init__(self, api: Api, value: str) -> None:
         self.api = api
         self.value = value
 
@@ -67,7 +67,7 @@ class FancyPath:
             directory=directory,
             file_name=(
                 None if default_file_name is None else
-                bubblesub.util.sanitize_file_name(default_file_name)
+                sanitize_file_name(default_file_name)
             )
         )
         if path:

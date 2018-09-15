@@ -22,8 +22,8 @@ import typing as T
 import regex
 from PyQt5 import QtWidgets
 
-import bubblesub.api
 import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
 
@@ -66,7 +66,7 @@ def _match_indexes(target: str) -> T.Optional[T.List[int]]:
 
 
 class EventSelection:
-    def __init__(self, api: bubblesub.api.Api, target: str) -> None:
+    def __init__(self, api: Api, target: str) -> None:
         self.api = api
         self.target = target
 

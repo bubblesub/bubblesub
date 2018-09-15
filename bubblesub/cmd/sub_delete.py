@@ -16,7 +16,7 @@
 
 import argparse
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import EventSelection
@@ -49,10 +49,7 @@ class SubtitlesDeleteCommand(BaseCommand):
                 self.api.subs.events.remove(start_idx, count)
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to delete',
@@ -61,5 +58,4 @@ class SubtitlesDeleteCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SubtitlesDeleteCommand)
+COMMANDS = [SubtitlesDeleteCommand]

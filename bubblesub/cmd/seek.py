@@ -16,8 +16,7 @@
 
 import argparse
 
-import bubblesub.api
-import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import RelativePts
 
@@ -37,10 +36,7 @@ class SeekCommand(BaseCommand):
         self.api.media.is_paused = True
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='amount to seek by',
@@ -56,5 +52,4 @@ class SeekCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SeekCommand)
+COMMANDS = [SeekCommand]

@@ -16,9 +16,9 @@
 
 import argparse
 
-import bubblesub.api
-import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.util import eval_expr
 
 
 class SetPlaybackSpeedCommand(BaseCommand):
@@ -26,17 +26,14 @@ class SetPlaybackSpeedCommand(BaseCommand):
     help_text = 'Adjusts the video playback speed.'
 
     async def run(self) -> None:
-        new_value = bubblesub.util.eval_expr(
+        new_value = eval_expr(
             self.args.expression.format(self.api.media.playback_speed)
         )
         assert isinstance(new_value, type(self.api.media.playback_speed))
         self.api.media.playback_speed = new_value
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'expression',
             help='expression to calculate new playback speed',
@@ -44,5 +41,4 @@ class SetPlaybackSpeedCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(SetPlaybackSpeedCommand)
+COMMANDS = [SetPlaybackSpeedCommand]

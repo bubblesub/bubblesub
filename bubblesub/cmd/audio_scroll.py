@@ -16,7 +16,7 @@
 
 import argparse
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 
 
@@ -31,10 +31,7 @@ class AudioScrollCommand(BaseCommand):
         self.api.media.audio.move_view(distance)
 
     @staticmethod
-    def _decorate_parser(
-            api: bubblesub.api.Api,
-            parser: argparse.ArgumentParser
-    ) -> None:
+    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='factor to shift the view by',
@@ -43,5 +40,4 @@ class AudioScrollCommand(BaseCommand):
         )
 
 
-def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(AudioScrollCommand)
+COMMANDS = [AudioScrollCommand]
