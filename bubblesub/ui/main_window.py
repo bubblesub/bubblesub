@@ -14,14 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import functools
 import typing as T
 
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-import bubblesub.api
 import bubblesub.ui.audio
 import bubblesub.ui.console
 import bubblesub.ui.editor
@@ -29,19 +27,20 @@ import bubblesub.ui.statusbar
 import bubblesub.ui.subs_grid
 import bubblesub.ui.util
 import bubblesub.ui.video
-from bubblesub.opt.hotkeys import Hotkey
+from bubblesub.api import Api
 from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import MenuContext
 from bubblesub.opt.menu import MenuSeparator
 from bubblesub.opt.menu import SubMenu
+from bubblesub.ui.hotkeys import setup_hotkeys
 from bubblesub.ui.menu import setup_cmd_menu
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(
             self,
-            api: bubblesub.api.Api,
+            api: Api,
             console: 'bubblesub.ui.console.Console'
     ) -> None:
         super().__init__()
@@ -58,6 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._rebuild_menu)
+        api.cmd.commands_loaded.connect(self._rebuild_hotkeys)
 
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
@@ -99,7 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_splitter.setStretchFactor(1, 5)
 
         self._rebuild_menu()
-        self._setup_hotkeys()
+        self._rebuild_hotkeys()
 
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
@@ -173,81 +173,16 @@ class MainWindow(QtWidgets.QMainWindow):
             HotkeyContext.Global
         )
 
-    @property
-    def _hotkey_context_to_widget_map(
-            self
-    ) -> T.Dict[HotkeyContext, QtWidgets.QWidget]:
-        return {
-            HotkeyContext.Spectrogram: self.audio,
-            HotkeyContext.SubtitlesGrid: self.subs_grid,
-        }
-
-    def _widget_to_hotkey_context(
-            self, widget: QtWidgets.QWidget
-    ) -> T.Optional[HotkeyContext]:
-        while widget:
-            for context, context_widget in \
-                    self._hotkey_context_to_widget_map.items():
-                if widget == context_widget:
-                    return context
-            widget = widget.parent()
-        return None
-
-    def _setup_hotkeys(self) -> None:
-        shortcuts: T.Dict[
-            T.Tuple[str, HotkeyContext], QtWidgets.QShortcut
-        ] = {}
-
-        for context, hotkeys in self._api.opt.hotkeys:
-            for hotkey in hotkeys:
-                shortcut = self._setup_hotkey(context, hotkey, shortcuts)
-                if shortcut:
-                    shortcuts[(hotkey.shortcut, context)] = shortcut
-
-    def _setup_hotkey(
-            self,
-            context: HotkeyContext,
-            hotkey: Hotkey,
-            shortcuts: T.Dict[T.Tuple[str, HotkeyContext], QtWidgets.QShortcut]
-    ) -> QtWidgets.QShortcut:
-        try:
-            commands = [
-                self._api.cmd.instantiate(invocation)
-                for invocation in hotkey.invocations
-            ]
-        except bubblesub.api.cmd.CommandError as ex:
-            self._api.log.error(str(ex))
-            return None
-
-        shortcut = QtWidgets.QShortcut(
-            QtGui.QKeySequence(hotkey.shortcut), self
+    def _rebuild_hotkeys(self) -> None:
+        setup_hotkeys(
+            self._api,
+            {
+                HotkeyContext.Global: self,
+                HotkeyContext.Spectrogram: self.audio,
+                HotkeyContext.SubtitlesGrid: self.subs_grid,
+            },
+            self._api.opt.hotkeys
         )
-
-        def activated(commands: T.List[bubblesub.api.cmd.BaseCommand]) -> None:
-            for command in commands:
-                self._api.cmd.run_cmd(command)
-
-        def activated_ambiguously(keys: str) -> None:
-            context = self._widget_to_hotkey_context(
-                QtWidgets.QApplication.focusWidget()
-            )
-            if context and (keys, context) in shortcuts:
-                shortcuts[(keys, context)].activated.emit()
-
-        if context in self._hotkey_context_to_widget_map:
-            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
-            shortcut.setParent(self._hotkey_context_to_widget_map[context])
-        elif context == HotkeyContext.Global:
-            shortcut.setContext(QtCore.Qt.ApplicationShortcut)
-        else:
-            raise RuntimeError(f'invalid shortcut context "{context}"')
-
-        shortcut.activated.connect(functools.partial(activated, commands))
-        shortcut.activatedAmbiguously.connect(
-            functools.partial(activated_ambiguously, hotkey.shortcut)
-        )
-
-        return shortcut
 
     def _restore_splitters(self) -> None:
         def _load(widget: QtWidgets.QWidget, key: str) -> None:
