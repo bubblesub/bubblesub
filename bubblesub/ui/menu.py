@@ -85,37 +85,38 @@ def setup_cmd_menu(
         api: bubblesub.api.Api,
         parent: QtWidgets.QWidget,
         menu_def: T.Sequence[MenuItem],
-        context: HotkeyContext,
-        hotkey_map: T.Optional[HotkeyMap] = None
+        context: HotkeyContext
 ) -> T.Any:
-    if hotkey_map is None:
-        hotkey_map = _build_hotkey_map(api)
+    hotkey_map = _build_hotkey_map(api)
+    stack = [(parent, menu_def)]
 
-    if hasattr(parent, 'aboutToShow'):
-        parent.aboutToShow.connect(
-            functools.partial(_on_menu_about_to_show, parent)
-        )
-        parent.aboutToHide.connect(
-            functools.partial(_on_menu_about_to_hide, parent)
-        )
+    while stack:
+        parent, menu_def = stack.pop()
 
-    for item in menu_def:
-        if isinstance(item, MenuSeparator):
-            parent.addSeparator()
-        elif isinstance(item, SubMenu):
-            submenu = parent.addMenu(item.name)
-            setup_cmd_menu(api, submenu, item.children, context, hotkey_map)
-        elif isinstance(item, MenuCommand):
-            try:
-                action = _CommandAction(api, item, parent)
-            except bubblesub.api.cmd.CommandError as ex:
-                api.log.error(str(ex))
-                continue
+        if hasattr(parent, 'aboutToShow'):
+            parent.aboutToShow.connect(
+                functools.partial(_on_menu_about_to_show, parent)
+            )
+            parent.aboutToHide.connect(
+                functools.partial(_on_menu_about_to_hide, parent)
+            )
 
-            shortcut = hotkey_map.get((context, item.invocations))
-            if shortcut is not None:
-                action.setText(action.text() + '\t' + shortcut)
+        for item in menu_def:
+            if isinstance(item, MenuSeparator):
+                parent.addSeparator()
+            elif isinstance(item, SubMenu):
+                stack.append((parent.addMenu(item.name), item.children))
+            elif isinstance(item, MenuCommand):
+                try:
+                    action = _CommandAction(api, item, parent)
+                except bubblesub.api.cmd.CommandError as ex:
+                    api.log.error(str(ex))
+                    continue
 
-            parent.addAction(action)
-        else:
-            api.log.error(f'unexpected menu item {item}')
+                shortcut = hotkey_map.get((context, item.invocations))
+                if shortcut is not None:
+                    action.setText(action.text() + '\t' + shortcut)
+
+                parent.addAction(action)
+            else:
+                api.log.error(f'unexpected menu item {item}')
