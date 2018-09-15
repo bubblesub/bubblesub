@@ -163,7 +163,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _setup_plugins_menu(self) -> None:
         plugins_menu_def: T.List[MenuItem] = [
-            MenuCommand('Reload plugins', '/reload-plugins'),
+            MenuCommand('Reload plugins', '/reload-cmds'),
             MenuSeparator(),
         ]
         plugins_menu_def += self._api.cmd.get_plugin_menu_items()

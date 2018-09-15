@@ -203,8 +203,8 @@ Quits the application. Prompts user to save the current file if there are unsave
 ### <a name="cmd-redo"></a>`redo`
 Redoes last edit operation.
 
-### <a name="cmd-reload-plugins"></a>`reload‑plugins`
-Reloads the user plugins.
+### <a name="cmd-reload-cmds"></a>`reload‑cmds`
+Rescans filesystem for commands.
 
 ### <a name="cmd-save"></a>`save`
 Saves the current subtitles to an ASS file. If the currently loaded subtitles weren't ever saved, prompts user to choose where to save the file to.

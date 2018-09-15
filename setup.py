@@ -94,7 +94,7 @@ class GenerateDocumentationCommand(Command):
 
         opt = bubblesub.opt.Options()
         api = bubblesub.api.Api(opt, args)
-        api.cmd.load_commands(Path(__file__).parent / 'bubblesub' / 'cmd')
+        api.cmd.reload_commands()
 
         print('# Default commands', file=handle)
         for cls in sorted(api.cmd.get_all(), key=lambda cls: cls.names[0]):

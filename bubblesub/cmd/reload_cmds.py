@@ -18,15 +18,13 @@ import bubblesub.api
 from bubblesub.api.cmd import BaseCommand
 
 
-class ReloadPluginsCommand(BaseCommand):
-    names = ['reload-plugins']
-    help_text = 'Reloads the user plugins.'
+class ReloadCommandsCommand(BaseCommand):
+    names = ['reload-cmds']
+    help_text = 'Rescans filesystem for commands.'
 
     async def run(self) -> None:
-        if self.api.opt.root_dir:
-            self.api.cmd.unload_plugin_commands()
-            self.api.cmd.load_commands(self.api.opt.root_dir / 'scripts')
+        self.api.cmd.reload_commands()
 
 
 def register(cmd_api: bubblesub.api.cmd.CommandApi) -> None:
-    cmd_api.register_core_command(ReloadPluginsCommand)
+    cmd_api.register_core_command(ReloadCommandsCommand)

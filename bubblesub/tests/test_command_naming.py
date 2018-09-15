@@ -28,14 +28,16 @@ def normalize_class_name(name: str) -> T.Iterable[str]:
             return match.group().lower()
         return '-' + match.group(0).lower()
 
+    name = re.sub('Command$', '', name)
+
     # exceptions
     name = name.replace('Subtitles', 'Sub')
     name = name.replace('Subtitle', 'Sub')
     name = name.replace('SpectrogramSelection', 'Sel')
     name = name.replace('Selection', 'Sel')
     name = name.replace('Milliseconds', 'Ms')
+    name = name.replace('Command', 'Cmd')
 
-    name = re.sub('Command$', '', name)
     name = re.sub('[A-Z]', handler, name)
 
     yield name
@@ -53,20 +55,19 @@ def normalize_command_name(name: str) -> T.Iterable[str]:
         yield f'{prefix}-{stem}'
 
 
-def verify_name(class_name: str, command_name: str) -> None:
+def verify_name(cls_name: str, cmd_name: str) -> None:
     assert (
-        set(normalize_class_name(class_name))
-        & set(normalize_command_name(command_name))
+        set(normalize_class_name(cls_name)) &
+        set(normalize_command_name(cmd_name))
     ), (
-        f'Class name "{class_name}" doesn\'t match '
-        f'command name "{command_name}"'
+        f"Class name {cls_name!r} doesn't match command name {cmd_name!r}"
     )
 
 
 def test_command_naming(  # pylint: disable=redefined-outer-name
         api: bubblesub.api.Api
 ) -> None:
-    api.cmd.load_commands(APP_ROOT_DIR / 'cmd')
+    api.cmd.reload_commands()
 
     assert len(api.cmd.get_all()) >= 1
     for cls in api.cmd.get_all():

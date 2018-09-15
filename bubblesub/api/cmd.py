@@ -206,10 +206,7 @@ class CommandApi(QtCore.QObject):
         super().__init__()
         self._api = api
         self._thread = None
-        self._command_registry: T.Dict[
-            str,
-            T.Tuple[T.Type[BaseCommand], bool]
-        ] = {}
+        self._command_registry: T.Dict[str, T.Type[BaseCommand]] = {}
         self._plugin_menu: T.List[MenuItem] = []
 
     def run_invocation(self, invocation: T.Union[T.List[str], str]) -> None:
@@ -292,8 +289,7 @@ class CommandApi(QtCore.QObject):
         :param name: name to search for
         :return: type if command found, None otherwise
         """
-        cls, _is_plugin = self._command_registry.get(name, (None, False))
-        return cls
+        return self._command_registry.get(name, None)
 
     def get_all(self) -> T.List[T.Type[BaseCommand]]:
         """
@@ -301,11 +297,59 @@ class CommandApi(QtCore.QObject):
 
         :return: list of types
         """
-        return list(set(
-            cls for cls, _is_plugin in self._command_registry.values()
-        ))
+        return list(set(self._command_registry.values()))
 
-    def load_commands(self, path: Path) -> None:
+    def reload_commands(self) -> None:
+        """Rescans filesystem for commands."""
+        self._unload_commands()
+        self._load_commands(Path(__file__).parent.parent / 'cmd')
+        if self._api.opt.root_dir:
+            self._load_commands(self._api.opt.root_dir / 'scripts')
+
+    def register_core_command(self, cls: T.Type[BaseCommand]) -> None:
+        """
+        Register a core command to the registry.
+
+        :param cls: type inheriting from BaseCommand
+        """
+        for name in cls.names:
+            self._api.log.debug(f'registering {cls} as {name}')
+            self._command_registry[name] = cls
+
+    def register_plugin_command(
+            self, cls: T.Type[BaseCommand], menu_item: MenuItem
+    ) -> None:
+        """
+        Register a plugin command to the registry.
+
+        User commands can be accessed from the 'plugins' menu and reloaded at
+        runtime. Unlike core commands, for which the menu is constructed via
+        opt.menu.MenuConfig, the plugins build the menu by themselves.
+
+        :param cls: type inheriting from BaseCommand
+        :param menu_item: menu item to show in the plugins menu
+        """
+        for name in cls.names:
+            self._api.log.debug(f'registering {cls} as {name}')
+            self._command_registry[name] = cls
+        self._plugin_menu.append(menu_item)
+
+    def get_plugin_menu_items(self) -> T.List[MenuItem]:
+        """
+        Return plugin menu items.
+
+        :return: plugins menu
+        """
+        return self._plugin_menu
+
+    def _unload_commands(self) -> None:
+        """Unloads registered commands.."""
+        self._plugin_menu[:] = []
+        self._command_registry.clear()
+        for name, cls in list(self._command_registry.items()):
+            self._api.log.debug(f'unregistering {cls} as {name}')
+
+    def _load_commands(self, path: Path) -> None:
         """
         Load commands from the specified path.
 
@@ -341,48 +385,3 @@ class CommandApi(QtCore.QObject):
                 self._api.log.error(str(ex))
                 traceback.print_exc()
         self.commands_loaded.emit()
-
-    def unload_plugin_commands(self) -> None:
-        """Remove plugin commands from the registry and clear plugins menu."""
-        self._plugin_menu[:] = []
-        for name, value in list(self._command_registry.items()):
-            cls, is_plugin = value
-            if is_plugin:
-                print(f'unregistering {cls} as {name}')
-                del self._command_registry[name]
-
-    def register_core_command(self, cls: T.Type[BaseCommand]) -> None:
-        """
-        Register a core command to the registry.
-
-        :param cls: type inheriting from BaseCommand
-        """
-        for name in cls.names:
-            print(f'registering {cls} as {name}')
-            self._command_registry[name] = (cls, False)
-
-    def register_plugin_command(
-            self, cls: T.Type[BaseCommand], menu_item: MenuItem
-    ) -> None:
-        """
-        Register a plugin command to the registry.
-
-        User commands can be accessed from the 'plugins' menu and reloaded at
-        runtime. Unlike core commands, for which the menu is constructed via
-        opt.menu.MenuConfig, the plugins build the menu by themselves.
-
-        :param cls: type inheriting from BaseCommand
-        :param menu_item: menu item to show in the plugins menu
-        """
-        for name in cls.names:
-            print(f'registering {cls} as {name}')
-            self._command_registry[name] = (cls, True)
-        self._plugin_menu.append(menu_item)
-
-    def get_plugin_menu_items(self) -> T.List[MenuItem]:
-        """
-        Return plugin menu items.
-
-        :return: plugins menu
-        """
-        return self._plugin_menu
