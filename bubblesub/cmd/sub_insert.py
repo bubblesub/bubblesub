@@ -55,8 +55,8 @@ class SubtitleInsertCommand(BaseCommand):
             cur_sub = self.api.subs.events.get(0)
             prev_sub = None
 
-        end = cur_sub.start if cur_sub else 0
-        start = end - self.api.opt.general.subs.default_duration
+        end = cur_sub.start if cur_sub else self._duration
+        start = end - self._duration
         if prev_sub and start < prev_sub.end:
             start = min(prev_sub.end, end)
         return idx, start, end
@@ -73,10 +73,14 @@ class SubtitleInsertCommand(BaseCommand):
             next_sub = self.api.subs.events.get(0)
 
         start = cur_sub.end if cur_sub else 0
-        end = start + self.api.opt.general.subs.default_duration
+        end = start + self._duration
         if next_sub and end > next_sub.start:
             end = max(next_sub.start, start)
         return idx, start, end
+
+    @property
+    def _duration(self) -> int:
+        return self.api.opt.general.subs.default_duration
 
     @staticmethod
     def _decorate_parser(
