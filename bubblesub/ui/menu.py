@@ -1,0 +1,121 @@
+# bubblesub - ASS subtitle editor
+# Copyright (C) 2018 Marcin Kurczewski
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import functools
+import typing as T
+
+from PyQt5 import QtWidgets
+
+import bubblesub.api
+from bubblesub.opt.hotkeys import HotkeyContext
+from bubblesub.opt.menu import MenuItem
+from bubblesub.opt.menu import MenuCommand
+from bubblesub.opt.menu import MenuSeparator
+from bubblesub.opt.menu import SubMenu
+
+
+HotkeyMap = T.Dict[T.Tuple[HotkeyContext, T.Tuple[str, ...]], str]
+
+
+def _window_from_menu(menu: QtWidgets.QMenu) -> QtWidgets.QWidget:
+    window = menu
+    while window.parent() is not None:
+        window = window.parent()
+    return window
+
+
+def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
+    window = _window_from_menu(menu)
+    window.setProperty('focused-widget', window.focusWidget())
+    for action in menu.actions():
+        if getattr(action, 'commands', None):
+            action.setEnabled(all(cmd.is_enabled for cmd in action.commands))
+
+
+def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
+    window = _window_from_menu(menu)
+    focused_widget = window.property('focused-widget')
+    if focused_widget:
+        focused_widget.setFocus()
+
+
+class _CommandAction(QtWidgets.QAction):
+    def __init__(
+            self,
+            api: bubblesub.api.Api,
+            item: MenuCommand,
+            parent: QtWidgets.QWidget
+    ) -> None:
+        super().__init__(parent)
+        self.api = api
+        self.commands = [
+            api.cmd.instantiate(invocation)
+            for invocation in item.invocations
+        ]
+        self.triggered.connect(self._on_trigger)
+        self.setText(item.name)
+
+    def _on_trigger(self) -> None:
+        for cmd in self.commands:
+            self.api.cmd.run_cmd(cmd)
+
+
+def _build_hotkey_map(api: bubblesub.api.Api) -> HotkeyMap:
+    ret: HotkeyMap = {}
+    for context, hotkeys in api.opt.hotkeys:
+        for hotkey in hotkeys:
+            ret[context, hotkey.invocations] = hotkey.shortcut
+    return ret
+
+
+def setup_cmd_menu(
+        api: bubblesub.api.Api,
+        parent: QtWidgets.QWidget,
+        menu_def: T.Sequence[MenuItem],
+        context: HotkeyContext,
+        hotkey_map: T.Optional[HotkeyMap] = None
+) -> T.Any:
+    if hotkey_map is None:
+        hotkey_map = _build_hotkey_map(api)
+
+    if hasattr(parent, 'aboutToShow'):
+        parent.aboutToShow.connect(
+            functools.partial(_on_menu_about_to_show, parent)
+        )
+        parent.aboutToHide.connect(
+            functools.partial(_on_menu_about_to_hide, parent)
+        )
+
+    for item in menu_def:
+        if isinstance(item, MenuSeparator):
+            parent.addSeparator()
+        elif isinstance(item, SubMenu):
+            submenu = parent.addMenu(item.name)
+            setup_cmd_menu(api, submenu, item.children, context, hotkey_map)
+        elif isinstance(item, MenuCommand):
+            try:
+                action = _CommandAction(api, item, parent)
+            except bubblesub.api.cmd.CommandError as ex:
+                api.log.error(str(ex))
+                continue
+
+            shortcut = hotkey_map.get((context, item.invocations))
+            if shortcut is not None:
+                action.setText(action.text() + '\t' + shortcut)
+
+            parent.addAction(action)
+        else:
+            api.log.error(f'unexpected menu item {item}')

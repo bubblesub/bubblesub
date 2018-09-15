@@ -24,11 +24,6 @@ from PyQt5 import QtWidgets
 
 import bubblesub.api
 import bubblesub.util
-from bubblesub.opt.hotkeys import HotkeyContext
-from bubblesub.opt.menu import MenuItem
-from bubblesub.opt.menu import MenuCommand
-from bubblesub.opt.menu import MenuSeparator
-from bubblesub.opt.menu import SubMenu
 
 
 def error(msg: str) -> None:
@@ -169,100 +164,6 @@ class TimeEdit(QtWidgets.QLineEdit):
         self.setText(text)
         self.textEdited.emit(self.text())
         self.setCursorPosition(0)
-
-
-def _window_from_menu(menu: QtWidgets.QMenu) -> QtWidgets.QWidget:
-    window = menu
-    while window.parent() is not None:
-        window = window.parent()
-    return window
-
-
-def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
-    window = _window_from_menu(menu)
-    window.setProperty('focused-widget', window.focusWidget())
-    for action in menu.actions():
-        if getattr(action, 'commands', None):
-            action.setEnabled(all(cmd.is_enabled for cmd in action.commands))
-
-
-def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
-    window = _window_from_menu(menu)
-    focused_widget = window.property('focused-widget')
-    if focused_widget:
-        focused_widget.setFocus()
-
-
-class _CommandAction(QtWidgets.QAction):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            item: MenuCommand,
-            parent: QtWidgets.QWidget
-    ) -> None:
-        super().__init__(parent)
-        self.api = api
-        self.commands = [
-            api.cmd.instantiate(invocation)
-            for invocation in item.invocations
-        ]
-        self.triggered.connect(self._on_trigger)
-        self.setText(item.name)
-
-    def _on_trigger(self) -> None:
-        for cmd in self.commands:
-            self.api.cmd.run_cmd(cmd)
-
-
-HotkeyMap = T.Dict[T.Tuple[HotkeyContext, T.Tuple[str, ...]], str]
-
-
-def _build_hotkey_map(api: bubblesub.api.Api) -> HotkeyMap:
-    ret: HotkeyMap = {}
-    for context, hotkeys in api.opt.hotkeys:
-        for hotkey in hotkeys:
-            ret[context, hotkey.invocations] = hotkey.shortcut
-    return ret
-
-
-def setup_cmd_menu(
-        api: bubblesub.api.Api,
-        parent: QtWidgets.QWidget,
-        menu_def: T.Sequence[MenuItem],
-        context: HotkeyContext,
-        hotkey_map: T.Optional[HotkeyMap] = None
-) -> T.Any:
-    if hotkey_map is None:
-        hotkey_map = _build_hotkey_map(api)
-
-    if hasattr(parent, 'aboutToShow'):
-        parent.aboutToShow.connect(
-            functools.partial(_on_menu_about_to_show, parent)
-        )
-        parent.aboutToHide.connect(
-            functools.partial(_on_menu_about_to_hide, parent)
-        )
-
-    for item in menu_def:
-        if isinstance(item, MenuSeparator):
-            parent.addSeparator()
-        elif isinstance(item, SubMenu):
-            submenu = parent.addMenu(item.name)
-            setup_cmd_menu(api, submenu, item.children, context, hotkey_map)
-        elif isinstance(item, MenuCommand):
-            try:
-                action = _CommandAction(api, item, parent)
-            except bubblesub.api.cmd.CommandError as ex:
-                api.log.error(str(ex))
-                continue
-
-            shortcut = hotkey_map.get((context, item.invocations))
-            if shortcut is not None:
-                action.setText(action.text() + '\t' + shortcut)
-
-            parent.addAction(action)
-        else:
-            api.log.error(f'unexpected menu item {item}')
 
 
 @functools.lru_cache(maxsize=None)

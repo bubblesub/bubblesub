@@ -35,6 +35,7 @@ from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import MenuContext
 from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuSeparator
+from bubblesub.ui.menu import setup_cmd_menu
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -154,7 +155,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update()
 
     def _setup_menu(self) -> T.Any:
-        return bubblesub.ui.util.setup_cmd_menu(
+        return setup_cmd_menu(
             self._api,
             self.menuBar(),
             self._api.opt.menu[MenuContext.MainMenu],
@@ -172,7 +173,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.menuBar().removeAction(action.menuAction())
         plugins_menu = self.menuBar().addMenu('Pl&ugins')
         plugins_menu.setObjectName('plugins-menu')
-        bubblesub.ui.util.setup_cmd_menu(
+        setup_cmd_menu(
             self._api, plugins_menu, plugins_menu_def, HotkeyContext.Global
         )
 
