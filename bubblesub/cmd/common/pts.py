@@ -89,6 +89,7 @@ class AbsolutePts:
         self.api = api
         self.value = (
             value
+            .replace('selection', 'sel')
             .replace('previous', 'prev')
             .replace('subtitle', 'sub')
             .replace('current', 'cur')
@@ -103,6 +104,12 @@ class AbsolutePts:
     async def _get(self) -> int:
         if self.value == 'cur-frame':
             return self.api.media.current_pts
+
+        if self.value == 'spectrogram-sel-start':
+            return self.api.media.audio.selection_start
+
+        if self.value == 'spectrogram-sel-end':
+            return self.api.media.audio.selection_end
 
         if self.value == 'ask':
             return await self.api.gui.exec(self._show_abs_dialog)
