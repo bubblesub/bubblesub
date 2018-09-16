@@ -111,7 +111,7 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return len(self.api.subs.selected_indexes) > 1
+        return self.args.target.makes_sense
 
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
