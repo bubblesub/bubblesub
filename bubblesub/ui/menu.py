@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import functools
+import traceback
 import typing as T
 
 from PyQt5 import QtWidgets
@@ -42,7 +43,13 @@ def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
     window.setProperty('focused-widget', window.focusWidget())
     for action in menu.actions():
         if getattr(action, 'commands', None):
-            action.setEnabled(all(cmd.is_enabled for cmd in action.commands))
+            try:
+                action.setEnabled(
+                    all(cmd.is_enabled for cmd in action.commands)
+                )
+            except Exception as ex:
+                traceback.print_exc()
+                action.setEnabled(False)
 
 
 def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
