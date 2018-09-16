@@ -312,7 +312,10 @@ class CommandApi(QtCore.QObject):
 
         :return: plugins menu
         """
-        return self._plugin_menu
+        return sorted(
+            self._plugin_menu,
+            key=lambda item: getattr(item, 'name', '').replace('&', '')
+        )
 
     def _unload_commands(self) -> None:
         """Unloads registered commands.."""
