@@ -9,6 +9,7 @@ Simple extensible ASS subtitle editor for Linux
 - **Python - easily extend it however you want**
 - Video preview
 - Audio preview (spectrogram)
+- Video band for quick assessment of scene boundaries
 - Audio and video are synced at all times
 - Spectrogram shows where subs start and end
 - Slow playback support (with audio pitch correction)
