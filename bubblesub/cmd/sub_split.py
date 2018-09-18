@@ -21,7 +21,7 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.cmd.common import EventSelection
-from bubblesub.cmd.common import AbsolutePts
+from bubblesub.cmd.common import Pts
 
 
 class SubtitlesSplitCommand(BaseCommand):
@@ -69,7 +69,7 @@ class SubtitlesSplitCommand(BaseCommand):
         parser.add_argument(
             '-p', '--position',
             help='position to split the subtitles at',
-            type=lambda value: AbsolutePts(api, value),
+            type=lambda value: Pts(api, value),
         )
 
 

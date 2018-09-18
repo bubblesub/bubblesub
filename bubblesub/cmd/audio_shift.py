@@ -18,7 +18,7 @@ import argparse
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.cmd.common import RelativePts
+from bubblesub.cmd.common import Pts
 
 
 class AudioShiftSelectionCommand(BaseCommand):
@@ -36,13 +36,13 @@ class AudioShiftSelectionCommand(BaseCommand):
             end = self.api.media.audio.selection_end
 
             if self.args.method in {'start', 'both'}:
-                start = await self.args.delta.apply(
-                    start, align_to_near_frame=not self.args.no_align
+                start = await self.args.delta.get(
+                    origin=start, align_to_near_frame=not self.args.no_align
                 )
 
             if self.args.method in {'end', 'both'}:
-                end = await self.args.delta.apply(
-                    end, align_to_near_frame=not self.args.no_align
+                end = await self.args.delta.get(
+                    origin=end, align_to_near_frame=not self.args.no_align
                 )
 
             self.api.media.audio.select(start, end)
@@ -52,7 +52,7 @@ class AudioShiftSelectionCommand(BaseCommand):
         parser.add_argument(
             '-d', '--delta',
             help='amount to shift the selection by',
-            type=lambda value: RelativePts(api, value),
+            type=lambda value: Pts(api, value),
             required=True,
         )
         parser.add_argument(

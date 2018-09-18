@@ -36,7 +36,7 @@
                 {"type": "command", "name": "&Delete selected subtitles", "invocations": ["/sub-delete"]},
                 {"type": "separator"},
                 {"type": "command", "name": "&Swap selected subtitles notes with text", "invocations": ["/sub-set --note={text} --text={note}"]},
-                {"type": "command", "name": "&Split selected subtitles at current video frame", "invocations": ["/sub-split -p=cur-frame"]},
+                {"type": "command", "name": "&Split selected subtitles at current video frame", "invocations": ["/sub-split -p=cf"]},
                 {"type": "command", "name": "&Merge selected subtitles (keep first)", "invocations": ["/sub-merge"]},
                 {"type": "command", "name": "&Merge selected subtitles (concatenate)", "invocations": ["/sub-merge --concat"]},
                 {"type": "command", "name": "&Merge selected subtitles as karaoke", "invocations": ["/sub-merge-karaoke"]},
@@ -133,10 +133,10 @@
                     "type": "submenu",
                     "name": "Snap to nearest subtitle",
                     "children": [
-                        {"type": "command", "name": "Snap spectrogram selection start to previous subtitle start", "invocations": ["/audio-shift-sel -d=prev-sub-end --start"]},
-                        {"type": "command", "name": "Snap spectrogram selection end to next subtitle end", "invocations": ["/audio-shift-sel -d=next-sub-start --end"]},
-                        {"type": "command", "name": "Snap selected subtitles start to previous subtitle end", "invocations": ["/sub-shift -d=prev-sub-end --start"]},
-                        {"type": "command", "name": "Snap selected subtitles end to next subtitle start", "invocations": ["/sub-shift -d=next-sub-start --end"]}
+                        {"type": "command", "name": "Snap spectrogram selection start to previous subtitle start", "invocations": ["/audio-shift-sel -d=ps.e --start"]},
+                        {"type": "command", "name": "Snap spectrogram selection end to next subtitle end", "invocations": ["/audio-shift-sel -d=ns.s --end"]},
+                        {"type": "command", "name": "Snap selected subtitles start to previous subtitle end", "invocations": ["/sub-shift -d=ps.e --start"]},
+                        {"type": "command", "name": "Snap selected subtitles end to next subtitle start", "invocations": ["/sub-shift -d=ns.s --end"]}
                     ]
                 },
                 {
@@ -153,12 +153,12 @@
                     "type": "submenu",
                     "name": "Snap to current video frame",
                     "children": [
-                        {"type": "command", "name": "Snap spectrogram selection start to current video frame", "invocations": ["/audio-shift-sel -d=cur-frame --start"]},
-                        {"type": "command", "name": "Snap spectrogram selection end to current video frame", "invocations": ["/audio-shift-sel -d=cur-frame --end"]},
-                        {"type": "command", "name": "Place spectrogram selection at current video frame", "invocations": ["/audio-shift-sel -d=cur-frame --both", "/audio-shift-sel -d=default-sub-duration --end"]},
-                        {"type": "command", "name": "Snap selected subtitles start to current video frame", "invocations": ["/sub-shift -d=cur-frame --start"]},
-                        {"type": "command", "name": "Snap selected subtitles end to current video frame", "invocations": ["/sub-shift -d=cur-frame --end"]},
-                        {"type": "command", "name": "Place selected subtitles at current video frame", "invocations": ["/sub-shift -d=cur-frame --both", "/sub-shift -d=default-sub-duration --end"]}
+                        {"type": "command", "name": "Snap spectrogram selection start to current video frame", "invocations": ["/audio-shift-sel -d=cf --start"]},
+                        {"type": "command", "name": "Snap spectrogram selection end to current video frame", "invocations": ["/audio-shift-sel -d=cf --end"]},
+                        {"type": "command", "name": "Place spectrogram selection at current video frame", "invocations": ["/audio-shift-sel -d=cf --both", "/audio-shift-sel -d=+dsd --end"]},
+                        {"type": "command", "name": "Snap selected subtitles start to current video frame", "invocations": ["/sub-shift -d=cf --start"]},
+                        {"type": "command", "name": "Snap selected subtitles end to current video frame", "invocations": ["/sub-shift -d=cf --end"]},
+                        {"type": "command", "name": "Place selected subtitles at current video frame", "invocations": ["/sub-shift -d=cf --both", "/sub-shift -d=+dsd --end"]}
                     ]
                 },
                 {
@@ -201,7 +201,7 @@
         {"type": "command", "name": "&Paste from clipboard below", "invocations": ["/sub-paste --after"]},
         {"type": "separator"},
         {"type": "command", "name": "&Duplicate", "invocations": ["/sub-clone"]},
-        {"type": "command", "name": "&Split at current video frame", "invocations": ["/sub-split -p=cur-frame"]},
+        {"type": "command", "name": "&Split at current video frame", "invocations": ["/sub-split -p=cf"]},
         {"type": "command", "name": "&Split as karaoke", "invocations": ["/sub-split-karaoke"]},
         {"type": "separator"},
         {"type": "command", "name": "&Merge (keep first)", "invocations": ["/sub-merge"]},
@@ -209,8 +209,8 @@
         {"type": "command", "name": "&Merge as karaoke", "invocations": ["/sub-merge-karaoke"]},
         {"type": "command", "name": "&Merge as karaoke (invisible)", "invocations": ["/sub-merge-karaoke --invisible"]},
         {"type": "separator"},
-        {"type": "command", "name": "&Snap to previous subtitle", "invocations": ["/sub-shift -d=prev-sub-end --start"]},
-        {"type": "command", "name": "&Snap to next subtitle", "invocations": ["/sub-shift -d=next-sub-start --end"]},
+        {"type": "command", "name": "&Snap to previous subtitle", "invocations": ["/sub-shift -d=ps.e --start"]},
+        {"type": "command", "name": "&Snap to next subtitle", "invocations": ["/sub-shift -d=ns.s --end"]},
         {"type": "separator"},
         {"type": "command", "name": "&Delete", "invocations": ["/sub-delete"]}
     ]

@@ -26,7 +26,7 @@ from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
-from bubblesub.cmd.common import RelativePts
+from bubblesub.cmd.common import Pts
 
 
 class SubtitlesShiftCommand(BaseCommand):
@@ -53,13 +53,15 @@ class SubtitlesShiftCommand(BaseCommand):
                 end = sub.end
 
                 if self.args.method in {'start', 'both'}:
-                    start = await delta.apply(
-                        start, align_to_near_frame=not self.args.no_align
+                    start = await delta.get(
+                        origin=start,
+                        align_to_near_frame=not self.args.no_align
                     )
 
                 if self.args.method in {'end', 'both'}:
-                    end = await delta.apply(
-                        end, align_to_near_frame=not self.args.no_align
+                    end = await delta.get(
+                        origin=end,
+                        align_to_near_frame=not self.args.no_align
                     )
 
                 sub.begin_update()
@@ -71,7 +73,7 @@ class SubtitlesShiftCommand(BaseCommand):
             self,
             subs: T.List[Event],
             main_window: QtWidgets.QMainWindow
-    ) -> RelativePts:
+    ) -> Pts:
         if self.args.delta:
             return self.args.delta
         if self.args.gui:
@@ -88,7 +90,7 @@ class SubtitlesShiftCommand(BaseCommand):
             if not is_relative and subs:
                 delta -= subs[0].start
 
-            return RelativePts(self.api, str(delta) + 'ms')
+            return Pts(self.api, '+' + str(delta) + 'ms')
         raise AssertionError
 
     @staticmethod
@@ -109,7 +111,7 @@ class SubtitlesShiftCommand(BaseCommand):
         group.add_argument(
             '-d', '--delta',
             help='amount to shift the subtitles by',
-            type=lambda value: RelativePts(api, value),
+            type=lambda value: Pts(api, value),
         )
 
         parser.add_argument(

@@ -18,7 +18,7 @@ import argparse
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.cmd.common import RelativePts
+from bubblesub.cmd.common import Pts
 
 
 class PlayAudioSelectionCommand(BaseCommand):
@@ -47,9 +47,9 @@ class PlayAudioSelectionCommand(BaseCommand):
             raise AssertionError
 
         if self.args.delta_start:
-            start = await self.args.delta_start.apply(start)
+            start = await self.args.delta_start.get(origin=start)
         if self.args.delta_end:
-            end = await self.args.delta_end.apply(end)
+            end = await self.args.delta_end.get(origin=end)
 
         self.api.media.play(start, end)
 
@@ -58,12 +58,12 @@ class PlayAudioSelectionCommand(BaseCommand):
         parser.add_argument(
             '-ds', '--delta-start',
             help='delta relative to the selection start',
-            type=lambda value: RelativePts(api, value)
+            type=lambda value: Pts(api, value)
         )
         parser.add_argument(
             '-de', '--delta-end',
             help='delta relative to the selection end',
-            type=lambda value: RelativePts(api, value)
+            type=lambda value: Pts(api, value)
         )
 
         group = parser.add_mutually_exclusive_group()

@@ -18,7 +18,7 @@ import argparse
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.cmd.common import RelativePts
+from bubblesub.cmd.common import Pts
 
 
 class SeekCommand(BaseCommand):
@@ -30,8 +30,10 @@ class SeekCommand(BaseCommand):
         return self.api.media.is_loaded
 
     async def run(self) -> None:
-        pts = self.api.media.current_pts
-        pts = await self.args.delta.apply(pts, align_to_near_frame=True)
+        pts = await self.args.delta.get(
+            origin=self.api.media.current_pts,
+            align_to_near_frame=True
+        )
         self.api.media.seek(pts, self.args.precise)
         self.api.media.is_paused = True
 
@@ -40,7 +42,7 @@ class SeekCommand(BaseCommand):
         parser.add_argument(
             '-d', '--delta',
             help='amount to seek by',
-            type=lambda value: RelativePts(api, value),
+            type=lambda value: Pts(api, value),
             required=True,
         )
         parser.add_argument(
