@@ -23,6 +23,7 @@ import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
+from bubblesub.api.cmd import CommandError
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import EventSelection
@@ -52,17 +53,26 @@ class SubtitlesShiftCommand(BaseCommand):
                 start = sub.start
                 end = sub.end
 
-                if self.args.method in {'start', 'both'}:
+                if delta:
                     start = await delta.get(
                         origin=start,
                         align_to_near_frame=not self.args.no_align
                     )
-
-                if self.args.method in {'end', 'both'}:
                     end = await delta.get(
                         origin=end,
                         align_to_near_frame=not self.args.no_align
                     )
+                else:
+                    if self.args.start:
+                        start = await self.args.start.get(
+                            origin=start,
+                            align_to_near_frame=not self.args.no_align
+                        )
+                    if self.args.end:
+                        end = await self.args.end.get(
+                            origin=end,
+                            align_to_near_frame=not self.args.no_align
+                        )
 
                 sub.begin_update()
                 sub.start = start
@@ -73,9 +83,14 @@ class SubtitlesShiftCommand(BaseCommand):
             self,
             subs: T.List[Event],
             main_window: QtWidgets.QMainWindow
-    ) -> Pts:
-        if self.args.delta:
-            return self.args.delta
+    ) -> T.Optional[Pts]:
+        if self.args.start or self.args.end:
+            if self.args.gui:
+                raise CommandError(
+                    '--start/--end cannot be combined with --gui'
+                )
+            return None
+
         if self.args.gui:
             ret = bubblesub.ui.util.time_jump_dialog(
                 main_window,
@@ -91,7 +106,8 @@ class SubtitlesShiftCommand(BaseCommand):
                 delta -= subs[0].start
 
             return Pts(self.api, '+' + str(delta) + 'ms')
-        raise AssertionError
+
+        raise CommandError('expected --gui or --start/--end')
 
     @staticmethod
     def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
@@ -99,49 +115,27 @@ class SubtitlesShiftCommand(BaseCommand):
             '-t', '--target',
             help='subtitles to shift',
             type=lambda value: EventSelection(api, value),
-            default='selected'
+            default='selected',
         )
-
-        group = parser.add_mutually_exclusive_group(required=True)
-        group.add_argument(
+        parser.add_argument(
             '-g', '--gui',
             action='store_true',
-            help='prompt user for shift amount with a GUI dialog'
+            help='prompt user for shift amount with a GUI dialog',
         )
-        group.add_argument(
-            '-d', '--delta',
-            help='amount to shift the subtitles by',
+        parser.add_argument(
+            '-s', '--start',
+            help='amount to shift the start of the subtitles by',
             type=lambda value: Pts(api, value),
         )
-
+        parser.add_argument(
+            '-e', '--end',
+            help='amount to shift the end of the subtitles by',
+            type=lambda value: Pts(api, value),
+        )
         parser.add_argument(
             '--no-align',
             help='don\'t realign subtitles to video frames',
-            action='store_true'
-        )
-
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument(
-            '--start',
-            action='store_const',
-            dest='method',
-            const='start',
-            help='shift subtitles start',
-            default='both'
-        )
-        group.add_argument(
-            '--end',
-            action='store_const',
-            dest='method',
-            const='end',
-            help='shift subtitles end'
-        )
-        group.add_argument(
-            '--both',
-            action='store_const',
-            dest='method',
-            const='both',
-            help='shift whole subtitles'
+            action='store_true',
         )
 
 

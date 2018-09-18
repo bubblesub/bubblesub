@@ -11,21 +11,21 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Q</kbd> | global | <code><a href="#user-content-cmd-quit">quit</a> </code> |
 |<kbd>Ctrl+G</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> ask-number</code> |
 |<kbd>Ctrl+Shift+G</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> ask-time</code> |
-|<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=ask</code> |
+|<kbd>Alt+G</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=ask</code> |
 |<kbd>Ctrl+K</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
 |<kbd>Ctrl+J</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
 |<kbd>Ctrl+A</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> all</code> |
 |<kbd>Ctrl+Shift+A</kbd> | global | <code><a href="#user-content-cmd-sub-select">sub-select</a> none</code> |
-|<kbd>Alt+2</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> -de=+500ms --start</code> |
-|<kbd>Alt+1</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> -ds=-500ms --start</code> |
-|<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> -ds=-500ms --end</code> |
-|<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> -de=+500ms --end</code> |
-|<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> </code> |
-|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=cs.s</code><br><code><a href="#user-content-cmd-pause">pause</a> off</code> |
-|<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-1f</code> |
-|<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+1f</code> |
-|<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
-|<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
+|<kbd>Alt+1</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s-500ms -e=a.s</code> |
+|<kbd>Alt+2</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.s+500ms</code> |
+|<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.e-500ms -e=a.e</code> |
+|<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.e -e=a.e+500ms</code> |
+|<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
+|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s</code><br><code><a href="#user-content-cmd-pause">pause</a> off</code> |
+|<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f</code> |
+|<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f</code> |
+|<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms</code> |
+|<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+500ms</code> |
 |<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-undo">undo</a> </code> |
 |<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
@@ -33,17 +33,17 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-search-and-replace">search-and-replace</a> </code> |
 |<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
 |<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-sub-delete">sub-delete</a> </code> |
-|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-10f --start</code> |
-|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+10f --start</code> |
-|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-10f --end</code> |
-|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+10f --end</code> |
-|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-1f --start</code> |
-|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1f --start</code> |
-|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-1f --end</code> |
-|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1f --end</code> |
-|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cf --start</code> |
-|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cf --end</code> |
-|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cf --both</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+dsd --end</code> |
+|<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=-10f</code> |
+|<kbd>Ctrl+Shift+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=+10f</code> |
+|<kbd>Ctrl+Shift+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=-10f</code> |
+|<kbd>Ctrl+Shift+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=+10f</code> |
+|<kbd>Ctrl+1</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=-1f</code> |
+|<kbd>Ctrl+2</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=+1f</code> |
+|<kbd>Ctrl+3</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=-1f</code> |
+|<kbd>Ctrl+4</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=+1f</code> |
+|<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=cf</code> |
+|<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=cf</code> |
+|<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=cf -e=cf+dsd</code> |
 |<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
 |<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> --below</code> |
@@ -59,19 +59,19 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --above</code> |
 |<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --below</code> |
 |<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file-properties</a> </code> |
-|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-10f --start</code> |
-|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+10f --start</code> |
-|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-10f --end</code> |
-|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+10f --end</code> |
-|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-1f --start</code> |
-|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1f --start</code> |
-|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-1f --end</code> |
-|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1f --end</code> |
+|<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=-10f</code> |
+|<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=+10f</code> |
+|<kbd>Shift+3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=-10f</code> |
+|<kbd>Shift+4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=+10f</code> |
+|<kbd>1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=-1f</code> |
+|<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=+1f</code> |
+|<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=-1f</code> |
+|<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=+1f</code> |
 |<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-commit-sel">audio-commit-sel</a> </code> |
 |<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
 |<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
-|<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-audio-sel">play-audio-sel</a> </code> |
-|<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-play-sub">play-sub</a> </code> |
+|<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
+|<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-play-region">play-region</a> -s=cs.s -e=cs.e</code> |
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
 |<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
@@ -80,21 +80,21 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d=1.1</code> |
 |<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d=0.9</code> |
 |<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d=0.9</code> |
-|<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-1f</code> |
-|<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+1f</code> |
-|<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-1500ms</code> |
-|<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+1500ms</code> |
-|<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=-500ms</code> |
-|<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -d=+500ms</code> |
-|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cf --start</code> |
-|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cf --end</code> |
-|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=cf --both</code><br><code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+dsd --end</code> |
+|<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f</code> |
+|<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f</code> |
+|<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1500ms</code> |
+|<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1500ms</code> |
+|<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms</code> |
+|<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+500ms</code> |
+|<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=cf</code> |
+|<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=cf</code> |
+|<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=cf -e=cf+dsd</code> |
 |<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
 |<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
-|<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=ps.e --start</code> |
-|<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=ns.s --end</code> |
-|<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=-1kf --start</code> |
-|<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -d=+1kf --end</code> |
+|<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=ps.e</code> |
+|<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=ns.s</code> |
+|<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -s=-1kf</code> |
+|<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-shift-sel">audio-shift-sel</a> -e=+1kf</code> |
 |<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-copy">sub-copy</a> </code> |
 |<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-paste">sub-paste</a> --after</code> |
 
@@ -120,12 +120,10 @@ Aliases: `audio-shift-selection`, `spectrogram-shift-sel`, `spectrogram-shift-se
 
 Shfits the spectrogram selection.
 
-Usage: `audio‑shift‑sel -d|--delta=… [--no-align] [--start] [--end] [--both]`
-* `-d`, `--delta`: amount to shift the selection by
+Usage: `audio‑shift‑sel [-s|--start=…] [-e|--end=…] [--no-align]`
+* `-s`, `--start`: amount to shift the start of the selection by
+* `-e`, `--end`: amount to shift the end of the selection by
 * `--no-align`: don't realign selection to video frames
-* `--start`: shift selection start
-* `--end`: shift selection end
-* `--both`: shift whole selection
 
 ### <a name="cmd-audio-zoom"></a>`audio‑zoom`
 Aliases: `spectrogram-zoom`
@@ -177,25 +175,12 @@ Pauses or unpauses the video playback.
 Usage: `pause operation`
 * `operation`: whether to pause the video
 
-### <a name="cmd-play-audio-sel"></a>`play‑audio‑sel`
-Aliases: `play-audio-selection`, `play-spectrogram-sel`, `play-spectrogram-selection`
+### <a name="cmd-play-region"></a>`play‑region`
+Seeks to region start and plays audio/video until region end.
 
-Plays a region near the current spectrogram selection.
-
-Usage: `play‑audio‑sel [-ds|--delta-start=…] [-de|--delta-end=…] [--start] [--end] [--both]`
-* `-ds`, `--delta-start`: delta relative to the selection start
-* `-de`, `--delta-end`: delta relative to the selection end
-* `--start`: play around selection start
-* `--end`: play around selection end
-* `--both`: play around whole selection
-
-### <a name="cmd-play-sub"></a>`play‑sub`
-Aliases: `play-subtitle`
-
-Plays given subtitle. If multiple subtitles are selected, plays a region from the start of the earliest subtitle to the end of the latest one.
-
-Usage: `play‑sub [-t|--target=selected]`
-* `-t`, `--target`: subtitle to play
+Usage: `play‑region [-s|--start=cf] [-e|--end=…]`
+* `-s`, `--start`: start of region to play
+* `-e`, `--end`: end of region to play
 
 ### <a name="cmd-quit"></a>`quit`
 Quits the application. Prompts user to save the current file if there are unsaved changes.
@@ -247,9 +232,9 @@ Usage: `search‑repeat [--above] [--below]`
 ### <a name="cmd-seek"></a>`seek`
 Changes the video playback position to desired place.
 
-Usage: `seek -d|--delta=… [-p|--precise]`
-* `-d`, `--delta`: amount to seek by
-* `-p`, `--precise`: whether to use precise seeking at the expense of performance
+Usage: `seek -p|--pos=… [--precise]`
+* `-p`, `--pos`: where to seek
+* `--precise`: whether to use precise seeking at the expense of performance
 
 ### <a name="cmd-set-palette"></a>`set‑palette`
 Changes the GUI color theme.
@@ -365,14 +350,12 @@ Usage: `sub‑set [-t|--target=selected] [--text=…] [--note=…] [--actor=…]
 ### <a name="cmd-sub-shift"></a>`sub‑shift`
 Shifts given subtitles.
 
-Usage: `sub‑shift [-t|--target=selected] [-g|--gui] [-d|--delta=…] [--no-align] [--start] [--end] [--both]`
+Usage: `sub‑shift [-t|--target=selected] [-g|--gui] [-s|--start=…] [-e|--end=…] [--no-align]`
 * `-t`, `--target`: subtitles to shift
 * `-g`, `--gui`: prompt user for shift amount with a GUI dialog
-* `-d`, `--delta`: amount to shift the subtitles by
+* `-s`, `--start`: amount to shift the start of the subtitles by
+* `-e`, `--end`: amount to shift the end of the subtitles by
 * `--no-align`: don't realign subtitles to video frames
-* `--start`: shift subtitles start
-* `--end`: shift subtitles end
-* `--both`: shift whole subtitles
 
 ### <a name="cmd-sub-split"></a>`sub‑split`
 Splits given subtitles at specified time.

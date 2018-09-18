@@ -203,7 +203,7 @@ class MediaApi(QtCore.QObject):
         self._set_end(None)  # mpv refuses to seek beyond --end
         self._mpv.command('frame-back-step')
 
-    def play(self, start: int, end: int) -> None:
+    def play(self, start: int, end: T.Optional[int]) -> None:
         """
         Play the currently loaded video at specified PTS range.
 

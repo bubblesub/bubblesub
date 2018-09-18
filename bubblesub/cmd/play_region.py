@@ -18,39 +18,39 @@ import argparse
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandUnavailable
-from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import Pts
 
 
-class PlaySubtitleCommand(BaseCommand):
-    names = ['play-sub', 'play-subtitle']
-    help_text = (
-        'Plays given subtitle. If multiple subtitles are selected, plays '
-        'a region from the start of the earliest subtitle to the end '
-        'of the latest one.'
-    )
+class PlayRegionCommand(BaseCommand):
+    names = ['play-region']
+    help_text = 'Seeks to region start and plays audio/video until region end.'
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.media.is_loaded and self.args.target.makes_sense
+        return self.api.media.is_loaded
 
     async def run(self) -> None:
-        subs = await self.args.target.get_subtitles()
-        if not subs:
-            raise CommandUnavailable('nothing to play')
+        start = await self.args.start.get()
+        if self.args.end:
+            end = await self.args.end.get()
+        else:
+            end = None
 
-        start = min(sub.start for sub in subs)
-        end = max(sub.end for sub in subs)
         self.api.media.play(start, end)
 
     @staticmethod
     def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
-            help='subtitle to play',
-            type=lambda value: EventSelection(api, value),
-            default='selected'
+            '-s', '--start',
+            help='start of region to play',
+            type=lambda value: Pts(api, value),
+            default='cf',
+        )
+        parser.add_argument(
+            '-e', '--end',
+            help='end of region to play',
+            type=lambda value: Pts(api, value),
         )
 
 
-COMMANDS = [PlaySubtitleCommand]
+COMMANDS = [PlayRegionCommand]

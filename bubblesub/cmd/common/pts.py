@@ -27,6 +27,7 @@ import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandError
+from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
 
 
@@ -49,6 +50,7 @@ TERMINALS = {
     'rel_sub': r'(?P<direction>[cpn])s\.(?P<boundary>[se])',
     'rel_frame': '(?P<direction>[cpn])f',
     'rel_keyframe': '(?P<direction>[cpn])kf',
+    'spectrogram': r'a\.(?P<boundary>[se])',
     'num_sub': r's(?P<number>\d+)\.(?P<boundary>[se])',
     'num_frame': r'(?P<number>\d+)f',
     'num_keyframe': r'(?P<number>\d+)kf',
@@ -303,6 +305,21 @@ class Pts:
         except LookupError:
             return 0
         return _sub_boundary(sub, token)
+
+    async def _eval_terminal_spectrogram(
+            self,
+            token: _Token,
+            _origin: T.Optional[int],
+            _operator: T.Optional[str],
+    ) -> int:
+        boundary = token.match.group('boundary')
+        if not self._api.media.audio.has_selection:
+            raise CommandUnavailable
+        if boundary == 's':
+            return self._api.media.audio.selection_start
+        if boundary == 'e':
+            return self._api.media.audio.selection_end
+        raise AssertionError(f'unknown boundary: "{boundary}"')
 
     async def _eval_terminal_ask(
             self,

@@ -35,13 +35,13 @@ class AudioShiftSelectionCommand(BaseCommand):
             start = self.api.media.audio.selection_start
             end = self.api.media.audio.selection_end
 
-            if self.args.method in {'start', 'both'}:
-                start = await self.args.delta.get(
+            if self.args.start is not None:
+                start = await self.args.start.get(
                     origin=start, align_to_near_frame=not self.args.no_align
                 )
 
-            if self.args.method in {'end', 'both'}:
-                end = await self.args.delta.get(
+            if self.args.end is not None:
+                end = await self.args.end.get(
                     origin=end, align_to_near_frame=not self.args.no_align
                 )
 
@@ -50,39 +50,19 @@ class AudioShiftSelectionCommand(BaseCommand):
     @staticmethod
     def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-d', '--delta',
-            help='amount to shift the selection by',
+            '-s', '--start',
+            help='amount to shift the start of the selection by',
             type=lambda value: Pts(api, value),
-            required=True,
+        )
+        parser.add_argument(
+            '-e', '--end',
+            help='amount to shift the end of the selection by',
+            type=lambda value: Pts(api, value),
         )
         parser.add_argument(
             '--no-align',
             help='don\'t realign selection to video frames',
-            action='store_true'
-        )
-
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument(
-            '--start',
-            action='store_const',
-            dest='method',
-            const='start',
-            help='shift selection start',
-            default='both'
-        )
-        group.add_argument(
-            '--end',
-            action='store_const',
-            dest='method',
-            const='end',
-            help='shift selection end'
-        )
-        group.add_argument(
-            '--both',
-            action='store_const',
-            dest='method',
-            const='both',
-            help='shift whole selection'
+            action='store_true',
         )
 
 
