@@ -153,6 +153,7 @@ class Pts:
         while pos < len(self.value):
             if self.value[pos].isspace():
                 pos += 1
+                continue
             for name, rgx in TOKENS.items():
                 match = regex.match(rgx, self.value, pos=pos)
                 if match and match.start() == pos:
