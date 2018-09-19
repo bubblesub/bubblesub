@@ -301,6 +301,7 @@ class Pts:
             _operator: T.Optional[str],
     ) -> int:
         idx = int(token.match.group('number')) - 1
+        idx = max(0, min(idx, len(self._api.subs.events) - 1))
         try:
             sub = self._api.subs.events[idx]
         except LookupError:
