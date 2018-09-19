@@ -32,11 +32,11 @@ from bubblesub.ass.event import Event
 
 
 def _bisect(source: T.List[int], origin: int, delta: int) -> int:
-    if delta > 0:
+    if delta >= 0:
         # find leftmost value greater than origin
         idx = bisect.bisect_right(source, origin)
         idx += delta - 1
-    elif delta <= 0:
+    elif delta < 0:
         # find rightmost value less than origin
         idx = bisect.bisect_left(source, origin)
         idx += delta
