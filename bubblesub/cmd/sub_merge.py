@@ -19,7 +19,7 @@ import argparse
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
-from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitlesMergeCommand(BaseCommand):
@@ -56,7 +56,7 @@ class SubtitlesMergeCommand(BaseCommand):
         parser.add_argument(
             '-t', '--target',
             help='subtitles to merge',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected'
         )
         parser.add_argument(

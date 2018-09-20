@@ -20,8 +20,8 @@ from copy import copy
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
-from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import Pts
+from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitlesSplitCommand(BaseCommand):
@@ -56,7 +56,7 @@ class SubtitlesSplitCommand(BaseCommand):
         parser.add_argument(
             '-t', '--target',
             help='subtitles to split',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected'
         )
 

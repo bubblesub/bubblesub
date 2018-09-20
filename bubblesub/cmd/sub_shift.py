@@ -26,8 +26,8 @@ from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
-from bubblesub.cmd.common import EventSelection
 from bubblesub.cmd.common import Pts
+from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitlesShiftCommand(BaseCommand):
@@ -114,7 +114,7 @@ class SubtitlesShiftCommand(BaseCommand):
         parser.add_argument(
             '-t', '--target',
             help='subtitles to shift',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected',
         )
         parser.add_argument(

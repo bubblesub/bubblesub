@@ -21,7 +21,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from bubblesub.api.cmd import CommandError
-from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import SubtitlesSelection
 
 
 @pytest.mark.parametrize(
@@ -81,12 +81,12 @@ def test_get_all_indexes(
         api.subs.selected_indexes = []
         api.subs.selected_events = []
 
-    event_selection = EventSelection(api, expr)
+    sub_selection = SubtitlesSelection(api, expr)
 
     actual_indexes: T.Union[T.List[int], T.Type[CommandError]] = []
     try:
         actual_indexes = asyncio.get_event_loop().run_until_complete(
-            event_selection.get_all_indexes()
+            sub_selection.get_all_indexes()
         )
     except CommandError as ex:
         actual_indexes = type(ex)

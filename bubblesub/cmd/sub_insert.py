@@ -19,7 +19,7 @@ import typing as T
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitleInsertCommand(BaseCommand):
@@ -87,7 +87,7 @@ class SubtitleInsertCommand(BaseCommand):
         parser.add_argument(
             '-o', '--origin',
             help='where to insert the subtitle',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected',
         )
 

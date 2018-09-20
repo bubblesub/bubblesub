@@ -17,6 +17,6 @@
 """Common utilities shared between commands."""
 
 from .bool import BooleanOperation
-from .event_selection import EventSelection
+from .sub_selection import SubtitlesSelection
 from .path import FancyPath
 from .pts import Pts

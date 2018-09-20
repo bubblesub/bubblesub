@@ -22,7 +22,7 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
-from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitlesCloneCommand(BaseCommand):
@@ -54,7 +54,7 @@ class SubtitlesCloneCommand(BaseCommand):
         parser.add_argument(
             '-t', '--target',
             help='subtitles to clone',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected'
         )
 

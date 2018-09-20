@@ -73,7 +73,7 @@ def _filter_indexes(api: Api, indexes: T.List[int]) -> T.Iterable[int]:
             yield idx
 
 
-class EventSelection:
+class SubtitlesSelection:
     def __init__(self, api: Api, target: str) -> None:
         self.api = api
         self.target = target

@@ -25,7 +25,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
-from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import SubtitlesSelection
 from bubblesub.util import make_ranges
 
 
@@ -111,7 +111,7 @@ class SubtitlesMoveCommand(BaseCommand):
         parser.add_argument(
             '-t', '--target',
             help='subtitles to move',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected'
         )
 

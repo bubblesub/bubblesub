@@ -18,7 +18,7 @@ import argparse
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitlesSelectCommand(BaseCommand):
@@ -37,7 +37,7 @@ class SubtitlesSelectCommand(BaseCommand):
         parser.add_argument(
             'target',
             help='subtitles to select',
-            type=lambda value: EventSelection(api, value)
+            type=lambda value: SubtitlesSelection(api, value)
         )
 
 

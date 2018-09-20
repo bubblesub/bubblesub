@@ -27,7 +27,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.cmd import CommandUnavailable
 from bubblesub.ass.event import Event
-from bubblesub.cmd.common import EventSelection
+from bubblesub.cmd.common import SubtitlesSelection
 from bubblesub.util import ms_to_str
 from bubblesub.util import str_to_ms
 
@@ -81,7 +81,7 @@ class SubtitlesCopyCommand(BaseCommand):
         parser.add_argument(
             '-t', '--target',
             help='subtitles to paste into',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected'
         )
         parser.add_argument(
@@ -125,7 +125,7 @@ class SubtitlesPasteCommand(BaseCommand):
         parser.add_argument(
             '-o', '--origin',
             help='where to paste the subtitles',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected',
         )
 
@@ -202,7 +202,7 @@ class SubtitlesPasteIntoCommand(BaseCommand):
         parser.add_argument(
             '-t', '--target',
             help='subtitles to paste the subject into',
-            type=lambda value: EventSelection(api, value),
+            type=lambda value: SubtitlesSelection(api, value),
             default='selected'
         )
         parser.add_argument(
