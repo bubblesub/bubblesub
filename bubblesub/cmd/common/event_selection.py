@@ -52,7 +52,8 @@ def _match_indexes(target: str) -> T.Optional[T.List[int]]:
     for group in _split_by_delim(match.captures('token'), ','):
         if len(group) == 1:
             idx = int(group[0]) - 1
-            ret.append(idx)
+            if idx != -1:
+                ret.append(idx)
         elif len(group) == 3:
             low = int(group[0]) - 1
             high = int(group[2]) - 1
