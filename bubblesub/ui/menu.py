@@ -47,7 +47,7 @@ def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
                 action.setEnabled(
                     all(cmd.is_enabled for cmd in action.commands)
                 )
-            except Exception as ex:
+            except Exception:
                 traceback.print_exc()
                 action.setEnabled(False)
 
