@@ -30,15 +30,15 @@ def _assert_pts_value(
         expected_value: T.Union[int, T.Type[CommandError]],
         origin: T.Optional[int] = None,
 ) -> None:
-    value: T.Union[int, T.Type[CommandError]] = 0
+    actual_value: T.Union[int, T.Type[CommandError]] = 0
     try:
-        value = asyncio.get_event_loop().run_until_complete(
+        actual_value = asyncio.get_event_loop().run_until_complete(
             pts.get(origin=origin)
         )
     except CommandError as ex:
-        value = type(ex)
+        actual_value = type(ex)
 
-    assert value == expected_value
+    assert actual_value == expected_value
 
 
 @pytest.mark.parametrize(
