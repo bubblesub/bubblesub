@@ -66,6 +66,13 @@ def _match_indexes(target: str) -> T.Optional[T.List[int]]:
     return ret
 
 
+def _filter_indexes(api: Api, indexes: T.List[int]) -> T.Iterable[int]:
+    valid_indexes = range(len(api.subs.events))
+    for idx in indexes:
+        if idx in valid_indexes:
+            yield idx
+
+
 class EventSelection:
     def __init__(self, api: Api, target: str) -> None:
         self.api = api
@@ -88,8 +95,8 @@ class EventSelection:
 
         indexes = _match_indexes(self.target)
         if indexes is not None:
-            valid_indexes = range(len(self.api.subs.events))
-            return all(idx in valid_indexes for idx in indexes)
+            indexes = list(_filter_indexes(self.api, indexes))
+            return len(indexes) > 0
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
@@ -140,7 +147,7 @@ class EventSelection:
 
         indexes = _match_indexes(self.target)
         if indexes is not None:
-            return indexes
+            return list(_filter_indexes(self.api, indexes))
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
