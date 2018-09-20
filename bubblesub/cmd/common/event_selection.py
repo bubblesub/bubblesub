@@ -124,10 +124,11 @@ class EventSelection:
             return self.api.subs.selected_indexes
 
         if self.target == 'first':
-            return [0]
+            return [0] if len(self.api.subs.events) else []
 
         if self.target == 'last':
-            return [len(self.api.subs.events) - 1]
+            length = len(self.api.subs.events)
+            return [length - 1] if length else []
 
         if self.target == 'ask-number':
             if not len(self.api.subs.events):
