@@ -19,6 +19,7 @@ import argparse
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.cmd.common import Pts
 from bubblesub.cmd.common import SubtitlesSelection
 
 
@@ -45,6 +46,18 @@ class SubtitlesSetCommand(BaseCommand):
                 }
 
                 sub.begin_update()
+
+                if self.args.start:
+                    sub.start = await self.args.start.get(
+                        origin=sub.start,
+                        align_to_near_frame=not self.args.no_align
+                    )
+
+                if self.args.end:
+                    sub.end = await self.args.end.get(
+                        origin=sub.end,
+                        align_to_near_frame=not self.args.no_align
+                    )
 
                 if self.args.text:
                     sub.text = self.args.text.format(**params)
@@ -88,6 +101,22 @@ class SubtitlesSetCommand(BaseCommand):
             '--no-comment',
             action='store_true',
             help='mark subtitles as a non-comment'
+        )
+
+        parser.add_argument(
+            '-s', '--start',
+            help='new subtitles start',
+            type=lambda value: Pts(api, value),
+        )
+        parser.add_argument(
+            '-e', '--end',
+            help='new subtitles end',
+            type=lambda value: Pts(api, value),
+        )
+        parser.add_argument(
+            '--no-align',
+            help='don\'t realign subtitles to video frames',
+            action='store_true',
         )
 
 

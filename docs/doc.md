@@ -338,7 +338,7 @@ Usage: `sub‑select target`
 ### <a name="cmd-sub-set"></a>`sub‑set`
 Updates given subtitles parameters.
 
-Usage: `sub‑set [-t|--target=selected] [--text=…] [--note=…] [--actor=…] [--style=…] [--comment] [--no-comment]`
+Usage: `sub‑set [-t|--target=selected] [--text=…] [--note=…] [--actor=…] [--style=…] [--comment] [--no-comment] [-s|--start=…] [-e|--end=…] [--no-align]`
 * `-t`, `--target`: subtitles to change
 * `--text`: new subtitles text
 * `--note`: new subtitles note
@@ -346,15 +346,15 @@ Usage: `sub‑set [-t|--target=selected] [--text=…] [--note=…] [--actor=…]
 * `--style`: new subtitles style
 * `--comment`: mark subtitles as a comment
 * `--no-comment`: mark subtitles as a non-comment
+* `-s`, `--start`: new subtitles start
+* `-e`, `--end`: new subtitles end
+* `--no-align`: don't realign subtitles to video frames
 
 ### <a name="cmd-sub-shift"></a>`sub‑shift`
-Shifts given subtitles.
+Shifts given subtitles. Prompts user to provide amount to shift by.
 
-Usage: `sub‑shift [-t|--target=selected] [-g|--gui] [-s|--start=…] [-e|--end=…] [--no-align]`
+Usage: `sub‑shift [-t|--target=selected] [--no-align]`
 * `-t`, `--target`: subtitles to shift
-* `-g`, `--gui`: prompt user for shift amount with a GUI dialog
-* `-s`, `--start`: amount to shift the start of the subtitles by
-* `-e`, `--end`: amount to shift the end of the subtitles by
 * `--no-align`: don't realign subtitles to video frames
 
 ### <a name="cmd-sub-split"></a>`sub‑split`
