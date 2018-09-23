@@ -29,8 +29,7 @@ from bubblesub.ui.menu import setup_cmd_menu
 from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
 from bubblesub.ui.util import get_color
 
-# ????
-MAGIC_MARGIN = 2
+MAGIC_MARGIN = 2  # ????
 HIGHLIGHTABLE_CHUNKS = {'\N{FULLWIDTH ASTERISK}', '\\N', '\\h', '\\n'}
 
 
@@ -139,14 +138,23 @@ class SubsGrid(QtWidgets.QTableView):
         )
 
         self._subs_grid_delegate = SubsGridDelegate(self._api, self)
-        for column_idx in {
+        for col_idx in {
                 SubtitlesModelColumn.Text,
                 SubtitlesModelColumn.Note
         }:
-            self.setItemDelegateForColumn(column_idx, self._subs_grid_delegate)
+            self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
-                column_idx, QtWidgets.QHeaderView.Stretch
+                col_idx, QtWidgets.QHeaderView.Stretch
             )
+        for col_idx in {
+                SubtitlesModelColumn.LongDuration,
+                SubtitlesModelColumn.Layer,
+                SubtitlesModelColumn.MarginVertical,
+                SubtitlesModelColumn.MarginLeft,
+                SubtitlesModelColumn.MarginRight,
+                SubtitlesModelColumn.IsComment,
+        }:
+            self.setColumnHidden(col_idx, True)
 
         api.subs.loaded.connect(self._on_subs_load)
         api.subs.selection_changed.connect(self._sync_api_selection_to_video)
@@ -180,14 +188,16 @@ class SubsGrid(QtWidgets.QTableView):
         header = self.horizontalHeader()
         header.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         for column in SubtitlesModelColumn:
-            action = QtWidgets.QAction(self)
-            action.setCheckable(True)
+            action = QtWidgets.QAction(
+                self,
+                text=self.model().headerData(column, QtCore.Qt.Horizontal),
+                checkable=True,
+                checked=not self.isColumnHidden(column),
+            )
             action.setData(column)
-            action.setChecked(not self.isColumnHidden(column))
             action.changed.connect(
                 functools.partial(self.toggle_column, action)
             )
-            action.setText(column.name)
             header.addAction(action)
 
     def toggle_column(self, action: QtWidgets.QAction) -> None:

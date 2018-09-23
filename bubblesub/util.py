@@ -170,6 +170,7 @@ def chunks(source: T.List, size: int) -> T.Iterable[T.List]:
 
     :param source: source list
     :param size: chunk size
+    :return: chunks
     """
     for i in range(0, len(source), size):
         yield source[i:i + size]

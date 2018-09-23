@@ -49,8 +49,14 @@ class SubtitlesModelColumn(enum.IntEnum):
     Actor = 3
     Text = 4
     Note = 5
-    Duration = 6
-    CharsPerSec = 7
+    ShortDuration = 6
+    LongDuration = 7
+    CharsPerSec = 8
+    Layer = 9
+    MarginVertical = 10
+    MarginLeft = 11
+    MarginRight = 12
+    IsComment = 13
 
 
 class SearchMode(enum.IntEnum):
@@ -403,8 +409,8 @@ class GuiConfig:
         self.splitters: T.Dict[str, bytes] = {}
         self.grid_columns: T.Optional[bytes] = None
         self.fonts = {
-            'editor': '',
-            'notes': '',
+            'text-editor': '',
+            'note-editor': '',
             'console': ''
         }
         self.palettes: T.Dict[str, T.Dict[str, T.Tuple[int, ...]]] = {

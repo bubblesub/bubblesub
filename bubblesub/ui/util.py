@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import contextlib
 import functools
 import typing as T
 from pathlib import Path
@@ -112,9 +113,10 @@ class TimeEdit(QtWidgets.QLineEdit):
     def __init__(
             self,
             parent: QtWidgets.QWidget = None,
-            allow_negative: bool = False
+            allow_negative: bool = False,
+            **kwargs: T.Any,
     ) -> None:
-        super().__init__(parent)
+        super().__init__(parent, **kwargs)
         self._allow_negative = False
         self.set_allow_negative(allow_negative)
 
@@ -292,3 +294,107 @@ def get_text_edit_row_height(
         + margins.bottom()
         + 1
     )
+
+
+class ImmediateDataWidgetMapper(QtCore.QObject):
+    def __init__(
+            self,
+            model: QtCore.QAbstractItemModel,
+            signal_map: T.Optional[T.Dict[QtWidgets.QWidget, str]] = None,
+            submit_wrapper: T.Callable = None,
+    ) -> None:
+        super().__init__()
+        self._model = model
+        self._mappings: T.List[T.Tuple[QtWidgets. QWidget, int]] = []
+        self._populating_widgets = 0
+        self._populating_model = 0
+        self._row_idx: T.Optional[int] = None
+        self._item_delegate = QtWidgets.QItemDelegate(self)
+        self._submit_wrapper = submit_wrapper or contextlib.nullcontext
+
+        self._signal_map: T.Dict[QtWidgets.QWidget, str] = {
+            QtWidgets.QCheckBox: 'clicked',
+            QtWidgets.QSpinBox: 'valueChanged',
+            QtWidgets.QDoubleSpinBox: 'valueChanged',
+            QtWidgets.QComboBox: 'currentTextChanged',
+            ColorPicker: 'changed',
+            TimeEdit: 'textEdited',
+        }
+        if signal_map:
+            self._signal_map.update(signal_map)
+
+        model.dataChanged.connect(self._model_data_change)
+
+    @contextlib.contextmanager
+    def block_widget_signals(self) -> T.Generator:
+        self._populating_widgets += 1
+        yield
+        self._populating_widgets -= 1
+
+    @contextlib.contextmanager
+    def block_model_signals(self) -> T.Generator:
+        self._populating_model += 1
+        yield
+        self._populating_model -= 1
+
+    def add_mapping(self, widget: QtWidgets.QWidget, idx: int) -> None:
+        for type_, signal_name in self._signal_map.items():
+            if isinstance(widget, type_):
+                signal = getattr(widget, signal_name)
+                signal.connect(
+                    functools.partial(self._widget_data_change, idx)
+                )
+                self._mappings.append((widget, idx))
+                return
+        raise RuntimeError(f'unknown widget type: "{type(widget)}"')
+
+    def set_current_index(self, row_idx: T.Optional[int]) -> None:
+        self._row_idx = row_idx
+        for widget, col_idx in self._mappings:
+            with self.block_widget_signals():
+                self._write_to_widget(widget, row_idx, col_idx)
+
+    def _widget_data_change(self, sender_col_idx: int) -> None:
+        if self._populating_widgets or self._row_idx is None:
+            return
+        with self.block_model_signals():
+            for widget, col_idx in self._mappings:
+                if sender_col_idx == col_idx:
+                    with self._submit_wrapper():
+                        self._write_to_model(widget, self._row_idx, col_idx)
+
+    def _model_data_change(
+            self,
+            top_left: QtCore.QModelIndex,
+            bottom_right: QtCore.QModelIndex,
+    ) -> None:
+        if self._populating_model or self._row_idx is None:
+            return
+        for widget, col_idx in self._mappings:
+            if top_left.row() <= self._row_idx <= bottom_right.row() \
+                    and top_left.column() <= col_idx <= bottom_right.column():
+                with self.block_widget_signals():
+                    self._write_to_widget(widget, self._row_idx, col_idx)
+
+    def _write_to_widget(
+            self,
+            widget: QtWidgets.QWidget,
+            row_idx: T.Optional[int],
+            col_idx: int,
+    ) -> None:
+        name = widget.metaObject().userProperty().name()
+        value = (
+            QtCore.QVariant()
+            if row_idx is None else
+            self._model.index(row_idx, col_idx).data(QtCore.Qt.EditRole)
+        )
+        widget.setProperty(name, value)
+
+    def _write_to_model(
+            self, widget: QtWidgets.QWidget, row_idx: int, col_idx: int,
+    ) -> None:
+        name = widget.metaObject().userProperty().name()
+        value = widget.property(name)
+        self._model.setData(
+            self._model.index(row_idx, col_idx), value, QtCore.Qt.EditRole,
+        )
