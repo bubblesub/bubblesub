@@ -48,7 +48,7 @@ class SaveScreenshotCommand(BaseCommand):
         self.api.log.info(f'saved screenshot to {path}')
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-p', '--path',
             help='path to save the screenshot to',

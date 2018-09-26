@@ -33,7 +33,7 @@ class MuteCommand(BaseCommand):
         self.api.media.mute = self.args.operation.apply(self.api.media.mute)
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'operation',
             help='whether to mute the audio',

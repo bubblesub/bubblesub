@@ -304,8 +304,8 @@ class ConsoleInput(QtWidgets.QLineEdit):
             cls = self._api.cmd.get(match.group('cmd'))
             if cls:
                 parser = argparse.ArgumentParser(add_help=False)
-                cls._decorate_parser(self._api, parser)
-                for action in parser._actions:
+                cls.decorate_parser(self._api, parser)
+                for action in parser._actions:  # pylint: disable=W0212
                     if any(
                             opt.startswith(match.group('arg'))
                             for opt in action.option_strings

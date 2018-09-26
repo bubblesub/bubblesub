@@ -33,7 +33,7 @@ class SubtitlesSelectCommand(BaseCommand):
         self.api.subs.selected_indexes = await self.args.target.get_indexes()
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'target',
             help='subtitles to select',

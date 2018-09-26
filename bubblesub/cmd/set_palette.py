@@ -33,7 +33,7 @@ class SetPaletteCommand(BaseCommand):
         main_window.apply_palette(self.args.palette_name)
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'palette_name',
             help='name of the palette to change to',

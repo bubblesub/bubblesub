@@ -57,7 +57,7 @@ class SaveAudioSampleCommand(BaseCommand):
         self.api.log.info(f'saved audio sample to {path}')
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to save audio from',

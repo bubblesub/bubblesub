@@ -107,7 +107,7 @@ class SubtitlesMoveCommand(BaseCommand):
         return T.cast(int, dialog.intValue()) - 1
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to move',

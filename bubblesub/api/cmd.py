@@ -181,14 +181,20 @@ class BaseCommand(abc.ABC):
             description=cls.help_text,
             add_help=False
         )
-        cls._decorate_parser(api, parser)
+        cls.decorate_parser(api, parser)
         return parser.parse_args(invocation)
 
     @staticmethod
-    def _decorate_parser(
+    def decorate_parser(
             api: 'bubblesub.api.Api',
-            parser: argparse.ArgumentParser
+            parser: argparse.ArgumentParser,
     ) -> None:
+        """
+        Configure argument parser with custom command switches.
+
+        :param api: core API
+        :param parser: parser to configure
+        """
         pass
 
 

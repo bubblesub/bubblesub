@@ -77,7 +77,7 @@ class SubtitlesCopyCommand(BaseCommand):
             raise AssertionError
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to paste into',
@@ -121,7 +121,7 @@ class SubtitlesPasteCommand(BaseCommand):
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-o', '--origin',
             help='where to paste the subtitles',
@@ -198,7 +198,7 @@ class SubtitlesPasteIntoCommand(BaseCommand):
                 raise AssertionError
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to paste the subject into',

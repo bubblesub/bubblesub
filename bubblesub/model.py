@@ -157,7 +157,7 @@ class ObservableListSignals(QtCore.QObject):
     item_changed = QtCore.pyqtSignal([int])
 
 
-class ObservableList(T.Generic[TItem]):
+class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
     """Alternative to QtCore.QAbstractListModel that simplifies indexing."""
 
     def __init__(self) -> None:
@@ -225,7 +225,7 @@ class ObservableList(T.Generic[TItem]):
         :param idx: item position
         :return: value at given position
         """
-        ...
+        ...  # pylint: disable=pointless-statement
 
     @T.overload
     def __getitem__(self, idx: int) -> TItem:
@@ -235,7 +235,7 @@ class ObservableList(T.Generic[TItem]):
         :param idx: item position
         :return: value at given position
         """
-        ...
+        ...  # pylint: disable=pointless-statement
 
     def __getitem__(self, idx):
         """

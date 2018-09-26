@@ -35,7 +35,7 @@ class PauseCommand(BaseCommand):
         )
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'operation',
             help='whether to pause the video',

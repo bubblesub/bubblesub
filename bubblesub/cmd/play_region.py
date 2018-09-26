@@ -39,7 +39,7 @@ class PlayRegionCommand(BaseCommand):
         self.api.media.play(start, end)
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-s', '--start',
             help='start of region to play',

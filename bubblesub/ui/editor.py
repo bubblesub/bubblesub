@@ -161,36 +161,32 @@ class Editor(QtWidgets.QWidget):
             objectName='note-editor',
         )
 
-        left_layout = QtWidgets.QGridLayout(spacing=4)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.addWidget(QtWidgets.QLabel('Style:', self), 0, 0)
-        left_layout.addWidget(self.style_edit, 0, 1)
-        left_layout.addWidget(QtWidgets.QLabel('Actor:', self), 1, 0)
-        left_layout.addWidget(self.actor_edit, 1, 1)
-        left_layout.addWidget(QtWidgets.QLabel('Layer:', self), 2, 0)
-        left_layout.addWidget(self.layer_edit, 2, 1)
-        left_layout.addWidget(QtWidgets.QLabel('Margin:', self), 3, 0)
         margins_layout = QtWidgets.QHBoxLayout(spacing=4)
         margins_layout.setContentsMargins(0, 0, 0, 0)
         margins_layout.addWidget(self.margin_l_edit)
         margins_layout.addWidget(self.margin_v_edit)
         margins_layout.addWidget(self.margin_r_edit)
-        left_layout.addLayout(margins_layout, 3, 1)
 
-        right_layout = QtWidgets.QGridLayout(spacing=4)
-        right_layout.setContentsMargins(0, 0, 0, 0)
-        right_layout.addWidget(QtWidgets.QLabel('Start time:', self), 0, 2)
-        right_layout.addWidget(self.start_time_edit, 0, 3)
-        right_layout.addWidget(QtWidgets.QLabel('End time:', self), 1, 2)
-        right_layout.addWidget(self.end_time_edit, 1, 3)
-        right_layout.addWidget(QtWidgets.QLabel('Duration:', self), 2, 2)
-        right_layout.addWidget(self.duration_edit, 2, 3)
-        right_layout.addWidget(self.comment_checkbox, 3, 3)
-
-        bar_layout = QtWidgets.QHBoxLayout(spacing=8)
+        bar_layout = QtWidgets.QGridLayout(spacing=4)
         bar_layout.setContentsMargins(0, 0, 0, 0)
-        bar_layout.addLayout(left_layout)
-        bar_layout.addLayout(right_layout)
+        for row, column, label, widget in {
+                (0, 0, 'Style:', self.style_edit),
+                (1, 0, 'Actor:', self.actor_edit),
+                (2, 0, 'Layer:', self.layer_edit),
+                (3, 0, 'Margin:', margins_layout),
+                (0, 1, 'Start time:', self.start_time_edit),
+                (1, 1, 'End time:', self.end_time_edit),
+                (2, 1, 'Duration:', self.duration_edit),
+                (3, 1, '', self.comment_checkbox),
+        }:
+            if label:
+                bar_layout.addWidget(
+                    QtWidgets.QLabel(label, self), row, column * 2
+                )
+            if isinstance(widget, QtWidgets.QLayout):
+                bar_layout.addLayout(widget, row, column * 2 + 1)
+            else:
+                bar_layout.addWidget(widget, row, column * 2 + 1)
 
         layout = QtWidgets.QHBoxLayout(self, spacing=6)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -199,21 +195,16 @@ class Editor(QtWidgets.QWidget):
         layout.addWidget(self.note_edit)
         layout.setStretchFactor(self.text_edit, 1)
         layout.setStretchFactor(self.note_edit, 1)
-
         self.setEnabled(False)
 
-        @contextlib.contextmanager
-        def submit_wrapper() -> T.Generator:
-            with self._api.undo.capture():
-                yield
-
-        model = SubtitlesModel(
-            self, api, convert_newlines=self._api.opt.general.convert_newlines
-        )
         self._data_widget_mapper = bubblesub.ui.util.ImmediateDataWidgetMapper(
-            model=model,
+            model=SubtitlesModel(
+                self,
+                api,
+                convert_newlines=self._api.opt.general.convert_newlines,
+            ),
             signal_map={TextEdit: 'textChanged'},
-            submit_wrapper=submit_wrapper,
+            submit_wrapper=self._submit_wrapper,
         )
         for column, widget in {
                 (SubtitlesModelColumn.Start, self.start_time_edit),
@@ -232,6 +223,11 @@ class Editor(QtWidgets.QWidget):
             self._data_widget_mapper.add_mapping(widget, column)
 
         api.subs.selection_changed.connect(self._on_selection_change)
+
+    @contextlib.contextmanager
+    def _submit_wrapper(self) -> T.Generator:
+        with self._api.undo.capture():
+            yield
 
     def _on_selection_change(
             self, selected: T.List[int], _changed: bool

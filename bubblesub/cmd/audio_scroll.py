@@ -31,7 +31,7 @@ class AudioScrollCommand(BaseCommand):
         self.api.media.audio.move_view(distance)
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='factor to shift the view by',

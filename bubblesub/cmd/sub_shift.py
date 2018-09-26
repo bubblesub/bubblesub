@@ -84,7 +84,7 @@ class SubtitlesShiftCommand(BaseCommand):
         return Pts(self.api, '+' + str(delta) + 'ms')
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to shift',

@@ -38,7 +38,7 @@ class SeekCommand(BaseCommand):
         self.api.media.is_paused = True
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-p', '--pos',
             help='where to seek',

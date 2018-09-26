@@ -64,51 +64,43 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor = bubblesub.ui.editor.Editor(api, self)
         self.subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
         self.status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
+        self.console = console
 
-        self.editor_splitter = QtWidgets.QSplitter(self)
-        self.editor_splitter.setOrientation(QtCore.Qt.Vertical)
-        self.editor_splitter.addWidget(self.audio)
-        self.editor_splitter.addWidget(self.editor)
-        self.editor_splitter.setStretchFactor(0, 4)
-        self.editor_splitter.setStretchFactor(1, 1)
+        self.editor_splitter = self._build_splitter(
+            [(4, self.audio), (1, self.editor)],
+            orientation=QtCore.Qt.Vertical,
+        )
 
-        self.top_bar = QtWidgets.QSplitter(self)
-        self.top_bar.setOrientation(QtCore.Qt.Horizontal)
-        self.top_bar.addWidget(self.video)
-        self.top_bar.addWidget(self.editor_splitter)
-        self.top_bar.setStretchFactor(0, 1)
-        self.top_bar.setStretchFactor(1, 1)
+        self.top_bar = self._build_splitter(
+            [(1, self.video), (1, self.editor_splitter)],
+            orientation=QtCore.Qt.Horizontal,
+        )
+
+        self.console_splitter = self._build_splitter(
+            [(2, self.subs_grid), (1, console)],
+            orientation=QtCore.Qt.Horizontal,
+        )
+
+        self.main_splitter = self._build_splitter(
+            [(1, self.top_bar), (5, self.console_splitter)],
+            orientation=QtCore.Qt.Vertical
+        )
+
+        console.setParent(self.console_splitter)
         self.video.layout().setContentsMargins(0, 0, 2, 0)
         self.editor_splitter.setContentsMargins(2, 0, 0, 0)
-
-        self.console_splitter = QtWidgets.QSplitter(self)
-        self.console = console
-        console.setParent(self.console_splitter)
-        self.console_splitter.setOrientation(QtCore.Qt.Horizontal)
-        self.console_splitter.addWidget(self.subs_grid)
-        self.console_splitter.addWidget(console)
-        self.console_splitter.setStretchFactor(0, 2)
-        self.console_splitter.setStretchFactor(1, 1)
-
-        self.main_splitter = QtWidgets.QSplitter(self)
-        self.main_splitter.setOrientation(QtCore.Qt.Vertical)
-        self.main_splitter.addWidget(self.top_bar)
-        self.main_splitter.addWidget(self.console_splitter)
         self.main_splitter.setContentsMargins(8, 8, 8, 8)
-        self.main_splitter.setStretchFactor(0, 1)
-        self.main_splitter.setStretchFactor(1, 5)
-
-        self._rebuild_menu()
-        self._rebuild_hotkeys()
 
         self.setCentralWidget(self.main_splitter)
         self.setStatusBar(self.status_bar)
 
-        self.apply_palette(T.cast(str, api.opt.general.gui.current_palette))
-
         self.subs_grid.setFocus()
+
         self.subs_grid.restore_grid_columns()
+        self.apply_palette(T.cast(str, api.opt.general.gui.current_palette))
         self._restore_splitters()
+        self._rebuild_menu()
+        self._rebuild_hotkeys()
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         bubblesub.ui.util.get_color.cache_clear()
@@ -152,6 +144,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setPalette(palette)
 
         self.update()
+
+    def _build_splitter(
+            self,
+            widgets: T.List[T.Tuple[int, QtWidgets.QWidget]],
+            orientation: int,
+    ) -> QtWidgets.QSplitter:
+        splitter = QtWidgets.QSplitter(self, orientation=orientation)
+        for i, item in enumerate(widgets):
+            stretch_factor, widget = item
+            splitter.addWidget(widget)
+            splitter.setStretchFactor(i, stretch_factor)
+        return splitter
 
     def _rebuild_menu(self) -> None:
         for action in self.menuBar().actions():

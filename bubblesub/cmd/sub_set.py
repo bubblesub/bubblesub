@@ -80,7 +80,7 @@ class SubtitlesSetCommand(BaseCommand):
                 sub.end_update()
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to change',

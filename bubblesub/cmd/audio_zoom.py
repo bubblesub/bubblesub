@@ -31,7 +31,7 @@ class AudioZoomCommand(BaseCommand):
         self.api.media.audio.zoom_view(new_factor, mouse_x)
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-d', '--delta',
             help='factor to zoom the view by',

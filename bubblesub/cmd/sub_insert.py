@@ -83,7 +83,7 @@ class SubtitleInsertCommand(BaseCommand):
         return self.api.opt.general.subs.default_duration
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-o', '--origin',
             help='where to insert the subtitle',

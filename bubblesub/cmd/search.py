@@ -563,7 +563,7 @@ class SearchRepeatCommand(BaseCommand):
             bubblesub.ui.util.notice('No occurences found.')
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument(
             '--above',

@@ -96,7 +96,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
         return syllables
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to split',
@@ -146,7 +146,7 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
             self.api.subs.selected_indexes = [subs[0].index]
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to merge',

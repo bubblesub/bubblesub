@@ -48,7 +48,7 @@ class AudioShiftSelectionCommand(BaseCommand):
             self.api.media.audio.select(start, end)
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-s', '--start',
             help='amount to shift the start of the selection by',

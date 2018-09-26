@@ -33,7 +33,7 @@ class SetVolumeCommand(BaseCommand):
         self.api.media.volume = new_value
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             'expression',
             help='expression to calculate new volume',

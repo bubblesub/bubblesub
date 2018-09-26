@@ -49,7 +49,7 @@ class SubtitlesDeleteCommand(BaseCommand):
                 self.api.subs.events.remove(start_idx, count)
 
     @staticmethod
-    def _decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-t', '--target',
             help='subtitles to delete',
