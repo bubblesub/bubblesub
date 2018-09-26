@@ -165,7 +165,8 @@ class StylesModel(ObservableListTableAdapter):
     ) -> bool:
         style = self._list[row_idx]
         try:
-            _WRITER_MAP[StylesModelColumn(col_idx)](style, new_value)
+            writer = _WRITER_MAP[StylesModelColumn(col_idx)]
         except KeyError:
             return False
+        writer(style, new_value)
         return True

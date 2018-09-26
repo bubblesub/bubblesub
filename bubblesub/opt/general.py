@@ -40,25 +40,6 @@ def _compress(data: T.Optional[bytes]) -> T.Optional[str]:
     return base64.b64encode(zlib.compress(data)).decode('ascii')
 
 
-class SubtitlesModelColumn(enum.IntEnum):
-    """Column indices in subtitles grid."""
-
-    Start = 0
-    End = 1
-    Style = 2
-    Actor = 3
-    Text = 4
-    Note = 5
-    ShortDuration = 6
-    LongDuration = 7
-    CharsPerSec = 8
-    Layer = 9
-    MarginVertical = 10
-    MarginLeft = 11
-    MarginRight = 12
-    IsComment = 13
-
-
 class SearchMode(enum.IntEnum):
     """Search mode in subtitles grid."""
 

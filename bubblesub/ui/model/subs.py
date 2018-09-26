@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import enum
 import typing as T
 from dataclasses import dataclass
 
@@ -23,10 +24,28 @@ from PyQt5 import QtGui
 from bubblesub.api import Api
 from bubblesub.ass.event import Event
 from bubblesub.ass.util import character_count
-from bubblesub.opt.general import SubtitlesModelColumn
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 from bubblesub.ui.util import get_color, blend_colors
 from bubblesub.util import ms_to_str, str_to_ms
+
+
+class SubtitlesModelColumn(enum.IntEnum):
+    """Column indices in subtitles grid."""
+
+    Start = 0
+    End = 1
+    Style = 2
+    Actor = 3
+    Text = 4
+    Note = 5
+    ShortDuration = 6
+    LongDuration = 7
+    CharsPerSec = 8
+    Layer = 9
+    MarginVertical = 10
+    MarginLeft = 11
+    MarginRight = 12
+    IsComment = 13
 
 
 @dataclass
