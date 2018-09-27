@@ -53,7 +53,7 @@ class Api:
         self.media = bubblesub.api.media.MediaApi(
             self.subs, self.log, opt, args
         )
-        self.undo = bubblesub.api.undo.UndoApi(self.subs)
+        self.undo = bubblesub.api.undo.UndoApi(opt, self.subs)
         self.cmd = bubblesub.api.cmd.CommandApi(self)
 
         self.gui.quit_requested.connect(self.media.unload)

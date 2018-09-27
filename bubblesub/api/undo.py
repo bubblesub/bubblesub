@@ -25,6 +25,7 @@ import bubblesub.ass.event
 import bubblesub.ass.info
 import bubblesub.ass.style
 import bubblesub.util
+from bubblesub.opt import Options
 from bubblesub.api.subs import SubtitlesApi
 
 
@@ -133,20 +134,22 @@ def _unpickle(data: bytes) -> T.Any:
 class UndoApi:
     """The undo API."""
 
-    def __init__(self, subs_api: SubtitlesApi) -> None:
+    def __init__(self, opt: Options, subs_api: SubtitlesApi) -> None:
         """
         Initialize self.
 
         :param subs_api: subtitles API
         """
+        self._max_undo = opt.general.max_undo + 1
         self._subs_api = subs_api
         self._stack: T.List[T.Tuple[T.Optional[UndoState], UndoState]] = []
         self._stack_pos = -1
-        self._stack_pos_when_saved = -1
-        self._subs_api.loaded.connect(self._on_subtitles_load)
-        self._subs_api.saved.connect(self._on_subtitles_save)
+        self._dirty = False
         self._prev_state: T.Optional[UndoState] = None
         self._ignore = False
+
+        self._subs_api.loaded.connect(self._on_subtitles_load)
+        self._subs_api.saved.connect(self._on_subtitles_save)
 
     @property
     def needs_save(self) -> bool:
@@ -155,7 +158,7 @@ class UndoApi:
 
         :return: whether there are any unsaved changes
         """
-        return self._stack_pos_when_saved != self._stack_pos
+        return self._dirty
 
     @property
     def has_undo(self) -> bool:
@@ -194,12 +197,12 @@ class UndoApi:
         is_nested = self._prev_state is not None
         if is_nested:
             cur_state = self._make_state()
-            self._trim_stack_and_push(self._prev_state, cur_state)
+            self._push(self._prev_state, cur_state)
 
         self._prev_state = self._make_state()
         yield
         cur_state = self._make_state()
-        self._trim_stack_and_push(self._prev_state, cur_state)
+        self._push(self._prev_state, cur_state)
 
         if is_nested:
             self._prev_state = cur_state
@@ -214,6 +217,7 @@ class UndoApi:
         self._ignore = True
         old_state, _new_state = self._stack[self._stack_pos]
         self._stack_pos -= 1
+        self._dirty = True
         assert old_state
         self._apply_state(old_state)
         self._ignore = False
@@ -225,16 +229,23 @@ class UndoApi:
 
         self._ignore = True
         self._stack_pos += 1
+        self._dirty = True
         _old_state, new_state = self._stack[self._stack_pos]
         self._apply_state(new_state)
         self._ignore = False
 
-    def _trim_stack(self) -> None:
-        """Discard any redo information."""
+    def _discard_redo(self) -> None:
         self._stack = self._stack[:self._stack_pos + 1]
         self._stack_pos = len(self._stack) - 1
 
-    def _trim_stack_and_push(
+    def _discard_old_undo(self) -> None:
+        if len(self._stack) <= self._max_undo or self._max_undo <= 0:
+            return
+        assert self._stack_pos == len(self._stack) - 1
+        self._stack = self._stack[-self._max_undo:]
+        self._stack_pos = len(self._stack) - 1
+
+    def _push(
             self, old_state: T.Optional[UndoState], new_state: UndoState
     ) -> None:
         """
@@ -245,18 +256,19 @@ class UndoApi:
         """
         if old_state == new_state:
             return
-        self._trim_stack()
+        self._discard_redo()
         self._stack.append((old_state, new_state))
         self._stack_pos = len(self._stack) - 1
+        self._discard_old_undo()
 
     def _on_subtitles_load(self) -> None:
         state = self._make_state()
         self._stack = [(state, state)]
         self._stack_pos = 0
-        self._stack_pos_when_saved = 0
+        self._dirty = False
 
     def _on_subtitles_save(self) -> None:
-        self._stack_pos_when_saved = self._stack_pos
+        self._dirty = False
 
     def _make_state(self) -> UndoState:
         return UndoState(

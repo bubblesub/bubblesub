@@ -478,6 +478,7 @@ class GeneralConfig(BaseConfig):
 
     def __init__(self) -> None:
         """Initialize self."""
+        self.max_undo = 1000
         self.spell_check = 'en_US'
         self.convert_newlines = True
         self.gui = GuiConfig()
@@ -498,6 +499,7 @@ class GeneralConfig(BaseConfig):
         cfg.optionxform = lambda option: option
         cfg.read_string(text)
 
+        self.max_undo = cfg.get('basic', 'max_undo', fallback=self.max_undo)
         self.spell_check = cfg.get(
             'basic', 'spell_check', fallback=self.spell_check
         )
@@ -524,6 +526,7 @@ class GeneralConfig(BaseConfig):
         cfg.read_dict({
             'basic':
             {
+                'max_undo': self.max_undo,
                 'spell_check': self.spell_check,
                 'convert_newlines': self.convert_newlines,
             },
