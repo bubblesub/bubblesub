@@ -259,6 +259,7 @@ class UndoApi:
         self._discard_redo()
         self._stack.append((old_state, new_state))
         self._stack_pos = len(self._stack) - 1
+        self._dirty = True
         self._discard_old_undo()
 
     def _on_subtitles_load(self) -> None:
