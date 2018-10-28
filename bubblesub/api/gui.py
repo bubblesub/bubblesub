@@ -29,6 +29,7 @@ class GuiApi(QtCore.QObject):
     """The GUI API."""
 
     quit_requested = QtCore.pyqtSignal()
+    quit_confirmed = QtCore.pyqtSignal()
     begin_update_requested = QtCore.pyqtSignal()
     end_update_requested = QtCore.pyqtSignal()
 

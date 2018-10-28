@@ -156,6 +156,7 @@ class SubsGrid(QtWidgets.QTableView):
         }:
             self.setColumnHidden(col_idx, True)
 
+        api.gui.quit_confirmed.connect(self._store_grid_columns)
         api.subs.loaded.connect(self._on_subs_load)
         api.subs.selection_changed.connect(self._sync_api_selection_to_video)
         api.subs.selection_changed.connect(self._sync_api_selection_to_grid)
@@ -216,16 +217,16 @@ class SubsGrid(QtWidgets.QTableView):
             column: SubtitlesModelColumn = action.data()
             action.setChecked(not header.isSectionHidden(column.value))
 
-    def store_grid_columns(self) -> None:
-        self._api.opt.general.gui.grid_columns = (
-            self.horizontalHeader().saveState()
-        )
-
     def keyboardSearch(self, _text: str) -> None:
         pass
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         self._subs_grid_delegate.on_palette_change()
+
+    def _store_grid_columns(self) -> None:
+        self._api.opt.general.gui.grid_columns = (
+            self.horizontalHeader().saveState()
+        )
 
     def _sync_sub_selection(self) -> None:
         if self._seek_to is not None \

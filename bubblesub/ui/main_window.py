@@ -49,6 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._update_title()
 
         api.gui.quit_requested.connect(self.close)
+        api.gui.quit_confirmed.connect(self._store_splitters)
         api.gui.begin_update_requested.connect(
             lambda: self.setUpdatesEnabled(False)
         )
@@ -106,14 +107,13 @@ class MainWindow(QtWidgets.QMainWindow):
         bubblesub.ui.util.get_color.cache_clear()
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
-        self.subs_grid.store_grid_columns()
-        self._store_splitters()
         if self._api.undo.needs_save and not bubblesub.ui.util.ask(
                 'There are unsaved changes. '
                 'Are you sure you want to exit the program?'
         ):
             event.ignore()
         else:
+            self._api.gui.quit_confirmed.emit()
             self.audio.shutdown()
             self.video.shutdown()
             event.accept()
