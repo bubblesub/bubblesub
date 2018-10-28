@@ -20,8 +20,8 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 
 
-class AudioScrollCommand(BaseCommand):
-    names = ['audio-scroll', 'spectrogram-scroll']
+class AudioScrollViewCommand(BaseCommand):
+    names = ['audio-scroll-view', 'spectrogram-scroll-view']
     help_text = (
         'Scrolls the spectrogram horizontally by its width\'s percentage.'
     )
@@ -34,10 +34,10 @@ class AudioScrollCommand(BaseCommand):
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             '-d', '--delta',
-            help='factor to shift the view by',
+            help='factor to shift the viewport by',
             type=float,
             required=True
         )
 
 
-COMMANDS = [AudioScrollCommand]
+COMMANDS = [AudioScrollViewCommand]

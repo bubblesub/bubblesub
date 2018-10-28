@@ -75,11 +75,11 @@ Context refers to the currently focused widget.
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
 |<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
-|<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll">audio-scroll</a> -d=-0.05</code> |
-|<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll">audio-scroll</a> -d=0.05</code> |
-|<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d=1.1</code> |
-|<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d=0.9</code> |
-|<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom">audio-zoom</a> -d=0.9</code> |
+|<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-view">audio-scroll-view</a> -d=-0.05</code> |
+|<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-view">audio-scroll-view</a> -d=0.05</code> |
+|<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-view">audio-zoom-view</a> -d=1.1</code> |
+|<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-view">audio-zoom-view</a> -d=0.9</code> |
+|<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-view">audio-zoom-view</a> -d=0.9</code> |
 |<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f</code> |
 |<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f</code> |
 |<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1500ms</code> |
@@ -107,13 +107,13 @@ Commits the spectrogram selection into given subtitles. The subtitles start and 
 Usage: `audio‑commit‑sel [-t|--target=selected]`
 * `-t`, `--target`: subtitles to commit selection into
 
-### <a name="cmd-audio-scroll"></a>`audio‑scroll`
-Aliases: `spectrogram-scroll`
+### <a name="cmd-audio-scroll-view"></a>`audio‑scroll‑view`
+Aliases: `spectrogram-scroll-view`
 
 Scrolls the spectrogram horizontally by its width's percentage.
 
-Usage: `audio‑scroll -d|--delta=…`
-* `-d`, `--delta`: factor to shift the view by
+Usage: `audio‑scroll‑view -d|--delta=…`
+* `-d`, `--delta`: factor to shift the viewport by
 
 ### <a name="cmd-audio-shift-sel"></a>`audio‑shift‑sel`
 Aliases: `audio-shift-selection`, `spectrogram-shift-sel`, `spectrogram-shift-selection`
@@ -125,13 +125,23 @@ Usage: `audio‑shift‑sel [-s|--start=…] [-e|--end=…] [--no-align]`
 * `-e`, `--end`: amount to shift the end of the selection by
 * `--no-align`: don't realign selection to video frames
 
-### <a name="cmd-audio-zoom"></a>`audio‑zoom`
-Aliases: `spectrogram-zoom`
+### <a name="cmd-audio-shift-view"></a>`audio‑shift‑view`
+Aliases: `spectrogram-shift-view`
+
+Shfits the spectrogram.
+
+Usage: `audio‑shift‑view [-s|--start=…] [-e|--end=…] [--no-align]`
+* `-s`, `--start`: amount to shift the start of the viewport by
+* `-e`, `--end`: amount to shift the end of the viewport by
+* `--no-align`: don't realign viewport to video frames
+
+### <a name="cmd-audio-zoom-view"></a>`audio‑zoom‑view`
+Aliases: `spectrogram-zoom-view`
 
 Zooms the spectrogram in or out by the specified factor.
 
-Usage: `audio‑zoom -d|--delta=…`
-* `-d`, `--delta`: factor to zoom the view by
+Usage: `audio‑zoom‑view -d|--delta=…`
+* `-d`, `--delta`: factor to zoom the viewport by
 
 ### <a name="cmd-file-properties"></a>`file‑properties`
 Opens up the metadata editor dialog.

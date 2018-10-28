@@ -183,10 +183,10 @@
                 {"type": "separator"},
                 {"type": "command", "name": "&Shift selected subtitles...", "invocations": ["/sub-shift --no-align"]},
                 {"type": "separator"},
-                {"type": "command", "name": "&Scroll spectrogram forward by 5%", "invocations": ["/audio-scroll -d=-0.05"]},
-                {"type": "command", "name": "&Scroll spectrogram backward by 5%", "invocations": ["/audio-scroll -d=0.05"]},
-                {"type": "command", "name": "&Zoom spectrogram in by 10%", "invocations": ["/audio-zoom -d=1.1"]},
-                {"type": "command", "name": "&Zoom spectrogram out by 10%", "invocations": ["/audio-zoom -d=0.9"]}
+                {"type": "command", "name": "&Scroll spectrogram forward by 5%", "invocations": ["/audio-scroll-view -d=-0.05"]},
+                {"type": "command", "name": "&Scroll spectrogram backward by 5%", "invocations": ["/audio-scroll-view -d=0.05"]},
+                {"type": "command", "name": "&Zoom spectrogram in by 10%", "invocations": ["/audio-zoom-view -d=1.1"]},
+                {"type": "command", "name": "&Zoom spectrogram out by 10%", "invocations": ["/audio-zoom-view -d=0.9"]}
             ]
         }
     ],

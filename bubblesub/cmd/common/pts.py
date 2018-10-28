@@ -51,6 +51,7 @@ TERMINALS = {
     'rel_frame': '(?P<direction>[cpn])f',
     'rel_keyframe': '(?P<direction>[cpn])kf',
     'spectrogram': r'a\.(?P<boundary>[se])',
+    'spectrogram_view': r'a\.v(?P<boundary>[se])',
     'num_sub': r's(?P<number>\d+)\.(?P<boundary>[se])',
     'num_frame': r'(?P<number>\d+)f',
     'num_keyframe': r'(?P<number>\d+)kf',
@@ -321,6 +322,19 @@ class Pts:
             return self._api.media.audio.selection_start
         if boundary == 'e':
             return self._api.media.audio.selection_end
+        raise AssertionError(f'unknown boundary: "{boundary}"')
+
+    async def _eval_terminal_spectrogram_view(
+            self,
+            token: _Token,
+            _origin: T.Optional[int],
+            _operator: T.Optional[str],
+    ) -> int:
+        boundary = token.match.group('boundary')
+        if boundary == 's':
+            return self._api.media.audio.view_start
+        if boundary == 'e':
+            return self._api.media.audio.view_end
         raise AssertionError(f'unknown boundary: "{boundary}"')
 
     async def _eval_terminal_ask(
