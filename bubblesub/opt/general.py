@@ -499,7 +499,7 @@ class GeneralConfig(BaseConfig):
         cfg.optionxform = lambda option: option
         cfg.read_string(text)
 
-        self.max_undo = cfg.get('basic', 'max_undo', fallback=self.max_undo)
+        self.max_undo = cfg.getint('basic', 'max_undo', fallback=self.max_undo)
         self.spell_check = cfg.get(
             'basic', 'spell_check', fallback=self.spell_check
         )

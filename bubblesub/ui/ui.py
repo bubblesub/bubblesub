@@ -38,10 +38,6 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
 
     app.aboutToQuit.connect(api.media.stop)
 
-    if not args.no_config:
-        api.opt.load(api.opt.DEFAULT_PATH)
-    api.cmd.reload_commands()
-
     if args.file:
         api.cmd.run_invocation(['open', '--path', args.file])
 
@@ -53,7 +49,3 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
 
     with loop:
         loop.run_forever()
-
-    if not args.no_config:
-        assert api.opt.root_dir is not None
-        api.opt.save(api.opt.root_dir)

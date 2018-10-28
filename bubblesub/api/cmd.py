@@ -214,6 +214,8 @@ class CommandApi(QtCore.QObject):
         self._registry: T.Dict[str, T.Type[BaseCommand]] = {}
         self._plugin_menu: T.List[MenuItem] = []
 
+        self.reload_commands()
+
     def run_invocation(self, invocation: T.Union[T.List[str], str]) -> None:
         """
         Execute given invocation.
