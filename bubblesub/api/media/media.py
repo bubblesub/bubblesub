@@ -52,7 +52,7 @@ class MediaApi(QtCore.QObject):
             self,
             subs_api: SubtitlesApi,
             log_api: LogApi,
-            opt_api: Options,
+            opt: Options,
             args: argparse.Namespace
     ) -> None:
         """
@@ -60,7 +60,7 @@ class MediaApi(QtCore.QObject):
 
         :param subs_api: subtitles API
         :param log_api: logging API
-        :param opt_api: configuration API
+        :param opt: configuration
         :param args: CLI arguments
         """
         super().__init__()
@@ -68,7 +68,6 @@ class MediaApi(QtCore.QObject):
 
         self._log_api = log_api
         self._subs_api = subs_api
-        self._opt_api = opt_api
 
         self._path: T.Optional[Path] = None
         self._playback_speed = fractions.Fraction(1.0)
@@ -123,7 +122,7 @@ class MediaApi(QtCore.QObject):
         self.audio = AudioApi(self, log_api)
 
         self._timer = QtCore.QTimer(parent=None)
-        self._timer.setInterval(opt_api.general.video.subs_sync_interval)
+        self._timer.setInterval(opt.general.video.subs_sync_interval)
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
     def start(self) -> None:

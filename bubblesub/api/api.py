@@ -43,7 +43,7 @@ class Api:
         """
         Initialize self.
 
-        :param opt: config
+        :param opt: configuration
         :param args: CLI arguments
         """
         self.opt = opt

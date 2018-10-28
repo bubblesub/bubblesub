@@ -138,6 +138,7 @@ class UndoApi:
         """
         Initialize self.
 
+        :param opt: configuration
         :param subs_api: subtitles API
         """
         self._max_undo = opt.general.max_undo + 1
