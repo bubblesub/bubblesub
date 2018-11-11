@@ -28,6 +28,7 @@ class LogLevel(enum.Enum):
     Warning = 2
     Info = 3
     Debug = 4
+    CommandEcho = 5
 
 
 class LogApi(QtCore.QObject):
@@ -66,6 +67,14 @@ class LogApi(QtCore.QObject):
         :param text: text to log
         """
         self.log(LogLevel.Error, text)
+
+    def command_echo(self, text: str) -> None:
+        """
+        Log a message with command echo level.
+
+        :param text: text to log
+        """
+        self.log(LogLevel.CommandEcho, text)
 
     def log(self, level: LogLevel, text: str) -> None:
         """

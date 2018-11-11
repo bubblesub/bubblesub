@@ -169,7 +169,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 SubMenu(
                     'Pl&ugins',
                     [
-                        MenuCommand('Reload plugins', '/reload-cmds'),
+                        MenuCommand('Reload plugins', 'reload-cmds'),
                         MenuSeparator(),
                     ] + self._api.cmd.get_plugin_menu_items()
                 )

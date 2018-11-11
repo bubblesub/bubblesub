@@ -50,7 +50,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
 
         self._regex = re.compile(
             r'^'
-            r'(?P<prefix>\[(?P<log_level>[ewid])\] )'
+            r'(?P<prefix>\[(?P<log_level>[ewidc])\] )'
             r'(?P<timestamp>\[[^\]]+\]) '
             r'(?P<text>.*)'
             r'$'
@@ -71,8 +71,8 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
             'w': self._get_format('console/warning'),
             'i': self._get_format('console/info'),
             'd': self._get_format('console/debug'),
+            'c': self._get_format('console/command'),
             'timestamp': self._get_format('console/timestamp'),
-            'command': self._get_format('console/command'),
         }
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor)
@@ -98,9 +98,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
             self.setFormat(
                 start_of_text,
                 end - start,
-                self._style_map['command']
-                if match.group('text').startswith('/')
-                else self._style_map[match.group('log_level')]
+                self._style_map[match.group('log_level')],
             )
 
     def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
@@ -287,9 +285,8 @@ class ConsoleInput(QtWidgets.QLineEdit):
         )
 
         # command names
-        match = re.match('^/(?P<cmd>[^ ]+) ?$', compl.prefix)
+        match = re.match('^(?P<cmd>[^ ]+) ?$', compl.prefix)
         if match:
-            compl.start_pos = 1
             for cls in self._api.cmd.get_all():
                 for name in cls.names:
                     if name.startswith(match.group('cmd')):
@@ -298,7 +295,7 @@ class ConsoleInput(QtWidgets.QLineEdit):
 
         # command arguments
         match = re.match(
-            '^/(?P<cmd>[^ ]+) (?:.*)(?P<arg>-[^ =]*)$', compl.prefix
+            '^(?P<cmd>[^ ]+) (?:.*)(?P<arg>-[^ =]*)$', compl.prefix
         )
         if match:
             cls = self._api.cmd.get(match.group('cmd'))

@@ -101,11 +101,7 @@ def split_invocation(invocation: str) -> T.Tuple[str, T.List[str]]:
     :param invocation: command line to parse
     :return: tuple containing command name and arguments
     """
-    if not invocation.startswith('/'):
-        raise BadInvocation(
-            f'Invocation should start with a slash ("{invocation}")'
-        )
-    name, *args = shlex.split(invocation.lstrip('/'))
+    name, *args = shlex.split(invocation)
     return (name, args)
 
 
@@ -225,7 +221,7 @@ class CommandApi(QtCore.QObject):
         if not invocation:
             return
         if isinstance(invocation, list):
-            invocation = '/' + ' '.join(shlex.quote(arg) for arg in invocation)
+            invocation = ' '.join(shlex.quote(arg) for arg in invocation)
 
         try:
             cmd = self.instantiate(invocation)
@@ -250,7 +246,7 @@ class CommandApi(QtCore.QObject):
         :return: whether the command was executed without problems
         """
         start_time = time.time()
-        self._api.log.info(cmd.invocation)
+        self._api.log.command_echo(cmd.invocation)
 
         try:
             if not cmd.is_enabled:
@@ -280,7 +276,7 @@ class CommandApi(QtCore.QObject):
         :return: BaseCommand instance
         """
         if isinstance(invocation, list):
-            invocation = '/' + ' '.join(shlex.quote(arg) for arg in invocation)
+            invocation = ' '.join(shlex.quote(arg) for arg in invocation)
 
         name, _args = split_invocation(invocation)
         cls = self.get(name)

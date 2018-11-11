@@ -90,7 +90,7 @@ async def _work(language: str, api: Api, line: Event) -> None:
 
 
 class SpeechRecognitionCommand(BaseCommand):
-    names = ['google-speech-recognition']
+    names = ['sr', 'google-speech-recognition']
     help_text = (
         'Puts results of Google speech recognition '
         'for selected subtitles into their notes.'
@@ -115,11 +115,11 @@ MENU = [
     SubMenu(
         '&Speech recognition',
         [
-            MenuCommand('&Japanese', '/google-speech-recognition ja'),
-            MenuCommand('&German', '/google-speech-recognition de'),
-            MenuCommand('&French', '/google-speech-recognition fr'),
-            MenuCommand('&Italian', '/google-speech-recognition it'),
-            MenuCommand('&Auto', '/google-speech-recognition auto')
+            MenuCommand('&Japanese', 'sr ja'),
+            MenuCommand('&German', 'sr de'),
+            MenuCommand('&French', 'sr fr'),
+            MenuCommand('&Italian', 'sr it'),
+            MenuCommand('&Auto', 'sr auto')
         ]
     )
 ]
