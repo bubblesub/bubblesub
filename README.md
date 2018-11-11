@@ -58,69 +58,80 @@ import speech_recognition as sr
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
+from bubblesub.cmd.common import SubtitlesSelection
 from bubblesub.opt.menu import MenuCommand
 from bubblesub.opt.menu import SubMenu
 
 
-async def _work(language: str, api: Api, line: Event) -> None:
-    api.log.info(f'line #{line.number} - analyzing')
+async def _work(language: str, api: Api, sub: Event) -> None:
+    api.log.info(f"line #{sub.number} - analyzing")
     recognizer = sr.Recognizer()
-    try:
-        def recognize():
-            with io.BytesIO() as handle:
-                api.media.audio.save_wav(handle, [(line.start, line.end)])
-                handle.seek(0, io.SEEK_SET)
-                with sr.AudioFile(handle) as source:
-                    audio = recognizer.record(source)
-            return recognizer.recognize_google(audio, language=language)
 
+    def recognize():
+        with io.BytesIO() as handle:
+            api.media.audio.save_wav(handle, [(sub.start, sub.end)])
+            handle.seek(0, io.SEEK_SET)
+            with sr.AudioFile(handle) as source:
+                audio = recognizer.record(source)
+        return recognizer.recognize_google(audio, language=language)
+
+    try:
         # don't clog the UI thread
         note = await asyncio.get_event_loop().run_in_executor(None, recognize)
     except sr.UnknownValueError:
-        api.log.warn(f'line #{line.number}: not recognized')
+        api.log.warn(f"line #{sub.number}: not recognized")
     except sr.RequestError as ex:
-        api.log.error(f'line #{line.number}: error ({ex})')
+        api.log.error(f"line #{sub.number}: error ({ex})")
     else:
-        api.log.info(f'line #{line.number}: OK')
+        api.log.info(f"line #{sub.number}: OK")
         with api.undo.capture():
-            if line.note:
-                line.note = line.note + r'\N' + note
+            if sub.note:
+                sub.note = sub.note + r"\N" + note
             else:
-                line.note = note
+                sub.note = note
 
 
 class SpeechRecognitionCommand(BaseCommand):
-    names = ['sr', 'google-speech-recognition']
+    names = ["sr", "google-speech-recognition"]
     help_text = (
-        'Puts results of Google speech recognition '
-        'for selected subtitles into their notes.'
+        "Puts results of Google speech recognition "
+        "for selected subtitles into their notes."
     )
 
     @property
     def is_enabled(self):
-        return self.api.subs.has_selection \
+        return (
+            self.args.target.makes_sense
             and self.api.media.audio.has_audio_source
+        )
 
     async def run(self):
-        for line in self.api.subs.selected_events:
-            await _work(self.args.code, self.api, line)
+        for sub in await self.args.target.get_subtitles():
+            await _work(self.args.code, self.api, sub)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument('code', help='language code')
+        parser.add_argument(
+            "-t",
+            "--target",
+            help="subtitles to process",
+            type=lambda value: SubtitlesSelection(api, value),
+            default="selected",
+        )
+        parser.add_argument("code", help="language code")
 
 
 COMMANDS = [SpeechRecognitionCommand]
 MENU = [
     SubMenu(
-        '&Speech recognition',
+        "&Speech recognition",
         [
-            MenuCommand('&Japanese', 'sr ja'),
-            MenuCommand('&German', 'sr de'),
-            MenuCommand('&French', 'sr fr'),
-            MenuCommand('&Italian', 'sr it'),
-            MenuCommand('&Auto', 'sr auto')
-        ]
+            MenuCommand("&Japanese", "sr ja"),
+            MenuCommand("&German", "sr de"),
+            MenuCommand("&French", "sr fr"),
+            MenuCommand("&Italian", "sr it"),
+            MenuCommand("&Auto", "sr auto"),
+        ],
     )
 ]
 ```
