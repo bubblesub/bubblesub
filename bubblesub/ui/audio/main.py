@@ -14,12 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from PyQt5 import QtCore
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 import bubblesub.api
-from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.audio_preview import AudioPreview
+from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.video_preview import VideoPreview
 
 

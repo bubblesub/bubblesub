@@ -16,14 +16,11 @@
 
 import typing as T
 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import bubblesub.api
 import bubblesub.api.media.audio
-from bubblesub.ui.audio.base import BaseAudioWidget
-from bubblesub.ui.audio.base import SLIDER_SIZE
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
 from bubblesub.ui.util import get_color
 
 

@@ -19,9 +19,7 @@ import functools
 import typing as T
 from pathlib import Path
 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import bubblesub.api
 import bubblesub.util

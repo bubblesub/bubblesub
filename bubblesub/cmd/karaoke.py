@@ -20,8 +20,7 @@ import typing as T
 from copy import copy
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.api.cmd import BaseCommand, CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import SubtitlesSelection
 

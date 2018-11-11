@@ -21,9 +21,7 @@ from copy import copy
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandCanceled
-from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import SubtitlesSelection
 from bubblesub.util import make_ranges

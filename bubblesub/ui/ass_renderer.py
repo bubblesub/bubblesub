@@ -23,8 +23,8 @@ import ctypes
 import ctypes.util
 import typing as T
 
-import PIL.Image
 import numpy as np
+import PIL.Image
 
 import bubblesub.ass.event
 import bubblesub.ass.info

@@ -20,7 +20,8 @@ import io
 import sys
 import typing as T
 from pathlib import Path
-from setuptools import setup, find_packages, Command
+
+from setuptools import Command, find_packages, setup
 
 
 class GenerateDocumentationCommand(Command):
@@ -82,7 +83,6 @@ class GenerateDocumentationCommand(Command):
 
     def _generate_commands_documentation(self, handle):
         import argparse
-        import inspect
 
         import bubblesub.opt
         import bubblesub.api.cmd

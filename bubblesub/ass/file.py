@@ -16,8 +16,8 @@
 
 """ASS file."""
 
-from bubblesub.ass.info import Metadata
 from bubblesub.ass.event import EventList
+from bubblesub.ass.info import Metadata
 from bubblesub.ass.style import StyleList
 
 

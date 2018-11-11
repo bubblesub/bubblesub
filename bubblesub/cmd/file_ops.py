@@ -22,8 +22,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandCanceled
+from bubblesub.api.cmd import BaseCommand, CommandCanceled
 from bubblesub.cmd.common import FancyPath
 
 VIDEO_FILE_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'

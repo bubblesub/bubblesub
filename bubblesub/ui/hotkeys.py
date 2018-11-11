@@ -17,14 +17,11 @@
 import functools
 import typing as T
 
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandError
-from bubblesub.opt.hotkeys import Hotkey
-from bubblesub.opt.hotkeys import HotkeyContext
+from bubblesub.api.cmd import BaseCommand, CommandError
+from bubblesub.opt.hotkeys import Hotkey, HotkeyContext
 
 
 def setup_hotkeys(

@@ -18,14 +18,13 @@ import enum
 import typing as T
 from dataclasses import dataclass
 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
+from PyQt5 import QtCore, QtGui
 
 from bubblesub.api import Api
 from bubblesub.ass.event import Event
 from bubblesub.ass.util import character_count
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
-from bubblesub.ui.util import get_color, blend_colors
+from bubblesub.ui.util import blend_colors, get_color
 from bubblesub.util import ms_to_str, str_to_ms
 
 

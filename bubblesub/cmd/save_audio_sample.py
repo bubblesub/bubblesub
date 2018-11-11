@@ -17,10 +17,8 @@
 import argparse
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandUnavailable
-from bubblesub.cmd.common import FancyPath
-from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.api.cmd import BaseCommand, CommandUnavailable
+from bubblesub.cmd.common import FancyPath, SubtitlesSelection
 from bubblesub.util import ms_to_str
 
 

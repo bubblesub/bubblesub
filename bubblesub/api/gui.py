@@ -19,8 +19,7 @@
 import contextlib
 import typing as T
 
-from PyQt5 import QtCore
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 import bubblesub.api.api  # pylint: disable=unused-import
 

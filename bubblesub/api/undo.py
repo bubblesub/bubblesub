@@ -25,8 +25,8 @@ import bubblesub.ass.event
 import bubblesub.ass.info
 import bubblesub.ass.style
 import bubblesub.util
-from bubblesub.opt import Options
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.opt import Options
 
 
 class UndoState:

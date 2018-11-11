@@ -21,8 +21,7 @@ from pathlib import Path
 
 import bubblesub.ui.util
 from bubblesub.api import Api
-from bubblesub.api.cmd import CommandCanceled
-from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.api.cmd import CommandCanceled, CommandUnavailable
 from bubblesub.util import sanitize_file_name
 
 

@@ -17,7 +17,6 @@
 """Menu config."""
 
 import enum
-import itertools
 import re
 import typing as T
 

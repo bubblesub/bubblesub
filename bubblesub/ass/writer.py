@@ -21,8 +21,7 @@ from collections import OrderedDict
 
 from bubblesub.ass.event import Event
 from bubblesub.ass.file import AssFile
-from bubblesub.ass.style import Color
-from bubblesub.ass.style import Style
+from bubblesub.ass.style import Color, Style
 from bubblesub.ass.util import escape_ass_tag
 from bubblesub.util import ms_to_times
 

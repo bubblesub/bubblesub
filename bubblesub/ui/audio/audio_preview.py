@@ -20,22 +20,20 @@ import typing as T
 
 import ffms
 import numpy as np
-try:
-    import pyfftw
-except ImportError:
-    pyfftw = None
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import bubblesub.api
 import bubblesub.api.media.audio
 import bubblesub.worker
 from bubblesub.api.media.state import MediaState
-from bubblesub.ui.audio.base import BaseAudioWidget
-from bubblesub.ui.audio.base import SLIDER_SIZE
-from bubblesub.ui.util import blend_colors
-from bubblesub.ui.util import get_color
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
+from bubblesub.ui.util import blend_colors, get_color
+
+try:
+    import pyfftw
+except ImportError:
+    pyfftw = None
+
 
 DERIVATION_SIZE = 10
 DERIVATION_DISTANCE = 6

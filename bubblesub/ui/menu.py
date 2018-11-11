@@ -23,11 +23,7 @@ from PyQt5 import QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
 from bubblesub.opt.hotkeys import HotkeyContext
-from bubblesub.opt.menu import MenuCommand
-from bubblesub.opt.menu import MenuItem
-from bubblesub.opt.menu import MenuSeparator
-from bubblesub.opt.menu import SubMenu
-
+from bubblesub.opt.menu import MenuCommand, MenuItem, MenuSeparator, SubMenu
 
 HotkeyMap = T.Dict[T.Tuple[HotkeyContext, str], str]
 

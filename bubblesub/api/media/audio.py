@@ -22,8 +22,8 @@ import typing as T
 from pathlib import Path
 
 import ffms
-import scipy.io.wavfile
 import numpy as np
+import scipy.io.wavfile
 from PyQt5 import QtCore
 
 import bubblesub.api.log

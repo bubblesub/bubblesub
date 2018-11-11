@@ -25,9 +25,7 @@ from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
 from bubblesub.api import Api
-from bubblesub.api.cmd import CommandCanceled
-from bubblesub.api.cmd import CommandError
-from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.api.cmd import CommandCanceled, CommandError, CommandUnavailable
 from bubblesub.ass.event import Event
 
 

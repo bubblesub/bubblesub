@@ -17,8 +17,7 @@
 import fractions
 from math import floor
 
-from PyQt5 import QtCore
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 import bubblesub.api
 from bubblesub.ui.mpv import MpvWidget

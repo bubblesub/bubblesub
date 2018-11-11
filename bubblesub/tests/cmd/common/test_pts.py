@@ -20,8 +20,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from bubblesub.api.cmd import CommandError
-from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.api.cmd import CommandError, CommandUnavailable
 from bubblesub.cmd.common import Pts
 
 

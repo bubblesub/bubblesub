@@ -20,9 +20,7 @@ import re
 import typing as T
 from dataclasses import dataclass
 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError

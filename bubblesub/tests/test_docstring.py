@@ -17,8 +17,8 @@
 import ast
 from pathlib import Path
 
-import pytest
 import docstring_parser
+import pytest
 
 from .common import collect_source_files
 

@@ -16,9 +16,7 @@
 
 import typing as T
 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import bubblesub.ui.audio
 import bubblesub.ui.console
@@ -29,10 +27,7 @@ import bubblesub.ui.util
 import bubblesub.ui.video
 from bubblesub.api import Api
 from bubblesub.opt.hotkeys import HotkeyContext
-from bubblesub.opt.menu import MenuCommand
-from bubblesub.opt.menu import MenuContext
-from bubblesub.opt.menu import MenuSeparator
-from bubblesub.opt.menu import SubMenu
+from bubblesub.opt.menu import MenuCommand, MenuContext, MenuSeparator, SubMenu
 from bubblesub.ui.hotkeys import setup_hotkeys
 from bubblesub.ui.menu import setup_cmd_menu
 

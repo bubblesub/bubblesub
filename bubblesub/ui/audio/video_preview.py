@@ -19,17 +19,14 @@ import queue
 import typing as T
 
 import numpy as np
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import bubblesub.api
 import bubblesub.api.media.audio
 import bubblesub.cache
 import bubblesub.util
 from bubblesub.api.media.state import MediaState
-from bubblesub.ui.audio.base import BaseAudioWidget
-from bubblesub.ui.audio.base import SLIDER_SIZE
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
 
 NOT_CACHED = object()
 BAND_Y_RESOLUTION = 30

@@ -18,10 +18,8 @@ import argparse
 from copy import copy
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandUnavailable
-from bubblesub.cmd.common import Pts
-from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.api.cmd import BaseCommand, CommandUnavailable
+from bubblesub.cmd.common import Pts, SubtitlesSelection
 
 
 class SubtitlesSplitCommand(BaseCommand):

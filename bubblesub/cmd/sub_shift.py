@@ -21,12 +21,9 @@ from PyQt5 import QtWidgets
 
 import bubblesub.ui.util
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandCanceled
-from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
 from bubblesub.ass.event import Event
-from bubblesub.cmd.common import Pts
-from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.cmd.common import Pts, SubtitlesSelection
 
 
 class SubtitlesShiftCommand(BaseCommand):

@@ -23,13 +23,10 @@ import zlib
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
-from bubblesub.api.cmd import CommandError
-from bubblesub.api.cmd import CommandUnavailable
+from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import SubtitlesSelection
-from bubblesub.util import ms_to_str
-from bubblesub.util import str_to_ms
+from bubblesub.util import ms_to_str, str_to_ms
 
 
 def _pickle(data: T.Any) -> str:

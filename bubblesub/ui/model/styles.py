@@ -17,8 +17,7 @@
 import enum
 import typing as T
 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
+from PyQt5 import QtCore, QtGui
 
 import bubblesub.api
 import bubblesub.cache
