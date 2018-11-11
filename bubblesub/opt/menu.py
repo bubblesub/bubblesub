@@ -17,7 +17,8 @@
 """Menu config."""
 
 import enum
-import json
+import itertools
+import re
 import typing as T
 
 from bubblesub.data import ROOT_DIR
@@ -80,7 +81,7 @@ class SubMenu(MenuItem):
 class MenuConfig(BaseConfig):
     """Configuration for GUI menu."""
 
-    file_name = 'menu.json'
+    file_name = 'menu.conf'
 
     def __init__(self) -> None:
         """Initialize self."""
@@ -88,75 +89,97 @@ class MenuConfig(BaseConfig):
             MenuContext.MainMenu: [],
             MenuContext.SubtitlesGrid: [],
         }
-        self.loads((ROOT_DIR / 'menu.json').read_text())
+        self.loads((ROOT_DIR / self.file_name).read_text())
 
     def loads(self, text: str) -> None:
         """
         Load internals from a human readable representation.
 
-        :param text: JSON
+        :param text: source text
         """
-        def load_menu(
-                target: T.MutableSequence[MenuItem],
-                source: T.Any
+
+        sections: T.Dict[MenuContext, str] = {}
+        cur_context = MenuContext.MainMenu
+        lines = text.split('\n')
+        while lines:
+            line = lines.pop(0).rstrip()
+            if not line or line.startswith('#'):
+                continue
+
+            match = re.match(r'\[(\w+)\]', line)
+            if match:
+                cur_context = MenuContext(match.group(1))
+                continue
+            if cur_context not in sections:
+                sections[cur_context] = ''
+            sections[cur_context] += line + '\n'
+
+        def _recurse_tree(
+                parent: T.List[MenuItem], depth: int, source: T.List[str]
         ) -> None:
-            if source is None:
-                return
+            while source:
+                last_line = source[0].rstrip()
+                if not last_line:
+                    break
 
-            target.clear()
-            for item in source:
-                if item['type'] == 'command':
-                    target.append(
-                        MenuCommand(item['name'], item['command'])
-                    )
-                elif item['type'] == 'separator':
-                    target.append(MenuSeparator())
-                elif item['type'] == 'submenu':
-                    sub_menu = SubMenu(item['name'], [])
-                    load_menu(sub_menu.children, item['children'])
-                    target.append(sub_menu)
-                else:
-                    raise ValueError(f'unknown menu type "{item["type"]}"')
+                tabs = last_line.count(' ')
+                if tabs < depth:
+                    break
 
-        obj = json.loads(text)
-        for context in MenuContext:
-            load_menu(self._menu[context], obj.get(context.value, None))
+                token = last_line.strip()
+                if tabs >= depth:
+                    source.pop(0)
+                    if token == "-":
+                        parent.append(MenuSeparator())
+                    elif "|" not in token:
+                        node = SubMenu(name=token, children=[])
+                        parent.append(node)
+                        _recurse_tree(
+                            node.children, tabs + 1, source
+                        )
+                    else:
+                        name, cmdline = token.split("|", 1)
+                        parent.append(MenuCommand(name=name, cmdline=cmdline))
+
+        for context, section_text in sections.items():
+            source = section_text.split('\n')
+            self._menu[context] = []
+            _recurse_tree(self._menu[context], 0, source)
 
     def dumps(self) -> str:
         """
         Serialize internals to a human readable representation.
 
-        :return: JSON
+        :return: resulting text
         """
-        class MenuEncoder(json.JSONEncoder):
-            def default(self, o: T.Any) -> T.Any:  # pylint: disable=E0202
-                if isinstance(o, MenuSeparator):
-                    return {'type': 'separator'}
+        def _recurse_tree(source: T.List[MenuItem]) -> T.Iterable[str]:
+            for item in source:
+                if isinstance(item, MenuSeparator):
+                    yield "-"
+                elif isinstance(item, MenuCommand):
+                    yield f"{item.name}|{item.cmdline}"
+                elif isinstance(item, SubMenu):
+                    yield from (
+                        [item.name] +
+                        [
+                            " " * 4 + subitem
+                            for subitem in _recurse_tree(item.children)
+                        ]
+                    )
+                else:
+                    raise AssertionError
 
-                if isinstance(o, MenuCommand):
-                    return {
-                        'type': 'command',
-                        'name': o.name,
-                        'command': o.cmdline
-                    }
+        lines: T.List[str] = []
+        for context, source in self._menu.items():
+            if source:
+                lines.append(f"[{context.value}]")
+                lines += list(_recurse_tree(source))
+                lines.append("")
 
-                if isinstance(o, SubMenu):
-                    return {
-                        'type': 'submenu',
-                        'name': o.name,
-                        'children': o.children
-                    }
+        while not lines[-1]:
+            lines.pop()
 
-                return super().default(o)
-
-        return json.dumps(
-            {
-                context.value: self._menu[context]
-                for context in MenuContext
-            },
-            cls=MenuEncoder,
-            indent=4
-        )
+        return "\n".join(lines)
 
     def __getitem__(self, context: MenuContext) -> T.MutableSequence[MenuItem]:
         """
