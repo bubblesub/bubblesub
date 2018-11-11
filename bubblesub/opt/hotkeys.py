@@ -17,7 +17,7 @@
 """Hotkey config."""
 
 import enum
-import json
+import re
 import typing as T
 
 from bubblesub.data import ROOT_DIR
@@ -53,54 +53,65 @@ class Hotkey:
 class HotkeysConfig(BaseConfig):
     """Configuration for global and widget-centric GUI hotkeys."""
 
-    file_name = 'hotkeys.json'
+    file_name = 'hotkeys.conf'
 
     def __init__(self) -> None:
         """Initialize self."""
         self.hotkeys: T.Dict[HotkeyContext, T.List[Hotkey]] = {
-            HotkeyContext.Global: [],
-            HotkeyContext.Spectrogram: [],
-            HotkeyContext.SubtitlesGrid: [],
+            context: [] for context in HotkeyContext
         }
-        self.loads((ROOT_DIR / 'hotkeys.json').read_text())
+        self.loads((ROOT_DIR / self.file_name).read_text())
 
     def loads(self, text: str) -> None:
         """
         Load internals from a human readable representation.
 
-        :param text: JSON
+        :param text: source text
         """
-        obj = json.loads(text)
-        for context in self.hotkeys:
+        for context in HotkeyContext:
             self.hotkeys[context].clear()
-            for hotkey_obj in obj.get(context.value, []):
-                self.hotkeys[context].append(
-                    Hotkey(
-                        hotkey_obj['shortcut'],
-                        *hotkey_obj['invocations']
-                    )
-                )
+
+        cur_context = HotkeyContext.Global
+        for i, line in enumerate(text.split('\n'), 1):
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+
+            match = re.match(r'\[(\w+)\]', line)
+            if match:
+                cur_context = HotkeyContext(match.group(1))
+                continue
+
+            try:
+                shortcut, commands = re.split(r'\s+', line, maxsplit=1)
+            except ValueError:
+                raise ValueError(f'syntax error near line #{i} ({line})')
+            # TODO: change command parsing
+            commands = [command.strip() for command in commands.split(';')]
+            self.hotkeys[cur_context].append(Hotkey(shortcut, *commands))
 
     def dumps(self) -> str:
         """
         Serialize internals to a human readable representation.
 
-        :return: JSON
+        :return: resulting text
         """
-        return json.dumps(
-            {
-                context.value:
-                [
-                    {
-                        'shortcut': hotkey.shortcut,
-                        'invocations': hotkey.invocations,
-                    }
-                    for hotkey in hotkeys
-                ]
-                for context, hotkeys in self.__iter__()
-            },
-            indent=4
-        )
+        lines: T.List[str] = []
+        for context, hotkeys in self:
+            if not hotkeys:
+                continue
+
+            lines.append(f'[{context.value}]')
+            for hotkey in hotkeys:
+                lines.append(
+                    f'{hotkey.shortcut:20s} {";".join(hotkey.invocations)}'
+                )
+            lines.append('')
+
+        while not lines[-1]:
+            lines.pop()
+
+        return '\n'.join(lines)
 
     def __iter__(self) -> T.Iterator[T.Tuple[HotkeyContext, T.List[Hotkey]]]:
         """
