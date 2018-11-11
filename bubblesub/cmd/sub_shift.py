@@ -81,7 +81,7 @@ class SubtitlesShiftCommand(BaseCommand):
         if not is_relative and subs:
             delta -= subs[0].start
 
-        return Pts(self.api, '+' + str(delta) + 'ms')
+        return Pts(self.api, f'{delta:+d}ms')
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
