@@ -39,6 +39,12 @@ class Options:
         self.menu = MenuConfig()
         self.root_dir = Path()
 
+    def reset(self) -> None:
+        """Reset configuration to factory defaults."""
+        self.general.reset()
+        self.hotkeys.reset()
+        self.menu.reset()
+
     def load(self, root_dir: Path) -> None:
         """
         Load configuration from the specified path.
@@ -57,8 +63,8 @@ class Options:
         :param root_dir: root directory to save the configuration to
         """
         self.general.save(root_dir)
-        self.hotkeys.save(root_dir)
-        self.menu.save(root_dir)
+        self.hotkeys.create_example_file(root_dir)
+        self.menu.create_example_file(root_dir)
 
     def get_assets(self, directory_name: str) -> T.Iterable[Path]:
         """

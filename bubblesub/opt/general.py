@@ -451,8 +451,13 @@ class GeneralConfig(BaseConfig):
 
     file_name = "general.ini"
 
-    def __init__(self) -> None:
-        """Initialize self."""
+    def __init__(self, stop: bool = False) -> None:
+        """
+        Initialize self.
+
+        :param stop: a hack allowing for concise code,
+                     that avoids infinite recursion
+        """
         self.max_undo = 1000
         self.spell_check = "en_US"
         self.convert_newlines = True
@@ -463,6 +468,13 @@ class GeneralConfig(BaseConfig):
         self.audio = AudioConfig()
         self.video = VideoConfig()
         self.search = SearchConfig()
+
+        if not stop:
+            super().__init__()
+
+    def reset(self) -> None:
+        """Reset to factory defaults."""
+        self.__init__(stop=True)
 
     def loads(self, text: str) -> None:
         """

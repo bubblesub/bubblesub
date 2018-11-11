@@ -1,0 +1,13 @@
+# Example configuration for user hotkeys.
+
+# Hotkeys that are globally available.
+[global]
+# Uncommenting lines below will make Ctrl+[ and Ctrl+] control playback speed.
+#Ctrl+[ set-playback-speed 0.5
+#Ctrl+] set-playback-speed 2
+
+# Hotkeys that work only when the spectrogram is focused.
+[spectrogram]
+
+# Hotkeys that work only when the subtitles grid is focused.
+[subtitles_grid]

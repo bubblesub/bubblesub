@@ -23,10 +23,19 @@ from pathlib import Path
 class BaseConfig(abc.ABC):
     """Base config."""
 
+    def __init__(self) -> None:
+        """Initialize self."""
+        self.reset()
+
     @property
     @abc.abstractmethod
     def file_name(self) -> str:
         """Config file name."""
+        raise NotImplementedError("not implemented")
+
+    @abc.abstractmethod
+    def reset(self) -> None:
+        """Reset to factory defaults."""
         raise NotImplementedError("not implemented")
 
     @abc.abstractmethod
@@ -38,7 +47,6 @@ class BaseConfig(abc.ABC):
         """
         raise NotImplementedError("not implemented")
 
-    @abc.abstractmethod
     def dumps(self) -> str:
         """
         Serialize internals to a human readable representation.
@@ -61,7 +69,7 @@ class BaseConfig(abc.ABC):
         """
         Save internals of this config to a specified directory.
 
-        :param root_dir: directory where to look for the matching config file
+        :param root_dir: directory where to put the config file
         """
         full_path = root_dir / self.file_name
         full_path.parent.mkdir(parents=True, exist_ok=True)

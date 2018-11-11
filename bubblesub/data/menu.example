@@ -1,0 +1,17 @@
+# Example configuration for user menus.
+
+# Main menu at the top.
+[main]
+# Uncommenting lines below will add a new menu called Test
+# with one child item, Pause, that runs pause command,
+# and a submenu with a similar unpause button.
+#Test
+#    &Pause|pause on
+#    Submenu
+#        &Unpause|pause off
+
+# Extra positions in the right click menu for the subtitles grid.
+[subtitles_grid]
+
+# Note that currently it is not possible to override default menus -
+# only adding new user items is possible.

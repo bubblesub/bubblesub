@@ -19,6 +19,7 @@
 import enum
 import re
 import typing as T
+from pathlib import Path
 
 from bubblesub.data import ROOT_DIR
 from bubblesub.opt.base import BaseConfig
@@ -83,9 +84,15 @@ class MenuConfig(BaseConfig):
     def __init__(self) -> None:
         """Initialize self."""
         self._menu: T.Dict[MenuContext, T.MutableSequence[MenuItem]] = {
-            MenuContext.MainMenu: [],
-            MenuContext.SubtitlesGrid: [],
+            context: [] for context in MenuContext
         }
+        super().__init__()
+
+    def reset(self) -> None:
+        """Reset to factory defaults."""
+        for context in MenuContext:
+            self._menu[context].clear()
+
         self.loads((ROOT_DIR / self.file_name).read_text())
 
     def loads(self, text: str) -> None:
@@ -94,7 +101,6 @@ class MenuConfig(BaseConfig):
 
         :param text: source text
         """
-
         sections: T.Dict[MenuContext, str] = {}
         cur_context = MenuContext.MainMenu
         lines = text.split("\n")
@@ -140,46 +146,19 @@ class MenuConfig(BaseConfig):
 
         for context, section_text in sections.items():
             source = section_text.split("\n")
-            self._menu[context] = []
             _recurse_tree(self._menu[context], 0, source)
 
-    def dumps(self) -> str:
+    def create_example_file(self, root_dir: Path) -> None:
         """
-        Serialize internals to a human readable representation.
+        Create an example file for the user to get to know the config syntax.
 
-        :return: resulting text
+        :param root_dir: directory where to put the config file
         """
-
-        def _recurse_tree(
-            source: T.MutableSequence[MenuItem]
-        ) -> T.Iterable[str]:
-            for item in source:
-                if isinstance(item, MenuSeparator):
-                    yield "-"
-                elif isinstance(item, MenuCommand):
-                    yield f"{item.name}|{item.cmdline}"
-                elif isinstance(item, SubMenu):
-                    yield from (
-                        [item.name]
-                        + [
-                            " " * 4 + subitem
-                            for subitem in _recurse_tree(item.children)
-                        ]
-                    )
-                else:
-                    raise AssertionError
-
-        lines: T.List[str] = []
-        for context, source in self._menu.items():
-            if source:
-                lines.append(f"[{context.value}]")
-                lines += list(_recurse_tree(source))
-                lines.append("")
-
-        while not lines[-1]:
-            lines.pop()
-
-        return "\n".join(lines)
+        full_path = root_dir / self.file_name
+        if not full_path.exists():
+            full_path.write_text(
+                (ROOT_DIR / self.file_name).with_suffix(".example").read_text()
+            )
 
     def __getitem__(self, context: MenuContext) -> T.MutableSequence[MenuItem]:
         """

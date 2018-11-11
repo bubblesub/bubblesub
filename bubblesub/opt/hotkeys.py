@@ -19,6 +19,7 @@
 import enum
 import re
 import typing as T
+from pathlib import Path
 
 from bubblesub.data import ROOT_DIR
 from bubblesub.opt.base import BaseConfig
@@ -56,6 +57,13 @@ class HotkeysConfig(BaseConfig):
         self.hotkeys: T.Dict[HotkeyContext, T.List[Hotkey]] = {
             context: [] for context in HotkeyContext
         }
+        super().__init__()
+
+    def reset(self) -> None:
+        """Reset to factory defaults."""
+        for context in HotkeyContext:
+            self.hotkeys[context].clear()
+
         self.loads((ROOT_DIR / self.file_name).read_text())
 
     def loads(self, text: str) -> None:
@@ -64,9 +72,6 @@ class HotkeysConfig(BaseConfig):
 
         :param text: source text
         """
-        for context in HotkeyContext:
-            self.hotkeys[context].clear()
-
         cur_context = HotkeyContext.Global
         for i, line in enumerate(text.split("\n"), 1):
             line = line.strip()
@@ -84,26 +89,17 @@ class HotkeysConfig(BaseConfig):
                 raise ValueError(f"syntax error near line #{i} ({line})")
             self.hotkeys[cur_context].append(Hotkey(shortcut, cmdline))
 
-    def dumps(self) -> str:
+    def create_example_file(self, root_dir: Path) -> None:
         """
-        Serialize internals to a human readable representation.
+        Create an example file for the user to get to know the config syntax.
 
-        :return: resulting text
+        :param root_dir: directory where to put the config file
         """
-        lines: T.List[str] = []
-        for context, hotkeys in self:
-            if not hotkeys:
-                continue
-
-            lines.append(f"[{context.value}]")
-            for hotkey in hotkeys:
-                lines.append(f"{hotkey.shortcut:20s} {hotkey.cmdline}")
-            lines.append("")
-
-        while not lines[-1]:
-            lines.pop()
-
-        return "\n".join(lines)
+        full_path = root_dir / self.file_name
+        if not full_path.exists():
+            full_path.write_text(
+                (ROOT_DIR / self.file_name).with_suffix(".example").read_text()
+            )
 
     def __iter__(self) -> T.Iterator[T.Tuple[HotkeyContext, T.List[Hotkey]]]:
         """

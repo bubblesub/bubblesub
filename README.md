@@ -44,7 +44,10 @@ file](https://github.com/rr-/bubblesub/tree/master/docs/doc.md).
 ## Configuration and plugins
 
 - `$XDG_CONFIG_HOME/bubblesub/scripts`: contains user plugins
-- `$XDG_CONFIG_HOME/bubblesub/`: contains user configuration in JSON and INI
+- `$XDG_CONFIG_HOME/bubblesub/`: contains user configuration
+    - `general.ini`: general options
+    - `hotkeys.conf`: configurable user hotkeys
+    - `menu.conf`: configurable additional user menus
 - `$XDG_CACHE_HOME/bubblesub/`: used to cache time codes and such
 
 #### Example plugin: speech recognition of selected lines
