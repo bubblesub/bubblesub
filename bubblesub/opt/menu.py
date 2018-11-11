@@ -112,7 +112,9 @@ class MenuConfig(BaseConfig):
             sections[cur_context] += line + "\n"
 
         def _recurse_tree(
-            parent: T.List[MenuItem], depth: int, source: T.List[str]
+            parent: T.MutableSequence[MenuItem],
+            depth: int,
+            source: T.List[str],
         ) -> None:
             while source:
                 last_line = source[0].rstrip()
@@ -131,9 +133,7 @@ class MenuConfig(BaseConfig):
                     elif "|" not in token:
                         node = SubMenu(name=token, children=[])
                         parent.append(node)
-                        _recurse_tree(
-                            node.children, tabs + 1, source
-                        )
+                        _recurse_tree(node.children, tabs + 1, source)
                     else:
                         name, cmdline = token.split("|", 1)
                         parent.append(MenuCommand(name=name, cmdline=cmdline))
@@ -150,7 +150,9 @@ class MenuConfig(BaseConfig):
         :return: resulting text
         """
 
-        def _recurse_tree(source: T.List[MenuItem]) -> T.Iterable[str]:
+        def _recurse_tree(
+            source: T.MutableSequence[MenuItem]
+        ) -> T.Iterable[str]:
             for item in source:
                 if isinstance(item, MenuSeparator):
                     yield "-"
