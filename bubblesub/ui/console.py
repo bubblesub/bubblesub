@@ -291,7 +291,7 @@ class ConsoleInput(QtWidgets.QLineEdit):
 
         # command arguments
         match = re.match(
-            '^(?P<cmd>[^ ]+) (?:.*)(?P<arg>-[^ =]*)$', compl.prefix
+            '^(?P<cmd>[^ ]+) (?:.*?)(?P<arg>-[^ =]*)$', compl.prefix
         )
         if match:
             cls = self._api.cmd.get(match.group('cmd'))
