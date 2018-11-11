@@ -221,6 +221,30 @@ class PyTestCommand(Command):
         sys.exit(errno)
 
 
+class FormatCommand(Command):
+    description = "run formatters"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import subprocess
+
+        commands = [
+            ["isort", "-p", "bubblesub", "-o", "mpv", "-ns", "__init__.py"],
+            ["black", "-l79", "."],
+        ]
+        for command in commands:
+            status = subprocess.run(command)
+            if status.returncode != 0:
+                sys.exit(status.returncode)
+        sys.exit(0)
+
+
 class LintCommand(Command):
     description = "run linters"
     user_options = []
@@ -306,17 +330,20 @@ setup(
     ],
     extras_require={
         "develop": [
-            "pytest",
-            "pylint",
+            "black",
+            "docstring_parser",
+            "isort",
+            "mypy",
             "pycodestyle",
             "pydocstyle",
-            "mypy",
-            "docstring_parser",
+            "pylint",
+            "pytest",
         ]
     },
     cmdclass={
         "doc": GenerateDocumentationCommand,
         "test": PyTestCommand,
+        "fmt": FormatCommand,
         "lint": LintCommand,
         "mypy": MypyCommand,
     },

@@ -154,5 +154,7 @@ MENU = [
 - Install development dependencies: `pip install --user -e '.[develop]'`
 - Run tests: `python setup.py test`
 - Run linters: `python setup.py lint`
+- Run formatters: `python setup.py fmt`
+  (`bubblesub` uses [`black`](https://github.com/ambv/black))
 - Run type checks: `python setup.py mypy`
 - Generate documentation: `python setup.py doc`
