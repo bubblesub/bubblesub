@@ -173,6 +173,9 @@ Usage: `mute operation`
 ### <a name="cmd-new"></a>`new`
 Opens a new file. Prompts user to save the current file if there are unsaved changes.
 
+### <a name="cmd-noop"></a>`noop`
+Does nothing.
+
 ### <a name="cmd-open"></a>`open`
 Opens an existing subtitles file. Prompts user to save the current file if there are unsaved changes. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 

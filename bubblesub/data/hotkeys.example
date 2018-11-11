@@ -11,3 +11,5 @@
 
 # Hotkeys that work only when the subtitles grid is focused.
 [subtitles_grid]
+
+# To "clear" a built-in hotkey you don't like, rebind it to `noop`.

@@ -121,6 +121,8 @@ def split_invocation(invocation: str) -> T.List[T.List[str]]:
 class BaseCommand(abc.ABC):
     """Base class for all commands."""
 
+    silent = False
+
     def __init__(
         self,
         api: "bubblesub.api.Api",
@@ -262,24 +264,28 @@ class CommandApi(QtCore.QObject):
         :return: whether the command was executed without problems
         """
         start_time = time.time()
-        self._api.log.command_echo(cmd.invocation)
+        if not cmd.silent:
+            self._api.log.command_echo(cmd.invocation)
 
         try:
             if not cmd.is_enabled:
                 raise CommandUnavailable
             await cmd.run()
         except (CommandCanceled, CommandUnavailable) as ex:
-            self._api.log.warn(str(ex))
+            if not cmd.silent:
+                self._api.log.warn(str(ex))
             return False
         except Exception as ex:  # pylint: disable=broad-except
-            self._api.log.error(f"problem running {cmd.invocation}:")
-            self._api.log.error(f"{ex}")
-            traceback.print_exc()
+            if not cmd.silent:
+                self._api.log.error(f"problem running {cmd.invocation}:")
+                self._api.log.error(f"{ex}")
+                traceback.print_exc()
             return False
 
         end_time = time.time()
         took = end_time - start_time
-        self._api.log.debug(f"{cmd.invocation}: took {took:.04f} s")
+        if not cmd.silent:
+            self._api.log.debug(f"{cmd.invocation}: took {took:.04f} s")
         return True
 
     def get(self, name: str) -> T.Optional[T.Type[BaseCommand]]:
