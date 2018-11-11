@@ -44,6 +44,9 @@ disable=
     too-many-instance-attributes,
     too-many-public-methods,
 
+    # conflicts with black
+    bad-continuation,
+
     # plain stupid
     no-self-use,
     too-few-public-methods

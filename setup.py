@@ -236,7 +236,7 @@ class LintCommand(Command):
         import glob
 
         commands = [
-            ["pycodestyle", "bubblesub"],
+            ["pycodestyle", "--ignore=E203,W503", "bubblesub"],
             [
                 "pydocstyle",
                 "bubblesub/api",
@@ -250,8 +250,6 @@ class LintCommand(Command):
 
         for command in commands:
             status = subprocess.run(command)
-            if status.returncode != 0:
-                sys.exit(status.returncode)
         sys.exit(0)
 
 
