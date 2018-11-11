@@ -83,5 +83,5 @@ class LogApi(QtCore.QObject):
         :param level: level to log the message with
         :param text: text to log
         """
-        for line in text.split('\n'):
+        for line in text.split("\n"):
             self.logged.emit(level, line)

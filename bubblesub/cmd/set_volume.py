@@ -22,8 +22,8 @@ from bubblesub.util import eval_expr
 
 
 class SetVolumeCommand(BaseCommand):
-    names = ['set-volume']
-    help_text = 'Adjusts the video volume.'
+    names = ["set-volume"]
+    help_text = "Adjusts the video volume."
 
     async def run(self) -> None:
         new_value = eval_expr(
@@ -35,7 +35,7 @@ class SetVolumeCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            'expression', help='expression to calculate new volume', type=str
+            "expression", help="expression to calculate new volume", type=str
         )
 
 

@@ -23,15 +23,15 @@ from bubblesub.cmd.common import SubtitlesSelection
 
 class AudioCommitSelectionCommand(BaseCommand):
     names = [
-        'audio-commit-sel',
-        'audio-commit-selection',
-        'spectrogram-commit-sel',
-        'spectrogram-commit-selection',
+        "audio-commit-sel",
+        "audio-commit-selection",
+        "spectrogram-commit-sel",
+        "spectrogram-commit-selection",
     ]
     help_text = (
-        'Commits the spectrogram selection into given subtitles. '
-        'The subtitles start and end times are synced to the '
-        'current spectrogram selection boundaries.'
+        "Commits the spectrogram selection into given subtitles. "
+        "The subtitles start and end times are synced to the "
+        "current spectrogram selection boundaries."
     )
 
     @property
@@ -42,7 +42,7 @@ class AudioCommitSelectionCommand(BaseCommand):
         with self.api.undo.capture():
             subs = await self.args.target.get_subtitles()
             if not subs:
-                raise CommandUnavailable('nothing to update')
+                raise CommandUnavailable("nothing to update")
 
             for sub in subs:
                 sub.begin_update()
@@ -53,11 +53,11 @@ class AudioCommitSelectionCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to commit selection into',
+            "-t",
+            "--target",
+            help="subtitles to commit selection into",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
 
 

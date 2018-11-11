@@ -32,7 +32,7 @@ class GuiApi(QtCore.QObject):
     begin_update_requested = QtCore.pyqtSignal()
     end_update_requested = QtCore.pyqtSignal()
 
-    def __init__(self, api: 'bubblesub.api.api.Api') -> None:
+    def __init__(self, api: "bubblesub.api.api.Api") -> None:
         """
         Initialize self.
 

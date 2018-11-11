@@ -46,15 +46,15 @@ class _SearchModeHandler(abc.ABC):
 
     @abc.abstractmethod
     def get_subject_text(self, sub: Event) -> str:
-        raise NotImplementedError('not implemented')
+        raise NotImplementedError("not implemented")
 
     @abc.abstractmethod
     def set_subject_text(self, sub: Event, value: str) -> None:
-        raise NotImplementedError('not implemented')
+        raise NotImplementedError("not implemented")
 
     @abc.abstractmethod
     def get_subject_widget_name(self) -> str:
-        raise NotImplementedError('not implemented')
+        raise NotImplementedError("not implemented")
 
     def get_subject_widget(self) -> QtWidgets.QWidget:
         widget = self.main_window.findChild(
@@ -78,7 +78,7 @@ class _SearchModeHandler(abc.ABC):
                 selection_start, selection_end - selection_start
             )
         else:
-            raise AssertionError(f'unknown search widget type ({type(widget)}')
+            raise AssertionError(f"unknown search widget type ({type(widget)}")
         widget.setFocus()
 
     def get_selection_from_widget(self) -> T.Tuple[int, int]:
@@ -91,7 +91,7 @@ class _SearchModeHandler(abc.ABC):
                 widget.selectionStart(),
                 widget.selectionStart() + len(widget.selectedText()),
             )
-        raise AssertionError(f'unknown search widget type ({type(widget)})')
+        raise AssertionError(f"unknown search widget type ({type(widget)})")
 
     def get_widget_text(self) -> str:
         widget = self.get_subject_widget()
@@ -99,7 +99,7 @@ class _SearchModeHandler(abc.ABC):
             return T.cast(str, widget.toPlainText())
         if isinstance(widget, QtWidgets.QLineEdit):
             return widget.text()
-        raise AssertionError(f'unknown search widget type ({type(widget)})')
+        raise AssertionError(f"unknown search widget type ({type(widget)})")
 
     def set_widget_text(self, text: str) -> None:
         widget = self.get_subject_widget()
@@ -109,30 +109,30 @@ class _SearchModeHandler(abc.ABC):
             widget.setText(text)
         else:
             raise AssertionError(
-                f'unknown search widget type ({type(widget)})'
+                f"unknown search widget type ({type(widget)})"
             )
 
 
 class _TextSearchModeHandler(_SearchModeHandler):
     def get_subject_text(self, sub: Event) -> str:
-        return sub.text.replace('\\N', '\n')
+        return sub.text.replace("\\N", "\n")
 
     def set_subject_text(self, sub: Event, value: str) -> None:
-        sub.text = value.replace('\n', '\\N')
+        sub.text = value.replace("\n", "\\N")
 
     def get_subject_widget_name(self) -> QtWidgets.QWidget:
-        return 'text-editor'
+        return "text-editor"
 
 
 class _NoteSearchModeHandler(_SearchModeHandler):
     def get_subject_text(self, sub: Event) -> str:
-        return sub.note.replace('\\N', '\n')
+        return sub.note.replace("\\N", "\n")
 
     def set_subject_text(self, sub: Event, value: str) -> None:
-        sub.note = value.replace('\n', '\\N')
+        sub.note = value.replace("\n", "\\N")
 
     def get_subject_widget_name(self) -> QtWidgets.QWidget:
-        return 'note-editor'
+        return "note-editor"
 
 
 class _ActorSearchModeHandler(_SearchModeHandler):
@@ -143,7 +143,7 @@ class _ActorSearchModeHandler(_SearchModeHandler):
         sub.actor = value
 
     def get_subject_widget_name(self) -> QtWidgets.QWidget:
-        return 'actor-editor'
+        return "actor-editor"
 
 
 class _StyleSearchModeHandler(_SearchModeHandler):
@@ -154,7 +154,7 @@ class _StyleSearchModeHandler(_SearchModeHandler):
         sub.style = value
 
     def get_subject_widget_name(self) -> QtWidgets.QWidget:
-        return 'style-editor'
+        return "style-editor"
 
 
 _HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
@@ -265,12 +265,12 @@ def _count(
 
 class _SearchModeGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
-        super().__init__('Search mode:', parent)
+        super().__init__("Search mode:", parent)
         self._radio_buttons = {
-            SearchMode.Text: QtWidgets.QRadioButton('Text', self),
-            SearchMode.Note: QtWidgets.QRadioButton('Note', self),
-            SearchMode.Actor: QtWidgets.QRadioButton('Actor', self),
-            SearchMode.Style: QtWidgets.QRadioButton('Style', self),
+            SearchMode.Text: QtWidgets.QRadioButton("Text", self),
+            SearchMode.Note: QtWidgets.QRadioButton("Note", self),
+            SearchMode.Actor: QtWidgets.QRadioButton("Actor", self),
+            SearchMode.Style: QtWidgets.QRadioButton("Style", self),
         }
         layout = QtWidgets.QVBoxLayout(self)
         for radio_button in self._radio_buttons.values():
@@ -315,25 +315,25 @@ class _SearchDialog(QtWidgets.QDialog):
 
         self.search_text_edit = _SearchTextEdit(self)
         self.replacement_text_edit = QtWidgets.QLineEdit(self)
-        self.case_chkbox = QtWidgets.QCheckBox('Case sensitivity', self)
+        self.case_chkbox = QtWidgets.QCheckBox("Case sensitivity", self)
         self.regex_chkbox = QtWidgets.QCheckBox(
-            'Use regular expressions', self
+            "Use regular expressions", self
         )
         self.search_mode_group_box = _SearchModeGroupBox(self)
 
-        search_label = QtWidgets.QLabel('Text to search for:', self)
-        replace_label = QtWidgets.QLabel('Text to replace with:', self)
+        search_label = QtWidgets.QLabel("Text to search for:", self)
+        replace_label = QtWidgets.QLabel("Text to replace with:", self)
 
         strip = QtWidgets.QDialogButtonBox(self)
         strip.setOrientation(QtCore.Qt.Vertical)
-        self.find_next_btn = strip.addButton('Find next', strip.ActionRole)
-        self.find_prev_btn = strip.addButton('Find previous', strip.ActionRole)
-        self.count_btn = strip.addButton('Count occurences', strip.ActionRole)
+        self.find_next_btn = strip.addButton("Find next", strip.ActionRole)
+        self.find_prev_btn = strip.addButton("Find previous", strip.ActionRole)
+        self.count_btn = strip.addButton("Count occurences", strip.ActionRole)
         self.replace_sel_btn = strip.addButton(
-            'Replace selection', strip.ActionRole
+            "Replace selection", strip.ActionRole
         )
-        self.replace_all_btn = strip.addButton('Replace all', strip.ActionRole)
-        strip.addButton('Cancel', strip.RejectRole)
+        self.replace_all_btn = strip.addButton("Replace all", strip.ActionRole)
+        strip.addButton("Cancel", strip.RejectRole)
         strip.clicked.connect(self.action)
         strip.rejected.connect(self.reject)
 
@@ -365,9 +365,9 @@ class _SearchDialog(QtWidgets.QDialog):
         layout.addWidget(strip)
 
         if show_replace_controls:
-            self.setWindowTitle('Search and replace...')
+            self.setWindowTitle("Search and replace...")
         else:
-            self.setWindowTitle('Search...')
+            self.setWindowTitle("Search...")
 
         self._load_opt()
         self._update_replacement_enabled()
@@ -404,23 +404,23 @@ class _SearchDialog(QtWidgets.QDialog):
             self._api, self._handler, self._search_regex, self._target_text
         )
         bubblesub.ui.util.notice(
-            f'Replaced {count} occurences.'
+            f"Replaced {count} occurences."
             if count
-            else 'No occurences found.'
+            else "No occurences found."
         )
 
     def _search(self, reverse: bool) -> None:
         self._push_search_history()
         result = _search(self._api, self._handler, self._search_regex, reverse)
         if not result:
-            bubblesub.ui.util.notice('No occurences found.')
+            bubblesub.ui.util.notice("No occurences found.")
         self._update_replacement_enabled()
 
     def _count(self) -> None:
         self._push_search_history()
         count = _count(self._api, self._handler, self._search_regex)
         bubblesub.ui.util.notice(
-            f'Found {count} occurences.' if count else 'No occurences found.'
+            f"Found {count} occurences." if count else "No occurences found."
         )
 
     def _update_replacement_enabled(self) -> None:
@@ -491,8 +491,8 @@ class _SearchDialog(QtWidgets.QDialog):
 
 
 class SearchCommand(BaseCommand):
-    names = ['search']
-    help_text = 'Opens up the search dialog.'
+    names = ["search"]
+    help_text = "Opens up the search dialog."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
@@ -504,8 +504,8 @@ class SearchCommand(BaseCommand):
 
 
 class SearchAndReplaceCommand(BaseCommand):
-    names = ['search-and-replace']
-    help_text = 'Opens up the search and replace dialog.'
+    names = ["search-and-replace"]
+    help_text = "Opens up the search and replace dialog."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
@@ -517,8 +517,8 @@ class SearchAndReplaceCommand(BaseCommand):
 
 
 class SearchRepeatCommand(BaseCommand):
-    names = ['search-repeat', 'search-again']
-    help_text = 'Repeats last search operation.'
+    names = ["search-repeat", "search-again"]
+    help_text = "Repeats last search operation."
 
     @property
     def is_enabled(self) -> bool:
@@ -540,22 +540,22 @@ class SearchRepeatCommand(BaseCommand):
             self.args.reverse,
         )
         if not result:
-            bubblesub.ui.util.notice('No occurences found.')
+            bubblesub.ui.util.notice("No occurences found.")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument(
-            '--above',
-            dest='reverse',
-            action='store_true',
-            help='search forward',
+            "--above",
+            dest="reverse",
+            action="store_true",
+            help="search forward",
         )
         group.add_argument(
-            '--below',
-            dest='reverse',
-            action='store_false',
-            help='search backward',
+            "--below",
+            dest="reverse",
+            action="store_false",
+            help="search backward",
         )
 
 

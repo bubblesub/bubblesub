@@ -22,8 +22,8 @@ from bubblesub.cmd.common import Pts
 
 
 class SeekCommand(BaseCommand):
-    names = ['seek']
-    help_text = 'Changes the video playback position to desired place.'
+    names = ["seek"]
+    help_text = "Changes the video playback position to desired place."
 
     @property
     def is_enabled(self) -> bool:
@@ -39,18 +39,18 @@ class SeekCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p',
-            '--pos',
-            help='where to seek',
+            "-p",
+            "--pos",
+            help="where to seek",
             type=lambda value: Pts(api, value),
             required=True,
         )
         parser.add_argument(
-            '--precise',
+            "--precise",
             help=(
-                'whether to use precise seeking at the expense of performance'
+                "whether to use precise seeking at the expense of performance"
             ),
-            action='store_true',
+            action="store_true",
         )
 
 

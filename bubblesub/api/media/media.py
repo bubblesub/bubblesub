@@ -86,35 +86,35 @@ class MediaApi(QtCore.QObject):
         self._subs_api.styles.items_removed.connect(self._on_subs_change)
         self._subs_api.styles.items_inserted.connect(self._on_subs_change)
 
-        locale.setlocale(locale.LC_NUMERIC, 'C')
+        locale.setlocale(locale.LC_NUMERIC, "C")
         self._mpv = mpv.Context()
-        self._mpv.set_log_level('error')
+        self._mpv.set_log_level("error")
         for key, value in {
-            'config': False,
-            'quiet': False,
-            'msg-level': 'all=error',
-            'osc': False,
-            'osd-bar': False,
-            'input-cursor': False,
-            'input-vo-keyboard': False,
-            'input-default-bindings': False,
-            'ytdl': False,
-            'sub-auto': False,
-            'audio-file-auto': False,
-            'vo': 'null' if args.no_video else 'opengl-cb',
-            'pause': True,
-            'idle': True,
-            'video-sync': 'display-vdrop',
-            'keepaspect': True,
-            'stop-playback-on-init-failure': False,
-            'keep-open': True,
+            "config": False,
+            "quiet": False,
+            "msg-level": "all=error",
+            "osc": False,
+            "osd-bar": False,
+            "input-cursor": False,
+            "input-vo-keyboard": False,
+            "input-default-bindings": False,
+            "ytdl": False,
+            "sub-auto": False,
+            "audio-file-auto": False,
+            "vo": "null" if args.no_video else "opengl-cb",
+            "pause": True,
+            "idle": True,
+            "video-sync": "display-vdrop",
+            "keepaspect": True,
+            "stop-playback-on-init-failure": False,
+            "keep-open": True,
         }.items():
             self._mpv.set_option(key, value)
 
-        self._mpv.observe_property('time-pos')
-        self._mpv.observe_property('duration')
-        self._mpv.observe_property('mute')
-        self._mpv.observe_property('pause')
+        self._mpv.observe_property("time-pos")
+        self._mpv.observe_property("duration")
+        self._mpv.observe_property("mute")
+        self._mpv.observe_property("pause")
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
 
@@ -145,9 +145,9 @@ class MediaApi(QtCore.QObject):
         self._max_pts = 0
         self._path = None
         self._mpv_ready = False
-        self._mpv.set_property('pause', True)
+        self._mpv.set_property("pause", True)
         try:
-            self._mpv.command('playlist-remove', 'current')
+            self._mpv.command("playlist-remove", "current")
         except mpv.MPVError:
             pass
 
@@ -166,7 +166,7 @@ class MediaApi(QtCore.QObject):
         if str(self._subs_api.remembered_video_path) != str(self._path):
             self._subs_api.remembered_video_path = self._path
 
-        self._mpv.command('loadfile', str(self.path))
+        self._mpv.command("loadfile", str(self.path))
         self.state_changed.emit(self.state)
 
     def seek(self, pts: int, precise: bool = True) -> None:
@@ -183,9 +183,9 @@ class MediaApi(QtCore.QObject):
         pts = self.video.align_pts_to_near_frame(pts)
         if pts != self.current_pts:
             self._mpv.command(
-                'seek',
+                "seek",
                 bubblesub.util.ms_to_str(pts),
-                'absolute+exact' if precise else 'absolute',
+                "absolute+exact" if precise else "absolute",
             )
 
     def step_frame_forward(self) -> None:
@@ -193,14 +193,14 @@ class MediaApi(QtCore.QObject):
         if not self._mpv_ready:
             return
         self._set_end(None)  # mpv refuses to seek beyond --end
-        self._mpv.command('frame-step')
+        self._mpv.command("frame-step")
 
     def step_frame_backward(self) -> None:
         """Step one frame back."""
         if not self._mpv_ready:
             return
         self._set_end(None)  # mpv refuses to seek beyond --end
-        self._mpv.command('frame-back-step')
+        self._mpv.command("frame-back-step")
 
     def play(self, start: int, end: T.Optional[int]) -> None:
         """
@@ -228,7 +228,7 @@ class MediaApi(QtCore.QObject):
         :param value: new playback rate
         """
         self._playback_speed = value
-        self._mpv.set_property('speed', float(self._playback_speed))
+        self._mpv.set_property("speed", float(self._playback_speed))
         self.playback_speed_changed.emit()
 
     @property
@@ -248,7 +248,7 @@ class MediaApi(QtCore.QObject):
         :param value: new volume
         """
         self._volume = value
-        self._mpv.set_property('volume', float(self._volume))
+        self._mpv.set_property("volume", float(self._volume))
         self.volume_changed.emit()
 
     @property
@@ -259,7 +259,7 @@ class MediaApi(QtCore.QObject):
         :return: whether the video is muted
         """
         try:
-            return self._mpv.get_property('mute')
+            return self._mpv.get_property("mute")
         except mpv.MPVError:
             traceback.print_exc()
             return False
@@ -272,7 +272,7 @@ class MediaApi(QtCore.QObject):
         :param value: whether to mute the video
         """
         try:
-            self._mpv.set_property('mute', value)
+            self._mpv.set_property("mute", value)
             self.mute_changed.emit()
         except mpv.MPVError:
             traceback.print_exc()
@@ -305,7 +305,7 @@ class MediaApi(QtCore.QObject):
         if not self._mpv_ready:
             return True
         try:
-            return bool(self._mpv.get_property('pause'))
+            return bool(self._mpv.get_property("pause"))
         except mpv.MPVError:
             traceback.print_exc()
             return False
@@ -321,7 +321,7 @@ class MediaApi(QtCore.QObject):
             return
         try:
             self._set_end(None)
-            self._mpv.set_property('pause', value)
+            self._mpv.set_property("pause", value)
             self.pause_changed.emit()
         except mpv.MPVError:
             traceback.print_exc()
@@ -350,17 +350,17 @@ class MediaApi(QtCore.QObject):
         if start is not None:
             self.seek(start)
         self._set_end(end)
-        self._mpv.set_property('pause', False)
+        self._mpv.set_property("pause", False)
 
     def _set_end(self, end: T.Optional[int]) -> None:
         if end is None:
             # XXX: mpv doesn't accept None nor "" so we use max pts
-            end = self._mpv.get_property('duration') * 1000
+            end = self._mpv.get_property("duration") * 1000
         else:
             end -= 1
         assert end is not None
         end = max(0, end)
-        self._mpv.set_option('end', bubblesub.util.ms_to_str(end))
+        self._mpv.set_option("end", bubblesub.util.ms_to_str(end))
 
     def _mpv_unloaded(self) -> None:
         self._mpv_ready = False
@@ -388,11 +388,11 @@ class MediaApi(QtCore.QObject):
     def _refresh_subs(self) -> None:
         if not self._mpv_ready:
             return
-        if self._mpv.get_property('sub'):
-            self._mpv.command('sub_remove')
+        if self._mpv.get_property("sub"):
+            self._mpv.command("sub_remove")
         with io.StringIO() as handle:
             bubblesub.ass.writer.write_ass(self._subs_api.ass_file, handle)
-            self._mpv.command('sub_add', 'memory://' + handle.getvalue())
+            self._mpv.command("sub_add", "memory://" + handle.getvalue())
         self._need_subs_refresh = False
 
     def _mpv_event_handler(self) -> None:
@@ -408,21 +408,21 @@ class MediaApi(QtCore.QObject):
                 elif event.id == mpv.Events.log_message:
                     event_log = event.data
                     self._log_api.debug(
-                        f'video/{event_log.prefix}: {event_log.text.strip()}'
+                        f"video/{event_log.prefix}: {event_log.text.strip()}"
                     )
                 elif event.id == mpv.Events.property_change:
                     event_prop = event.data
-                    if event_prop.name == 'time-pos':
+                    if event_prop.name == "time-pos":
                         self._current_pts = round(
                             (event_prop.data or 0) * 1000
                         )
                         self.current_pts_changed.emit()
-                    elif event_prop.name == 'duration':
+                    elif event_prop.name == "duration":
                         self._max_pts = int((event_prop.data or 0) * 1000)
                         self.max_pts_changed.emit()
-                    elif event_prop.name == 'mute':
+                    elif event_prop.name == "mute":
                         self.mute_changed.emit()
-                    elif event_prop.name == 'pause':
+                    elif event_prop.name == "pause":
                         self.pause_changed.emit()
             except Exception:  # pylint: disable=broad-except
                 traceback.print_exc()

@@ -22,7 +22,7 @@ from pathlib import Path
 
 import xdg
 
-CACHE_SUFFIX = '.dat'
+CACHE_SUFFIX = ".dat"
 
 
 def get_cache_dir() -> Path:
@@ -31,7 +31,7 @@ def get_cache_dir() -> Path:
 
     :return: path to cache files
     """
-    return Path(xdg.XDG_CACHE_HOME) / 'bubblesub'
+    return Path(xdg.XDG_CACHE_HOME) / "bubblesub"
 
 
 def get_cache_file_path(cache_name: str) -> Path:
@@ -53,7 +53,7 @@ def load_cache(cache_name: str) -> T.Any:
     """
     cache_path = get_cache_file_path(cache_name)
     if cache_path.exists():
-        with cache_path.open(mode='rb') as handle:
+        with cache_path.open(mode="rb") as handle:
             return pickle.load(handle)
     return None
 
@@ -67,7 +67,7 @@ def save_cache(cache_name: str, data: T.Any) -> None:
     """
     cache_path = get_cache_file_path(cache_name)
     cache_path.parent.mkdir(parents=True, exist_ok=True)
-    with cache_path.open(mode='wb') as handle:
+    with cache_path.open(mode="wb") as handle:
         pickle.dump(data, handle)
 
 

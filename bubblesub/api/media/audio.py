@@ -40,7 +40,7 @@ _SAMPLER_LOCK = threading.Lock()
 class AudioSourceWorker(bubblesub.worker.Worker):
     """Detached audio source provider."""
 
-    def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
+    def __init__(self, log_api: "bubblesub.api.log.LogApi") -> None:
         """
         Initialize self.
 
@@ -57,10 +57,10 @@ class AudioSourceWorker(bubblesub.worker.Worker):
         :return: audio source
         """
         path = T.cast(Path, task)
-        self._log_api.info(f'started loading audio ({path})')
+        self._log_api.info(f"started loading audio ({path})")
 
         path_hash = bubblesub.util.hash_digest(path)
-        cache_name = f'{path_hash}-audio-index'
+        cache_name = f"{path_hash}-audio-index"
         cache_path = bubblesub.cache.get_cache_file_path(cache_name)
 
         index = None
@@ -76,7 +76,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
 
         if not index:
             if not path.exists():
-                self._log_api.error(f'audio file {path} not found')
+                self._log_api.error(f"audio file {path} not found")
                 return None
 
             indexer = ffms.Indexer(str(path))
@@ -88,7 +88,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
             ffms.FFMS_TYPE_AUDIO
         )
         audio_source = ffms.AudioSource(str(path), track_number, index)
-        self._log_api.info('audio finished loading')
+        self._log_api.info("audio finished loading")
         return (path, audio_source)
 
 
@@ -101,8 +101,8 @@ class AudioApi(QtCore.QObject):
 
     def __init__(
         self,
-        media_api: 'bubblesub.api.media.media.MediaApi',
-        log_api: 'bubblesub.api.log.LogApi',
+        media_api: "bubblesub.api.media.media.MediaApi",
+        log_api: "bubblesub.api.log.LogApi",
     ) -> None:
         """
         Initialize self.
@@ -401,7 +401,7 @@ class AudioApi(QtCore.QObject):
             )
 
         # increase compatibility with external programs
-        if samples.dtype.name in ('float32', 'float64'):
+        if samples.dtype.name in ("float32", "float64"):
             samples = (samples * (1 << 31)).astype(np.int32)
 
         # pylint: disable=no-member

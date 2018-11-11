@@ -102,7 +102,7 @@ class VideoBandWorker(QtCore.QObject):
 
     @property
     def _cache_name(self) -> str:
-        return bubblesub.util.hash_digest(self._api.media.path) + '-video-band'
+        return bubblesub.util.hash_digest(self._api.media.path) + "-video-band"
 
     def _load_from_cache(self) -> T.Dict[int, np.array]:
         cache = bubblesub.cache.load_cache(self._cache_name)

@@ -22,7 +22,7 @@ from collections import namedtuple
 import bubblesub.ass
 import bubblesub.model
 
-Color = namedtuple('Color', ['red', 'green', 'blue', 'alpha'])
+Color = namedtuple("Color", ["red", "green", "blue", "alpha"])
 
 
 class Style(bubblesub.model.ObservableObject):
@@ -31,7 +31,7 @@ class Style(bubblesub.model.ObservableObject):
     def __init__(
         self,
         name: str,
-        font_name: str = 'Arial',
+        font_name: str = "Arial",
         font_size: int = 20,
         primary_color: Color = Color(255, 255, 255, 0),
         secondary_color: Color = Color(255, 0, 0, 0),
@@ -84,7 +84,7 @@ class Style(bubblesub.model.ObservableObject):
         super().__init__()
 
         self._old_name: T.Optional[str] = None
-        self.style_list: T.Optional['StyleList'] = None
+        self.style_list: T.Optional["StyleList"] = None
 
         self._name = name
         self.font_name = font_name
@@ -172,7 +172,7 @@ class Style(bubblesub.model.ObservableObject):
         :return: object representation
         """
         ret = self.__dict__.copy()
-        del ret['style_list']
+        del ret["style_list"]
         return ret
 
     def __setstate__(self, state: T.Any) -> None:
@@ -184,7 +184,7 @@ class Style(bubblesub.model.ObservableObject):
         self.__dict__.update(state)
         self.style_list = None
 
-    def __copy__(self) -> 'Style':
+    def __copy__(self) -> "Style":
         """
         Duplicate self.
 
@@ -196,7 +196,7 @@ class Style(bubblesub.model.ObservableObject):
         for key, value in self.__dict__.items():
             if not callable(value):
                 ret.__dict__[key] = value
-        ret.__dict__['style_list'] = None
+        ret.__dict__["style_list"] = None
         return ret
 
 
@@ -226,7 +226,7 @@ class StyleList(bubblesub.model.ObservableList[Style]):
         :param items: styles to add
         """
         for item in items:
-            assert item.style_list is None, 'Style belongs to another list'
+            assert item.style_list is None, "Style belongs to another list"
             item.style_list = self
         super().insert(idx, items)
 

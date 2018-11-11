@@ -20,7 +20,7 @@ import typing as T
 
 from PyQt5 import QtCore
 
-TItem = T.TypeVar('TItem')  # pylint: disable=invalid-name
+TItem = T.TypeVar("TItem")  # pylint: disable=invalid-name
 
 
 class classproperty(property):
@@ -76,7 +76,7 @@ class ObservableObject:
         :param prop: property name
         :param new_value: new value
         """
-        if prop.startswith('_'):
+        if prop.startswith("_"):
             super().__setattr__(prop, new_value)
         else:
             try:
@@ -254,7 +254,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         :param value: new value
         """
         if isinstance(idx, slice):
-            raise RuntimeError('slice assignment is not supported')
+            raise RuntimeError("slice assignment is not supported")
         else:
             self._items[idx] = value
             self.item_changed.emit(idx)

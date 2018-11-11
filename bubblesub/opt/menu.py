@@ -27,8 +27,8 @@ from bubblesub.opt.base import BaseConfig
 class MenuContext(enum.Enum):
     """Which GUI widget the menu appears in."""
 
-    MainMenu = 'main'
-    SubtitlesGrid = 'subtitles_grid'
+    MainMenu = "main"
+    SubtitlesGrid = "subtitles_grid"
 
 
 class MenuItem:
@@ -78,7 +78,7 @@ class SubMenu(MenuItem):
 class MenuConfig(BaseConfig):
     """Configuration for GUI menu."""
 
-    file_name = 'menu.conf'
+    file_name = "menu.conf"
 
     def __init__(self) -> None:
         """Initialize self."""
@@ -97,19 +97,19 @@ class MenuConfig(BaseConfig):
 
         sections: T.Dict[MenuContext, str] = {}
         cur_context = MenuContext.MainMenu
-        lines = text.split('\n')
+        lines = text.split("\n")
         while lines:
             line = lines.pop(0).rstrip()
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 continue
 
-            match = re.match(r'\[(\w+)\]', line)
+            match = re.match(r"\[(\w+)\]", line)
             if match:
                 cur_context = MenuContext(match.group(1))
                 continue
             if cur_context not in sections:
-                sections[cur_context] = ''
-            sections[cur_context] += line + '\n'
+                sections[cur_context] = ""
+            sections[cur_context] += line + "\n"
 
         def _recurse_tree(
             parent: T.List[MenuItem], depth: int, source: T.List[str]
@@ -119,7 +119,7 @@ class MenuConfig(BaseConfig):
                 if not last_line:
                     break
 
-                tabs = last_line.count(' ')
+                tabs = last_line.count(" ")
                 if tabs < depth:
                     break
 
@@ -139,7 +139,7 @@ class MenuConfig(BaseConfig):
                         parent.append(MenuCommand(name=name, cmdline=cmdline))
 
         for context, section_text in sections.items():
-            source = section_text.split('\n')
+            source = section_text.split("\n")
             self._menu[context] = []
             _recurse_tree(self._menu[context], 0, source)
 

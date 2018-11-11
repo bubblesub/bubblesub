@@ -18,8 +18,8 @@ from bubblesub.api.cmd import BaseCommand
 
 
 class ReloadCommandsCommand(BaseCommand):
-    names = ['reload-cmds']
-    help_text = 'Rescans filesystem for commands.'
+    names = ["reload-cmds"]
+    help_text = "Rescans filesystem for commands."
 
     async def run(self) -> None:
         self.api.cmd.reload_commands()

@@ -48,20 +48,20 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         box = QtWidgets.QWidget(self)
         box_layout = QtWidgets.QVBoxLayout(box)
         box_layout.setContentsMargins(0, 0, 0, 0)
-        box_layout.addWidget(QtWidgets.QLabel('Mispelt word:', self))
+        box_layout.addWidget(QtWidgets.QLabel("Mispelt word:", self))
         box_layout.addWidget(self._mispelt_text_edit)
-        box_layout.addWidget(QtWidgets.QLabel('Replacement:', self))
+        box_layout.addWidget(QtWidgets.QLabel("Replacement:", self))
         box_layout.addWidget(self._replacement_text_edit)
-        box_layout.addWidget(QtWidgets.QLabel('Suggestions:', self))
+        box_layout.addWidget(QtWidgets.QLabel("Suggestions:", self))
         box_layout.addWidget(self._suggestions_list_view)
 
         strip = QtWidgets.QDialogButtonBox(self)
         strip.setOrientation(QtCore.Qt.Vertical)
-        self.add_btn = strip.addButton('Add to dictionary', strip.ActionRole)
-        self.ignore_btn = strip.addButton('Ignore', strip.ActionRole)
-        self.ignore_all_btn = strip.addButton('Ignore all', strip.ActionRole)
-        self.replace_btn = strip.addButton('Replace', strip.ActionRole)
-        strip.addButton('Cancel', strip.RejectRole)
+        self.add_btn = strip.addButton("Add to dictionary", strip.ActionRole)
+        self.ignore_btn = strip.addButton("Ignore", strip.ActionRole)
+        self.ignore_all_btn = strip.addButton("Ignore all", strip.ActionRole)
+        self.replace_btn = strip.addButton("Replace", strip.ActionRole)
+        strip.addButton("Cancel", strip.RejectRole)
         strip.clicked.connect(self.action)
         strip.rejected.connect(self.reject)
 
@@ -70,7 +70,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         layout.addWidget(box)
         layout.addWidget(strip)
 
-        self.setWindowTitle('Spell checker')
+        self.setWindowTitle("Spell checker")
 
         if self._next():
             self.exec_()
@@ -87,7 +87,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
 
     @property
     def text_edit(self) -> QtWidgets.QWidget:
-        return self._main_window.findChild(QtWidgets.QWidget, 'text-editor')
+        return self._main_window.findChild(QtWidgets.QWidget, "text-editor")
 
     def _replace(self) -> None:
         text = self.text_edit.toPlainText()
@@ -113,7 +113,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
     def _next(self) -> bool:
         ret = self._iter_to_next_mispelt_match()
         if ret is None:
-            bubblesub.ui.util.notice('No more results.')
+            bubblesub.ui.util.notice("No more results.")
             self.reject()
             return False
         idx, start, end, word = ret
@@ -127,7 +127,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]
             for start, end, word in bubblesub.ass.util.spell_check_ass_line(
-                self._dictionary, line.text.replace('\\N', '\n')
+                self._dictionary, line.text.replace("\\N", "\n")
             ):
                 assert line.index is not None
                 if (
@@ -163,8 +163,8 @@ class _SpellCheckDialog(QtWidgets.QDialog):
 
 
 class SpellCheckCommand(BaseCommand):
-    names = ['spell-check']
-    help_text = 'Opens up the spell check dialog.'
+    names = ["spell-check"]
+    help_text = "Opens up the spell check dialog."
 
     @property
     def is_enabled(self) -> bool:
@@ -176,14 +176,14 @@ class SpellCheckCommand(BaseCommand):
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         spell_check_lang = self.api.opt.general.spell_check
         if not spell_check_lang:
-            bubblesub.ui.util.error('Spell check was disabled in config.')
+            bubblesub.ui.util.error("Spell check was disabled in config.")
             return
 
         try:
             dictionary = enchant.Dict(spell_check_lang)
         except enchant.errors.DictNotFoundError:
             bubblesub.ui.util.error(
-                f'Spell check language {spell_check_lang} was not found.'
+                f"Spell check language {spell_check_lang} was not found."
             )
             return
 

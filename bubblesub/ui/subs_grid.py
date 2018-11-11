@@ -28,7 +28,7 @@ from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
 from bubblesub.ui.util import get_color
 
 MAGIC_MARGIN = 2  # ????
-HIGHLIGHTABLE_CHUNKS = {'\N{FULLWIDTH ASTERISK}', '\\N', '\\h', '\\n'}
+HIGHLIGHTABLE_CHUNKS = {"\N{FULLWIDTH ASTERISK}", "\\N", "\\h", "\\n"}
 
 
 class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
@@ -44,7 +44,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
     def _create_format(self) -> QtGui.QTextCharFormat:
         fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(get_color(self._api, 'grid/ass-mark'))
+        fmt.setForeground(get_color(self._api, "grid/ass-mark"))
         return fmt
 
     def paint(
@@ -66,7 +66,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
         painter.restore()
 
     def _process_text(self, text: str) -> str:
-        return re.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}', text)
+        return re.sub("{[^}]+}", "\N{FULLWIDTH ASTERISK}", text)
 
     def _paint_selected(
         self,
@@ -97,13 +97,13 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
         rect = option.rect
         metrics = painter.fontMetrics()
-        regex = '({})'.format(
-            '|'.join(re.escape(sep) for sep in HIGHLIGHTABLE_CHUNKS)
+        regex = "({})".format(
+            "|".join(re.escape(sep) for sep in HIGHLIGHTABLE_CHUNKS)
         )
 
         for chunk in re.split(regex, text):
             painter.setPen(
-                get_color(self._api, 'grid/ass-mark')
+                get_color(self._api, "grid/ass-mark")
                 if chunk in HIGHLIGHTABLE_CHUNKS
                 else option.palette.color(QtGui.QPalette.Text)
             )
@@ -122,7 +122,7 @@ class SubsGrid(QtWidgets.QTableView):
     ) -> None:
         super().__init__(parent)
         self._api = api
-        self.setObjectName('subtitles-grid')
+        self.setObjectName("subtitles-grid")
         self.setModel(SubtitlesModel(self, api))
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)

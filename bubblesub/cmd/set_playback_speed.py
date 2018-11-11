@@ -22,8 +22,8 @@ from bubblesub.util import eval_expr
 
 
 class SetPlaybackSpeedCommand(BaseCommand):
-    names = ['set-playback-speed']
-    help_text = 'Adjusts the video playback speed.'
+    names = ["set-playback-speed"]
+    help_text = "Adjusts the video playback speed."
 
     async def run(self) -> None:
         new_value = eval_expr(
@@ -35,8 +35,8 @@ class SetPlaybackSpeedCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            'expression',
-            help='expression to calculate new playback speed',
+            "expression",
+            help="expression to calculate new playback speed",
             type=str,
         )
 

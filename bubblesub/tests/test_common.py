@@ -19,4 +19,4 @@ from .common import collect_source_files
 
 def test_collect_files() -> None:
     files = list(collect_source_files())
-    assert any(p.name == '__main__.py' for p in files)
+    assert any(p.name == "__main__.py" for p in files)

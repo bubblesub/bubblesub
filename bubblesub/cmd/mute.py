@@ -22,8 +22,8 @@ from bubblesub.cmd.common import BooleanOperation
 
 
 class MuteCommand(BaseCommand):
-    names = ['mute']
-    help_text = 'Mutes or unmutes the video audio.'
+    names = ["mute"]
+    help_text = "Mutes or unmutes the video audio."
 
     @property
     def is_enabled(self) -> bool:
@@ -35,8 +35,8 @@ class MuteCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            'operation',
-            help='whether to mute the audio',
+            "operation",
+            help="whether to mute the audio",
             type=BooleanOperation,
         )
 

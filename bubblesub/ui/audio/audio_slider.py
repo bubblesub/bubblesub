@@ -65,7 +65,7 @@ class AudioSlider(BaseAudioWidget):
         x = self._pts_to_x(self._api.media.current_pts)
         painter.setPen(
             QtGui.QPen(
-                get_color(self._api, 'spectrogram/video-marker'),
+                get_color(self._api, "spectrogram/video-marker"),
                 1,
                 QtCore.Qt.SolidLine,
             )

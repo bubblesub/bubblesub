@@ -126,4 +126,4 @@ class Worker(QtCore.QThread):
         :param task: task to process
         :return: task result
         """
-        raise NotImplementedError('not implemented')
+        raise NotImplementedError("not implemented")

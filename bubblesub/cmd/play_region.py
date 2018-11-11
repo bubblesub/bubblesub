@@ -22,8 +22,8 @@ from bubblesub.cmd.common import Pts
 
 
 class PlayRegionCommand(BaseCommand):
-    names = ['play-region']
-    help_text = 'Seeks to region start and plays audio/video until region end.'
+    names = ["play-region"]
+    help_text = "Seeks to region start and plays audio/video until region end."
 
     @property
     def is_enabled(self) -> bool:
@@ -41,16 +41,16 @@ class PlayRegionCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-s',
-            '--start',
-            help='start of region to play',
+            "-s",
+            "--start",
+            help="start of region to play",
             type=lambda value: Pts(api, value),
-            default='cf',
+            default="cf",
         )
         parser.add_argument(
-            '-e',
-            '--end',
-            help='end of region to play',
+            "-e",
+            "--end",
+            help="end of region to play",
             type=lambda value: Pts(api, value),
         )
 

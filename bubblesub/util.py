@@ -47,9 +47,9 @@ def ms_to_str(milliseconds: int) -> str:
     :param milliseconds: PTS
     :return: PTS representation in form of `[-]HH:MM:SS.mmm`
     """
-    sgn = '-' if milliseconds < 0 else ''
+    sgn = "-" if milliseconds < 0 else ""
     hours, minutes, seconds, milliseconds = ms_to_times(abs(milliseconds))
-    return f'{sgn}{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}'
+    return f"{sgn}{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}"
 
 
 def str_to_ms(text: str) -> int:
@@ -60,25 +60,25 @@ def str_to_ms(text: str) -> int:
     :return: PTS
     """
     result = re.match(
-        '''
+        """
         ^(?P<sign>[+-])?
         (?:(?P<hour>\\d+):)?
         (?P<minute>\\d\\d):
         (?P<second>\\d\\d)\\.
         (?P<millisecond>\\d\\d\\d)\\d*$
-        '''.strip(),
+        """.strip(),
         text.strip(),
         re.VERBOSE,
     )
 
     if result:
-        sign = result.group('sign')
-        hour = int(result.group('hour'))
-        minute = int(result.group('minute'))
-        second = int(result.group('second'))
-        millisecond = int(result.group('millisecond'))
+        sign = result.group("sign")
+        hour = int(result.group("hour"))
+        minute = int(result.group("minute"))
+        second = int(result.group("second"))
+        millisecond = int(result.group("millisecond"))
         ret = ((((hour * 60) + minute) * 60) + second) * 1000 + millisecond
-        if sign == '-':
+        if sign == "-":
             ret = -ret
         return ret
     raise ValueError(f'invalid time format: "{text}"')
@@ -91,7 +91,7 @@ def hash_digest(subject: T.Any) -> str:
     :param subject: any
     :return: MD5 digest
     """
-    return hashlib.md5(str(subject).encode('utf-8')).hexdigest()
+    return hashlib.md5(str(subject).encode("utf-8")).hexdigest()
 
 
 def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
@@ -125,7 +125,7 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
             return op_map[type(node.op)](eval_(node.operand))
         raise TypeError(node)
 
-    return eval_(ast.parse(str(expr), mode='eval').body)
+    return eval_(ast.parse(str(expr), mode="eval").body)
 
 
 def make_ranges(
@@ -157,9 +157,9 @@ def sanitize_file_name(file_name: str) -> str:
     :param file_name: file name to sanitize
     :return: sanitized file name
     """
-    file_name = file_name.replace(':', '.')
-    file_name = file_name.replace(' ', '_')
-    file_name = re.sub(r'(?u)[^-\w.]', '', file_name)
+    file_name = file_name.replace(":", ".")
+    file_name = file_name.replace(" ", "_")
+    file_name = re.sub(r"(?u)[^-\w.]", "", file_name)
     return file_name
 
 

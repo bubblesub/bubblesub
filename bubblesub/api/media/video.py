@@ -35,13 +35,13 @@ from bubblesub.api.media.state import MediaState
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
-_PIX_FMT = [ffms.get_pix_fmt('rgb24')]
+_PIX_FMT = [ffms.get_pix_fmt("rgb24")]
 
 
 class VideoSourceWorker(bubblesub.worker.Worker):
     """Detached video source provider."""
 
-    def __init__(self, log_api: 'bubblesub.api.log.LogApi') -> None:
+    def __init__(self, log_api: "bubblesub.api.log.LogApi") -> None:
         """
         Initialize self.
 
@@ -58,14 +58,14 @@ class VideoSourceWorker(bubblesub.worker.Worker):
         :return: video source
         """
         path = T.cast(Path, task)
-        self._log_api.info(f'started loading video... ({path})')
+        self._log_api.info(f"started loading video... ({path})")
 
         if not path.exists():
-            self._log_api.error(f'video file {path} not found')
+            self._log_api.error(f"video file {path} not found")
             return None
 
         video_source = ffms.VideoSource(str(path))
-        self._log_api.info('video finished loading')
+        self._log_api.info("video finished loading")
         return (path, video_source)
 
 
@@ -76,8 +76,8 @@ class VideoApi(QtCore.QObject):
 
     def __init__(
         self,
-        media_api: 'bubblesub.api.media.media.MediaApi',
-        log_api: 'bubblesub.api.log.LogApi',
+        media_api: "bubblesub.api.media.media.MediaApi",
+        log_api: "bubblesub.api.log.LogApi",
         mpv_: mpv.Context,
     ) -> None:
         """
@@ -126,9 +126,9 @@ class VideoApi(QtCore.QObject):
         :param include_subtitles: whether to 'burn in' the subtitles
         """
         self._mpv.command(
-            'screenshot-to-file',
+            "screenshot-to-file",
             str(path),
-            'subtitles' if include_subtitles else 'video',
+            "subtitles" if include_subtitles else "video",
         )
 
     def align_pts_to_near_frame(self, pts: int) -> int:

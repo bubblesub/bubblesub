@@ -40,20 +40,20 @@ class _VideoButtons(QtWidgets.QWidget):
         super().__init__(parent)
         self._api = api
 
-        self._play_btn = QtWidgets.QPushButton('Play', self)
+        self._play_btn = QtWidgets.QPushButton("Play", self)
         self._play_btn.setIcon(
             self.style().standardIcon(QtWidgets.QStyle.SP_MediaPlay)
         )
         self._play_btn.setCheckable(True)
 
-        self._pause_btn = QtWidgets.QPushButton('Pause', self)
+        self._pause_btn = QtWidgets.QPushButton("Pause", self)
         self._pause_btn.setIcon(
             self.style().standardIcon(QtWidgets.QStyle.SP_MediaPause)
         )
         self._pause_btn.setCheckable(True)
 
         self._sync_video_pos_checkbox = QtWidgets.QCheckBox(
-            'Seek to selected subtitles', self
+            "Seek to selected subtitles", self
         )
         self._sync_video_pos_checkbox.setChecked(
             self._api.opt.general.video.sync_pos_to_selection
@@ -69,7 +69,7 @@ class _VideoButtons(QtWidgets.QWidget):
         layout.addWidget(self._pause_btn)
         layout.addStretch()
         layout.addWidget(self._sync_video_pos_checkbox)
-        layout.addWidget(QtWidgets.QLabel('Playback speed:', self))
+        layout.addWidget(QtWidgets.QLabel("Playback speed:", self))
         layout.addWidget(self._playback_speed_spinbox)
 
         self.setSizePolicy(
@@ -147,11 +147,11 @@ class _VideoVolumeControl(QtWidgets.QWidget):
         self._volume_slider = QtWidgets.QSlider(self)
         self._volume_slider.setMinimum(0)
         self._volume_slider.setMaximum(200)
-        self._volume_slider.setToolTip('Volume')
+        self._volume_slider.setToolTip("Volume")
 
         self._mute_btn = QtWidgets.QPushButton(self)
         self._mute_btn.setCheckable(True)
-        self._mute_btn.setToolTip('Mute')
+        self._mute_btn.setToolTip("Mute")
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)

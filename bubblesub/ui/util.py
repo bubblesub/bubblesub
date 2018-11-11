@@ -27,7 +27,7 @@ import bubblesub.util
 
 def error(msg: str) -> None:
     box = QtWidgets.QMessageBox()
-    box.setWindowTitle('Error')
+    box.setWindowTitle("Error")
     box.setIcon(QtWidgets.QMessageBox.Critical)
     box.setText(msg)
     box.exec_()
@@ -35,7 +35,7 @@ def error(msg: str) -> None:
 
 def notice(msg: str) -> None:
     box = QtWidgets.QMessageBox()
-    box.setWindowTitle('Information')
+    box.setWindowTitle("Information")
     box.setIcon(QtWidgets.QMessageBox.Information)
     box.setText(msg)
     box.exec_()
@@ -43,11 +43,11 @@ def notice(msg: str) -> None:
 
 def ask(msg: str) -> bool:
     box = QtWidgets.QMessageBox()
-    box.setWindowTitle('Question')
+    box.setWindowTitle("Question")
     box.setText(msg)
     box.setIcon(QtWidgets.QMessageBox.Question)
-    box.addButton('Yes', QtWidgets.QMessageBox.YesRole)
-    box.addButton('No', QtWidgets.QMessageBox.NoRole)
+    box.addButton("Yes", QtWidgets.QMessageBox.YesRole)
+    box.addButton("No", QtWidgets.QMessageBox.NoRole)
     return T.cast(int, box.exec_()) == 0
 
 
@@ -70,7 +70,7 @@ class ColorPicker(QtWidgets.QWidget):
         self._label.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum
         )
-        self._button = QtWidgets.QPushButton('Change', self)
+        self._button = QtWidgets.QPushButton("Change", self)
         self._button.clicked.connect(self._on_button_click)
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -91,11 +91,11 @@ class ColorPicker(QtWidgets.QWidget):
         return self._color
 
     def set_color(self, color: QtGui.QColor) -> None:
-        style = '''QLabel:enabled {{
+        style = """QLabel:enabled {{
             background-color: #{:02x}{:02x}{:02x};
             opacity: {};
             border: 1px solid black;
-        }}'''.format(
+        }}""".format(
             color.red(), color.green(), color.blue(), color.alpha()
         )
         self._label.setStyleSheet(style)
@@ -120,22 +120,22 @@ class TimeEdit(QtWidgets.QLineEdit):
     def set_allow_negative(self, allow: bool) -> None:
         self._allow_negative = allow
         if allow:
-            self.setInputMask('X99:99:99.999')
+            self.setInputMask("X99:99:99.999")
             self.setValidator(
                 QtGui.QRegExpValidator(
-                    QtCore.QRegExp(r'[+-]\d\d:\d\d:\d\d\.\d\d\d'),
+                    QtCore.QRegExp(r"[+-]\d\d:\d\d:\d\d\.\d\d\d"),
                     self.parent(),
                 )
             )
         else:
-            self.setInputMask('99:99:99.999')
+            self.setInputMask("99:99:99.999")
         self.reset_text()
 
     def reset_text(self) -> None:
         if self._allow_negative:
-            self.setText('+00:00:00.000')
+            self.setText("+00:00:00.000")
         else:
-            self.setText('00:00:00.000')
+            self.setText("00:00:00.000")
         self.setCursorPosition(0)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
@@ -159,7 +159,7 @@ class TimeEdit(QtWidgets.QLineEdit):
     def set_value(self, time: int) -> None:
         text = bubblesub.util.ms_to_str(time)
         if self._allow_negative and time >= 0:
-            text = '+' + text
+            text = "+" + text
         self.setText(text)
         self.textEdited.emit(self.text())
         self.setCursorPosition(0)
@@ -205,9 +205,9 @@ def save_dialog(
         else T.cast(str, QtCore.QDir.homePath())
     )
     if file_name:
-        real_directory += '/' + file_name
+        real_directory += "/" + file_name
     path, _ = QtWidgets.QFileDialog.getSaveFileName(
-        parent, directory=real_directory, filter=file_filter or 'Any file (*)'
+        parent, directory=real_directory, filter=file_filter or "Any file (*)"
     )
     return Path(path) if path else None
 
@@ -215,20 +215,20 @@ def save_dialog(
 def time_jump_dialog(
     parent: QtWidgets.QWidget,
     value: int = 0,
-    relative_label: str = 'Time:',
-    absolute_label: str = 'Time:',
+    relative_label: str = "Time:",
+    absolute_label: str = "Time:",
     relative_checked: bool = True,
     show_radio: bool = True,
 ) -> T.Optional[T.Tuple[int, bool]]:
     class TimeJumpDialog(QtWidgets.QDialog):
         def __init__(self, parent: QtWidgets.QWidget = None) -> None:
             super().__init__(parent)
-            self.setWindowTitle('Select time...')
+            self.setWindowTitle("Select time...")
 
-            self._label = QtWidgets.QLabel('', self)
+            self._label = QtWidgets.QLabel("", self)
             self._time_edit = TimeEdit(self)
-            self._radio_rel = QtWidgets.QRadioButton('Relative', self)
-            self._radio_abs = QtWidgets.QRadioButton('Absolute', self)
+            self._radio_rel = QtWidgets.QRadioButton("Relative", self)
+            self._radio_abs = QtWidgets.QRadioButton("Absolute", self)
             if relative_checked:
                 self._radio_rel.setChecked(True)
             else:
@@ -304,12 +304,12 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         self._submit_wrapper = submit_wrapper or contextlib.nullcontext
 
         self._signal_map: T.Dict[QtWidgets.QWidget, str] = {
-            QtWidgets.QCheckBox: 'clicked',
-            QtWidgets.QSpinBox: 'valueChanged',
-            QtWidgets.QDoubleSpinBox: 'valueChanged',
-            QtWidgets.QComboBox: 'currentTextChanged',
-            ColorPicker: 'changed',
-            TimeEdit: 'textEdited',
+            QtWidgets.QCheckBox: "clicked",
+            QtWidgets.QSpinBox: "valueChanged",
+            QtWidgets.QDoubleSpinBox: "valueChanged",
+            QtWidgets.QComboBox: "currentTextChanged",
+            ColorPicker: "changed",
+            TimeEdit: "textEdited",
         }
         if signal_map:
             self._signal_map.update(signal_map)

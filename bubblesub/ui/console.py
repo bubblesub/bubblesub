@@ -44,11 +44,11 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
         self._invisible_fmt.setForeground(QtCore.Qt.transparent)
 
         self._regex = re.compile(
-            r'^'
-            r'(?P<prefix>\[(?P<log_level>[ewidc])\] )'
-            r'(?P<timestamp>\[[^\]]+\]) '
-            r'(?P<text>.*)'
-            r'$'
+            r"^"
+            r"(?P<prefix>\[(?P<log_level>[ewidc])\] )"
+            r"(?P<timestamp>\[[^\]]+\]) "
+            r"(?P<text>.*)"
+            r"$"
         )
 
         self.update_style_map()
@@ -62,12 +62,12 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
 
     def update_style_map(self) -> None:
         self._style_map = {
-            'e': self._get_format('console/error'),
-            'w': self._get_format('console/warning'),
-            'i': self._get_format('console/info'),
-            'd': self._get_format('console/debug'),
-            'c': self._get_format('console/command'),
-            'timestamp': self._get_format('console/timestamp'),
+            "e": self._get_format("console/error"),
+            "w": self._get_format("console/warning"),
+            "i": self._get_format("console/info"),
+            "d": self._get_format("console/debug"),
+            "c": self._get_format("console/command"),
+            "timestamp": self._get_format("console/timestamp"),
         }
         QtWidgets.QApplication.setOverrideCursor(
             QtGui.QCursor(QtCore.Qt.WaitCursor)
@@ -78,8 +78,8 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
     def highlightBlock(self, text: str) -> None:
         for match in re.finditer(self._regex, text):
             start = match.start()
-            start_of_timestamp = match.start() + len(match.group('prefix'))
-            start_of_text = start_of_timestamp + len(match.group('timestamp'))
+            start_of_timestamp = match.start() + len(match.group("prefix"))
+            start_of_text = start_of_timestamp + len(match.group("timestamp"))
             end = match.end()
 
             self.setFormat(
@@ -88,12 +88,12 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
             self.setFormat(
                 start_of_timestamp,
                 start_of_text - start_of_timestamp,
-                self._style_map['timestamp'],
+                self._style_map["timestamp"],
             )
             self.setFormat(
                 start_of_text,
                 end - start,
-                self._style_map[match.group('log_level')],
+                self._style_map[match.group("log_level")],
             )
 
     def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
@@ -113,28 +113,28 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         self._empty = True
 
         self._syntax_highlight = ConsoleSyntaxHighlight(api, self)
-        self.setObjectName('console')
+        self.setObjectName("console")
         self.setReadOnly(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
 
         api.log.logged.connect(self._on_log)
 
     def _on_log(self, level: LogLevel, text: str) -> None:
-        print(f'{datetime.datetime.now()} [{level.name.lower()[0]}] {text}')
+        print(f"{datetime.datetime.now()} [{level.name.lower()[0]}] {text}")
         if level == LogLevel.Debug:
             return
 
         old_pos_x = self.horizontalScrollBar().value()
         old_pos_y = self.verticalScrollBar().value()
-        separator = '' if self._empty else '\n'
+        separator = "" if self._empty else "\n"
 
         self.moveCursor(QtGui.QTextCursor.End)
         cursor = QtGui.QTextCursor(self.textCursor())
         cursor.insertText(
-            f'{separator}'
-            f'[{level.name.lower()[0]}] '
-            f'[{datetime.datetime.now():%H:%M:%S.%f}] '
-            f'{text}'
+            f"{separator}"
+            f"[{level.name.lower()[0]}] "
+            f"[{datetime.datetime.now():%H:%M:%S.%f}] "
+            f"{text}"
         )
 
         self.horizontalScrollBar().setValue(
@@ -161,7 +161,7 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
                 return
             font.setPointSize(new_size)
             self._syntax_highlight.set_font(font)
-            self._api.opt.general.gui.fonts['console'] = font.toString()
+            self._api.opt.general.gui.fonts["console"] = font.toString()
         else:
             super().wheelEvent(event)
             maximum = self.verticalScrollBar().maximum()
@@ -198,7 +198,7 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self._history_pos = 0
         self._history: T.List[str] = []
 
-        self.setObjectName('console-input')
+        self.setObjectName("console-input")
         self.setFont(
             QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
         )
@@ -266,7 +266,7 @@ class ConsoleInput(QtWidgets.QLineEdit):
             for cmd in cmds:
                 self._api.cmd.run(cmd)
 
-        self.setText('')
+        self.setText("")
         self._edited = False
 
     def _make_autocomplete(self) -> Completion:
@@ -279,32 +279,32 @@ class ConsoleInput(QtWidgets.QLineEdit):
         )
 
         # command names
-        match = re.match('^(?P<cmd>[^ ]+) ?$', compl.prefix)
+        match = re.match("^(?P<cmd>[^ ]+) ?$", compl.prefix)
         if match:
             for cls in self._api.cmd.get_all():
                 for name in cls.names:
-                    if name.startswith(match.group('cmd')):
-                        compl.suggestions.append(name + ' ')
+                    if name.startswith(match.group("cmd")):
+                        compl.suggestions.append(name + " ")
             compl.suggestions.sort()
 
         # command arguments
         match = re.match(
-            '^(?P<cmd>[^ ]+) (?:.*?)(?P<arg>-[^ =]*)$', compl.prefix
+            "^(?P<cmd>[^ ]+) (?:.*?)(?P<arg>-[^ =]*)$", compl.prefix
         )
         if match:
-            cls = self._api.cmd.get(match.group('cmd'))
+            cls = self._api.cmd.get(match.group("cmd"))
             if cls:
                 parser = argparse.ArgumentParser(add_help=False)
                 cls.decorate_parser(self._api, parser)
                 for action in parser._actions:  # pylint: disable=W0212
                     if any(
-                        opt.startswith(match.group('arg'))
+                        opt.startswith(match.group("arg"))
                         for opt in action.option_strings
                     ):
-                        compl.start_pos = match.start('arg')
+                        compl.start_pos = match.start("arg")
                         compl.suggestions.append(
                             list(sorted(action.option_strings, key=len))[-1]
-                            + ' '
+                            + " "
                         )
 
         return compl
@@ -319,8 +319,8 @@ class Console(QtWidgets.QWidget):
 
         strip = QtWidgets.QWidget(self)
         self.input = ConsoleInput(api, strip)
-        self.auto_scroll_chkbox = QtWidgets.QCheckBox('Auto scroll', strip)
-        self.clear_btn = QtWidgets.QPushButton('Clear', strip)
+        self.auto_scroll_chkbox = QtWidgets.QCheckBox("Auto scroll", strip)
+        self.clear_btn = QtWidgets.QPushButton("Clear", strip)
         self.auto_scroll_chkbox.setChecked(not self.log_window.scroll_lock)
 
         self.clear_btn.clicked.connect(self._on_clear_btn_click)
@@ -358,4 +358,4 @@ class Console(QtWidgets.QWidget):
             )
 
     def _on_clear_btn_click(self) -> None:
-        self.log_window.document().setPlainText('')
+        self.log_window.document().setPlainText("")

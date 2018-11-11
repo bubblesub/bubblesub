@@ -28,8 +28,8 @@ from bubblesub.util import make_ranges
 
 
 class SubtitlesMoveCommand(BaseCommand):
-    names = ['sub-move']
-    help_text = 'Moves given subtitles around.'
+    names = ["sub-move"]
+    help_text = "Moves given subtitles around."
 
     @property
     def is_enabled(self) -> bool:
@@ -39,13 +39,13 @@ class SubtitlesMoveCommand(BaseCommand):
         with self.api.undo.capture():
             indexes = await self.args.target.get_indexes()
             if not indexes:
-                raise CommandUnavailable('nothing to move')
+                raise CommandUnavailable("nothing to move")
 
-            if self.args.method == 'above':
+            if self.args.method == "above":
                 sub_copies = list(self._move_above(indexes))
-            elif self.args.method == 'below':
+            elif self.args.method == "below":
                 sub_copies = list(self._move_below(indexes))
-            elif self.args.method == 'gui':
+            elif self.args.method == "gui":
                 base_idx = await self.api.gui.exec(self._show_dialog, indexes)
                 sub_copies = list(self._move_to(indexes, base_idx))
             else:
@@ -55,7 +55,7 @@ class SubtitlesMoveCommand(BaseCommand):
 
     def _move_above(self, indexes: T.List[int]) -> T.Iterable[Event]:
         if indexes[0] == 0:
-            raise CommandUnavailable('cannot move further up')
+            raise CommandUnavailable("cannot move further up")
         for idx, count in make_ranges(indexes):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
             self.api.subs.events.insert(idx - 1, chunk)
@@ -64,7 +64,7 @@ class SubtitlesMoveCommand(BaseCommand):
 
     def _move_below(self, indexes: T.List[int]) -> T.Iterable[Event]:
         if indexes[-1] + 1 == len(self.api.subs.events):
-            raise CommandUnavailable('cannot move further down')
+            raise CommandUnavailable("cannot move further down")
         for idx, count in make_ranges(indexes, reverse=True):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
             self.api.subs.events.insert(idx + count + 1, chunk)
@@ -90,7 +90,7 @@ class SubtitlesMoveCommand(BaseCommand):
         self, main_window: QtWidgets.QMainWindow, indexes: T.List[int]
     ) -> int:
         dialog = QtWidgets.QInputDialog(main_window)
-        dialog.setLabelText('Line number to move subtitles to:')
+        dialog.setLabelText("Line number to move subtitles to:")
         dialog.setIntMinimum(1)
         dialog.setIntMaximum(len(self.api.subs.events))
         if indexes:
@@ -103,34 +103,34 @@ class SubtitlesMoveCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to move',
+            "-t",
+            "--target",
+            help="subtitles to move",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
 
         group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument(
-            '--above',
-            dest='method',
-            action='store_const',
-            const='above',
-            help='move subtitles up',
+            "--above",
+            dest="method",
+            action="store_const",
+            const="above",
+            help="move subtitles up",
         )
         group.add_argument(
-            '--below',
-            dest='method',
-            action='store_const',
-            const='below',
-            help='move subtitles down',
+            "--below",
+            dest="method",
+            action="store_const",
+            const="below",
+            help="move subtitles down",
         )
         group.add_argument(
-            '--gui',
-            dest='method',
-            action='store_const',
-            const='gui',
-            help='prompt user for placement position with a GUI dialog',
+            "--gui",
+            dest="method",
+            action="store_const",
+            const="gui",
+            help="prompt user for placement position with a GUI dialog",
         )
 
 

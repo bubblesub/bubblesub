@@ -30,12 +30,12 @@ import bubblesub.ass.event
 import bubblesub.ass.info
 import bubblesub.ass.style
 
-_libass = ctypes.cdll.LoadLibrary(ctypes.util.find_library('ass'))
-_libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
+_libass = ctypes.cdll.LoadLibrary(ctypes.util.find_library("ass"))
+_libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
 
 
 def _encode_str(text: T.Optional[str]) -> T.Optional[bytes]:
-    return None if text is None else text.encode('utf-8')
+    return None if text is None else text.encode("utf-8")
 
 
 def _color_to_int(color: T.Tuple[int, int, int, int]) -> int:
@@ -44,11 +44,11 @@ def _color_to_int(color: T.Tuple[int, int, int, int]) -> int:
 
 
 class _AssImageSequence:
-    def __init__(self, renderer: '_AssRenderer', head_ptr: T.Any) -> None:
+    def __init__(self, renderer: "_AssRenderer", head_ptr: T.Any) -> None:
         self.renderer = renderer
         self.head_ptr = head_ptr
 
-    def __iter__(self) -> T.Iterator['_AssImage']:
+    def __iter__(self) -> T.Iterator["_AssImage"]:
         cur = self.head_ptr
         while cur:
             yield cur.contents
@@ -75,15 +75,15 @@ class _AssImage(ctypes.Structure):
 
 
 _AssImage._fields_ = [
-    ('w', ctypes.c_int),
-    ('h', ctypes.c_int),
-    ('stride', ctypes.c_int),
-    ('bitmap', ctypes.POINTER(ctypes.c_char)),
-    ('color', ctypes.c_uint32),
-    ('dst_x', ctypes.c_int),
-    ('dst_y', ctypes.c_int),
-    ('next_ptr', ctypes.POINTER(_AssImage)),
-    ('type', ctypes.c_int),
+    ("w", ctypes.c_int),
+    ("h", ctypes.c_int),
+    ("stride", ctypes.c_int),
+    ("bitmap", ctypes.POINTER(ctypes.c_char)),
+    ("color", ctypes.c_uint32),
+    ("dst_x", ctypes.c_int),
+    ("dst_y", ctypes.c_int),
+    ("next_ptr", ctypes.POINTER(_AssImage)),
+    ("type", ctypes.c_int),
 ]
 
 
@@ -109,9 +109,9 @@ def _make_libass_property(name: str, types: T.List) -> property:
 
 
 class _AssContext(ctypes.Structure):
-    fonts_dir = _make_libass_property('ass_set_fonts_dir', [ctypes.c_char_p])
+    fonts_dir = _make_libass_property("ass_set_fonts_dir", [ctypes.c_char_p])
     extract_fonts = _make_libass_property(
-        'ass_set_extract_fonts', [ctypes.c_int]
+        "ass_set_extract_fonts", [ctypes.c_int]
     )
 
     def __new__(cls) -> T.Any:
@@ -122,19 +122,19 @@ class _AssContext(ctypes.Structure):
         self._internal_fields: T.Any = {}
 
         if not ctypes.byref(self):
-            raise RuntimeError('could not initialize libass')
+            raise RuntimeError("could not initialize libass")
 
         self.extract_fonts = False
 
     def __del__(self) -> None:
         _libass.ass_library_done(ctypes.byref(self))
 
-    def make_renderer(self) -> '_AssRenderer':
+    def make_renderer(self) -> "_AssRenderer":
         renderer = _libass.ass_renderer_init(ctypes.byref(self)).contents
         renderer._after_init(self)
         return renderer
 
-    def make_track(self) -> '_AssTrack':
+    def make_track(self) -> "_AssTrack":
         track = _libass.ass_new_track(ctypes.byref(self)).contents
         track._after_init(self)
         return track
@@ -152,33 +152,33 @@ class _AssRenderer(ctypes.Structure):
     FONTPROVIDER_AUTODETECT = 1
 
     frame_size = _make_libass_property(
-        'ass_set_frame_size', [ctypes.c_int, ctypes.c_int]
+        "ass_set_frame_size", [ctypes.c_int, ctypes.c_int]
     )
     storage_size = _make_libass_property(
-        'ass_set_storage_size', [ctypes.c_int, ctypes.c_int]
+        "ass_set_storage_size", [ctypes.c_int, ctypes.c_int]
     )
-    shaper = _make_libass_property('ass_set_shaper', [ctypes.c_int])
+    shaper = _make_libass_property("ass_set_shaper", [ctypes.c_int])
     margins = _make_libass_property(
-        'ass_set_margins',
+        "ass_set_margins",
         [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int],
     )
-    use_margins = _make_libass_property('ass_set_use_margins', [ctypes.c_int])
+    use_margins = _make_libass_property("ass_set_use_margins", [ctypes.c_int])
     pixel_aspect = _make_libass_property(
-        'ass_set_pixel_aspect', [ctypes.c_double]
+        "ass_set_pixel_aspect", [ctypes.c_double]
     )
     aspect_ratio = _make_libass_property(
-        'ass_set_aspect_ratio', [ctypes.c_double, ctypes.c_double]
+        "ass_set_aspect_ratio", [ctypes.c_double, ctypes.c_double]
     )
-    font_scale = _make_libass_property('ass_set_font_scale', [ctypes.c_double])
-    hinting = _make_libass_property('ass_set_hinting', [ctypes.c_int])
+    font_scale = _make_libass_property("ass_set_font_scale", [ctypes.c_double])
+    hinting = _make_libass_property("ass_set_hinting", [ctypes.c_int])
     line_spacing = _make_libass_property(
-        'ass_set_line_spacing', [ctypes.c_double]
+        "ass_set_line_spacing", [ctypes.c_double]
     )
     line_position = _make_libass_property(
-        'ass_set_line_position', [ctypes.c_double]
+        "ass_set_line_position", [ctypes.c_double]
     )
 
-    def _after_init(self, ctx: '_AssContext') -> None:
+    def _after_init(self, ctx: "_AssContext") -> None:
         self._ctx = ctx
         self._fonts_set = False
         self._internal_fields: T.Any = {}
@@ -212,16 +212,16 @@ class _AssRenderer(ctypes.Structure):
 
     def update_fonts(self) -> None:
         if not self._fonts_set:
-            raise RuntimeError('set_fonts before updating them')
+            raise RuntimeError("set_fonts before updating them")
         _libass.ass_fonts_update(ctypes.byref(self))
 
     set_cache_limits = _make_libass_setter(
-        'ass_set_cache_limits', [ctypes.c_int, ctypes.c_int]
+        "ass_set_cache_limits", [ctypes.c_int, ctypes.c_int]
     )
 
-    def render_frame(self, track: '_AssTrack', now: int) -> _AssImageSequence:
+    def render_frame(self, track: "_AssTrack", now: int) -> _AssImageSequence:
         if not self._fonts_set:
-            raise RuntimeError('set_fonts before rendering')
+            raise RuntimeError("set_fonts before rendering")
         head = _libass.ass_render_frame(
             ctypes.byref(self),
             ctypes.byref(track),
@@ -233,32 +233,32 @@ class _AssRenderer(ctypes.Structure):
 
 class _AssStyle(ctypes.Structure):
     _fields_ = [
-        ('name', ctypes.c_char_p),
-        ('fontname', ctypes.c_char_p),
-        ('fontsize', ctypes.c_double),
-        ('primary_color', ctypes.c_uint32),
-        ('secondary_color', ctypes.c_uint32),
-        ('outline_color', ctypes.c_uint32),
-        ('back_color', ctypes.c_uint32),
-        ('bold', ctypes.c_int),
-        ('italic', ctypes.c_int),
-        ('underline', ctypes.c_int),
-        ('strike_out', ctypes.c_int),
-        ('scale_x', ctypes.c_double),
-        ('scale_y', ctypes.c_double),
-        ('spacing', ctypes.c_double),
-        ('angle', ctypes.c_double),
-        ('border_style', ctypes.c_int),
-        ('outline', ctypes.c_double),
-        ('shadow', ctypes.c_double),
-        ('alignment', ctypes.c_int),
-        ('margin_l', ctypes.c_int),
-        ('margin_r', ctypes.c_int),
-        ('margin_v', ctypes.c_int),
-        ('encoding', ctypes.c_int),
-        ('treat_fontname_as_pattern', ctypes.c_int),
-        ('blur', ctypes.c_double),
-        ('jsutify', ctypes.c_int),
+        ("name", ctypes.c_char_p),
+        ("fontname", ctypes.c_char_p),
+        ("fontsize", ctypes.c_double),
+        ("primary_color", ctypes.c_uint32),
+        ("secondary_color", ctypes.c_uint32),
+        ("outline_color", ctypes.c_uint32),
+        ("back_color", ctypes.c_uint32),
+        ("bold", ctypes.c_int),
+        ("italic", ctypes.c_int),
+        ("underline", ctypes.c_int),
+        ("strike_out", ctypes.c_int),
+        ("scale_x", ctypes.c_double),
+        ("scale_y", ctypes.c_double),
+        ("spacing", ctypes.c_double),
+        ("angle", ctypes.c_double),
+        ("border_style", ctypes.c_int),
+        ("outline", ctypes.c_double),
+        ("shadow", ctypes.c_double),
+        ("alignment", ctypes.c_int),
+        ("margin_l", ctypes.c_int),
+        ("margin_r", ctypes.c_int),
+        ("margin_v", ctypes.c_int),
+        ("encoding", ctypes.c_int),
+        ("treat_fontname_as_pattern", ctypes.c_int),
+        ("blur", ctypes.c_double),
+        ("jsutify", ctypes.c_int),
     ]
 
     @staticmethod
@@ -270,7 +270,7 @@ class _AssStyle(ctypes.Structure):
         res += v * 4
         return res
 
-    def _after_init(self, track: '_AssTrack') -> None:
+    def _after_init(self, track: "_AssTrack") -> None:
         self._track = track
 
     def populate(self, style: bubblesub.ass.style.Style) -> None:
@@ -301,26 +301,26 @@ class _AssStyle(ctypes.Structure):
 
 class _AssEvent(ctypes.Structure):
     _fields_ = [
-        ('start_ms', ctypes.c_longlong),
-        ('duration_ms', ctypes.c_longlong),
-        ('read_order', ctypes.c_int),
-        ('layer', ctypes.c_int),
-        ('style_id', ctypes.c_int),
-        ('name', ctypes.c_char_p),
-        ('margin_l', ctypes.c_int),
-        ('margin_r', ctypes.c_int),
-        ('margin_v', ctypes.c_int),
-        ('effect', ctypes.c_char_p),
-        ('text', ctypes.c_char_p),
-        ('render_priv', ctypes.c_void_p),
+        ("start_ms", ctypes.c_longlong),
+        ("duration_ms", ctypes.c_longlong),
+        ("read_order", ctypes.c_int),
+        ("layer", ctypes.c_int),
+        ("style_id", ctypes.c_int),
+        ("name", ctypes.c_char_p),
+        ("margin_l", ctypes.c_int),
+        ("margin_r", ctypes.c_int),
+        ("margin_v", ctypes.c_int),
+        ("effect", ctypes.c_char_p),
+        ("text", ctypes.c_char_p),
+        ("render_priv", ctypes.c_void_p),
     ]
 
-    def _after_init(self, track: '_AssTrack') -> None:
+    def _after_init(self, track: "_AssTrack") -> None:
         self._track = track
 
     def _style_name_to_style_id(self, name: str) -> int:
         for i, style in enumerate(self._track.styles):
-            if style.name is not None and style.name.decode('utf-8') == name:
+            if style.name is not None and style.name.decode("utf-8") == name:
                 return i
         return -1
 
@@ -343,27 +343,27 @@ class _AssTrack(ctypes.Structure):
     TYPE_SSA = 2
 
     _fields_ = [
-        ('n_styles', ctypes.c_int),
-        ('max_styles', ctypes.c_int),
-        ('n_events', ctypes.c_int),
-        ('max_events', ctypes.c_int),
-        ('styles_arr', ctypes.POINTER(_AssStyle)),
-        ('events_arr', ctypes.POINTER(_AssEvent)),
-        ('style_format', ctypes.c_char_p),
-        ('event_format', ctypes.c_char_p),
-        ('track_type', ctypes.c_int),
-        ('play_res_x', ctypes.c_int),
-        ('play_res_y', ctypes.c_int),
-        ('timer', ctypes.c_double),
-        ('wrap_style', ctypes.c_int),
-        ('scaled_border_and_shadow', ctypes.c_int),
-        ('kerning', ctypes.c_int),
-        ('language', ctypes.c_char_p),
-        ('ycbcr_matrix', ctypes.c_int),
-        ('default_style', ctypes.c_int),
-        ('name', ctypes.c_char_p),
-        ('library', ctypes.POINTER(_AssContext)),
-        ('parser_priv', ctypes.c_void_p),
+        ("n_styles", ctypes.c_int),
+        ("max_styles", ctypes.c_int),
+        ("n_events", ctypes.c_int),
+        ("max_events", ctypes.c_int),
+        ("styles_arr", ctypes.POINTER(_AssStyle)),
+        ("events_arr", ctypes.POINTER(_AssEvent)),
+        ("style_format", ctypes.c_char_p),
+        ("event_format", ctypes.c_char_p),
+        ("track_type", ctypes.c_int),
+        ("play_res_x", ctypes.c_int),
+        ("play_res_y", ctypes.c_int),
+        ("timer", ctypes.c_double),
+        ("wrap_style", ctypes.c_int),
+        ("scaled_border_and_shadow", ctypes.c_int),
+        ("kerning", ctypes.c_int),
+        ("language", ctypes.c_char_p),
+        ("ycbcr_matrix", ctypes.c_int),
+        ("default_style", ctypes.c_int),
+        ("name", ctypes.c_char_p),
+        ("library", ctypes.POINTER(_AssContext)),
+        ("parser_priv", ctypes.c_void_p),
     ]
 
     def _after_init(self, ctx: _AssContext) -> None:
@@ -410,16 +410,16 @@ class _AssTrack(ctypes.Structure):
         self.type = _AssTrack.TYPE_ASS
 
         self.style_format = _encode_str(
-            'Name, Fontname, Fontsize, '
-            'PrimaryColour, SecondaryColour, OutlineColour, BackColour, '
-            'Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, '
-            'Angle, BorderStyle, Outline, Shadow, Alignment, '
-            'MarginL, MarginR, MarginV, Encoding'
+            "Name, Fontname, Fontsize, "
+            "PrimaryColour, SecondaryColour, OutlineColour, BackColour, "
+            "Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, "
+            "Angle, BorderStyle, Outline, Shadow, Alignment, "
+            "MarginL, MarginR, MarginV, Encoding"
         )
 
         self.event_format = _encode_str(
-            'Layer, Start, End, Style, Name, '
-            'MarginL, MarginR, MarginV, Effect, Text'
+            "Layer, Start, End, Style, Name, "
+            "MarginL, MarginR, MarginV, Effect, Text"
         )
 
         for source_style in style_list:
@@ -481,7 +481,7 @@ class AssRenderer:
         self._ctx = _AssContext()
         self._renderer = self._ctx.make_renderer()
         self._renderer.set_fonts()
-        self._track: T.Optional['_AssTrack'] = None
+        self._track: T.Optional["_AssTrack"] = None
         self.style_list: T.Optional[bubblesub.ass.style.StyleList] = None
         self.event_list: T.Optional[bubblesub.ass.event.EventList] = None
         self.info: T.Optional[bubblesub.ass.info.Metadata] = None
@@ -502,11 +502,11 @@ class AssRenderer:
         self._track = self._ctx.make_track()
         self._track.populate(style_list, event_list)
 
-        self._track.play_res_x = int(info.get('PlayResX', video_resolution[0]))
-        self._track.play_res_y = int(info.get('PlayResY', video_resolution[1]))
-        self._track.wrap_style = int(info.get('WrapStyle', 1))
+        self._track.play_res_x = int(info.get("PlayResX", video_resolution[0]))
+        self._track.play_res_y = int(info.get("PlayResY", video_resolution[1]))
+        self._track.wrap_style = int(info.get("WrapStyle", 1))
         self._track.scaled_border_and_shadow = (
-            info.get('ScaledBorderAndShadow', 'yes') == 'yes'
+            info.get("ScaledBorderAndShadow", "yes") == "yes"
         )
 
         self._renderer.frame_size = (
@@ -518,10 +518,10 @@ class AssRenderer:
 
     def render(self, time: int) -> PIL.Image:
         if self._track is None:
-            raise ValueError('need source to render')
+            raise ValueError("need source to render")
 
         if any(dim <= 0 for dim in self._renderer.frame_size):
-            raise ValueError('resolution needs to be a positive integer')
+            raise ValueError("resolution needs to be a positive integer")
 
         image_data = np.zeros(
             (self._renderer.frame_size[1], self._renderer.frame_size[0], 4),
@@ -574,6 +574,6 @@ class AssRenderer:
 
     def render_raw(self, time: int) -> _AssImageSequence:
         if self._track is None:
-            raise ValueError('need source to render')
+            raise ValueError("need source to render")
 
         return self._renderer.render_frame(self._track, now=time)

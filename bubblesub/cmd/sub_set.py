@@ -22,8 +22,8 @@ from bubblesub.cmd.common import Pts, SubtitlesSelection
 
 
 class SubtitlesSetCommand(BaseCommand):
-    names = ['sub-set']
-    help_text = 'Updates given subtitles parameters.'
+    names = ["sub-set"]
+    help_text = "Updates given subtitles parameters."
 
     @property
     def is_enabled(self) -> bool:
@@ -32,15 +32,15 @@ class SubtitlesSetCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable('nothing to update')
+            raise CommandUnavailable("nothing to update")
 
         with self.api.undo.capture():
             for sub in subs:
                 params = {
-                    'text': sub.text,
-                    'note': sub.note,
-                    'actor': sub.actor,
-                    'style': sub.style,
+                    "text": sub.text,
+                    "note": sub.note,
+                    "actor": sub.actor,
+                    "style": sub.style,
                 }
 
                 sub.begin_update()
@@ -80,44 +80,44 @@ class SubtitlesSetCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to change',
+            "-t",
+            "--target",
+            help="subtitles to change",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
 
-        parser.add_argument('--text', help='new subtitles text')
-        parser.add_argument('--note', help='new subtitles note')
-        parser.add_argument('--actor', help='new subtitles actor')
-        parser.add_argument('--style', help='new subtitles style')
+        parser.add_argument("--text", help="new subtitles text")
+        parser.add_argument("--note", help="new subtitles note")
+        parser.add_argument("--actor", help="new subtitles actor")
+        parser.add_argument("--style", help="new subtitles style")
         parser.add_argument(
-            '--comment',
-            action='store_true',
-            help='mark subtitles as a comment',
+            "--comment",
+            action="store_true",
+            help="mark subtitles as a comment",
         )
         parser.add_argument(
-            '--no-comment',
-            action='store_true',
-            help='mark subtitles as a non-comment',
+            "--no-comment",
+            action="store_true",
+            help="mark subtitles as a non-comment",
         )
 
         parser.add_argument(
-            '-s',
-            '--start',
-            help='new subtitles start',
+            "-s",
+            "--start",
+            help="new subtitles start",
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
-            '-e',
-            '--end',
-            help='new subtitles end',
+            "-e",
+            "--end",
+            help="new subtitles end",
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
-            '--no-align',
-            help='don\'t realign subtitles to video frames',
-            action='store_true',
+            "--no-align",
+            help="don't realign subtitles to video frames",
+            action="store_true",
         )
 
 

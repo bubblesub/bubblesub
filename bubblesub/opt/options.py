@@ -30,7 +30,7 @@ from bubblesub.opt.menu import MenuConfig
 class Options:
     """Umbrella class containing all the configuration."""
 
-    DEFAULT_PATH = Path(xdg.XDG_CONFIG_HOME) / 'bubblesub'
+    DEFAULT_PATH = Path(xdg.XDG_CONFIG_HOME) / "bubblesub"
 
     def __init__(self) -> None:
         """Initialize self."""

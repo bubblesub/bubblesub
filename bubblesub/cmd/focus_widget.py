@@ -29,27 +29,27 @@ class _TargetWidget(enum.Enum):
     def __str__(self) -> str:
         return self.value
 
-    TextEditor = 'text-editor'
-    NoteEditor = 'note-editor'
-    StyleEditor = 'style-editor'
-    ActorEditor = 'actor-editor'
-    LayerEditor = 'layer-editor'
-    MarginLeftEditor = 'margin-left-editor'
-    MarginRightEditor = 'margin-right-editor'
-    MarginVerticalEditor = 'margin-vertical-editor'
-    StartTimeEditor = 'start-time-editor'
-    EndTimeEditor = 'end-time-editor'
-    DurationEditor = 'duration-editor'
-    CommentCheckbox = 'comment-checkbox'
-    SubtitlesGrid = 'subtitles-grid'
-    Spectrogram = 'spectrogram'
-    Console = 'console'
-    ConsoleInput = 'console-input'
+    TextEditor = "text-editor"
+    NoteEditor = "note-editor"
+    StyleEditor = "style-editor"
+    ActorEditor = "actor-editor"
+    LayerEditor = "layer-editor"
+    MarginLeftEditor = "margin-left-editor"
+    MarginRightEditor = "margin-right-editor"
+    MarginVerticalEditor = "margin-vertical-editor"
+    StartTimeEditor = "start-time-editor"
+    EndTimeEditor = "end-time-editor"
+    DurationEditor = "duration-editor"
+    CommentCheckbox = "comment-checkbox"
+    SubtitlesGrid = "subtitles-grid"
+    Spectrogram = "spectrogram"
+    Console = "console"
+    ConsoleInput = "console-input"
 
 
 class FocusWidgetCommand(BaseCommand):
-    names = ['focus-widget']
-    help_text = 'Focuses given widget.'
+    names = ["focus-widget"]
+    help_text = "Focuses given widget."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
@@ -65,16 +65,16 @@ class FocusWidgetCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            'target',
-            help='which widget to focus',
+            "target",
+            help="which widget to focus",
             type=_TargetWidget,
             choices=list(_TargetWidget),
         )
         parser.add_argument(
-            '-s',
-            '--select',
-            help='whether to select the text',
-            action='store_true',
+            "-s",
+            "--select",
+            help="whether to select the text",
+            action="store_true",
         )
 
 

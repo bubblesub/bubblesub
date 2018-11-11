@@ -32,8 +32,8 @@ class _Syllable:
 
 
 class SubtitlesSplitKaraokeCommand(BaseCommand):
-    names = ['sub-split-karaoke']
-    help_text = 'Splits given subtitles according to the karaoke tags inside.'
+    names = ["sub-split-karaoke"]
+    help_text = "Splits given subtitles according to the karaoke tags inside."
 
     @property
     def is_enabled(self) -> bool:
@@ -42,12 +42,12 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable('nothing to split')
+            raise CommandUnavailable("nothing to split")
 
         new_selection: T.List[Event] = []
         with self.api.undo.capture(), self.api.gui.throttle_updates():
             for sub in subs:
-                if '\\k' not in sub.text:
+                if "\\k" not in sub.text:
                     continue
 
                 start = sub.start
@@ -74,18 +74,18 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
             ]
 
     def _get_syllables(self, text: str) -> T.List[_Syllable]:
-        syllables = [_Syllable(text='', duration=0)]
-        for group in re.split('({[^{}]*})', text):
-            if group.startswith('{'):
-                match = re.search('\\\\k(\\d+)', group)
+        syllables = [_Syllable(text="", duration=0)]
+        for group in re.split("({[^{}]*})", text):
+            if group.startswith("{"):
+                match = re.search("\\\\k(\\d+)", group)
                 if match:
                     syllables.append(
-                        _Syllable(text='', duration=int(match.group(1)))
+                        _Syllable(text="", duration=int(match.group(1)))
                     )
                     # remove the leftover \k tag
                     group = group[: match.start()] + group[match.end() :]
-                    if group == '{}':
-                        group = ''
+                    if group == "{}":
+                        group = ""
                 syllables[-1].text += group
             else:
                 syllables[-1].text += group
@@ -96,17 +96,17 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to split',
+            "-t",
+            "--target",
+            help="subtitles to split",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
 
 
 class SubtitlesMergeKaraokeCommand(BaseCommand):
-    names = ['sub-merge-karaoke', 'sub-join-karaoke']
-    help_text = 'Merges given subtitles adding karaoke timing tags inbetween.'
+    names = ["sub-merge-karaoke", "sub-join-karaoke"]
+    help_text = "Merges given subtitles adding karaoke timing tags inbetween."
 
     @property
     def is_enabled(self) -> bool:
@@ -115,29 +115,29 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable('nothing to merge')
+            raise CommandUnavailable("nothing to merge")
 
         with self.api.undo.capture():
             subs[0].begin_update()
 
             if self.args.invisible:
-                text = ''
+                text = ""
                 for i, sub in enumerate(subs):
                     text += sub.text
                     if i != len(subs) - 1:
                         pos = subs[i + 1].start - subs[0].start
-                        text += r'{\alpha&HFF&\t(%d,%d,\alpha&H00&)}' % (
+                        text += r"{\alpha&HFF&\t(%d,%d,\alpha&H00&)}" % (
                             pos,
                             pos,
                         )
                 subs[0].text = text
             else:
-                subs[0].text = ''.join(
-                    ('{\\k%d}' % (sub.duration // 10)) + sub.text
+                subs[0].text = "".join(
+                    ("{\\k%d}" % (sub.duration // 10)) + sub.text
                     for sub in subs
                 )
 
-            subs[0].note = ''.join(sub.note for sub in subs)
+            subs[0].note = "".join(sub.note for sub in subs)
             subs[0].end = subs[-1].end
             subs[0].end_update()
 
@@ -148,16 +148,16 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to merge',
+            "-t",
+            "--target",
+            help="subtitles to merge",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
         parser.add_argument(
-            '--invisible',
-            help='use alternative karaoke transformation',
-            action='store_true',
+            "--invisible",
+            help="use alternative karaoke transformation",
+            action="store_true",
         )
 
 

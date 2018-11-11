@@ -34,7 +34,7 @@ from bubblesub.ui.menu import setup_cmd_menu
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(
-        self, api: Api, console: 'bubblesub.ui.console.Console'
+        self, api: Api, console: "bubblesub.ui.console.Console"
     ) -> None:
         super().__init__()
 
@@ -100,8 +100,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
         if self._api.undo.needs_save and not bubblesub.ui.util.ask(
-            'There are unsaved changes. '
-            'Are you sure you want to exit the program?'
+            "There are unsaved changes. "
+            "Are you sure you want to exit the program?"
         ):
             event.ignore()
         else:
@@ -120,10 +120,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         palette = QtGui.QPalette()
         for color_type, color_value in palette_def.items():
-            if '+' in color_type:
-                group_name, role_name = color_type.split('+')
+            if "+" in color_type:
+                group_name, role_name = color_type.split("+")
             else:
-                group_name = ''
+                group_name = ""
                 role_name = color_type
             target_group = getattr(QtGui.QPalette, group_name, None)
             target_role = getattr(QtGui.QPalette, role_name, None)
@@ -159,9 +159,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self._api.opt.menu[MenuContext.MainMenu]
             + [
                 SubMenu(
-                    'Pl&ugins',
+                    "Pl&ugins",
                     [
-                        MenuCommand('Reload plugins', 'reload-cmds'),
+                        MenuCommand("Reload plugins", "reload-cmds"),
                         MenuSeparator(),
                     ]
                     + self._api.cmd.get_plugin_menu_items(),
@@ -187,22 +187,22 @@ class MainWindow(QtWidgets.QMainWindow):
             if data:
                 widget.restoreState(data)
 
-        _load(self.top_bar, 'top')
-        _load(self.editor_splitter, 'editor')
-        _load(self.main_splitter, 'main')
-        _load(self.console_splitter, 'console')
+        _load(self.top_bar, "top")
+        _load(self.editor_splitter, "editor")
+        _load(self.main_splitter, "main")
+        _load(self.console_splitter, "console")
 
     def _store_splitters(self) -> None:
         self._api.opt.general.gui.splitters = {
-            'top': self.top_bar.saveState(),
-            'editor': self.editor_splitter.saveState(),
-            'main': self.main_splitter.saveState(),
-            'console': self.console_splitter.saveState(),
+            "top": self.top_bar.saveState(),
+            "editor": self.editor_splitter.saveState(),
+            "main": self.main_splitter.saveState(),
+            "console": self.console_splitter.saveState(),
         }
 
     def _update_title(self) -> None:
         self.setWindowTitle(
-            f'bubblesub - {self._api.subs.path}'
+            f"bubblesub - {self._api.subs.path}"
             if self._api.subs.path
-            else 'bubblesub'
+            else "bubblesub"
         )

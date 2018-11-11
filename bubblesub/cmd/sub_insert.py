@@ -23,14 +23,14 @@ from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitleInsertCommand(BaseCommand):
-    names = ['sub-insert']
-    help_text = 'Inserts one empty subtitle.'
+    names = ["sub-insert"]
+    help_text = "Inserts one empty subtitle."
 
     async def run(self) -> None:
         indexes = await self.args.origin.get_indexes()
-        if self.args.dir == 'before':
+        if self.args.dir == "before":
             idx, start, end = self._insert_before(indexes)
-        elif self.args.dir == 'after':
+        elif self.args.dir == "after":
             idx, start, end = self._insert_after(indexes)
         else:
             raise AssertionError
@@ -41,7 +41,7 @@ class SubtitleInsertCommand(BaseCommand):
 
         with self.api.undo.capture():
             self.api.subs.events.insert_one(
-                idx, start=start, end=end, style='Default'
+                idx, start=start, end=end, style="Default"
             )
             self.api.subs.selected_indexes = [idx]
 
@@ -85,33 +85,33 @@ class SubtitleInsertCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-o',
-            '--origin',
-            help='where to insert the subtitle',
+            "-o",
+            "--origin",
+            help="where to insert the subtitle",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
 
         parser.add_argument(
-            '--no-align',
-            help='don\'t realign the subtitle to video frames',
-            action='store_true',
+            "--no-align",
+            help="don't realign the subtitle to video frames",
+            action="store_true",
         )
 
         group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument(
-            '--before',
-            dest='dir',
-            action='store_const',
-            const='before',
-            help='insert before origin',
+            "--before",
+            dest="dir",
+            action="store_const",
+            const="before",
+            help="insert before origin",
         )
         group.add_argument(
-            '--after',
-            dest='dir',
-            action='store_const',
-            const='after',
-            help='insert after origin',
+            "--after",
+            dest="dir",
+            action="store_const",
+            const="after",
+            help="insert after origin",
         )
 
 

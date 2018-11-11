@@ -58,16 +58,16 @@ class StatusBar(QtWidgets.QStatusBar):
         total = len(self._api.subs.events)
 
         if count == 0:
-            self._subs_label.setText(f'Subtitles: -/{total} (-%)')
+            self._subs_label.setText(f"Subtitles: -/{total} (-%)")
         elif count == 1:
             idx = self._api.subs.selected_indexes[0]
             self._subs_label.setText(
-                f'Subtitles: {idx + 1}/{total} ({idx / total:.1%})'
+                f"Subtitles: {idx + 1}/{total} ({idx / total:.1%})"
             )
         else:
 
             def format_range(low: int, high: int) -> str:
-                return f'{low}..{high}' if low != high else str(low)
+                return f"{low}..{high}" if low != high else str(low)
 
             ranges: T.List[T.Tuple[int, int]] = []
             for idx in self._api.subs.selected_indexes:
@@ -77,8 +77,8 @@ class StatusBar(QtWidgets.QStatusBar):
                     ranges.append((idx, idx))
 
             self._subs_label.setText(
-                'Subtitles: {}/{} ({}, {:.1%})'.format(
-                    ','.join(
+                "Subtitles: {}/{} ({}, {:.1%})".format(
+                    ",".join(
                         format_range(low + 1, high + 1) for low, high in ranges
                     ),
                     total,
@@ -89,7 +89,7 @@ class StatusBar(QtWidgets.QStatusBar):
 
     def _on_current_pts_change(self) -> None:
         self._video_frame_label.setText(
-            'Video frame: {} ({:.1%})'.format(
+            "Video frame: {} ({:.1%})".format(
                 bubblesub.util.ms_to_str(self._api.media.current_pts),
                 self._api.media.current_pts / max(1, self._api.media.max_pts),
             )
@@ -98,7 +98,7 @@ class StatusBar(QtWidgets.QStatusBar):
     def _on_audio_selection_change(self) -> None:
         def format_ms_delta(delta: int) -> str:
             ret = bubblesub.util.ms_to_str(abs(delta))
-            ret = ('\u2212', '+')[delta >= 0] + ret
+            ret = ("\u2212", "+")[delta >= 0] + ret
             return ret
 
         if len(self._api.subs.selected_events) != 1:
@@ -108,7 +108,7 @@ class StatusBar(QtWidgets.QStatusBar):
         end_delta = self._api.media.audio.selection_end - sub.end
 
         self._audio_selection_label.setText(
-            'Audio selection: {} / {} (duration: {})'.format(
+            "Audio selection: {} / {} (duration: {})".format(
                 format_ms_delta(start_delta),
                 format_ms_delta(end_delta),
                 bubblesub.util.ms_to_str(self._api.media.audio.selection_size),

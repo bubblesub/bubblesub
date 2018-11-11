@@ -37,41 +37,41 @@ def _rescale_ass_tags(api: Api, x_factor: float, y_factor: float) -> None:
         except ass_tag_parser.ParsingError:
             return
         for item in ass_struct:
-            if item['type'] != 'tags':
+            if item["type"] != "tags":
                 continue
-            for subitem in item['children']:
-                if subitem['type'] in {
-                    'border',
-                    'border-x',
-                    'border-y',
-                    'shadow',
-                    'shadow-x',
-                    'shadow-y',
-                    'rotation-x',
-                    'rotation-y',
-                    'rotation-z',
+            for subitem in item["children"]:
+                if subitem["type"] in {
+                    "border",
+                    "border-x",
+                    "border-y",
+                    "shadow",
+                    "shadow-x",
+                    "shadow-y",
+                    "rotation-x",
+                    "rotation-y",
+                    "rotation-z",
                 }:
-                    subitem['size'] *= y_factor
+                    subitem["size"] *= y_factor
 
-                if subitem['type'] in {'rotation-origin', 'position'}:
-                    subitem['x'] = int(subitem['x'] * x_factor)
-                    subitem['y'] = int(subitem['y'] * y_factor)
+                if subitem["type"] in {"rotation-origin", "position"}:
+                    subitem["x"] = int(subitem["x"] * x_factor)
+                    subitem["y"] = int(subitem["y"] * y_factor)
 
-                if subitem['type'] == 'movement':
-                    subitem['x1'] = int(subitem['x1'] * x_factor)
-                    subitem['y1'] = int(subitem['y1'] * y_factor)
-                    subitem['x2'] = int(subitem['x2'] * x_factor)
-                    subitem['y2'] = int(subitem['y2'] * y_factor)
+                if subitem["type"] == "movement":
+                    subitem["x1"] = int(subitem["x1"] * x_factor)
+                    subitem["y1"] = int(subitem["y1"] * y_factor)
+                    subitem["x2"] = int(subitem["x2"] * x_factor)
+                    subitem["y2"] = int(subitem["y2"] * y_factor)
 
-                if subitem['type'] == 'font-size':
-                    subitem['size'] = int(subitem['size'] * y_factor)
+                if subitem["type"] == "font-size":
+                    subitem["size"] = int(subitem["size"] * y_factor)
 
         event.text = ass_tag_parser.serialize_ass(ass_struct)
 
 
 class _OptionsGropuBox(QtWidgets.QGroupBox):
     def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
-        super().__init__('Options:', parent)
+        super().__init__("Options:", parent)
         self._api = api
 
         self.res_x_edit = QtWidgets.QSpinBox(self)
@@ -81,52 +81,52 @@ class _OptionsGropuBox(QtWidgets.QGroupBox):
         self.res_y_edit.setMinimum(0)
         self.res_y_edit.setMaximum(99999)
 
-        get_resolution_button = QtWidgets.QPushButton('Take from video', self)
+        get_resolution_button = QtWidgets.QPushButton("Take from video", self)
         get_resolution_button.clicked.connect(
             self._on_get_resolution_button_click
         )
 
         self.ycbcr_matrix_combo_box = QtWidgets.QComboBox(self)
         for value in [
-            'TV.601',
-            'PC.601',
-            'TV.709',
-            'PC.709',
-            'TV.FCC',
-            'PC.FCC',
-            'TV.240M',
-            'PC.240M',
+            "TV.601",
+            "PC.601",
+            "TV.709",
+            "PC.709",
+            "TV.FCC",
+            "PC.FCC",
+            "TV.240M",
+            "PC.240M",
         ]:
             self.ycbcr_matrix_combo_box.addItem(value, userData=value)
 
         self.wrap_mode_combo_box = QtWidgets.QComboBox(self)
         for key, value in {
-            '0': 'Smart wrapping, top line is wider',
-            '1': 'End-of-line word wrapping, only \\N breaks',
-            '2': 'No word wrapping, both \\n and \\N break',
-            '3': 'Smart wrapping, bottom line is wider',
+            "0": "Smart wrapping, top line is wider",
+            "1": "End-of-line word wrapping, only \\N breaks",
+            "2": "No word wrapping, both \\n and \\N break",
+            "3": "Smart wrapping, bottom line is wider",
         }.items():
             self.wrap_mode_combo_box.addItem(value, userData=key)
 
         self.scale_check_box = QtWidgets.QCheckBox(
-            'Scale borders and shadows', self
+            "Scale borders and shadows", self
         )
 
         layout = QtWidgets.QGridLayout(self)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 2)
 
-        layout.addWidget(QtWidgets.QLabel('Resolution:', self), 0, 0)
+        layout.addWidget(QtWidgets.QLabel("Resolution:", self), 0, 0)
         sublayout = QtWidgets.QHBoxLayout()
         sublayout.addWidget(self.res_x_edit)
         sublayout.addWidget(self.res_y_edit)
         sublayout.addWidget(get_resolution_button)
         layout.addLayout(sublayout, 0, 1)
 
-        layout.addWidget(QtWidgets.QLabel('YCbCr matrix:', self), 1, 0)
+        layout.addWidget(QtWidgets.QLabel("YCbCr matrix:", self), 1, 0)
         layout.addWidget(self.ycbcr_matrix_combo_box, 1, 1)
 
-        layout.addWidget(QtWidgets.QLabel('Wrap style:', self), 2, 0)
+        layout.addWidget(QtWidgets.QLabel("Wrap style:", self), 2, 0)
         layout.addWidget(self.wrap_mode_combo_box, 2, 1)
 
         layout.addWidget(self.scale_check_box, 3, 1)
@@ -138,9 +138,9 @@ class _OptionsGropuBox(QtWidgets.QGroupBox):
 
 class _MetadataGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
-        super().__init__('Meta data:', parent)
+        super().__init__("Meta data:", parent)
         self.model = QtGui.QStandardItemModel(self)
-        self.model.setHorizontalHeaderLabels(['Key', 'Value'])
+        self.model.setHorizontalHeaderLabels(["Key", "Value"])
 
         self._table_view = QtWidgets.QTableView(self)
         self._table_view.setModel(self.model)
@@ -164,8 +164,8 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
         )
 
         strip = QtWidgets.QWidget(self)
-        add_row_button = QtWidgets.QPushButton('Add new row', strip)
-        del_rows_button = QtWidgets.QPushButton('Remove selected rows', strip)
+        add_row_button = QtWidgets.QPushButton("Add new row", strip)
+        del_rows_button = QtWidgets.QPushButton("Remove selected rows", strip)
         layout = QtWidgets.QHBoxLayout(strip)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(add_row_button)
@@ -191,7 +191,7 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
 
     def _on_add_button_click(self) -> None:
         self.model.appendRow(
-            [QtGui.QStandardItem(''), QtGui.QStandardItem('')]
+            [QtGui.QStandardItem(""), QtGui.QStandardItem("")]
         )
 
     def _on_delete_rows_button_click(self) -> None:
@@ -213,10 +213,10 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
         strip = QtWidgets.QDialogButtonBox(self)
         strip.setOrientation(QtCore.Qt.Horizontal)
-        strip.addButton('OK', strip.AcceptRole)
-        apply_button = strip.addButton('Apply', strip.ApplyRole)
+        strip.addButton("OK", strip.AcceptRole)
+        apply_button = strip.addButton("Apply", strip.ApplyRole)
         apply_button.clicked.connect(self._commit)
-        strip.addButton('Cancel', strip.RejectRole)
+        strip.addButton("Cancel", strip.RejectRole)
         strip.accepted.connect(self.accept)
         strip.rejected.connect(self.reject)
 
@@ -230,42 +230,42 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
         self.accepted.connect(self._commit)
 
         self._load()
-        self.setWindowTitle('File properties')
+        self.setWindowTitle("File properties")
         self.resize(600, 600)
         self.exec_()
 
     def _load(self) -> None:
         self._options_group_box.res_x_edit.setValue(
-            int(T.cast(str, self._api.subs.info.get('PlayResX', '0')))
+            int(T.cast(str, self._api.subs.info.get("PlayResX", "0")))
         )
         self._options_group_box.res_y_edit.setValue(
-            int(T.cast(str, self._api.subs.info.get('PlayResY', '0')))
+            int(T.cast(str, self._api.subs.info.get("PlayResY", "0")))
         )
 
         self._options_group_box.ycbcr_matrix_combo_box.setCurrentIndex(
             self._options_group_box.ycbcr_matrix_combo_box.findData(
-                self._api.subs.info.get('YCbCr Matrix')
+                self._api.subs.info.get("YCbCr Matrix")
             )
         )
 
         self._options_group_box.wrap_mode_combo_box.setCurrentIndex(
             self._options_group_box.wrap_mode_combo_box.findData(
-                self._api.subs.info.get('WrapStyle')
+                self._api.subs.info.get("WrapStyle")
             )
         )
 
         self._options_group_box.scale_check_box.setChecked(
-            self._api.subs.info.get('ScaledBorderAndShadow', 'yes') == 'yes'
+            self._api.subs.info.get("ScaledBorderAndShadow", "yes") == "yes"
         )
 
         for key, value in self._api.subs.info.items():
             if key not in [
-                'PlayResX',
-                'PlayResY',
-                'YCbCr Matrix',
-                'WrapStyle',
-                'ScaledBorderAndShadow',
-                'ScriptType',
+                "PlayResX",
+                "PlayResY",
+                "YCbCr Matrix",
+                "WrapStyle",
+                "ScaledBorderAndShadow",
+                "ScriptType",
             ]:
                 self._metadata_group_box.model.appendRow(
                     [QtGui.QStandardItem(key), QtGui.QStandardItem(value)]
@@ -273,25 +273,25 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
     def _commit(self) -> None:
         old_res = (
-            int(T.cast(str, self._api.subs.info.get('PlayResX', '0'))),
-            int(T.cast(str, self._api.subs.info.get('PlayResY', '0'))),
+            int(T.cast(str, self._api.subs.info.get("PlayResX", "0"))),
+            int(T.cast(str, self._api.subs.info.get("PlayResY", "0"))),
         )
 
         self._api.subs.info.clear()
 
         self._api.subs.info.update(
             {
-                'ScriptType': 'v4.00+',
-                'PlayResX': str(self._options_group_box.res_x_edit.value()),
-                'PlayResY': str(self._options_group_box.res_y_edit.value()),
-                'YCbCr Matrix': (
+                "ScriptType": "v4.00+",
+                "PlayResX": str(self._options_group_box.res_x_edit.value()),
+                "PlayResY": str(self._options_group_box.res_y_edit.value()),
+                "YCbCr Matrix": (
                     self._options_group_box.ycbcr_matrix_combo_box.currentData()
                 ),
-                'WrapStyle': (
+                "WrapStyle": (
                     self._options_group_box.wrap_mode_combo_box.currentData()
                 ),
-                'ScaledBorderAndShadow': (
-                    ['no', 'yes'][
+                "ScaledBorderAndShadow": (
+                    ["no", "yes"][
                         self._options_group_box.scale_check_box.isChecked()
                     ]
                 ),
@@ -301,8 +301,8 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
         self._api.subs.info.update(self._metadata_group_box.get_data())
 
         new_res = (
-            int(T.cast(str, self._api.subs.info.get('PlayResX', '0'))),
-            int(T.cast(str, self._api.subs.info.get('PlayResY', '0'))),
+            int(T.cast(str, self._api.subs.info.get("PlayResX", "0"))),
+            int(T.cast(str, self._api.subs.info.get("PlayResY", "0"))),
         )
         if (
             old_res != new_res
@@ -311,8 +311,8 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
             and new_res[0]
             and new_res[1]
             and bubblesub.ui.util.ask(
-                'The resolution was changed. '
-                'Do you want to rescale all the styles now?'
+                "The resolution was changed. "
+                "Do you want to rescale all the styles now?"
             )
         ):
             x_factor = new_res[0] / old_res[0]
@@ -322,8 +322,8 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
 
 class FilePropertiesCommand(BaseCommand):
-    names = ['file-properties']
-    help_text = 'Opens up the metadata editor dialog.'
+    names = ["file-properties"]
+    help_text = "Opens up the metadata editor dialog."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)

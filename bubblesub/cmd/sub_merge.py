@@ -22,8 +22,8 @@ from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitlesMergeCommand(BaseCommand):
-    names = ['sub-merge', 'sub-join']
-    help_text = 'Merges given subtitles together.'
+    names = ["sub-merge", "sub-join"]
+    help_text = "Merges given subtitles together."
 
     @property
     def is_enabled(self) -> bool:
@@ -32,19 +32,19 @@ class SubtitlesMergeCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable('nothing to merge')
+            raise CommandUnavailable("nothing to merge")
 
         if len(subs) == 1:
             if not subs[0].next:
-                raise CommandUnavailable('nothing to merge')
+                raise CommandUnavailable("nothing to merge")
             subs.append(subs[0].next)
 
         with self.api.undo.capture():
             subs[0].begin_update()
             subs[0].end = subs[-1].end
             if self.args.concat:
-                subs[0].text = ''.join(sub.text for sub in subs)
-                subs[0].note = ''.join(sub.note for sub in subs)
+                subs[0].text = "".join(sub.text for sub in subs)
+                subs[0].note = "".join(sub.note for sub in subs)
             subs[0].end_update()
 
             self.api.subs.events.remove(subs[0].index + 1, len(subs) - 1)
@@ -53,20 +53,20 @@ class SubtitlesMergeCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to merge',
+            "-t",
+            "--target",
+            help="subtitles to merge",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
         parser.add_argument(
-            '--concat',
-            '--concatenate',
+            "--concat",
+            "--concatenate",
             help=(
-                'merge the subtitles text '
-                '(otherwise keep only the first subtitle)'
+                "merge the subtitles text "
+                "(otherwise keep only the first subtitle)"
             ),
-            action='store_true',
+            action="store_true",
         )
 
 

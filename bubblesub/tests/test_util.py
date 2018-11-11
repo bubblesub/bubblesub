@@ -22,7 +22,7 @@ import bubblesub.util
 
 
 @pytest.mark.parametrize(
-    'indexes,reverse,expected_ranges',
+    "indexes,reverse,expected_ranges",
     [
         ([1], False, [(1, 1)]),
         ([1, 2], False, [(1, 2)]),

@@ -51,7 +51,7 @@ class CommandCanceled(CommandError):
 
     def __init__(self) -> None:
         """Initialize self."""
-        super().__init__('canceled')
+        super().__init__("canceled")
 
 
 class CommandUnavailable(CommandError):
@@ -63,7 +63,7 @@ class CommandUnavailable(CommandError):
 
         :param text: optional text error
         """
-        super().__init__(text or 'command not available right now')
+        super().__init__(text or "command not available right now")
 
 
 class CommandNotFound(CommandError):
@@ -88,7 +88,7 @@ class CommandArgumentParser(argparse.ArgumentParser):
         :param message: error message about to be shown to the user
         """
         with io.StringIO() as handle:
-            handle.write(f'{self.prog}: error: {message}\n')
+            handle.write(f"{self.prog}: error: {message}\n")
             self.print_help(handle)
             handle.seek(0)
             message = handle.read()
@@ -102,17 +102,17 @@ def split_invocation(invocation: str) -> T.List[T.List[str]]:
     :param invocation: command line to parse
     :return: tuple containing command name and arguments
     """
-    splitter = shlex.shlex(invocation, punctuation_chars=';')
-    splitter.wordchars = ''.join(
+    splitter = shlex.shlex(invocation, punctuation_chars=";")
+    splitter.wordchars = "".join(
         char
         for char in invocation
-        if char not in splitter.quotes + splitter.whitespace + ';'
+        if char not in splitter.quotes + splitter.whitespace + ";"
     )
     tokens = list(splitter)
 
     invocations = [
         list(group)
-        for key, group in itertools.groupby(tokens, lambda token: token == ';')
+        for key, group in itertools.groupby(tokens, lambda token: token == ";")
         if not key
     ]
     return invocations
@@ -123,7 +123,7 @@ class BaseCommand(abc.ABC):
 
     def __init__(
         self,
-        api: 'bubblesub.api.Api',
+        api: "bubblesub.api.Api",
         args: argparse.Namespace,
         invocation: str,
     ) -> None:
@@ -141,7 +141,7 @@ class BaseCommand(abc.ABC):
     @bubblesub.model.classproperty
     @abc.abstractproperty
     def names(  # pylint: disable=no-self-argument
-        cls: T.Type['BaseCommand']
+        cls: T.Type["BaseCommand"]
     ) -> T.List[str]:
         """
         Return command names.
@@ -151,7 +151,7 @@ class BaseCommand(abc.ABC):
         :param cls: type inheriting from BaseCommand
         :return: command names
         """
-        raise NotImplementedError('command has no name')
+        raise NotImplementedError("command has no name")
 
     @bubblesub.model.classproperty
     @abc.abstractproperty
@@ -161,7 +161,7 @@ class BaseCommand(abc.ABC):
 
         :return: description
         """
-        raise NotImplementedError('command has no help text')
+        raise NotImplementedError("command has no help text")
 
     @property
     def is_enabled(self) -> bool:
@@ -175,11 +175,11 @@ class BaseCommand(abc.ABC):
     @abc.abstractmethod
     async def run(self) -> None:
         """Carry out the command."""
-        raise NotImplementedError('command has no implementation')
+        raise NotImplementedError("command has no implementation")
 
     @staticmethod
     def decorate_parser(
-        api: 'bubblesub.api.Api', parser: argparse.ArgumentParser
+        api: "bubblesub.api.Api", parser: argparse.ArgumentParser
     ) -> None:
         """
         Configure argument parser with custom command switches.
@@ -195,7 +195,7 @@ class CommandApi(QtCore.QObject):
 
     commands_loaded = QtCore.pyqtSignal()
 
-    def __init__(self, api: 'bubblesub.api.Api') -> None:
+    def __init__(self, api: "bubblesub.api.Api") -> None:
         """
         Initialize self.
 
@@ -242,7 +242,7 @@ class CommandApi(QtCore.QObject):
             cls.decorate_parser(self._api, parser)
             args = parser.parse_args(cmd_args)
 
-            ret.append(cls(self._api, args, ' '.join(invocation)))
+            ret.append(cls(self._api, args, " ".join(invocation)))
 
         return ret
 
@@ -272,14 +272,14 @@ class CommandApi(QtCore.QObject):
             self._api.log.warn(str(ex))
             return False
         except Exception as ex:  # pylint: disable=broad-except
-            self._api.log.error(f'problem running {cmd.invocation}:')
-            self._api.log.error(f'{ex}')
+            self._api.log.error(f"problem running {cmd.invocation}:")
+            self._api.log.error(f"{ex}")
             traceback.print_exc()
             return False
 
         end_time = time.time()
         took = end_time - start_time
-        self._api.log.debug(f'{cmd.invocation}: took {took:.04f} s')
+        self._api.log.debug(f"{cmd.invocation}: took {took:.04f} s")
         return True
 
     def get(self, name: str) -> T.Optional[T.Type[BaseCommand]]:
@@ -302,9 +302,9 @@ class CommandApi(QtCore.QObject):
     def reload_commands(self) -> None:
         """Rescans filesystem for commands."""
         self._unload_commands()
-        self._load_commands(Path(__file__).parent.parent / 'cmd')
+        self._load_commands(Path(__file__).parent.parent / "cmd")
         if self._api.opt.root_dir:
-            self._load_commands(self._api.opt.root_dir / 'scripts')
+            self._load_commands(self._api.opt.root_dir / "scripts")
         self.commands_loaded.emit()
 
     def get_plugin_menu_items(self) -> T.List[MenuItem]:
@@ -315,14 +315,14 @@ class CommandApi(QtCore.QObject):
         """
         return sorted(
             self._plugin_menu,
-            key=lambda item: getattr(item, 'name', '').replace('&', ''),
+            key=lambda item: getattr(item, "name", "").replace("&", ""),
         )
 
     def _unload_commands(self) -> None:
         """Unloads registered commands.."""
         self._plugin_menu[:] = []
         for name, cls in list(self._registry.items()):
-            self._api.log.debug(f'unregistering {cls} as {name}')
+            self._api.log.debug(f"unregistering {cls} as {name}")
         self._registry.clear()
 
     def _load_commands(self, path: Path) -> None:
@@ -339,13 +339,13 @@ class CommandApi(QtCore.QObject):
         """
         specs = []
         if path.exists():
-            for subpath in path.glob('*.py'):
-                if subpath.stem == '__init__':
+            for subpath in path.glob("*.py"):
+                if subpath.stem == "__init__":
                     continue
                 subpath_rel = subpath.relative_to(path)
                 spec = importlib.util.spec_from_file_location(
-                    '.'.join(
-                        ['bubblesub', 'cmd']
+                    ".".join(
+                        ["bubblesub", "cmd"]
                         + list(subpath_rel.parent.parts)
                         + [subpath_rel.stem]
                     ),
@@ -360,7 +360,7 @@ class CommandApi(QtCore.QObject):
                 spec.loader.exec_module(mod)
                 for cls in mod.COMMANDS:
                     for name in cls.names:
-                        self._api.log.debug(f'registering {cls} as {name}')
+                        self._api.log.debug(f"registering {cls} as {name}")
                         self._registry[name] = cls
                 try:
                     menu = mod.MENU

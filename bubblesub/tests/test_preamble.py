@@ -21,9 +21,9 @@ import pytest
 from .common import collect_source_files
 
 
-@pytest.mark.parametrize('path', collect_source_files())
+@pytest.mark.parametrize("path", collect_source_files())
 def test_preamble(path: Path) -> None:
-    preamble_body = '''
+    preamble_body = """
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -36,9 +36,9 @@ def test_preamble(path: Path) -> None:
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
     source = path.read_text()
 
     assert preamble_body in source
-    assert '# bubblesub - ASS subtitle editor\n' in source
-    assert '# Copyright (C) 2018 Marcin Kurczewski\n' in source
+    assert "# bubblesub - ASS subtitle editor\n" in source
+    assert "# Copyright (C) 2018 Marcin Kurczewski\n" in source

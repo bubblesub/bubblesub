@@ -23,11 +23,11 @@ from bubblesub.util import ms_to_str
 
 
 class SaveAudioSampleCommand(BaseCommand):
-    names = ['save-audio-sample']
+    names = ["save-audio-sample"]
     help_text = (
-        'Saves given subtitles to a WAV file. '
-        'Prompts user to choose where to save the file to if the path wasn\'t '
-        'specified in the command arguments.'
+        "Saves given subtitles to a WAV file. "
+        "Prompts user to choose where to save the file to if the path wasn't "
+        "specified in the command arguments."
     )
 
     @property
@@ -40,12 +40,12 @@ class SaveAudioSampleCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable('nothing to sample')
+            raise CommandUnavailable("nothing to sample")
 
         assert self.api.media.path
         path = await self.args.path.get_save_path(
-            file_filter='Waveform Audio File (*.wav)',
-            default_file_name='audio-{}-{}..{}.wav'.format(
+            file_filter="Waveform Audio File (*.wav)",
+            default_file_name="audio-{}-{}..{}.wav".format(
                 self.api.media.path.name,
                 ms_to_str(subs[0].start),
                 ms_to_str(subs[-1].end),
@@ -54,23 +54,23 @@ class SaveAudioSampleCommand(BaseCommand):
 
         pts_ranges = [(sub.start, sub.end) for sub in subs]
         self.api.media.audio.save_wav(path, pts_ranges)
-        self.api.log.info(f'saved audio sample to {path}')
+        self.api.log.info(f"saved audio sample to {path}")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to save audio from',
+            "-t",
+            "--target",
+            help="subtitles to save audio from",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
         parser.add_argument(
-            '-p',
-            '--path',
-            help='path to save the sample to',
+            "-p",
+            "--path",
+            help="path to save the sample to",
             type=lambda value: FancyPath(api, value),
-            default='',
+            default="",
         )
 
 

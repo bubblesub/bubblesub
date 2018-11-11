@@ -23,8 +23,8 @@ from bubblesub.api.cmd import BaseCommand
 
 
 class SetPaletteCommand(BaseCommand):
-    names = ['set-palette']
-    help_text = 'Changes the GUI color theme.'
+    names = ["set-palette"]
+    help_text = "Changes the GUI color theme."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
@@ -35,8 +35,8 @@ class SetPaletteCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            'palette_name',
-            help='name of the palette to change to',
+            "palette_name",
+            help="name of the palette to change to",
             type=str,
             choices=list(api.opt.general.gui.palettes.keys()),
         )

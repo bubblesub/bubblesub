@@ -25,10 +25,10 @@ from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitlesCloneCommand(BaseCommand):
-    names = ['sub-clone', 'sub-duplicate']
+    names = ["sub-clone", "sub-duplicate"]
     help_text = (
-        'Duplicates given subtitles. Duplicated subtitles '
-        'are interleaved with the source subtitles.'
+        "Duplicates given subtitles. Duplicated subtitles "
+        "are interleaved with the source subtitles."
     )
 
     @property
@@ -39,7 +39,7 @@ class SubtitlesCloneCommand(BaseCommand):
         with self.api.undo.capture(), self.api.gui.throttle_updates():
             indexes = await self.args.target.get_indexes()
             if not indexes:
-                raise CommandUnavailable('nothing to clone')
+                raise CommandUnavailable("nothing to clone")
 
             sub_copies: T.List[Event] = []
             for idx in reversed(indexes):
@@ -51,11 +51,11 @@ class SubtitlesCloneCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to clone',
+            "-t",
+            "--target",
+            help="subtitles to clone",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
 
 

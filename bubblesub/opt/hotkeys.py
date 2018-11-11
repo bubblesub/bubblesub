@@ -27,9 +27,9 @@ from bubblesub.opt.base import BaseConfig
 class HotkeyContext(enum.Enum):
     """Which GUI widget the hotkey works in."""
 
-    Global = 'global'
-    Spectrogram = 'spectrogram'
-    SubtitlesGrid = 'subtitles_grid'
+    Global = "global"
+    Spectrogram = "spectrogram"
+    SubtitlesGrid = "subtitles_grid"
 
 
 class Hotkey:
@@ -49,7 +49,7 @@ class Hotkey:
 class HotkeysConfig(BaseConfig):
     """Configuration for global and widget-centric GUI hotkeys."""
 
-    file_name = 'hotkeys.conf'
+    file_name = "hotkeys.conf"
 
     def __init__(self) -> None:
         """Initialize self."""
@@ -68,20 +68,20 @@ class HotkeysConfig(BaseConfig):
             self.hotkeys[context].clear()
 
         cur_context = HotkeyContext.Global
-        for i, line in enumerate(text.split('\n'), 1):
+        for i, line in enumerate(text.split("\n"), 1):
             line = line.strip()
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 continue
 
-            match = re.match(r'\[(\w+)\]', line)
+            match = re.match(r"\[(\w+)\]", line)
             if match:
                 cur_context = HotkeyContext(match.group(1))
                 continue
 
             try:
-                shortcut, cmdline = re.split(r'\s+', line, maxsplit=1)
+                shortcut, cmdline = re.split(r"\s+", line, maxsplit=1)
             except ValueError:
-                raise ValueError(f'syntax error near line #{i} ({line})')
+                raise ValueError(f"syntax error near line #{i} ({line})")
             self.hotkeys[cur_context].append(Hotkey(shortcut, cmdline))
 
     def dumps(self) -> str:
@@ -95,15 +95,15 @@ class HotkeysConfig(BaseConfig):
             if not hotkeys:
                 continue
 
-            lines.append(f'[{context.value}]')
+            lines.append(f"[{context.value}]")
             for hotkey in hotkeys:
-                lines.append(f'{hotkey.shortcut:20s} {hotkey.cmdline}')
-            lines.append('')
+                lines.append(f"{hotkey.shortcut:20s} {hotkey.cmdline}")
+            lines.append("")
 
         while not lines[-1]:
             lines.pop()
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def __iter__(self) -> T.Iterator[T.Tuple[HotkeyContext, T.List[Hotkey]]]:
         """

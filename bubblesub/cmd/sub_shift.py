@@ -27,10 +27,10 @@ from bubblesub.cmd.common import Pts, SubtitlesSelection
 
 
 class SubtitlesShiftCommand(BaseCommand):
-    names = ['sub-shift']
+    names = ["sub-shift"]
     help_text = (
-        'Shifts given subtitles. '
-        'Prompts user to provide amount to shift by.'
+        "Shifts given subtitles. "
+        "Prompts user to provide amount to shift by."
     )
 
     @property
@@ -43,7 +43,7 @@ class SubtitlesShiftCommand(BaseCommand):
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable('nothing to update')
+            raise CommandUnavailable("nothing to update")
 
         delta = await self._get_delta(subs, main_window)
 
@@ -64,8 +64,8 @@ class SubtitlesShiftCommand(BaseCommand):
     ) -> T.Optional[Pts]:
         ret = bubblesub.ui.util.time_jump_dialog(
             main_window,
-            absolute_label='Time to move to:',
-            relative_label='Time to add:',
+            absolute_label="Time to move to:",
+            relative_label="Time to add:",
             relative_checked=True,
         )
         if ret is None:
@@ -75,21 +75,21 @@ class SubtitlesShiftCommand(BaseCommand):
         if not is_relative and subs:
             delta -= subs[0].start
 
-        return Pts(self.api, f'{delta:+d}ms')
+        return Pts(self.api, f"{delta:+d}ms")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to shift',
+            "-t",
+            "--target",
+            help="subtitles to shift",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
         parser.add_argument(
-            '--no-align',
-            help='don\'t realign subtitles to video frames',
-            action='store_true',
+            "--no-align",
+            help="don't realign subtitles to video frames",
+            action="store_true",
         )
 
 

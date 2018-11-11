@@ -25,33 +25,33 @@ def normalize_class_name(name: str) -> T.Iterable[str]:
     def handler(match: T.Match) -> str:
         if match.start() == 0:
             return match.group().lower()
-        return '-' + match.group(0).lower()
+        return "-" + match.group(0).lower()
 
-    name = re.sub('Command$', '', name)
+    name = re.sub("Command$", "", name)
 
     # exceptions
-    name = name.replace('Subtitles', 'Sub')
-    name = name.replace('Subtitle', 'Sub')
-    name = name.replace('SpectrogramSelection', 'Sel')
-    name = name.replace('Selection', 'Sel')
-    name = name.replace('Milliseconds', 'Ms')
-    name = name.replace('Command', 'Cmd')
+    name = name.replace("Subtitles", "Sub")
+    name = name.replace("Subtitle", "Sub")
+    name = name.replace("SpectrogramSelection", "Sel")
+    name = name.replace("Selection", "Sel")
+    name = name.replace("Milliseconds", "Ms")
+    name = name.replace("Command", "Cmd")
 
-    name = re.sub('[A-Z]', handler, name)
+    name = re.sub("[A-Z]", handler, name)
 
     yield name
 
 
 def normalize_command_name(name: str) -> T.Iterable[str]:
-    match = re.match(r'^((?P<prefix>[^/]*)\/)?(?P<stem>.*)$', name)
+    match = re.match(r"^((?P<prefix>[^/]*)\/)?(?P<stem>.*)$", name)
     assert match
-    prefix = match.group('prefix')
-    stem = match.group('stem').replace('/', '-')
-    stem = stem.replace('subs', 'sub')
+    prefix = match.group("prefix")
+    stem = match.group("stem").replace("/", "-")
+    stem = stem.replace("subs", "sub")
 
     yield stem
     if prefix:
-        yield f'{prefix}-{stem}'
+        yield f"{prefix}-{stem}"
 
 
 def verify_name(cls_name: str, cmd_name: str) -> None:

@@ -47,7 +47,7 @@ class SubtitlesApi(QtCore.QObject):
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
         self.ass_file = AssFile()
-        self.ass_file.styles.insert_one(name='Default')
+        self.ass_file.styles.insert_one(name="Default")
         self.info_changed = self.ass_file.info.changed
         self.events.items_removed.connect(self._on_items_removed)
 
@@ -87,7 +87,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: path of the associated video file or None if no video
         """
-        path: str = T.cast(str, self.info.get('Video File', ''))
+        path: str = T.cast(str, self.info.get("Video File", ""))
         if not path:
             return None
         if not self._path:
@@ -101,7 +101,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :param path: path to the video file
         """
-        self.info.update({'Video File': str(path), 'Audio File': str(path)})
+        self.info.update({"Video File": str(path), "Audio File": str(path)})
 
     @property
     def path(self) -> T.Optional[Path]:
@@ -158,7 +158,7 @@ class SubtitlesApi(QtCore.QObject):
         self.ass_file.info.clear()
         self.ass_file.events.clear()
         self.ass_file.styles.clear()
-        self.ass_file.styles.insert_one(name='Default')
+        self.ass_file.styles.insert_one(name="Default")
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:
@@ -169,7 +169,7 @@ class SubtitlesApi(QtCore.QObject):
         """
         assert path
         path = Path(path)
-        with path.open('r') as handle:
+        with path.open("r") as handle:
             bubblesub.ass.reader.load_ass(handle, self.ass_file)
 
         self.selected_indexes = []
@@ -190,7 +190,7 @@ class SubtitlesApi(QtCore.QObject):
         path = Path(path)
         if remember_path:
             self._path = path
-        with path.open('w') as handle:
+        with path.open("w") as handle:
             bubblesub.ass.writer.write_ass(self.ass_file, handle)
         if remember_path:
             self.saved.emit()

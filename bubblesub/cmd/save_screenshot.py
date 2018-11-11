@@ -23,11 +23,11 @@ from bubblesub.util import ms_to_str
 
 
 class SaveScreenshotCommand(BaseCommand):
-    names = ['save-screenshot']
+    names = ["save-screenshot"]
     help_text = (
-        'Makes a screenshot of the current video frame. '
-        'Prompts user to choose where to save the file to if the path wasn\'t '
-        'specified in the command arguments.'
+        "Makes a screenshot of the current video frame. "
+        "Prompts user to choose where to save the file to if the path wasn't "
+        "specified in the command arguments."
     )
 
     @property
@@ -37,29 +37,29 @@ class SaveScreenshotCommand(BaseCommand):
     async def run(self) -> None:
         assert self.api.media.path
         path = await self.args.path.get_save_path(
-            file_filter='Portable Network Graphics (*.png)',
-            default_file_name='shot-{}-{}.png'.format(
+            file_filter="Portable Network Graphics (*.png)",
+            default_file_name="shot-{}-{}.png".format(
                 self.api.media.path.name, ms_to_str(self.api.media.current_pts)
             ),
         )
 
         self.api.media.video.screenshot(path, self.args.include_subs)
-        self.api.log.info(f'saved screenshot to {path}')
+        self.api.log.info(f"saved screenshot to {path}")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p',
-            '--path',
-            help='path to save the screenshot to',
+            "-p",
+            "--path",
+            help="path to save the screenshot to",
             type=lambda value: FancyPath(api, value),
-            default='',
+            default="",
         )
         parser.add_argument(
-            '-i',
-            '--include-subs',
+            "-i",
+            "--include-subs",
             help='whether to "burn" the subtitles into the screenshot',
-            action='store_true',
+            action="store_true",
         )
 
 

@@ -24,8 +24,8 @@ from bubblesub.ass.file import AssFile
 from bubblesub.ass.style import Color
 from bubblesub.ass.util import unescape_ass_tag
 
-TIMESTAMP_RE = re.compile(r'(\d{1,2}):(\d{2}):(\d{2})[.,](\d{2,3})')
-SECTION_HEADING_RE = re.compile(r'^\[([^\]]+)\]')
+TIMESTAMP_RE = re.compile(r"(\d{1,2}):(\d{2}):(\d{2})[.,](\d{2,3})")
+SECTION_HEADING_RE = re.compile(r"^\[([^\]]+)\]")
 
 
 def _deserialize_color(text: str) -> Color:
@@ -60,93 +60,93 @@ class _ReadContext:
 def _info_section_handler(
     line: str, ass_file: AssFile, _context: _ReadContext
 ) -> None:
-    if line.startswith(';'):
+    if line.startswith(";"):
         return
-    key, value = line.split(': ', 1)
+    key, value = line.split(": ", 1)
     ass_file.info.set(key, value)
 
 
 def _styles_section_handler(
     line: str, ass_file: AssFile, ctx: _ReadContext
 ) -> None:
-    if line.startswith('Format:'):
-        _, rest = line.split(': ', 1)
-        ctx.field_names = [p.strip() for p in rest.split(',')]
+    if line.startswith("Format:"):
+        _, rest = line.split(": ", 1)
+        ctx.field_names = [p.strip() for p in rest.split(",")]
         return
 
-    _, rest = line.split(': ', 1)
-    field_values = rest.strip().split(',')
+    _, rest = line.split(": ", 1)
+    field_values = rest.strip().split(",")
     field_dict = dict(zip(ctx.field_names, field_values))
     ass_file.styles.insert_one(
-        name=field_dict['Name'],
-        font_name=field_dict['Fontname'],
-        font_size=int(float(field_dict['Fontsize'])),
-        primary_color=_deserialize_color(field_dict['PrimaryColour']),
-        secondary_color=_deserialize_color(field_dict['SecondaryColour']),
-        outline_color=_deserialize_color(field_dict['OutlineColour']),
-        back_color=_deserialize_color(field_dict['BackColour']),
-        bold=field_dict['Bold'] == '-1',
-        italic=field_dict['Italic'] == '-1',
-        underline=field_dict['Underline'] == '-1',
-        strike_out=field_dict['StrikeOut'] == '-1',
-        scale_x=float(field_dict['ScaleX']),
-        scale_y=float(field_dict['ScaleY']),
-        spacing=float(field_dict['Spacing']),
-        angle=float(field_dict['Angle']),
-        border_style=int(field_dict['BorderStyle']),
-        outline=float(field_dict['Outline']),
-        shadow=float(field_dict['Shadow']),
-        alignment=int(field_dict['Alignment']),
-        margin_left=int(float(field_dict['MarginL'])),
-        margin_right=int(float(field_dict['MarginR'])),
-        margin_vertical=int(float(field_dict['MarginV'])),
-        encoding=int(field_dict['Encoding']),
+        name=field_dict["Name"],
+        font_name=field_dict["Fontname"],
+        font_size=int(float(field_dict["Fontsize"])),
+        primary_color=_deserialize_color(field_dict["PrimaryColour"]),
+        secondary_color=_deserialize_color(field_dict["SecondaryColour"]),
+        outline_color=_deserialize_color(field_dict["OutlineColour"]),
+        back_color=_deserialize_color(field_dict["BackColour"]),
+        bold=field_dict["Bold"] == "-1",
+        italic=field_dict["Italic"] == "-1",
+        underline=field_dict["Underline"] == "-1",
+        strike_out=field_dict["StrikeOut"] == "-1",
+        scale_x=float(field_dict["ScaleX"]),
+        scale_y=float(field_dict["ScaleY"]),
+        spacing=float(field_dict["Spacing"]),
+        angle=float(field_dict["Angle"]),
+        border_style=int(field_dict["BorderStyle"]),
+        outline=float(field_dict["Outline"]),
+        shadow=float(field_dict["Shadow"]),
+        alignment=int(field_dict["Alignment"]),
+        margin_left=int(float(field_dict["MarginL"])),
+        margin_right=int(float(field_dict["MarginR"])),
+        margin_vertical=int(float(field_dict["MarginV"])),
+        encoding=int(field_dict["Encoding"]),
     )
 
 
 def _events_section_handler(
     line: str, ass_file: AssFile, ctx: _ReadContext
 ) -> None:
-    if line.startswith('Format:'):
-        _, rest = line.split(': ', 1)
-        ctx.field_names = [p.strip() for p in rest.split(',')]
+    if line.startswith("Format:"):
+        _, rest = line.split(": ", 1)
+        ctx.field_names = [p.strip() for p in rest.split(",")]
         return
 
-    event_type, rest = line.split(': ', 1)
-    field_values = rest.strip().split(',', len(ctx.field_names) - 1)
+    event_type, rest = line.split(": ", 1)
+    field_values = rest.strip().split(",", len(ctx.field_names) - 1)
     field_dict = dict(zip(ctx.field_names, field_values))
 
-    if event_type not in {'Comment', 'Dialogue'}:
+    if event_type not in {"Comment", "Dialogue"}:
         raise ValueError(f'unknown event type: "{event_type}"')
 
-    text = field_dict['Text']
-    note = ''
-    match = re.search(r'{NOTE:(?P<note>[^}]*)}', text)
+    text = field_dict["Text"]
+    note = ""
+    match = re.search(r"{NOTE:(?P<note>[^}]*)}", text)
     if match:
         text = text[: match.start()] + text[match.end() :]
-        note = unescape_ass_tag(match.group('note'))
+        note = unescape_ass_tag(match.group("note"))
 
     start: T.Optional[int] = None
     end: T.Optional[int] = None
-    match = re.search(r'{TIME:(?P<start>-?\d+),(?P<end>-?\d+)}', text)
+    match = re.search(r"{TIME:(?P<start>-?\d+),(?P<end>-?\d+)}", text)
     if match:
         text = text[: match.start()] + text[match.end() :]
-        start = int(match.group('start'))
-        end = int(match.group('end'))
+        start = int(match.group("start"))
+        end = int(match.group("end"))
 
     ass_file.events.insert_one(
-        layer=int(field_dict['Layer']),
-        start=(start or _timestamp_to_ms(field_dict['Start'])),
-        end=(end or _timestamp_to_ms(field_dict['End'])),
-        style=field_dict['Style'],
-        actor=field_dict['Name'],
-        margin_left=int(field_dict['MarginL']),
-        margin_right=int(field_dict['MarginR']),
-        margin_vertical=int(field_dict['MarginV']),
-        effect=field_dict['Effect'],
+        layer=int(field_dict["Layer"]),
+        start=(start or _timestamp_to_ms(field_dict["Start"])),
+        end=(end or _timestamp_to_ms(field_dict["End"])),
+        style=field_dict["Style"],
+        actor=field_dict["Name"],
+        margin_left=int(field_dict["MarginL"]),
+        margin_right=int(field_dict["MarginR"]),
+        margin_vertical=int(field_dict["MarginV"]),
+        effect=field_dict["Effect"],
         text=text,
         note=note,
-        is_comment=event_type == 'Comment',
+        is_comment=event_type == "Comment",
     )
 
 
@@ -180,18 +180,18 @@ def load_ass(handle: T.IO, ass_file: AssFile) -> None:
             match = SECTION_HEADING_RE.match(line)
             if match:
                 section = match.group(1)
-                if section == 'Script Info':
+                if section == "Script Info":
                     handler = _info_section_handler
-                elif section == 'V4+ Styles':
+                elif section == "V4+ Styles":
                     handler = _styles_section_handler
-                elif section == 'Events':
+                elif section == "Events":
                     handler = _events_section_handler
-                elif section == 'Aegisub Project Garbage':
+                elif section == "Aegisub Project Garbage":
                     handler = _dummy_handler
                 else:
                     raise ValueError(f'unrecognized section: "{section}"')
             elif not handler:
-                raise ValueError('expected section')
+                raise ValueError("expected section")
             else:
                 handler(line, ass_file, ctx)  # pylint: disable=not-callable
         except (ValueError, IndexError):
@@ -207,7 +207,7 @@ def read_ass(source: T.Union[Path, T.IO]) -> AssFile:
     """
     ass_file = AssFile()
     if isinstance(source, Path):
-        with source.open('r') as handle:
+        with source.open("r") as handle:
             load_ass(handle, ass_file)
     else:
         load_ass(handle, ass_file)

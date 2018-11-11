@@ -18,8 +18,8 @@ from bubblesub.api.cmd import BaseCommand
 
 
 class UndoCommand(BaseCommand):
-    names = ['undo']
-    help_text = 'Undoes last edit operation.'
+    names = ["undo"]
+    help_text = "Undoes last edit operation."
 
     @property
     def is_enabled(self) -> bool:
@@ -30,8 +30,8 @@ class UndoCommand(BaseCommand):
 
 
 class RedoCommand(BaseCommand):
-    names = ['redo']
-    help_text = 'Redoes last edit operation.'
+    names = ["redo"]
+    help_text = "Redoes last edit operation."
 
     @property
     def is_enabled(self) -> bool:

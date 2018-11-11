@@ -43,19 +43,19 @@ def _bisect(source: T.List[int], origin: int, delta: int) -> int:
     return source[idx]
 
 
-OPERATORS = {'add': r'\+', 'sub': '-'}
+OPERATORS = {"add": r"\+", "sub": "-"}
 TERMINALS = {
-    'rel_sub': r'(?P<direction>[cpn])s\.(?P<boundary>[se])',
-    'rel_frame': '(?P<direction>[cpn])f',
-    'rel_keyframe': '(?P<direction>[cpn])kf',
-    'spectrogram': r'a\.(?P<boundary>[se])',
-    'spectrogram_view': r'a\.v(?P<boundary>[se])',
-    'num_sub': r's(?P<number>\d+)\.(?P<boundary>[se])',
-    'num_frame': r'(?P<number>\d+)f',
-    'num_keyframe': r'(?P<number>\d+)kf',
-    'num_ms': r'(?P<number>\d+)ms',
-    'ask': 'ask',
-    'default_sub_duration': 'dsd',
+    "rel_sub": r"(?P<direction>[cpn])s\.(?P<boundary>[se])",
+    "rel_frame": "(?P<direction>[cpn])f",
+    "rel_keyframe": "(?P<direction>[cpn])kf",
+    "spectrogram": r"a\.(?P<boundary>[se])",
+    "spectrogram_view": r"a\.v(?P<boundary>[se])",
+    "num_sub": r"s(?P<number>\d+)\.(?P<boundary>[se])",
+    "num_frame": r"(?P<number>\d+)f",
+    "num_keyframe": r"(?P<number>\d+)kf",
+    "num_ms": r"(?P<number>\d+)ms",
+    "ask": "ask",
+    "default_sub_duration": "dsd",
 }
 
 TOKENS = {}
@@ -80,10 +80,10 @@ class _Token:
 
 
 def _sub_boundary(subtitle: Event, token: _Token) -> int:
-    boundary = token.match.group('boundary')
-    if boundary == 's':
+    boundary = token.match.group("boundary")
+    if boundary == "s":
         return subtitle.start
-    if boundary == 'e':
+    if boundary == "e":
         return subtitle.end
     raise AssertionError(f'unknown boundary: "{boundary}"')
 
@@ -105,7 +105,7 @@ class Pts:
         # simple LL(1) parser / evaulator
         tokens = list(self._tokenize())
         if not tokens:
-            raise CommandError('empty value')
+            raise CommandError("empty value")
 
         first_terminal = True
         while tokens:
@@ -113,7 +113,7 @@ class Pts:
 
             if token.name in TERMINALS.keys():
                 if not first_terminal:
-                    raise CommandError('expected operator')
+                    raise CommandError("expected operator")
                 value = await self._eval_operator(
                     left=value, right=token, operator=None
                 )
@@ -121,7 +121,7 @@ class Pts:
 
             elif token.name in OPERATORS.keys():
                 if not tokens:
-                    raise CommandError('missing operand')
+                    raise CommandError("missing operand")
 
                 operator = token.text
                 adjacent_token = tokens.pop(0)
@@ -133,7 +133,7 @@ class Pts:
 
                 elif adjacent_token.name in OPERATORS.keys():
                     raise CommandError(
-                        'operator must be followed by an operand'
+                        "operator must be followed by an operand"
                     )
 
                 else:
@@ -171,16 +171,16 @@ class Pts:
             return ex.value
         if operator is None:
             return right_val
-        if operator == '+':
+        if operator == "+":
             return (left or 0) + right_val
-        if operator == '-':
+        if operator == "-":
             return (left or 0) - right_val
         raise AssertionError(f'unknown operator: "{operator}"')
 
     async def _eval_terminal(
         self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
     ) -> int:
-        func = getattr(self, '_eval_terminal_' + token.name, None)
+        func = getattr(self, "_eval_terminal_" + token.name, None)
         if not func:
             raise AssertionError(f'unknown token: "{token.name}"')
         return await func(token, origin, operator)
@@ -191,31 +191,31 @@ class Pts:
         _origin: T.Optional[int],
         _operator: T.Optional[str],
     ) -> int:
-        return int(token.match.group('number'))
+        return int(token.match.group("number"))
 
     async def _eval_terminal_num_frame(
         self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
     ) -> int:
-        delta = int(token.match.group('number'))
+        delta = int(token.match.group("number"))
         if operator is None:
             return self._apply_frame(0, delta)
         origin = origin or 0
-        if operator == '-':
+        if operator == "-":
             delta *= -1
-        elif operator != '+':
+        elif operator != "+":
             raise AssertionError(f'unknown operator: "{operator}"')
         raise _ResetValue(self._apply_frame(origin, delta))
 
     async def _eval_terminal_num_keyframe(
         self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
     ) -> int:
-        delta = int(token.match.group('number'))
+        delta = int(token.match.group("number"))
         if operator is None:
             return self._apply_keyframe(0, delta)
         origin = origin or 0
-        if operator == '-':
+        if operator == "-":
             delta *= -1
-        elif operator != '+':
+        elif operator != "+":
             raise AssertionError(f'unknown operator: "{operator}"')
         raise _ResetValue(self._apply_keyframe(origin, delta))
 
@@ -233,12 +233,12 @@ class Pts:
         _origin: T.Optional[int],
         _operator: T.Optional[str],
     ) -> int:
-        direction = token.match.group('direction')
-        if direction == 'p':
+        direction = token.match.group("direction")
+        if direction == "p":
             return self._apply_frame(self._api.media.current_pts, -1)
-        if direction == 'c':
+        if direction == "c":
             return self._api.media.current_pts
-        if direction == 'n':
+        if direction == "n":
             return self._apply_frame(self._api.media.current_pts, 1)
         raise AssertionError(f'unknown direction: "{direction}"')
 
@@ -248,12 +248,12 @@ class Pts:
         _origin: T.Optional[int],
         _operator: T.Optional[str],
     ) -> int:
-        direction = token.match.group('direction')
-        if direction == 'p':
+        direction = token.match.group("direction")
+        if direction == "p":
             return self._apply_keyframe(self._api.media.current_pts, -1)
-        if direction == 'c':
+        if direction == "c":
             return self._apply_keyframe(self._api.media.current_pts, 0)
-        if direction == 'n':
+        if direction == "n":
             return self._apply_keyframe(self._api.media.current_pts, 1)
         raise AssertionError(f'unknown direction: "{direction}"')
 
@@ -263,13 +263,13 @@ class Pts:
         _origin: T.Optional[int],
         _operator: T.Optional[str],
     ) -> int:
-        direction = token.match.group('direction')
+        direction = token.match.group("direction")
         try:
-            if direction == 'p':
+            if direction == "p":
                 sub = self._api.subs.selected_events[0].prev
-            elif direction == 'c':
+            elif direction == "c":
                 sub = self._api.subs.selected_events[0]
-            elif direction == 'n':
+            elif direction == "n":
                 sub = self._api.subs.selected_events[-1].next
             else:
                 raise AssertionError(f'unknown direction: "{direction}"')
@@ -285,7 +285,7 @@ class Pts:
         _origin: T.Optional[int],
         _operator: T.Optional[str],
     ) -> int:
-        idx = int(token.match.group('number')) - 1
+        idx = int(token.match.group("number")) - 1
         idx = max(0, min(idx, len(self._api.subs.events) - 1))
         try:
             sub = self._api.subs.events[idx]
@@ -299,12 +299,12 @@ class Pts:
         _origin: T.Optional[int],
         _operator: T.Optional[str],
     ) -> int:
-        boundary = token.match.group('boundary')
+        boundary = token.match.group("boundary")
         if not self._api.media.audio.has_selection:
             raise CommandUnavailable
-        if boundary == 's':
+        if boundary == "s":
             return self._api.media.audio.selection_start
-        if boundary == 'e':
+        if boundary == "e":
             return self._api.media.audio.selection_end
         raise AssertionError(f'unknown boundary: "{boundary}"')
 
@@ -314,10 +314,10 @@ class Pts:
         _origin: T.Optional[int],
         _operator: T.Optional[str],
     ) -> int:
-        boundary = token.match.group('boundary')
-        if boundary == 's':
+        boundary = token.match.group("boundary")
+        if boundary == "s":
             return self._api.media.audio.view_start
-        if boundary == 'e':
+        if boundary == "e":
             return self._api.media.audio.view_end
         raise AssertionError(f'unknown boundary: "{boundary}"')
 
@@ -349,13 +349,13 @@ class Pts:
 
     def _apply_frame(self, origin: int, delta: int) -> int:
         if not self._api.media.video.timecodes:
-            raise CommandError('timecode information is not available')
+            raise CommandError("timecode information is not available")
 
         return _bisect(self._api.media.video.timecodes, origin, delta)
 
     def _apply_keyframe(self, origin: int, delta: int) -> int:
         if not self._api.media.video.keyframes:
-            raise CommandError('keyframe information is not available')
+            raise CommandError("keyframe information is not available")
 
         possible_pts = [
             self._api.media.video.timecodes[i]

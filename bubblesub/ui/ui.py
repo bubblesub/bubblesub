@@ -28,8 +28,8 @@ import bubblesub.ui.main_window
 
 def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
     QtCore.pyqtRemoveInputHook()
-    app = QtWidgets.QApplication(sys.argv + ['--name', 'bubblesub'])
-    app.setApplicationName('bubblesub')
+    app = QtWidgets.QApplication(sys.argv + ["--name", "bubblesub"])
+    app.setApplicationName("bubblesub")
     loop = quamash.QEventLoop(app)
     asyncio.set_event_loop(loop)
 
@@ -38,7 +38,7 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
     app.aboutToQuit.connect(api.media.stop)
 
     if args.file:
-        api.cmd.run_cmdline([['open', '--path', args.file]])
+        api.cmd.run_cmdline([["open", "--path", args.file]])
 
     main_window = bubblesub.ui.main_window.MainWindow(api, console)
     api.gui.set_main_window(main_window)

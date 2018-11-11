@@ -16,9 +16,9 @@
 
 """Boolean operation."""
 
-_YES = ('1', 'yes', 'y', 'on', 'enable')
-_NO = ('0', 'no', 'n', 'off', 'disable')
-_TOGGLE = ('toggle',)
+_YES = ("1", "yes", "y", "on", "enable")
+_NO = ("0", "no", "n", "off", "disable")
+_TOGGLE = ("toggle",)
 
 
 class BooleanOperation:

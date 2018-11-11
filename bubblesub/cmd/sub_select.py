@@ -22,8 +22,8 @@ from bubblesub.cmd.common import SubtitlesSelection
 
 
 class SubtitlesSelectCommand(BaseCommand):
-    names = ['sub-select']
-    help_text = 'Selects given subtitles.'
+    names = ["sub-select"]
+    help_text = "Selects given subtitles."
 
     @property
     def is_enabled(self) -> bool:
@@ -35,8 +35,8 @@ class SubtitlesSelectCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            'target',
-            help='subtitles to select',
+            "target",
+            help="subtitles to select",
             type=lambda value: SubtitlesSelection(api, value),
         )
 

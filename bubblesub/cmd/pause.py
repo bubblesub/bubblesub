@@ -22,8 +22,8 @@ from bubblesub.cmd.common import BooleanOperation
 
 
 class PauseCommand(BaseCommand):
-    names = ['pause']
-    help_text = 'Pauses or unpauses the video playback.'
+    names = ["pause"]
+    help_text = "Pauses or unpauses the video playback."
 
     @property
     def is_enabled(self) -> bool:
@@ -37,8 +37,8 @@ class PauseCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            'operation',
-            help='whether to pause the video',
+            "operation",
+            help="whether to pause the video",
             type=BooleanOperation,
         )
 

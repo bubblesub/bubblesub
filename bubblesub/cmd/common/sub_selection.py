@@ -28,7 +28,7 @@ from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
 
 IDX_REGEX = regex.compile(
-    r'^(?P<token>\d+)(?:(?P<token>\.\.\.?|,)(?P<token>\d+))*$'
+    r"^(?P<token>\d+)(?:(?P<token>\.\.\.?|,)(?P<token>\d+))*$"
 )
 
 
@@ -49,7 +49,7 @@ def _match_indexes(target: str) -> T.Optional[T.List[int]]:
 
     ret: T.List[int] = []
 
-    for group in _split_by_delim(match.captures('token'), ','):
+    for group in _split_by_delim(match.captures("token"), ","):
         if len(group) == 1:
             idx = int(group[0]) - 1
             if idx != -1:
@@ -80,20 +80,20 @@ class SubtitlesSelection:
 
     @property
     def makes_sense(self) -> bool:
-        if self.target in {'all', 'none'}:
+        if self.target in {"all", "none"}:
             return True
 
         if self.target in {
-            'one-below',
-            'one-above',
-            'first',
-            'last',
-            'ask-time',
-            'ask-number',
+            "one-below",
+            "one-above",
+            "first",
+            "last",
+            "ask-time",
+            "ask-number",
         }:
             return len(self.api.subs.events) > 0
 
-        if self.target == 'selected':
+        if self.target == "selected":
             return self.api.subs.has_selection
 
         indexes = _match_indexes(self.target)
@@ -104,18 +104,18 @@ class SubtitlesSelection:
         raise ValueError(f'unknown selection target: "{self.target}"')
 
     async def get_all_indexes(self) -> T.List[int]:
-        if self.target == 'all':
+        if self.target == "all":
             return list(range(len(self.api.subs.events)))
 
-        if self.target == 'none':
+        if self.target == "none":
             return []
 
-        if self.target == 'one-above':
+        if self.target == "one-above":
             if not self.api.subs.selected_indexes:
                 return [len(self.api.subs.events) - 1]
             return [max(0, self.api.subs.selected_indexes[0] - 1)]
 
-        if self.target == 'one-below':
+        if self.target == "one-below":
             if not self.api.subs.selected_indexes:
                 return [0]
             return [
@@ -125,17 +125,17 @@ class SubtitlesSelection:
                 )
             ]
 
-        if self.target == 'selected':
+        if self.target == "selected":
             return self.api.subs.selected_indexes
 
-        if self.target == 'first':
+        if self.target == "first":
             return [0] if len(self.api.subs.events) else []
 
-        if self.target == 'last':
+        if self.target == "last":
             length = len(self.api.subs.events)
             return [length - 1] if length else []
 
-        if self.target == 'ask-number':
+        if self.target == "ask-number":
             if not len(self.api.subs.events):
                 return []
             value = await self.api.gui.exec(self._show_number_dialog)
@@ -143,7 +143,7 @@ class SubtitlesSelection:
                 raise CommandCanceled
             return [value - 1]
 
-        if self.target == 'ask-time':
+        if self.target == "ask-time":
             if not len(self.api.subs.events):
                 return []
             value = await self.api.gui.exec(self._show_time_dialog)
@@ -171,7 +171,7 @@ class SubtitlesSelection:
         self, main_window: QtWidgets.QMainWindow
     ) -> T.Optional[int]:
         dialog = QtWidgets.QInputDialog(main_window)
-        dialog.setLabelText('Line number to jump to:')
+        dialog.setLabelText("Line number to jump to:")
         dialog.setIntMinimum(1)
         dialog.setIntMaximum(len(self.api.subs.events))
         if self.api.subs.has_selection:

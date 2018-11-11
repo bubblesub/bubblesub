@@ -213,7 +213,7 @@ class UndoApi:
     def undo(self) -> None:
         """Restore previous application state."""
         if not self.has_undo:
-            raise RuntimeError('no more undo')
+            raise RuntimeError("no more undo")
 
         self._ignore = True
         old_state, _new_state = self._stack[self._stack_pos]
@@ -226,7 +226,7 @@ class UndoApi:
     def redo(self) -> None:
         """Reapply undone application state."""
         if not self.has_redo:
-            raise RuntimeError('no more redo')
+            raise RuntimeError("no more redo")
 
         self._ignore = True
         self._stack_pos += 1

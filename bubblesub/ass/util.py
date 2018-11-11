@@ -30,7 +30,7 @@ def escape_ass_tag(text: str) -> str:
     :param text: text to escape
     :return: escaped text
     """
-    return text.replace('\\', r'\\').replace('{', r'\[').replace('}', r'\]')
+    return text.replace("\\", r"\\").replace("{", r"\[").replace("}", r"\]")
 
 
 def unescape_ass_tag(text: str) -> str:
@@ -40,7 +40,7 @@ def unescape_ass_tag(text: str) -> str:
     :param text: text to unescape
     :return: unescaped text
     """
-    return text.replace(r'\\', '\\').replace(r'\[', '{').replace(r'\]', '}')
+    return text.replace(r"\\", "\\").replace(r"\[", "{").replace(r"\]", "}")
 
 
 def ass_to_plaintext(text: str) -> str:
@@ -51,10 +51,10 @@ def ass_to_plaintext(text: str) -> str:
     :return: plain text
     """
     return str(
-        regex.sub('{[^}]*}', '', text)
-        .replace('\\h', ' ')
-        .replace('\\n', ' ')
-        .replace('\\N', '\n')
+        regex.sub("{[^}]*}", "", text)
+        .replace("\\h", " ")
+        .replace("\\n", " ")
+        .replace("\\N", "\n")
     )
 
 
@@ -68,7 +68,7 @@ def character_count(text: str) -> int:
     :return: number of characters
     """
     return len(
-        regex.sub(r'\W+', '', ass_to_plaintext(text), flags=regex.I | regex.U)
+        regex.sub(r"\W+", "", ass_to_plaintext(text), flags=regex.I | regex.U)
     )
 
 
@@ -82,13 +82,13 @@ def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
     :return: iterator over regex matches
     """
     text = regex.sub(
-        r'\\[Nnh]', '  ', text  # two spaces to preserve match positions
+        r"\\[Nnh]", "  ", text  # two spaces to preserve match positions
     )
 
     return T.cast(
         T.Iterable[T.Match[str]],
         regex.finditer(
-            r'[\p{L}\p{S}\p{N}][\p{L}\p{S}\p{N}\p{P}]*\p{L}|\p{L}', text
+            r"[\p{L}\p{S}\p{N}][\p{L}\p{S}\p{N}\p{P}]*\p{L}|\p{L}", text
         ),
     )
 
@@ -110,11 +110,11 @@ def spell_check_ass_line(
     except ass_tag_parser.ParsingError:
         return
     for item in ass_struct:
-        if item['type'] != 'text':
+        if item["type"] != "text":
             continue
 
-        text_start, _text_end = item['pos']
-        for match in iter_words_ass_line(item['text']):
+        text_start, _text_end = item["pos"]
+        for match in iter_words_ass_line(item["text"]):
             word = match.group(0)
             if not dictionary.check(word):
                 yield (

@@ -25,8 +25,8 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled
 from bubblesub.cmd.common import FancyPath
 
-VIDEO_FILE_FILTER = 'Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)'
-SUBS_FILE_FILTER = 'Advanced Substation Alpha (*.ass)'
+VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
+SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
 
 
 def _get_dialog_dir(api: Api) -> T.Optional[Path]:
@@ -39,16 +39,16 @@ def _ask_about_unsaved_changes(api: Api) -> bool:
     if not api.undo.needs_save:
         return True
     return bubblesub.ui.util.ask(
-        'There are unsaved changes. '
-        'Are you sure you want to close the current file?'
+        "There are unsaved changes. "
+        "Are you sure you want to close the current file?"
     )
 
 
 class NewCommand(BaseCommand):
-    names = ['new']
+    names = ["new"]
     help_text = (
-        'Opens a new file. '
-        'Prompts user to save the current file if there are unsaved changes.'
+        "Opens a new file. "
+        "Prompts user to save the current file if there are unsaved changes."
     )
 
     async def run(self) -> None:
@@ -57,12 +57,12 @@ class NewCommand(BaseCommand):
 
 
 class OpenCommand(BaseCommand):
-    names = ['open']
+    names = ["open"]
     help_text = (
-        'Opens an existing subtitles file. '
-        'Prompts user to save the current file if there are unsaved changes. '
-        'Prompts user to choose where to load the file from if the path '
-        'wasn\'t specified in the command arguments.'
+        "Opens an existing subtitles file. "
+        "Prompts user to save the current file if there are unsaved changes. "
+        "Prompts user to choose where to load the file from if the path "
+        "wasn't specified in the command arguments."
     )
 
     async def run(self) -> None:
@@ -74,25 +74,25 @@ class OpenCommand(BaseCommand):
         )
 
         self.api.subs.load_ass(path)
-        self.api.log.info(f'opened {path}')
+        self.api.log.info(f"opened {path}")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p',
-            '--path',
-            help='path to load the subtitles from',
+            "-p",
+            "--path",
+            help="path to load the subtitles from",
             type=lambda value: FancyPath(api, value),
-            default='',
+            default="",
         )
 
 
 class LoadVideoCommand(BaseCommand):
-    names = ['load-video']
+    names = ["load-video"]
     help_text = (
-        'Loads a video file for audio/video playback. '
-        'Prompts user to choose where to load the file from if the path '
-        'wasn\'t specified in the command arguments.'
+        "Loads a video file for audio/video playback. "
+        "Prompts user to choose where to load the file from if the path "
+        "wasn't specified in the command arguments."
     )
 
     async def run(self) -> None:
@@ -101,25 +101,25 @@ class LoadVideoCommand(BaseCommand):
         )
 
         self.api.media.load(path)
-        self.api.log.info(f'loading {path}')
+        self.api.log.info(f"loading {path}")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p',
-            '--path',
-            help='path to load the video from',
+            "-p",
+            "--path",
+            help="path to load the video from",
             type=lambda value: FancyPath(api, value),
-            default='',
+            default="",
         )
 
 
 class SaveCommand(BaseCommand):
-    names = ['save']
+    names = ["save"]
     help_text = (
-        'Saves the current subtitles to an ASS file. '
-        'If the currently loaded subtitles weren\'t ever saved, prompts user '
-        'to choose where to save the file to.'
+        "Saves the current subtitles to an ASS file. "
+        "If the currently loaded subtitles weren't ever saved, prompts user "
+        "to choose where to save the file to."
     )
 
     async def run(self) -> None:
@@ -137,15 +137,15 @@ class SaveCommand(BaseCommand):
                 raise CommandCanceled
 
         self.api.subs.save_ass(path, remember_path=True)
-        self.api.log.info(f'saved subtitles to {path}')
+        self.api.log.info(f"saved subtitles to {path}")
 
 
 class SaveAsCommand(BaseCommand):
-    names = ['save-as']
+    names = ["save-as"]
     help_text = (
-        'Saves the current subtitles to an ASS file. '
-        'Prompts user to choose where to save the file to if the path wasn\'t '
-        'specified in the command arguments.'
+        "Saves the current subtitles to an ASS file. "
+        "Prompts user to choose where to save the file to if the path wasn't "
+        "specified in the command arguments."
     )
 
     async def run(self) -> None:
@@ -158,16 +158,16 @@ class SaveAsCommand(BaseCommand):
         )
 
         self.api.subs.save_ass(path, remember_path=True)
-        self.api.log.info(f'saved subtitles to {path}')
+        self.api.log.info(f"saved subtitles to {path}")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p',
-            '--path',
-            help='optional path to save the subtitles to',
+            "-p",
+            "--path",
+            help="optional path to save the subtitles to",
             type=lambda value: FancyPath(api, value),
-            default='',
+            default="",
         )
 
 

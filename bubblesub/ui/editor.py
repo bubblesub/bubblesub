@@ -37,7 +37,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
             )
         except enchant.errors.DictNotFoundError:
             self._dictionary = None
-            api.log.warn(f'dictionary {spell_check_lang} not installed')
+            api.log.warn(f"dictionary {spell_check_lang} not installed")
 
         self._fmt = QtGui.QTextCharFormat()
         self._fmt.setUnderlineColor(QtCore.Qt.red)
@@ -102,50 +102,50 @@ class Editor(QtWidgets.QWidget):
             editable=True,
             minimumWidth=200,
             insertPolicy=QtWidgets.QComboBox.NoInsert,
-            objectName='style-editor',
+            objectName="style-editor",
         )
 
         self.actor_edit = QtWidgets.QComboBox(
             self,
             editable=True,
             insertPolicy=QtWidgets.QComboBox.NoInsert,
-            objectName='actor-editor',
+            objectName="actor-editor",
         )
 
         self.layer_edit = QtWidgets.QSpinBox(
-            self, minimum=0, objectName='layer-editor'
+            self, minimum=0, objectName="layer-editor"
         )
 
         self.margin_l_edit = QtWidgets.QSpinBox(
-            self, minimum=0, maximum=999, objectName='margin-left-editor'
+            self, minimum=0, maximum=999, objectName="margin-left-editor"
         )
 
         self.margin_v_edit = QtWidgets.QSpinBox(
-            self, minimum=0, maximum=999, objectName='margin-vertical-editor'
+            self, minimum=0, maximum=999, objectName="margin-vertical-editor"
         )
 
         self.margin_r_edit = QtWidgets.QSpinBox(
-            self, minimum=0, maximum=999, objectName='margin-right-editor'
+            self, minimum=0, maximum=999, objectName="margin-right-editor"
         )
 
         self.start_time_edit = bubblesub.ui.util.TimeEdit(
-            self, objectName='start-time-editor'
+            self, objectName="start-time-editor"
         )
 
         self.end_time_edit = bubblesub.ui.util.TimeEdit(
-            self, objectName='end-time-editor'
+            self, objectName="end-time-editor"
         )
 
         self.duration_edit = bubblesub.ui.util.TimeEdit(
-            self, objectName='duration-editor'
+            self, objectName="duration-editor"
         )
 
         self.comment_checkbox = QtWidgets.QCheckBox(
-            'Comment', self, objectName='comment-checkbox'
+            "Comment", self, objectName="comment-checkbox"
         )
 
         self.text_edit = TextEdit(
-            api, self, tabChangesFocus=True, objectName='text-editor'
+            api, self, tabChangesFocus=True, objectName="text-editor"
         )
         self.text_edit.highlighter = SpellCheckHighlighter(
             api, self.text_edit.document()
@@ -155,8 +155,8 @@ class Editor(QtWidgets.QWidget):
             api,
             self,
             tabChangesFocus=True,
-            placeholderText='Notes',
-            objectName='note-editor',
+            placeholderText="Notes",
+            objectName="note-editor",
         )
 
         margins_layout = QtWidgets.QHBoxLayout(spacing=4)
@@ -168,14 +168,14 @@ class Editor(QtWidgets.QWidget):
         bar_layout = QtWidgets.QGridLayout(spacing=4)
         bar_layout.setContentsMargins(0, 0, 0, 0)
         for row, column, label, widget in {
-            (0, 0, 'Style:', self.style_edit),
-            (1, 0, 'Actor:', self.actor_edit),
-            (2, 0, 'Layer:', self.layer_edit),
-            (3, 0, 'Margin:', margins_layout),
-            (0, 1, 'Start time:', self.start_time_edit),
-            (1, 1, 'End time:', self.end_time_edit),
-            (2, 1, 'Duration:', self.duration_edit),
-            (3, 1, '', self.comment_checkbox),
+            (0, 0, "Style:", self.style_edit),
+            (1, 0, "Actor:", self.actor_edit),
+            (2, 0, "Layer:", self.layer_edit),
+            (3, 0, "Margin:", margins_layout),
+            (0, 1, "Start time:", self.start_time_edit),
+            (1, 1, "End time:", self.end_time_edit),
+            (2, 1, "Duration:", self.duration_edit),
+            (3, 1, "", self.comment_checkbox),
         }:
             if label:
                 bar_layout.addWidget(
@@ -201,7 +201,7 @@ class Editor(QtWidgets.QWidget):
                 api,
                 convert_newlines=self._api.opt.general.convert_newlines,
             ),
-            signal_map={TextEdit: 'textChanged'},
+            signal_map={TextEdit: "textChanged"},
             submit_wrapper=self._submit_wrapper,
         )
         for column, widget in {

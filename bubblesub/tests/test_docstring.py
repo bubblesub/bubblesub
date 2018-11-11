@@ -23,17 +23,17 @@ import pytest
 from .common import collect_source_files
 
 IGNORED_ARGUMENTS = {
-    'self',
-    'args',
-    'kwargs',
-    '_exc_type',
-    '_exc_val',
-    '_exc_tb',
+    "self",
+    "args",
+    "kwargs",
+    "_exc_type",
+    "_exc_val",
+    "_exc_tb",
 }
 
 
 def is_sentence(text: str) -> bool:
-    return text.endswith('.') and not text.endswith('etc.')
+    return text.endswith(".") and not text.endswith("etc.")
 
 
 def verify_function_params(
@@ -58,7 +58,7 @@ def verify_function_params(
 
     assert actual_arg_names == expected_arg_names, (
         f'Documentation for function "{node.name}" mismatches '
-        f'its signature'
+        f"its signature"
     )
 
     for arg, desc in zip(actual_arg_names, actual_arg_descs):
@@ -74,12 +74,12 @@ def verify_function_returns(
         for child_node in ast.walk(node)
     )
 
-    if has_returns and node.name != '__exit__':
+    if has_returns and node.name != "__exit__":
         assert docstring.returns is not None, (
             'Function "{node.name}" has return statements, '
             'but no ":return: …" docstring'
         )
-        assert docstring.returns.description, 'Return has no description'
+        assert docstring.returns.description, "Return has no description"
         assert not is_sentence(docstring.returns.description)
 
 
@@ -93,12 +93,12 @@ def verify_function_docstring(node: ast.FunctionDef) -> None:
     verify_function_returns(node, docstring)
 
 
-@pytest.mark.parametrize('path', collect_source_files())
+@pytest.mark.parametrize("path", collect_source_files())
 def test_docstrings(path: Path) -> None:
     for node in ast.walk(ast.parse(path.read_text())):
         try:
             if isinstance(node, ast.FunctionDef):
                 verify_function_docstring(node)
         except AssertionError:
-            print(f'Error at {path}:{node.lineno}')
+            print(f"Error at {path}:{node.lineno}")
             raise

@@ -23,7 +23,7 @@ def get_proc_address(proc: T.Any) -> T.Optional[int]:
     glctx = QtOpenGL.QGLContext.currentContext()
     if glctx is None:
         return None
-    addr = glctx.getProcAddress(str(proc, 'utf-8'))
+    addr = glctx.getProcAddress(str(proc, "utf-8"))
     return T.cast(int, addr.__int__())
 
 

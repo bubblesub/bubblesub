@@ -37,9 +37,9 @@ def _window_from_menu(menu: QtWidgets.QMenu) -> QtWidgets.QWidget:
 
 def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
     window = _window_from_menu(menu)
-    window.setProperty('focused-widget', window.focusWidget())
+    window.setProperty("focused-widget", window.focusWidget())
     for action in menu.actions():
-        if getattr(action, 'commands', None):
+        if getattr(action, "commands", None):
             try:
                 action.setEnabled(
                     all(cmd.is_enabled for cmd in action.commands)
@@ -51,7 +51,7 @@ def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
 
 def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
     window = _window_from_menu(menu)
-    focused_widget = window.property('focused-widget')
+    focused_widget = window.property("focused-widget")
     if focused_widget:
         focused_widget.setFocus()
 
@@ -91,7 +91,7 @@ def setup_cmd_menu(
     while stack:
         parent, menu_def = stack.pop()
 
-        if hasattr(parent, 'aboutToShow'):
+        if hasattr(parent, "aboutToShow"):
             parent.aboutToShow.connect(
                 functools.partial(_on_menu_about_to_show, parent)
             )
@@ -113,8 +113,8 @@ def setup_cmd_menu(
 
                 shortcut = hotkey_map.get((context, item.cmdline))
                 if shortcut is not None:
-                    action.setText(action.text() + '\t' + shortcut)
+                    action.setText(action.text() + "\t" + shortcut)
 
                 parent.addAction(action)
             else:
-                api.log.error(f'unexpected menu item {item}')
+                api.log.error(f"unexpected menu item {item}")

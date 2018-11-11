@@ -32,10 +32,10 @@ def parse_args() -> argparse.Namespace:
     :return: parsed args
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('file', nargs='?')
-    parser.add_argument('--no-config', action='store_true')
-    parser.add_argument('--no-video', action='store_true')
-    parser.add_argument('--wipe-cache', action='store_true')
+    parser.add_argument("file", nargs="?")
+    parser.add_argument("--no-config", action="store_true")
+    parser.add_argument("--no-video", action="store_true")
+    parser.add_argument("--wipe-cache", action="store_true")
     return parser.parse_args()
 
 
@@ -61,5 +61,5 @@ def main() -> None:
         opt.save(opt.root_dir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

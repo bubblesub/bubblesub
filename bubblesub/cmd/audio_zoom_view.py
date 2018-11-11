@@ -21,8 +21,8 @@ from bubblesub.api.cmd import BaseCommand
 
 
 class AudioZoomViewCommand(BaseCommand):
-    names = ['audio-zoom-view', 'spectrogram-zoom-view']
-    help_text = 'Zooms the spectrogram in or out by the specified factor.'
+    names = ["audio-zoom-view", "spectrogram-zoom-view"]
+    help_text = "Zooms the spectrogram in or out by the specified factor."
 
     async def run(self) -> None:
         mouse_x = 0.5
@@ -33,9 +33,9 @@ class AudioZoomViewCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-d',
-            '--delta',
-            help='factor to zoom the viewport by',
+            "-d",
+            "--delta",
+            help="factor to zoom the viewport by",
             type=float,
             required=True,
         )

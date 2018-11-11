@@ -23,8 +23,8 @@ from bubblesub.cmd.common import Pts, SubtitlesSelection
 
 
 class SubtitlesSplitCommand(BaseCommand):
-    names = ['sub-split']
-    help_text = 'Splits given subtitles at specified time.'
+    names = ["sub-split"]
+    help_text = "Splits given subtitles at specified time."
 
     @property
     def is_enabled(self) -> bool:
@@ -33,7 +33,7 @@ class SubtitlesSplitCommand(BaseCommand):
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
-            raise CommandUnavailable('nothing to split')
+            raise CommandUnavailable("nothing to split")
 
         split_pos = await self.args.position.get(
             align_to_near_frame=not self.args.no_align
@@ -52,23 +52,23 @@ class SubtitlesSplitCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t',
-            '--target',
-            help='subtitles to split',
+            "-t",
+            "--target",
+            help="subtitles to split",
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected',
+            default="selected",
         )
 
         parser.add_argument(
-            '--no-align',
-            help='don\'t align split position to video frames',
-            action='store_true',
+            "--no-align",
+            help="don't align split position to video frames",
+            action="store_true",
         )
 
         parser.add_argument(
-            '-p',
-            '--position',
-            help='position to split the subtitles at',
+            "-p",
+            "--position",
+            help="position to split the subtitles at",
             type=lambda value: Pts(api, value),
         )
 

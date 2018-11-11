@@ -23,12 +23,12 @@ from bubblesub.cmd.common import Pts
 
 class AudioShiftSelectionCommand(BaseCommand):
     names = [
-        'audio-shift-sel',
-        'audio-shift-selection',
-        'spectrogram-shift-sel',
-        'spectrogram-shift-selection',
+        "audio-shift-sel",
+        "audio-shift-selection",
+        "spectrogram-shift-sel",
+        "spectrogram-shift-selection",
     ]
-    help_text = 'Shfits the spectrogram selection.'
+    help_text = "Shfits the spectrogram selection."
 
     async def run(self) -> None:
         with self.api.undo.capture():
@@ -50,21 +50,21 @@ class AudioShiftSelectionCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-s',
-            '--start',
-            help='amount to shift the start of the selection by',
+            "-s",
+            "--start",
+            help="amount to shift the start of the selection by",
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
-            '-e',
-            '--end',
-            help='amount to shift the end of the selection by',
+            "-e",
+            "--end",
+            help="amount to shift the end of the selection by",
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
-            '--no-align',
-            help='don\'t realign selection to video frames',
-            action='store_true',
+            "--no-align",
+            help="don't realign selection to video frames",
+            action="store_true",
         )
 
 

@@ -29,11 +29,11 @@ class Event(bubblesub.model.ObservableObject):
         self,
         start: int = 0,
         end: int = 0,
-        style: str = 'Default',
-        actor: str = '',
-        text: str = '',
-        note: str = '',
-        effect: str = '',
+        style: str = "Default",
+        actor: str = "",
+        text: str = "",
+        note: str = "",
+        effect: str = "",
         layer: int = 0,
         margin_left: int = 0,
         margin_right: int = 0,
@@ -58,7 +58,7 @@ class Event(bubblesub.model.ObservableObject):
         """
         super().__init__()
 
-        self.event_list: T.Optional['EventList'] = None
+        self.event_list: T.Optional["EventList"] = None
 
         self.start = start
         self.end = end
@@ -89,7 +89,7 @@ class Event(bubblesub.model.ObservableObject):
 
         :param value: new text
         """
-        self._text = value.replace('\n', '\\N')
+        self._text = value.replace("\n", "\\N")
 
     @property
     def note(self) -> str:
@@ -109,7 +109,7 @@ class Event(bubblesub.model.ObservableObject):
 
         :param value: new note
         """
-        self._note = value.replace('\n', '\\N')
+        self._note = value.replace("\n", "\\N")
 
     @property
     def duration(self) -> int:
@@ -145,7 +145,7 @@ class Event(bubblesub.model.ObservableObject):
         return index + 1
 
     @property
-    def prev(self) -> T.Optional['Event']:
+    def prev(self) -> T.Optional["Event"]:
         """
         Return previous subtitle from the parent subtitle list.
 
@@ -158,7 +158,7 @@ class Event(bubblesub.model.ObservableObject):
         return self.event_list.get(index - 1, None)
 
     @property
-    def next(self) -> T.Optional['Event']:
+    def next(self) -> T.Optional["Event"]:
         """
         Return next subtitle from the parent subtitle list.
 
@@ -185,7 +185,7 @@ class Event(bubblesub.model.ObservableObject):
         :return: object representation
         """
         ret = self.__dict__.copy()
-        del ret['event_list']
+        del ret["event_list"]
         return ret
 
     def __setstate__(self, state: T.Any) -> None:
@@ -197,7 +197,7 @@ class Event(bubblesub.model.ObservableObject):
         self.__dict__.update(state)
         self.event_list = None
 
-    def __copy__(self) -> 'Event':
+    def __copy__(self) -> "Event":
         """
         Duplicate self.
 
@@ -209,7 +209,7 @@ class Event(bubblesub.model.ObservableObject):
         for key, value in self.__dict__.items():
             if not callable(value):
                 ret.__dict__[key] = value
-        ret.__dict__['event_list'] = None
+        ret.__dict__["event_list"] = None
         return ret
 
 
@@ -238,7 +238,7 @@ class EventList(bubblesub.model.ObservableList[Event]):
         :param items: events to add
         """
         for item in items:
-            assert item.event_list is None, 'Event belongs to another list'
+            assert item.event_list is None, "Event belongs to another list"
             item.event_list = self
         super().insert(idx, items)
 

@@ -75,30 +75,30 @@ def _setattr_proxy(
 
 def _serialize_text(subtitle: Event, options: SubtitlesModelOptions) -> T.Any:
     if options.convert_newlines:
-        return subtitle.text.replace('\\N', '\n')
+        return subtitle.text.replace("\\N", "\n")
     return subtitle.text
 
 
 def _serialize_note(subtitle: Event, options: SubtitlesModelOptions) -> T.Any:
     if options.convert_newlines:
-        return subtitle.note.replace('\\N', '\n')
+        return subtitle.note.replace("\\N", "\n")
     return subtitle.note
 
 
 def _serialize_cps(subtitle: Event, _options: SubtitlesModelOptions) -> T.Any:
     return (
-        '{:.1f}'.format(
+        "{:.1f}".format(
             character_count(subtitle.text) / max(1, subtitle.duration / 1000.0)
         )
         if subtitle.duration > 0
-        else '-'
+        else "-"
     )
 
 
 def _serialize_short_duration(
     subtitle: Event, _options: SubtitlesModelOptions
 ) -> T.Any:
-    return f'{subtitle.duration / 1000.0:.1f}'
+    return f"{subtitle.duration / 1000.0:.1f}"
 
 
 def _deserialize_long_duration(
@@ -108,56 +108,56 @@ def _deserialize_long_duration(
 
 
 _HEADERS = {
-    SubtitlesModelColumn.Start: 'Start',
-    SubtitlesModelColumn.End: 'End',
-    SubtitlesModelColumn.Style: 'Style',
-    SubtitlesModelColumn.Actor: 'Actor',
-    SubtitlesModelColumn.Text: 'Text',
-    SubtitlesModelColumn.Note: 'Note',
-    SubtitlesModelColumn.ShortDuration: 'Duration',
-    SubtitlesModelColumn.LongDuration: 'Duration (long)',
-    SubtitlesModelColumn.CharsPerSec: 'CPS',
-    SubtitlesModelColumn.Layer: 'Layer',
-    SubtitlesModelColumn.MarginVertical: 'Vertical margin',
-    SubtitlesModelColumn.MarginLeft: 'Left margin',
-    SubtitlesModelColumn.MarginRight: 'Right margin',
-    SubtitlesModelColumn.IsComment: 'Is comment?',
+    SubtitlesModelColumn.Start: "Start",
+    SubtitlesModelColumn.End: "End",
+    SubtitlesModelColumn.Style: "Style",
+    SubtitlesModelColumn.Actor: "Actor",
+    SubtitlesModelColumn.Text: "Text",
+    SubtitlesModelColumn.Note: "Note",
+    SubtitlesModelColumn.ShortDuration: "Duration",
+    SubtitlesModelColumn.LongDuration: "Duration (long)",
+    SubtitlesModelColumn.CharsPerSec: "CPS",
+    SubtitlesModelColumn.Layer: "Layer",
+    SubtitlesModelColumn.MarginVertical: "Vertical margin",
+    SubtitlesModelColumn.MarginLeft: "Left margin",
+    SubtitlesModelColumn.MarginRight: "Right margin",
+    SubtitlesModelColumn.IsComment: "Is comment?",
 }
 
 _READER_MAP = {
-    SubtitlesModelColumn.Start: _getattr_proxy('start', ms_to_str),
-    SubtitlesModelColumn.End: _getattr_proxy('end', ms_to_str),
-    SubtitlesModelColumn.Style: _getattr_proxy('style', str),
-    SubtitlesModelColumn.Actor: _getattr_proxy('actor', str),
+    SubtitlesModelColumn.Start: _getattr_proxy("start", ms_to_str),
+    SubtitlesModelColumn.End: _getattr_proxy("end", ms_to_str),
+    SubtitlesModelColumn.Style: _getattr_proxy("style", str),
+    SubtitlesModelColumn.Actor: _getattr_proxy("actor", str),
     SubtitlesModelColumn.Text: _serialize_text,
     SubtitlesModelColumn.Note: _serialize_note,
     SubtitlesModelColumn.ShortDuration: _serialize_short_duration,
-    SubtitlesModelColumn.LongDuration: _getattr_proxy('duration', ms_to_str),
+    SubtitlesModelColumn.LongDuration: _getattr_proxy("duration", ms_to_str),
     SubtitlesModelColumn.CharsPerSec: _serialize_cps,
-    SubtitlesModelColumn.Layer: _getattr_proxy('layer', int),
-    SubtitlesModelColumn.MarginLeft: _getattr_proxy('margin_left', int),
-    SubtitlesModelColumn.MarginRight: _getattr_proxy('margin_right', int),
+    SubtitlesModelColumn.Layer: _getattr_proxy("layer", int),
+    SubtitlesModelColumn.MarginLeft: _getattr_proxy("margin_left", int),
+    SubtitlesModelColumn.MarginRight: _getattr_proxy("margin_right", int),
     SubtitlesModelColumn.MarginVertical: _getattr_proxy(
-        'margin_vertical', int
+        "margin_vertical", int
     ),
-    SubtitlesModelColumn.IsComment: _getattr_proxy('is_comment', bool),
+    SubtitlesModelColumn.IsComment: _getattr_proxy("is_comment", bool),
 }
 
 _WRITER_MAP = {
-    SubtitlesModelColumn.Start: _setattr_proxy('start', str_to_ms),
-    SubtitlesModelColumn.End: _setattr_proxy('end', str_to_ms),
-    SubtitlesModelColumn.Style: _setattr_proxy('style', str),
-    SubtitlesModelColumn.Actor: _setattr_proxy('actor', str),
-    SubtitlesModelColumn.Text: _setattr_proxy('text', str),
-    SubtitlesModelColumn.Note: _setattr_proxy('note', str),
+    SubtitlesModelColumn.Start: _setattr_proxy("start", str_to_ms),
+    SubtitlesModelColumn.End: _setattr_proxy("end", str_to_ms),
+    SubtitlesModelColumn.Style: _setattr_proxy("style", str),
+    SubtitlesModelColumn.Actor: _setattr_proxy("actor", str),
+    SubtitlesModelColumn.Text: _setattr_proxy("text", str),
+    SubtitlesModelColumn.Note: _setattr_proxy("note", str),
     SubtitlesModelColumn.LongDuration: _deserialize_long_duration,
-    SubtitlesModelColumn.Layer: _setattr_proxy('layer', int),
-    SubtitlesModelColumn.MarginLeft: _setattr_proxy('margin_left', int),
-    SubtitlesModelColumn.MarginRight: _setattr_proxy('margin_right', int),
+    SubtitlesModelColumn.Layer: _setattr_proxy("layer", int),
+    SubtitlesModelColumn.MarginLeft: _setattr_proxy("margin_left", int),
+    SubtitlesModelColumn.MarginRight: _setattr_proxy("margin_right", int),
     SubtitlesModelColumn.MarginVertical: _setattr_proxy(
-        'margin_vertical', int
+        "margin_vertical", int
     ),
-    SubtitlesModelColumn.IsComment: _setattr_proxy('is_comment', bool),
+    SubtitlesModelColumn.IsComment: _setattr_proxy("is_comment", bool),
 }
 
 
@@ -207,7 +207,7 @@ class SubtitlesModel(ObservableListTableAdapter):
 
         if role == QtCore.Qt.BackgroundRole:
             if subtitle.is_comment:
-                return get_color(self._api, 'grid/comment')
+                return get_color(self._api, "grid/comment")
             if col_idx == SubtitlesModelColumn.CharsPerSec:
                 return self._get_background_cps(subtitle)
 
