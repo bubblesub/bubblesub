@@ -48,13 +48,13 @@ class SubtitlesSetCommand(BaseCommand):
                 if self.args.start:
                     sub.start = await self.args.start.get(
                         origin=sub.start,
-                        align_to_near_frame=not self.args.no_align
+                        align_to_near_frame=not self.args.no_align,
                     )
 
                 if self.args.end:
                     sub.end = await self.args.end.get(
                         origin=sub.end,
-                        align_to_near_frame=not self.args.no_align
+                        align_to_near_frame=not self.args.no_align,
                     )
 
                 if self.args.text:
@@ -80,10 +80,11 @@ class SubtitlesSetCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to change',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
 
         parser.add_argument('--text', help='new subtitles text')
@@ -93,21 +94,23 @@ class SubtitlesSetCommand(BaseCommand):
         parser.add_argument(
             '--comment',
             action='store_true',
-            help='mark subtitles as a comment'
+            help='mark subtitles as a comment',
         )
         parser.add_argument(
             '--no-comment',
             action='store_true',
-            help='mark subtitles as a non-comment'
+            help='mark subtitles as a non-comment',
         )
 
         parser.add_argument(
-            '-s', '--start',
+            '-s',
+            '--start',
             help='new subtitles start',
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
-            '-e', '--end',
+            '-e',
+            '--end',
             help='new subtitles end',
             type=lambda value: Pts(api, value),
         )

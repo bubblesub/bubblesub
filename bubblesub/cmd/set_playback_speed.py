@@ -37,7 +37,7 @@ class SetPlaybackSpeedCommand(BaseCommand):
         parser.add_argument(
             'expression',
             help='expression to calculate new playback speed',
-            type=str
+            type=str,
         )
 
 

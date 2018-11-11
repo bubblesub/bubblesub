@@ -36,9 +36,7 @@ class Api:
     """Core class grouping all descendant APIs."""
 
     def __init__(
-            self,
-            opt: bubblesub.opt.Options,
-            args: argparse.Namespace
+        self, opt: bubblesub.opt.Options, args: argparse.Namespace
     ) -> None:
         """
         Initialize self.

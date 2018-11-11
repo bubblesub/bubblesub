@@ -49,11 +49,11 @@ class MediaApi(QtCore.QObject):
     playback_speed_changed = QtCore.pyqtSignal()
 
     def __init__(
-            self,
-            subs_api: SubtitlesApi,
-            log_api: LogApi,
-            opt: Options,
-            args: argparse.Namespace
+        self,
+        subs_api: SubtitlesApi,
+        log_api: LogApi,
+        opt: Options,
+        args: argparse.Namespace,
     ) -> None:
         """
         Initialize self.
@@ -90,24 +90,24 @@ class MediaApi(QtCore.QObject):
         self._mpv = mpv.Context()
         self._mpv.set_log_level('error')
         for key, value in {
-                'config': False,
-                'quiet': False,
-                'msg-level': 'all=error',
-                'osc': False,
-                'osd-bar': False,
-                'input-cursor': False,
-                'input-vo-keyboard': False,
-                'input-default-bindings': False,
-                'ytdl': False,
-                'sub-auto': False,
-                'audio-file-auto': False,
-                'vo': 'null' if args.no_video else 'opengl-cb',
-                'pause': True,
-                'idle': True,
-                'video-sync': 'display-vdrop',
-                'keepaspect': True,
-                'stop-playback-on-init-failure': False,
-                'keep-open': True,
+            'config': False,
+            'quiet': False,
+            'msg-level': 'all=error',
+            'osc': False,
+            'osd-bar': False,
+            'input-cursor': False,
+            'input-vo-keyboard': False,
+            'input-default-bindings': False,
+            'ytdl': False,
+            'sub-auto': False,
+            'audio-file-auto': False,
+            'vo': 'null' if args.no_video else 'opengl-cb',
+            'pause': True,
+            'idle': True,
+            'video-sync': 'display-vdrop',
+            'keepaspect': True,
+            'stop-playback-on-init-failure': False,
+            'keep-open': True,
         }.items():
             self._mpv.set_option(key, value)
 
@@ -185,7 +185,7 @@ class MediaApi(QtCore.QObject):
             self._mpv.command(
                 'seek',
                 bubblesub.util.ms_to_str(pts),
-                'absolute+exact' if precise else 'absolute'
+                'absolute+exact' if precise else 'absolute',
             )
 
     def step_frame_forward(self) -> None:
@@ -398,7 +398,7 @@ class MediaApi(QtCore.QObject):
     def _mpv_event_handler(self) -> None:
         while self._mpv:
             try:
-                event = self._mpv.wait_event(.01)
+                event = self._mpv.wait_event(0.01)
                 if event.id in {mpv.Events.none, mpv.Events.shutdown}:
                     break
                 elif event.id == mpv.Events.end_file:

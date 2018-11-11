@@ -52,24 +52,21 @@ class SubtitlesShiftCommand(BaseCommand):
                 sub.begin_update()
                 sub.start = await delta.get(
                     origin=sub.start,
-                    align_to_near_frame=not self.args.no_align
+                    align_to_near_frame=not self.args.no_align,
                 )
                 sub.end = await delta.get(
-                    origin=sub.end,
-                    align_to_near_frame=not self.args.no_align
+                    origin=sub.end, align_to_near_frame=not self.args.no_align
                 )
                 sub.end_update()
 
     async def _get_delta(
-            self,
-            subs: T.List[Event],
-            main_window: QtWidgets.QMainWindow
+        self, subs: T.List[Event], main_window: QtWidgets.QMainWindow
     ) -> T.Optional[Pts]:
         ret = bubblesub.ui.util.time_jump_dialog(
             main_window,
             absolute_label='Time to move to:',
             relative_label='Time to add:',
-            relative_checked=True
+            relative_checked=True,
         )
         if ret is None:
             raise CommandCanceled
@@ -83,7 +80,8 @@ class SubtitlesShiftCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to shift',
             type=lambda value: SubtitlesSelection(api, value),
             default='selected',

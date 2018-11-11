@@ -55,16 +55,13 @@ def normalize_command_name(name: str) -> T.Iterable[str]:
 
 
 def verify_name(cls_name: str, cmd_name: str) -> None:
-    assert (
-        set(normalize_class_name(cls_name)) &
-        set(normalize_command_name(cmd_name))
-    ), (
-        f"Class name {cls_name!r} doesn't match command name {cmd_name!r}"
-    )
+    assert set(normalize_class_name(cls_name)) & set(
+        normalize_command_name(cmd_name)
+    ), f"Class name {cls_name!r} doesn't match command name {cmd_name!r}"
 
 
 def test_command_naming(  # pylint: disable=redefined-outer-name
-        api: bubblesub.api.Api
+    api: bubblesub.api.Api
 ) -> None:
     api.cmd.reload_commands()
 

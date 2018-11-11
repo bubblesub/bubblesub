@@ -101,10 +101,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :param path: path to the video file
         """
-        self.info.update({
-            'Video File': str(path),
-            'Audio File': str(path)
-        })
+        self.info.update({'Video File': str(path), 'Audio File': str(path)})
 
     @property
     def path(self) -> T.Optional[Path]:
@@ -180,9 +177,7 @@ class SubtitlesApi(QtCore.QObject):
         self.loaded.emit()
 
     def save_ass(
-            self,
-            path: T.Union[str, Path],
-            remember_path: bool = False
+        self, path: T.Union[str, Path], remember_path: bool = False
     ) -> None:
         """
         Save current state to the specified file.
@@ -204,8 +199,6 @@ class SubtitlesApi(QtCore.QObject):
         new_indexes = list(sorted(self.selected_indexes))
         for i in reversed(range(idx, idx + count)):
             new_indexes = [
-                j - 1 if j > i else j
-                for j in new_indexes
-                if j != i
+                j - 1 if j > i else j for j in new_indexes if j != i
             ]
         self.selected_indexes = new_indexes

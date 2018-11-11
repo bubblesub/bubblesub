@@ -59,10 +59,10 @@ from bubblesub.cmd.common import SubtitlesSelection
     ],
 )
 def test_get_all_indexes(
-        expr: str,
-        sub_count: int,
-        sub_selection: T.Union[T.List[int], T.Any],
-        expected_indexes: T.Union[T.List[int], T.Type[CommandError]],
+    expr: str,
+    sub_count: int,
+    sub_selection: T.Union[T.List[int], T.Any],
+    expected_indexes: T.Union[T.List[int], T.Type[CommandError]],
 ) -> None:
     api = MagicMock()
     api.subs.events = [MagicMock() for _ in range(sub_count)]

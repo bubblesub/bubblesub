@@ -26,7 +26,7 @@ class AudioShiftSelectionCommand(BaseCommand):
         'audio-shift-sel',
         'audio-shift-selection',
         'spectrogram-shift-sel',
-        'spectrogram-shift-selection'
+        'spectrogram-shift-selection',
     ]
     help_text = 'Shfits the spectrogram selection.'
 
@@ -50,12 +50,14 @@ class AudioShiftSelectionCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-s', '--start',
+            '-s',
+            '--start',
             help='amount to shift the start of the selection by',
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
-            '-e', '--end',
+            '-e',
+            '--end',
             help='amount to shift the end of the selection by',
             type=lambda value: Pts(api, value),
         )

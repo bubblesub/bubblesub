@@ -57,7 +57,7 @@ class SubtitlesMoveCommand(BaseCommand):
         if indexes[0] == 0:
             raise CommandUnavailable('cannot move further up')
         for idx, count in make_ranges(indexes):
-            chunk = [copy(s) for s in self.api.subs.events[idx:idx + count]]
+            chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
             self.api.subs.events.insert(idx - 1, chunk)
             self.api.subs.events.remove(idx + count, count)
             yield from chunk
@@ -66,20 +66,18 @@ class SubtitlesMoveCommand(BaseCommand):
         if indexes[-1] + 1 == len(self.api.subs.events):
             raise CommandUnavailable('cannot move further down')
         for idx, count in make_ranges(indexes, reverse=True):
-            chunk = [copy(s) for s in self.api.subs.events[idx:idx + count]]
+            chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
             self.api.subs.events.insert(idx + count + 1, chunk)
             self.api.subs.events.remove(idx, count)
             yield from chunk
 
     def _move_to(
-            self,
-            indexes: T.List[int],
-            base_idx: int
+        self, indexes: T.List[int], base_idx: int
     ) -> T.Iterable[Event]:
         sub_copies: T.List[Event] = []
 
         for idx, count in make_ranges(indexes, reverse=True):
-            chunk = [copy(s) for s in self.api.subs.events[idx:idx + count]]
+            chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
             chunk.reverse()
             sub_copies += chunk
             self.api.subs.events.remove(idx, count)
@@ -89,9 +87,7 @@ class SubtitlesMoveCommand(BaseCommand):
         return sub_copies
 
     async def _show_dialog(
-            self,
-            main_window: QtWidgets.QMainWindow,
-            indexes: T.List[int]
+        self, main_window: QtWidgets.QMainWindow, indexes: T.List[int]
     ) -> int:
         dialog = QtWidgets.QInputDialog(main_window)
         dialog.setLabelText('Line number to move subtitles to:')
@@ -107,10 +103,11 @@ class SubtitlesMoveCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to move',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
 
         group = parser.add_mutually_exclusive_group(required=True)
@@ -119,21 +116,21 @@ class SubtitlesMoveCommand(BaseCommand):
             dest='method',
             action='store_const',
             const='above',
-            help='move subtitles up'
+            help='move subtitles up',
         )
         group.add_argument(
             '--below',
             dest='method',
             action='store_const',
             const='below',
-            help='move subtitles down'
+            help='move subtitles down',
         )
         group.add_argument(
             '--gui',
             dest='method',
             action='store_const',
             const='gui',
-            help='prompt user for placement position with a GUI dialog'
+            help='prompt user for placement position with a GUI dialog',
         )
 
 

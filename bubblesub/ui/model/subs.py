@@ -54,7 +54,7 @@ class SubtitlesModelOptions:
 
 
 def _getattr_proxy(
-        prop_name: str, wrapper: T.Callable[[T.Any], T.Any],
+    prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
 ) -> T.Callable[[Event, SubtitlesModelOptions], T.Any]:
     def func(subtitle: Event, _options: SubtitlesModelOptions) -> T.Any:
         return wrapper(getattr(subtitle, prop_name))
@@ -63,10 +63,10 @@ def _getattr_proxy(
 
 
 def _setattr_proxy(
-        prop_name: str, wrapper: T.Callable[[T.Any], T.Any],
+    prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
 ) -> T.Callable[[Event, SubtitlesModelOptions, T.Any], None]:
     def func(
-            subtitle: Event, _options: SubtitlesModelOptions, value: T.Any
+        subtitle: Event, _options: SubtitlesModelOptions, value: T.Any
     ) -> None:
         setattr(subtitle, prop_name, wrapper(value))
 
@@ -88,22 +88,21 @@ def _serialize_note(subtitle: Event, options: SubtitlesModelOptions) -> T.Any:
 def _serialize_cps(subtitle: Event, _options: SubtitlesModelOptions) -> T.Any:
     return (
         '{:.1f}'.format(
-            character_count(subtitle.text) /
-            max(1, subtitle.duration / 1000.0)
+            character_count(subtitle.text) / max(1, subtitle.duration / 1000.0)
         )
-        if subtitle.duration > 0 else
-        '-'
+        if subtitle.duration > 0
+        else '-'
     )
 
 
 def _serialize_short_duration(
-        subtitle: Event, _options: SubtitlesModelOptions
+    subtitle: Event, _options: SubtitlesModelOptions
 ) -> T.Any:
     return f'{subtitle.duration / 1000.0:.1f}'
 
 
 def _deserialize_long_duration(
-        subtitle: Event, _options: SubtitlesModelOptions, value: str
+    subtitle: Event, _options: SubtitlesModelOptions, value: str
 ) -> T.Any:
     subtitle.end = subtitle.start + str_to_ms(value)
 
@@ -123,7 +122,6 @@ _HEADERS = {
     SubtitlesModelColumn.MarginLeft: 'Left margin',
     SubtitlesModelColumn.MarginRight: 'Right margin',
     SubtitlesModelColumn.IsComment: 'Is comment?',
-
 }
 
 _READER_MAP = {
@@ -139,8 +137,9 @@ _READER_MAP = {
     SubtitlesModelColumn.Layer: _getattr_proxy('layer', int),
     SubtitlesModelColumn.MarginLeft: _getattr_proxy('margin_left', int),
     SubtitlesModelColumn.MarginRight: _getattr_proxy('margin_right', int),
-    SubtitlesModelColumn.MarginVertical:
-        _getattr_proxy('margin_vertical', int),
+    SubtitlesModelColumn.MarginVertical: _getattr_proxy(
+        'margin_vertical', int
+    ),
     SubtitlesModelColumn.IsComment: _getattr_proxy('is_comment', bool),
 }
 
@@ -155,25 +154,23 @@ _WRITER_MAP = {
     SubtitlesModelColumn.Layer: _setattr_proxy('layer', int),
     SubtitlesModelColumn.MarginLeft: _setattr_proxy('margin_left', int),
     SubtitlesModelColumn.MarginRight: _setattr_proxy('margin_right', int),
-    SubtitlesModelColumn.MarginVertical:
-        _setattr_proxy('margin_vertical', int),
+    SubtitlesModelColumn.MarginVertical: _setattr_proxy(
+        'margin_vertical', int
+    ),
     SubtitlesModelColumn.IsComment: _setattr_proxy('is_comment', bool),
 }
 
 
 class SubtitlesModel(ObservableListTableAdapter):
     def __init__(
-            self, parent: QtCore.QObject, api: Api, **kwargs: T.Any,
+        self, parent: QtCore.QObject, api: Api, **kwargs: T.Any
     ) -> None:
         super().__init__(parent, api.subs.events)
         self._options = SubtitlesModelOptions(**kwargs)
         self._api = api
 
     def headerData(
-            self,
-            idx: int,
-            orientation: int,
-            role: int = QtCore.Qt.DisplayRole,
+        self, idx: int, orientation: int, role: int = QtCore.Qt.DisplayRole
     ) -> T.Any:
         if orientation == QtCore.Qt.Vertical:
             if role == QtCore.Qt.DisplayRole:
@@ -186,8 +183,8 @@ class SubtitlesModel(ObservableListTableAdapter):
                 return _HEADERS[SubtitlesModelColumn(idx)]
             if role == QtCore.Qt.TextAlignmentRole:
                 if idx in {
-                        SubtitlesModelColumn.Text,
-                        SubtitlesModelColumn.Note,
+                    SubtitlesModelColumn.Text,
+                    SubtitlesModelColumn.Note,
                 }:
                     return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
                 return QtCore.Qt.AlignCenter
@@ -216,8 +213,8 @@ class SubtitlesModel(ObservableListTableAdapter):
 
         if role == QtCore.Qt.TextAlignmentRole:
             if col_idx in {
-                    SubtitlesModelColumn.Text,
-                    SubtitlesModelColumn.Note,
+                SubtitlesModelColumn.Text,
+                SubtitlesModelColumn.Note,
             }:
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
@@ -229,7 +226,7 @@ class SubtitlesModel(ObservableListTableAdapter):
         return QtCore.QVariant()
 
     def _set_data(
-            self, row_idx: int, col_idx: int, role: int, new_value: T.Any
+        self, row_idx: int, col_idx: int, role: int, new_value: T.Any
     ) -> bool:
         subtitle = self._list[row_idx]
         try:
@@ -243,9 +240,8 @@ class SubtitlesModel(ObservableListTableAdapter):
         if subtitle.duration == 0:
             return QtCore.QVariant()
 
-        ratio = (
-            character_count(subtitle.text) /
-            (abs(subtitle.duration) / 1000.0)
+        ratio = character_count(subtitle.text) / (
+            abs(subtitle.duration) / 1000.0
         )
         character_limit = self._api.opt.general.subs.max_characters_per_second
 

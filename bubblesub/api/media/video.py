@@ -75,10 +75,10 @@ class VideoApi(QtCore.QObject):
     parsed = QtCore.pyqtSignal()
 
     def __init__(
-            self,
-            media_api: 'bubblesub.api.media.media.MediaApi',
-            log_api: 'bubblesub.api.log.LogApi',
-            mpv_: mpv.Context
+        self,
+        media_api: 'bubblesub.api.media.media.MediaApi',
+        log_api: 'bubblesub.api.log.LogApi',
+        mpv_: mpv.Context,
     ) -> None:
         """
         Initialize self.
@@ -128,7 +128,7 @@ class VideoApi(QtCore.QObject):
         self._mpv.command(
             'screenshot-to-file',
             str(path),
-            'subtitles' if include_subtitles else 'video'
+            'subtitles' if include_subtitles else 'video',
         )
 
     def align_pts_to_near_frame(self, pts: int) -> int:
@@ -240,10 +240,12 @@ class VideoApi(QtCore.QObject):
         :return: numpy image
         """
         with _SAMPLER_LOCK:
-            if not self.has_video_source \
-                    or not self._wait_for_video_source() \
-                    or frame_idx < 0 \
-                    or frame_idx >= len(self.timecodes):
+            if (
+                not self.has_video_source
+                or not self._wait_for_video_source()
+                or frame_idx < 0
+                or frame_idx >= len(self.timecodes)
+            ):
                 return np.zeros(width * height * 3).reshape((width, height, 3))
 
             new_output_fmt = (_PIX_FMT, width, height, ffms.FFMS_RESIZER_AREA)
@@ -254,8 +256,7 @@ class VideoApi(QtCore.QObject):
             frame = self._video_source.get_frame(frame_idx)
             return (
                 frame.planes[0]
-                .reshape((height, frame.Linesize[0]))
-                [:, 0:width * 3]
+                .reshape((height, frame.Linesize[0]))[:, 0 : width * 3]
                 .reshape(height, width, 3)
             )
 

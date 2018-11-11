@@ -49,7 +49,7 @@ def _timestamp_to_ms(text: str) -> int:
     milliseconds: int = int(frac) * 10 ** (3 - len(frac))
     milliseconds += seconds * 1000
     milliseconds += minutes * 60000
-    milliseconds += hours * 3600000
+    milliseconds += hours * 3_600_000
     return milliseconds
 
 
@@ -58,9 +58,7 @@ class _ReadContext:
 
 
 def _info_section_handler(
-        line: str,
-        ass_file: AssFile,
-        _context: _ReadContext
+    line: str, ass_file: AssFile, _context: _ReadContext
 ) -> None:
     if line.startswith(';'):
         return
@@ -69,9 +67,7 @@ def _info_section_handler(
 
 
 def _styles_section_handler(
-        line: str,
-        ass_file: AssFile,
-        ctx: _ReadContext
+    line: str, ass_file: AssFile, ctx: _ReadContext
 ) -> None:
     if line.startswith('Format:'):
         _, rest = line.split(': ', 1)
@@ -104,14 +100,12 @@ def _styles_section_handler(
         margin_left=int(float(field_dict['MarginL'])),
         margin_right=int(float(field_dict['MarginR'])),
         margin_vertical=int(float(field_dict['MarginV'])),
-        encoding=int(field_dict['Encoding'])
+        encoding=int(field_dict['Encoding']),
     )
 
 
 def _events_section_handler(
-        line: str,
-        ass_file: AssFile,
-        ctx: _ReadContext
+    line: str, ass_file: AssFile, ctx: _ReadContext
 ) -> None:
     if line.startswith('Format:'):
         _, rest = line.split(': ', 1)
@@ -129,14 +123,14 @@ def _events_section_handler(
     note = ''
     match = re.search(r'{NOTE:(?P<note>[^}]*)}', text)
     if match:
-        text = text[:match.start()] + text[match.end():]
+        text = text[: match.start()] + text[match.end() :]
         note = unescape_ass_tag(match.group('note'))
 
     start: T.Optional[int] = None
     end: T.Optional[int] = None
     match = re.search(r'{TIME:(?P<start>-?\d+),(?P<end>-?\d+)}', text)
     if match:
-        text = text[:match.start()] + text[match.end():]
+        text = text[: match.start()] + text[match.end() :]
         start = int(match.group('start'))
         end = int(match.group('end'))
 
@@ -152,14 +146,12 @@ def _events_section_handler(
         effect=field_dict['Effect'],
         text=text,
         note=note,
-        is_comment=event_type == 'Comment'
+        is_comment=event_type == 'Comment',
     )
 
 
 def _dummy_handler(
-        _line: str,
-        _ass_file: AssFile,
-        _context: _ReadContext
+    _line: str, _ass_file: AssFile, _context: _ReadContext
 ) -> None:
     pass
 

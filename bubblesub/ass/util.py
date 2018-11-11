@@ -30,12 +30,7 @@ def escape_ass_tag(text: str) -> str:
     :param text: text to escape
     :return: escaped text
     """
-    return (
-        text
-        .replace('\\', r'\\')
-        .replace('{', r'\[')
-        .replace('}', r'\]')
-    )
+    return text.replace('\\', r'\\').replace('{', r'\[').replace('}', r'\]')
 
 
 def unescape_ass_tag(text: str) -> str:
@@ -45,12 +40,7 @@ def unescape_ass_tag(text: str) -> str:
     :param text: text to unescape
     :return: unescaped text
     """
-    return (
-        text
-        .replace(r'\\', '\\')
-        .replace(r'\[', '{')
-        .replace(r'\]', '}')
-    )
+    return text.replace(r'\\', '\\').replace(r'\[', '{').replace(r'\]', '}')
 
 
 def ass_to_plaintext(text: str) -> str:
@@ -92,23 +82,19 @@ def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
     :return: iterator over regex matches
     """
     text = regex.sub(
-        r'\\[Nnh]',
-        '  ',  # two spaces to preserve match positions
-        text
+        r'\\[Nnh]', '  ', text  # two spaces to preserve match positions
     )
 
     return T.cast(
         T.Iterable[T.Match[str]],
         regex.finditer(
-            r'[\p{L}\p{S}\p{N}][\p{L}\p{S}\p{N}\p{P}]*\p{L}|\p{L}',
-            text
-        )
+            r'[\p{L}\p{S}\p{N}][\p{L}\p{S}\p{N}\p{P}]*\p{L}|\p{L}', text
+        ),
     )
 
 
 def spell_check_ass_line(
-        dictionary: enchant.Dict,
-        text: str
+    dictionary: enchant.Dict, text: str
 ) -> T.Iterable[T.Tuple[int, int, str]]:
     """
     Iterate over badly spelled words within an ASS line.
@@ -134,5 +120,5 @@ def spell_check_ass_line(
                 yield (
                     text_start + match.start(),
                     text_start + match.end(),
-                    word
+                    word,
                 )

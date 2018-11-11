@@ -32,13 +32,11 @@ MAX_HISTORY_ENTRIES = 25
 
 
 def _create_search_regex(
-        text: str,
-        case_sensitive: bool,
-        use_regexes: bool
+    text: str, case_sensitive: bool, use_regexes: bool
 ) -> T.Pattern[str]:
     return re.compile(
         text if use_regexes else re.escape(text),
-        flags=0 if case_sensitive else re.I
+        flags=0 if case_sensitive else re.I,
     )
 
 
@@ -67,7 +65,7 @@ class _SearchModeHandler(abc.ABC):
         return widget
 
     def select_text_on_widget(
-            self, selection_start: int, selection_end: int
+        self, selection_start: int, selection_end: int
     ) -> None:
         widget = self.get_subject_widget()
         if isinstance(widget, QtWidgets.QPlainTextEdit):
@@ -91,7 +89,7 @@ class _SearchModeHandler(abc.ABC):
         if isinstance(widget, QtWidgets.QLineEdit):
             return (
                 widget.selectionStart(),
-                widget.selectionStart() + len(widget.selectedText())
+                widget.selectionStart() + len(widget.selectedText()),
             )
         raise AssertionError(f'unknown search widget type ({type(widget)})')
 
@@ -168,11 +166,11 @@ _HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
 
 
 def _narrow_match(
-        handler: _SearchModeHandler,
-        matches: T.List[T.Match[str]],
-        idx: int,
-        selected_idx: T.Optional[int],
-        reverse: bool
+    handler: _SearchModeHandler,
+    matches: T.List[T.Match[str]],
+    idx: int,
+    selected_idx: T.Optional[int],
+    reverse: bool,
 ) -> T.Optional[T.Match[str]]:
     if idx == selected_idx:
         selection_start, selection_end = handler.get_selection_from_widget()
@@ -194,10 +192,7 @@ def _narrow_match(
 
 
 def _search(
-        api: Api,
-        handler: _SearchModeHandler,
-        regex: T.Pattern[str],
-        reverse: bool
+    api: Api, handler: _SearchModeHandler, regex: T.Pattern[str], reverse: bool
 ) -> bool:
     num_lines = len(api.subs.events)
     if not api.subs.has_selection:
@@ -209,8 +204,7 @@ def _search(
         selected_idx = api.subs.selected_indexes[0]
         mul = -1 if reverse else 1
         iterator = list(
-            (selected_idx + mul * i) % num_lines
-            for i in range(num_lines)
+            (selected_idx + mul * i) % num_lines for i in range(num_lines)
         )
 
     for idx in iterator:
@@ -238,18 +232,13 @@ def _replace_selection(handler: _SearchModeHandler, new_text: str) -> None:
     selection_start, selection_end = handler.get_selection_from_widget()
     old_subject = handler.get_widget_text()
     new_subject = (
-        old_subject[:selection_start]
-        + new_text
-        + old_subject[selection_end:]
+        old_subject[:selection_start] + new_text + old_subject[selection_end:]
     )
     handler.set_widget_text(new_subject)
 
 
 def _replace_all(
-        api: Api,
-        handler: _SearchModeHandler,
-        regex: T.Pattern[str],
-        new_text: str
+    api: Api, handler: _SearchModeHandler, regex: T.Pattern[str], new_text: str
 ) -> int:
     count = 0
     with api.undo.capture():
@@ -265,9 +254,7 @@ def _replace_all(
 
 
 def _count(
-        api: Api,
-        handler: _SearchModeHandler,
-        regex: T.Pattern[str]
+    api: Api, handler: _SearchModeHandler, regex: T.Pattern[str]
 ) -> int:
     count = 0
     for sub in api.subs.events:
@@ -307,8 +294,7 @@ class _SearchTextEdit(QtWidgets.QComboBox):
         self.setMaxCount(MAX_HISTORY_ENTRIES)
         self.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
         self.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Preferred
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
         )
         completer = self.completer()
         completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
@@ -317,11 +303,11 @@ class _SearchTextEdit(QtWidgets.QComboBox):
 
 class _SearchDialog(QtWidgets.QDialog):
     def __init__(
-            self,
-            api: Api,
-            main_window: QtWidgets.QMainWindow,
-            show_replace_controls: bool,
-            parent: QtWidgets.QWidget = None
+        self,
+        api: Api,
+        main_window: QtWidgets.QMainWindow,
+        show_replace_controls: bool,
+        parent: QtWidgets.QWidget = None,
     ) -> None:
         super().__init__(parent)
         self._main_window = main_window
@@ -356,14 +342,14 @@ class _SearchDialog(QtWidgets.QDialog):
         settings_box_layout.setSpacing(16)
         settings_box_layout.setContentsMargins(0, 0, 0, 0)
         for widget in [
-                search_label,
-                self.search_text_edit,
-                replace_label,
-                self.replacement_text_edit,
-                self.case_chkbox,
-                self.regex_chkbox,
-                self.search_mode_group_box,
-                strip
+            search_label,
+            self.search_text_edit,
+            replace_label,
+            self.replacement_text_edit,
+            self.case_chkbox,
+            self.regex_chkbox,
+            self.search_mode_group_box,
+            strip,
         ]:
             settings_box_layout.addWidget(widget)
 
@@ -419,15 +405,13 @@ class _SearchDialog(QtWidgets.QDialog):
         )
         bubblesub.ui.util.notice(
             f'Replaced {count} occurences.'
-            if count else
-            'No occurences found.'
+            if count
+            else 'No occurences found.'
         )
 
     def _search(self, reverse: bool) -> None:
         self._push_search_history()
-        result = _search(
-            self._api, self._handler, self._search_regex, reverse
-        )
+        result = _search(self._api, self._handler, self._search_regex, reverse)
         if not result:
             bubblesub.ui.util.notice('No occurences found.')
         self._update_replacement_enabled()
@@ -436,9 +420,7 @@ class _SearchDialog(QtWidgets.QDialog):
         self._push_search_history()
         count = _count(self._api, self._handler, self._search_regex)
         bubblesub.ui.util.notice(
-            f'Found {count} occurences.'
-            if count else
-            'No occurences found.'
+            f'Found {count} occurences.' if count else 'No occurences found.'
         )
 
     def _update_replacement_enabled(self) -> None:
@@ -553,9 +535,9 @@ class SearchRepeatCommand(BaseCommand):
             _create_search_regex(
                 self.api.opt.general.search.history[0],
                 self.api.opt.general.search.case_sensitive,
-                self.api.opt.general.search.use_regexes
+                self.api.opt.general.search.use_regexes,
             ),
-            self.args.reverse
+            self.args.reverse,
         )
         if not result:
             bubblesub.ui.util.notice('No occurences found.')
@@ -567,18 +549,14 @@ class SearchRepeatCommand(BaseCommand):
             '--above',
             dest='reverse',
             action='store_true',
-            help='search forward'
+            help='search forward',
         )
         group.add_argument(
             '--below',
             dest='reverse',
             action='store_false',
-            help='search backward'
+            help='search backward',
         )
 
 
-COMMANDS = [
-    SearchCommand,
-    SearchAndReplaceCommand,
-    SearchRepeatCommand
-]
+COMMANDS = [SearchCommand, SearchAndReplaceCommand, SearchRepeatCommand]

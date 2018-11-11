@@ -25,9 +25,9 @@ from bubblesub.cmd.common import Pts
 
 
 def _assert_pts_value(
-        pts: Pts,
-        expected_value: T.Union[int, T.Type[CommandError]],
-        origin: T.Optional[int] = None,
+    pts: Pts,
+    expected_value: T.Union[int, T.Type[CommandError]],
+    origin: T.Optional[int] = None,
 ) -> None:
     actual_value: T.Union[int, T.Type[CommandError]] = 0
     try:
@@ -63,14 +63,12 @@ def _assert_pts_value(
         ('25ms+500ms', 25, 525),
         ('500ms-25ms', None, 475),
         ('500ms-25ms', 25, 475),
-
         ('500', None, CommandError),
         ('500', 0, CommandError),
         ('ms', None, CommandError),
         ('ms', 0, CommandError),
         ('cfcf', None, CommandError),
         ('cfcf', 0, CommandError),
-
         ('0 ms', None, CommandError),
         ('0ms + 0ms', None, 0),
         ('0ms  +  0ms', None, 0),
@@ -78,9 +76,9 @@ def _assert_pts_value(
     ],
 )
 def test_basic_arithmetic(
-        expr: str,
-        origin: T.Optional[int],
-        expected_value: T.Union[int, T.Type[CommandError]],
+    expr: str,
+    origin: T.Optional[int],
+    expected_value: T.Union[int, T.Type[CommandError]],
 ) -> None:
     api = MagicMock()
     pts = Pts(api, expr)
@@ -97,22 +95,18 @@ def test_basic_arithmetic(
         ('ps.e', [(1, 2), (3, 4), (5, 6)], [1], 2),
         ('ns.s', [(1, 2), (3, 4), (5, 6)], [1], 5),
         ('ns.e', [(1, 2), (3, 4), (5, 6)], [1], 6),
-
         ('ps.s', [(1, 2), (3, 4), (5, 6)], [0], 0),
         ('ps.e', [(1, 2), (3, 4), (5, 6)], [0], 0),
         ('ns.s', [(1, 2), (3, 4), (5, 6)], [2], 0),
         ('ns.e', [(1, 2), (3, 4), (5, 6)], [2], 0),
-
         ('s1.s', [(1, 2), (3, 4), (5, 6)], [], 1),
         ('s1.e', [(1, 2), (3, 4), (5, 6)], [], 2),
         ('s2.s', [(1, 2), (3, 4), (5, 6)], [], 3),
         ('s2.e', [(1, 2), (3, 4), (5, 6)], [], 4),
         ('s3.s', [(1, 2), (3, 4), (5, 6)], [], 5),
         ('s3.e', [(1, 2), (3, 4), (5, 6)], [], 6),
-
         ('s1.s', [], [], 0),
         ('s1.e', [], [], 0),
-
         ('s3.s', [(1, 2)], [], 1),
         ('s3.e', [(1, 2)], [], 2),
         ('s0.s', [(1, 2)], [], 1),
@@ -120,15 +114,14 @@ def test_basic_arithmetic(
     ],
 )
 def test_subtitles(
-        expr: str,
-        sub_times: T.List[T.Tuple[int, int]],
-        sub_selection: T.List[int],
-        expected_value: int,
+    expr: str,
+    sub_times: T.List[T.Tuple[int, int]],
+    sub_selection: T.List[int],
+    expected_value: int,
 ) -> None:
     api = MagicMock()
     api.subs.events = [
-        MagicMock(start=start, end=end)
-        for start, end in sub_times
+        MagicMock(start=start, end=end) for start, end in sub_times
     ]
     for i, event in enumerate(api.subs.events):
         event.prev = api.subs.events[i - 1] if i > 0 else None
@@ -151,15 +144,12 @@ def test_subtitles(
         ('cf', [], ..., [], 0),
         ('pf', [], ..., [], CommandError),
         ('nf', [], ..., [], CommandError),
-
         ('1f', [10, 20, 30], ..., [], 10),
         ('2f', [10, 20, 30], ..., [], 20),
         ('3f', [10, 20, 30], ..., [], 30),
-
         ('0f', [10, 20, 30], ..., [], 10),
         ('5f', [10, 20, 30], ..., [], 30),
         ('1f', [], ..., [], CommandError),
-
         ('5ms+1f', [10, 20, 30], ..., [], 10),
         ('9ms+1f', [10, 20, 30], ..., [], 10),
         ('10ms+1f', [10, 20, 30], ..., [], 20),
@@ -173,7 +163,6 @@ def test_subtitles(
         ('20ms-1f', [10, 20, 30], ..., [], 10),
         ('21ms-1f', [10, 20, 30], ..., [], 20),
         ('31ms-1f', [10, 20, 30], ..., [], 30),
-
         ('ckf', [10, 20, 30, 40], 1, [0, 1, 3], 20),
         ('ckf', [10, 20, 30, 40], 2, [0, 1, 3], 20),
         ('pkf', [10, 20, 30, 40], 1, [0, 1, 3], 10),
@@ -182,14 +171,11 @@ def test_subtitles(
         ('ckf', [], ..., [], CommandError),
         ('pkf', [], ..., [], CommandError),
         ('nkf', [], ..., [], CommandError),
-
         ('1kf', [10, 20, 30], ..., [0, 2], 10),
         ('2kf', [10, 20, 30], ..., [0, 2], 30),
-
         ('0kf', [10, 20, 30], ..., [0, 2], 10),
         ('3kf', [10, 20, 30], ..., [0, 2], 30),
         ('1kf', [], ..., [], CommandError),
-
         ('5ms+1kf', [10, 20, 30], ..., [0, 2], 10),
         ('9ms+1kf', [10, 20, 30], ..., [0, 2], 10),
         ('10ms+1kf', [10, 20, 30], ..., [0, 1], 20),
@@ -208,11 +194,11 @@ def test_subtitles(
     ],
 )
 def test_frames(
-        expr: str,
-        frame_times: T.List[int],
-        cur_frame_idx: T.Any,
-        keyframe_indexes: T.List[int],
-        expected_value: T.Union[int, T.Type[CommandError]],
+    expr: str,
+    frame_times: T.List[int],
+    cur_frame_idx: T.Any,
+    keyframe_indexes: T.List[int],
+    expected_value: T.Union[int, T.Type[CommandError]],
 ) -> None:
     api = MagicMock()
     api.media.video.timecodes = frame_times
@@ -236,9 +222,9 @@ def test_frames(
     ],
 )
 def test_audio(
-        expr: str,
-        selection: T.Optional[T.Tuple[int, int]],
-        expected_value: T.Union[int, T.Type[CommandError]],
+    expr: str,
+    selection: T.Optional[T.Tuple[int, int]],
+    expected_value: T.Union[int, T.Type[CommandError]],
 ) -> None:
     api = MagicMock()
     if selection:

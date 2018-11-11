@@ -83,24 +83,23 @@ class SpectrumWorker(bubblesub.worker.Worker):
             return np.zeros((1 << DERIVATION_SIZE) + 1)
 
         if sample_fmt == ffms.FFMS_FMT_S16:
-            samples /= 32768.
+            samples /= 32768.0
         elif sample_fmt == ffms.FFMS_FMT_S32:
-            samples /= 4294967296.
+            samples /= 4_294_967_296.0
         elif sample_fmt not in (ffms.FFMS_FMT_FLT, ffms.FFMS_FMT_DBL):
             raise RuntimeError(f'unknown sample format: {sample_fmt}')
 
         assert self._input is not None
-        self._input[0:len(samples)] = samples
+        self._input[0 : len(samples)] = samples
 
         assert self._fftw is not None
         out = self._fftw()
 
         scale_factor = 9 / np.sqrt(1 * (1 << DERIVATION_SIZE))
         out = np.log(
-            np.sqrt(
-                np.real(out) * np.real(out)
-                + np.imag(out) * np.imag(out)
-            ) * scale_factor + 1
+            np.sqrt(np.real(out) * np.real(out) + np.imag(out) * np.imag(out))
+            * scale_factor
+            + 1
         )
 
         out *= 255
@@ -119,9 +118,7 @@ class DragMode(enum.Enum):
 
 class AudioPreview(BaseAudioWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 2.5))
@@ -160,16 +157,10 @@ class AudioPreview(BaseAudioWidget):
 
         painter.save()
         painter.setWindow(
-            0,
-            0,
-            self.width(),
-            self.height() - (SLIDER_SIZE - 1)
+            0, 0, self.width(), self.height() - (SLIDER_SIZE - 1)
         )
         painter.setViewport(
-            0,
-            SLIDER_SIZE - 1,
-            self.width(),
-            self.height() - (SLIDER_SIZE - 1)
+            0, SLIDER_SIZE - 1, self.width(), self.height() - (SLIDER_SIZE - 1)
         )
         self._draw_spectrogram(painter)
         self._draw_subtitle_rects(painter)
@@ -215,13 +206,13 @@ class AudioPreview(BaseAudioWidget):
             if self._audio.has_selection:
                 self._audio.select(
                     min(self._audio.selection_end, pts),
-                    self._audio.selection_end
+                    self._audio.selection_end,
                 )
         elif self._drag_mode == DragMode.SelectionEnd:
             if self._audio.has_selection:
                 self._audio.select(
                     self._audio.selection_start,
-                    max(self._audio.selection_start, pts)
+                    max(self._audio.selection_start, pts),
                 )
         elif self._drag_mode == DragMode.VideoPosition:
             self._api.media.seek(pts)
@@ -231,9 +222,10 @@ class AudioPreview(BaseAudioWidget):
             blend_colors(
                 self.palette().window().color(),
                 self.palette().text().color(),
-                i / 255
+                i / 255,
             )
-            for i in range(256)]
+            for i in range(256)
+        ]
 
     def _repaint_if_needed(self) -> None:
         if self._need_repaint:
@@ -270,7 +262,7 @@ class AudioPreview(BaseAudioWidget):
         # since the task queue is a LIFO queue, in order to render the columns
         # left-to-right, they need to be iterated backwards (hence reversed()).
         for chunk in bubblesub.util.chunks(
-                list(sorted(pts_to_update, reverse=True)), CHUNK_SIZE
+            list(sorted(pts_to_update, reverse=True)), CHUNK_SIZE
         ):
             self._spectrum_worker.schedule_task(reversed(chunk))
             for pts in chunk:
@@ -300,8 +292,7 @@ class AudioPreview(BaseAudioWidget):
         self._need_repaint = True
 
     def _on_spectrum_update(
-            self,
-            response: T.List[T.Tuple[int, T.List[int]]]
+        self, response: T.List[T.Tuple[int, T.List[int]]]
     ) -> None:
         for pts, column in response:
             self._spectrum_cache[pts] = column
@@ -316,7 +307,7 @@ class AudioPreview(BaseAudioWidget):
             0,
             0,
             painter.viewport().width() - 1,
-            painter.viewport().height() - 1
+            painter.viewport().height() - 1,
         )
 
     def _draw_scale(self, painter: QtGui.QPainter) -> None:
@@ -326,9 +317,8 @@ class AudioPreview(BaseAudioWidget):
 
         start_pts = int(self._audio.view_start // one_minute) * one_minute
         end_pts = (
-            (int(self._audio.view_end + one_minute) // one_minute)
-            * one_minute
-        )
+            int(self._audio.view_end + one_minute) // one_minute
+        ) * one_minute
 
         painter.setPen(
             QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
@@ -381,7 +371,7 @@ class AudioPreview(BaseAudioWidget):
             self._pixels.shape[1],
             self._pixels.shape[0],
             self._pixels.strides[0],
-            QtGui.QImage.Format_Indexed8
+            QtGui.QImage.Format_Indexed8,
         )
         image.setColorTable(self._color_table)
         painter.save()
@@ -423,7 +413,7 @@ class AudioPreview(BaseAudioWidget):
                 QtGui.QPen(
                     get_color(self._api, f'spectrogram/{color_key}-sub-line'),
                     1,
-                    QtCore.Qt.SolidLine
+                    QtCore.Qt.SolidLine,
                 )
             )
 
@@ -431,16 +421,17 @@ class AudioPreview(BaseAudioWidget):
                 painter.setBrush(
                     QtGui.QBrush(
                         get_color(
-                            self._api, f'spectrogram/{color_key}-sub-line')
-                        if is_selected else
-                        self.palette().window()
+                            self._api, f'spectrogram/{color_key}-sub-line'
+                        )
+                        if is_selected
+                        else self.palette().window()
                     )
                 )
                 painter.drawRect(
                     x1,
                     0,
                     min(x2 - x1, label_margin * 2 + label_width),
-                    label_margin * 2 + label_height
+                    label_margin * 2 + label_height,
                 )
 
             painter.setBrush(
@@ -454,9 +445,10 @@ class AudioPreview(BaseAudioWidget):
                 painter.setPen(
                     QtGui.QPen(
                         get_color(
-                            self._api, f'spectrogram/{color_key}-sub-text'),
+                            self._api, f'spectrogram/{color_key}-sub-text'
+                        ),
                         1,
-                        QtCore.Qt.SolidLine
+                        QtCore.Qt.SolidLine,
                     )
                 )
                 painter.drawText(
@@ -469,14 +461,14 @@ class AudioPreview(BaseAudioWidget):
         h = self.height()
         color_key = (
             'spectrogram/focused-sel'
-            if self.parent().hasFocus() else
-            'spectrogram/unfocused-sel'
+            if self.parent().hasFocus()
+            else 'spectrogram/unfocused-sel'
         )
         painter.setPen(
             QtGui.QPen(
                 get_color(self._api, f'{color_key}-line'),
                 1,
-                QtCore.Qt.SolidLine
+                QtCore.Qt.SolidLine,
             )
         )
         painter.setBrush(
@@ -496,14 +488,14 @@ class AudioPreview(BaseAudioWidget):
         width = 7
         polygon = QtGui.QPolygonF()
         for x, y in [
-                (x - width / 2, 0),
-                (x + width / 2, 0),
-                (x + width / 2, SLIDER_SIZE),
-                (x + 1, SLIDER_SIZE + width / 2),
-                (x + 1, painter.viewport().height() - 1),
-                (x, painter.viewport().height() - 1),
-                (x, SLIDER_SIZE + width / 2),
-                (x - width / 2, SLIDER_SIZE),
+            (x - width / 2, 0),
+            (x + width / 2, 0),
+            (x + width / 2, SLIDER_SIZE),
+            (x + 1, SLIDER_SIZE + width / 2),
+            (x + 1, painter.viewport().height() - 1),
+            (x, painter.viewport().height() - 1),
+            (x, SLIDER_SIZE + width / 2),
+            (x - width / 2, SLIDER_SIZE),
         ]:
             polygon.append(QtCore.QPointF(x, y))
 

@@ -52,14 +52,12 @@ def ask(msg: str) -> bool:
 
 
 def blend_colors(
-        color1: QtGui.QColor,
-        color2: QtGui.QColor,
-        ratio: float
+    color1: QtGui.QColor, color2: QtGui.QColor, ratio: float
 ) -> int:
     return QtGui.qRgb(
         int(color1.red() * (1 - ratio) + color2.red() * ratio),
         int(color1.green() * (1 - ratio) + color2.green() * ratio),
-        int(color1.blue() * (1 - ratio) + color2.blue() * ratio)
+        int(color1.blue() * (1 - ratio) + color2.blue() * ratio),
     )
 
 
@@ -70,8 +68,7 @@ class ColorPicker(QtWidgets.QWidget):
         super().__init__(parent)
         self._label = QtWidgets.QLabel(self)
         self._label.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Maximum
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum
         )
         self._button = QtWidgets.QPushButton('Change', self)
         self._button.clicked.connect(self._on_button_click)
@@ -98,7 +95,9 @@ class ColorPicker(QtWidgets.QWidget):
             background-color: #{:02x}{:02x}{:02x};
             opacity: {};
             border: 1px solid black;
-        }}'''.format(color.red(), color.green(), color.blue(), color.alpha())
+        }}'''.format(
+            color.red(), color.green(), color.blue(), color.alpha()
+        )
         self._label.setStyleSheet(style)
         if self._color != color:
             self._color = color
@@ -109,10 +108,10 @@ class ColorPicker(QtWidgets.QWidget):
 
 class TimeEdit(QtWidgets.QLineEdit):
     def __init__(
-            self,
-            parent: QtWidgets.QWidget = None,
-            allow_negative: bool = False,
-            **kwargs: T.Any,
+        self,
+        parent: QtWidgets.QWidget = None,
+        allow_negative: bool = False,
+        **kwargs: T.Any,
     ) -> None:
         super().__init__(parent, **kwargs)
         self._allow_negative = False
@@ -125,7 +124,7 @@ class TimeEdit(QtWidgets.QLineEdit):
             self.setValidator(
                 QtGui.QRegExpValidator(
                     QtCore.QRegExp(r'[+-]\d\d:\d\d:\d\d\.\d\d\d'),
-                    self.parent()
+                    self.parent(),
                 )
             )
         else:
@@ -178,50 +177,48 @@ def get_color(api: bubblesub.api.Api, color_name: str) -> QtGui.QColor:
 
 
 def load_dialog(
-        parent: QtWidgets.QWidget,
-        file_filter: str,
-        directory: T.Optional[Path] = None
+    parent: QtWidgets.QWidget,
+    file_filter: str,
+    directory: T.Optional[Path] = None,
 ) -> T.Optional[Path]:
     path, _ = QtWidgets.QFileDialog.getOpenFileName(
         parent,
         directory=(
             str(directory)
-            if directory is not None else
-            T.cast(str, QtCore.QDir.homePath())
+            if directory is not None
+            else T.cast(str, QtCore.QDir.homePath())
         ),
-        filter=file_filter
+        filter=file_filter,
     )
     return Path(path) if path else None
 
 
 def save_dialog(
-        parent: QtWidgets.QWidget,
-        file_filter: T.Optional[str],
-        directory: T.Optional[Path] = None,
-        file_name: T.Optional[str] = None
+    parent: QtWidgets.QWidget,
+    file_filter: T.Optional[str],
+    directory: T.Optional[Path] = None,
+    file_name: T.Optional[str] = None,
 ) -> T.Optional[Path]:
     real_directory = (
         str(directory)
-        if directory is not None else
-        T.cast(str, QtCore.QDir.homePath())
+        if directory is not None
+        else T.cast(str, QtCore.QDir.homePath())
     )
     if file_name:
         real_directory += '/' + file_name
     path, _ = QtWidgets.QFileDialog.getSaveFileName(
-        parent,
-        directory=real_directory,
-        filter=file_filter or 'Any file (*)'
+        parent, directory=real_directory, filter=file_filter or 'Any file (*)'
     )
     return Path(path) if path else None
 
 
 def time_jump_dialog(
-        parent: QtWidgets.QWidget,
-        value: int = 0,
-        relative_label: str = 'Time:',
-        absolute_label: str = 'Time:',
-        relative_checked: bool = True,
-        show_radio: bool = True
+    parent: QtWidgets.QWidget,
+    value: int = 0,
+    relative_label: str = 'Time:',
+    absolute_label: str = 'Time:',
+    relative_checked: bool = True,
+    show_radio: bool = True,
 ) -> T.Optional[T.Tuple[int, bool]]:
     class TimeJumpDialog(QtWidgets.QDialog):
         def __init__(self, parent: QtWidgets.QWidget = None) -> None:
@@ -268,10 +265,7 @@ def time_jump_dialog(
             self._time_edit.set_allow_negative(is_relative)
 
         def value(self) -> T.Tuple[int, bool]:
-            return (
-                self._time_edit.get_value(),
-                self._radio_rel.isChecked()
-            )
+            return (self._time_edit.get_value(), self._radio_rel.isChecked())
 
     dialog = TimeJumpDialog(parent)
     if dialog.exec_():
@@ -280,8 +274,7 @@ def time_jump_dialog(
 
 
 def get_text_edit_row_height(
-        editor: QtWidgets.QPlainTextEdit,
-        rows: int
+    editor: QtWidgets.QPlainTextEdit, rows: int
 ) -> int:
     metrics = QtGui.QFontMetrics(editor.document().defaultFont())
     margins = editor.contentsMargins()
@@ -296,14 +289,14 @@ def get_text_edit_row_height(
 
 class ImmediateDataWidgetMapper(QtCore.QObject):
     def __init__(
-            self,
-            model: QtCore.QAbstractItemModel,
-            signal_map: T.Optional[T.Dict[QtWidgets.QWidget, str]] = None,
-            submit_wrapper: T.Callable = None,
+        self,
+        model: QtCore.QAbstractItemModel,
+        signal_map: T.Optional[T.Dict[QtWidgets.QWidget, str]] = None,
+        submit_wrapper: T.Callable = None,
     ) -> None:
         super().__init__()
         self._model = model
-        self._mappings: T.List[T.Tuple[QtWidgets. QWidget, int]] = []
+        self._mappings: T.List[T.Tuple[QtWidgets.QWidget, int]] = []
         self._populating_widgets = 0
         self._populating_model = 0
         self._row_idx: T.Optional[int] = None
@@ -362,37 +355,34 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
                         self._write_to_model(widget, self._row_idx, col_idx)
 
     def _model_data_change(
-            self,
-            top_left: QtCore.QModelIndex,
-            bottom_right: QtCore.QModelIndex,
+        self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex
     ) -> None:
         if self._populating_model or self._row_idx is None:
             return
         for widget, col_idx in self._mappings:
-            if top_left.row() <= self._row_idx <= bottom_right.row() \
-                    and top_left.column() <= col_idx <= bottom_right.column():
+            if (
+                top_left.row() <= self._row_idx <= bottom_right.row()
+                and top_left.column() <= col_idx <= bottom_right.column()
+            ):
                 with self.block_widget_signals():
                     self._write_to_widget(widget, self._row_idx, col_idx)
 
     def _write_to_widget(
-            self,
-            widget: QtWidgets.QWidget,
-            row_idx: T.Optional[int],
-            col_idx: int,
+        self, widget: QtWidgets.QWidget, row_idx: T.Optional[int], col_idx: int
     ) -> None:
         name = widget.metaObject().userProperty().name()
         value = (
             QtCore.QVariant()
-            if row_idx is None else
-            self._model.index(row_idx, col_idx).data(QtCore.Qt.EditRole)
+            if row_idx is None
+            else self._model.index(row_idx, col_idx).data(QtCore.Qt.EditRole)
         )
         widget.setProperty(name, value)
 
     def _write_to_model(
-            self, widget: QtWidgets.QWidget, row_idx: int, col_idx: int,
+        self, widget: QtWidgets.QWidget, row_idx: int, col_idx: int
     ) -> None:
         name = widget.metaObject().userProperty().name()
         value = widget.property(name)
         self._model.setData(
-            self._model.index(row_idx, col_idx), value, QtCore.Qt.EditRole,
+            self._model.index(row_idx, col_idx), value, QtCore.Qt.EditRole
         )

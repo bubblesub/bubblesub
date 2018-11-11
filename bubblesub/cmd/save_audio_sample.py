@@ -32,8 +32,10 @@ class SaveAudioSampleCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.args.target.makes_sense \
+        return (
+            self.args.target.makes_sense
             and self.api.media.audio.has_audio_source
+        )
 
     async def run(self) -> None:
         subs = await self.args.target.get_subtitles()
@@ -46,8 +48,8 @@ class SaveAudioSampleCommand(BaseCommand):
             default_file_name='audio-{}-{}..{}.wav'.format(
                 self.api.media.path.name,
                 ms_to_str(subs[0].start),
-                ms_to_str(subs[-1].end)
-            )
+                ms_to_str(subs[-1].end),
+            ),
         )
 
         pts_ranges = [(sub.start, sub.end) for sub in subs]
@@ -57,16 +59,18 @@ class SaveAudioSampleCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to save audio from',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
         parser.add_argument(
-            '-p', '--path',
+            '-p',
+            '--path',
             help='path to save the sample to',
             type=lambda value: FancyPath(api, value),
-            default=''
+            default='',
         )
 
 

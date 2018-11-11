@@ -37,10 +37,7 @@ class Metadata(QtCore.QObject):
         self._data.clear()
         self.changed.emit()
 
-    def update(
-            self,
-            new_content: T.Mapping[str, str]
-    ) -> None:
+    def update(self, new_content: T.Mapping[str, str]) -> None:
         """
         Update self with new content.
 

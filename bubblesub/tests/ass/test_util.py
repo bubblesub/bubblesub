@@ -32,7 +32,7 @@ import bubblesub.ass.util
         ('\\hone two', ['one', 'two']),
         ('1st', ['1st']),
         ('1st 2nd', ['1st', '2nd']),
-    ]
+    ],
 )
 def test_iter_words_ass_line(ass_text, expected):
     actual = [

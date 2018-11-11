@@ -41,15 +41,15 @@ def _rescale_ass_tags(api: Api, x_factor: float, y_factor: float) -> None:
                 continue
             for subitem in item['children']:
                 if subitem['type'] in {
-                        'border',
-                        'border-x',
-                        'border-y',
-                        'shadow',
-                        'shadow-x',
-                        'shadow-y',
-                        'rotation-x',
-                        'rotation-y',
-                        'rotation-z',
+                    'border',
+                    'border-x',
+                    'border-y',
+                    'shadow',
+                    'shadow-x',
+                    'shadow-y',
+                    'rotation-x',
+                    'rotation-y',
+                    'rotation-z',
                 }:
                     subitem['size'] *= y_factor
 
@@ -88,17 +88,23 @@ class _OptionsGropuBox(QtWidgets.QGroupBox):
 
         self.ycbcr_matrix_combo_box = QtWidgets.QComboBox(self)
         for value in [
-                'TV.601', 'PC.601', 'TV.709', 'PC.709',
-                'TV.FCC', 'PC.FCC', 'TV.240M', 'PC.240M',
+            'TV.601',
+            'PC.601',
+            'TV.709',
+            'PC.709',
+            'TV.FCC',
+            'PC.FCC',
+            'TV.240M',
+            'PC.240M',
         ]:
             self.ycbcr_matrix_combo_box.addItem(value, userData=value)
 
         self.wrap_mode_combo_box = QtWidgets.QComboBox(self)
         for key, value in {
-                '0': 'Smart wrapping, top line is wider',
-                '1': 'End-of-line word wrapping, only \\N breaks',
-                '2': 'No word wrapping, both \\n and \\N break',
-                '3': 'Smart wrapping, bottom line is wider',
+            '0': 'Smart wrapping, top line is wider',
+            '1': 'End-of-line word wrapping, only \\N breaks',
+            '2': 'No word wrapping, both \\n and \\N break',
+            '3': 'Smart wrapping, bottom line is wider',
         }.items():
             self.wrap_mode_combo_box.addItem(value, userData=key)
 
@@ -184,10 +190,9 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
         return metadata
 
     def _on_add_button_click(self) -> None:
-        self.model.appendRow([
-            QtGui.QStandardItem(''),
-            QtGui.QStandardItem(''),
-        ])
+        self.model.appendRow(
+            [QtGui.QStandardItem(''), QtGui.QStandardItem('')]
+        )
 
     def _on_delete_rows_button_click(self) -> None:
         rows = set(
@@ -255,55 +260,61 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
         for key, value in self._api.subs.info.items():
             if key not in [
-                    'PlayResX',
-                    'PlayResY',
-                    'YCbCr Matrix',
-                    'WrapStyle',
-                    'ScaledBorderAndShadow',
-                    'ScriptType',
+                'PlayResX',
+                'PlayResY',
+                'YCbCr Matrix',
+                'WrapStyle',
+                'ScaledBorderAndShadow',
+                'ScriptType',
             ]:
-                self._metadata_group_box.model.appendRow([
-                    QtGui.QStandardItem(key),
-                    QtGui.QStandardItem(value),
-                ])
+                self._metadata_group_box.model.appendRow(
+                    [QtGui.QStandardItem(key), QtGui.QStandardItem(value)]
+                )
 
     def _commit(self) -> None:
         old_res = (
             int(T.cast(str, self._api.subs.info.get('PlayResX', '0'))),
-            int(T.cast(str, self._api.subs.info.get('PlayResY', '0')))
+            int(T.cast(str, self._api.subs.info.get('PlayResY', '0'))),
         )
 
         self._api.subs.info.clear()
 
-        self._api.subs.info.update({
-            'ScriptType': 'v4.00+',
-            'PlayResX': str(self._options_group_box.res_x_edit.value()),
-            'PlayResY': str(self._options_group_box.res_y_edit.value()),
-            'YCbCr Matrix': (
-                self._options_group_box.ycbcr_matrix_combo_box.currentData()
-            ),
-            'WrapStyle': (
-                self._options_group_box.wrap_mode_combo_box.currentData()
-            ),
-            'ScaledBorderAndShadow': (
-                ['no', 'yes']
-                [self._options_group_box.scale_check_box.isChecked()]
-            ),
-        })
+        self._api.subs.info.update(
+            {
+                'ScriptType': 'v4.00+',
+                'PlayResX': str(self._options_group_box.res_x_edit.value()),
+                'PlayResY': str(self._options_group_box.res_y_edit.value()),
+                'YCbCr Matrix': (
+                    self._options_group_box.ycbcr_matrix_combo_box.currentData()
+                ),
+                'WrapStyle': (
+                    self._options_group_box.wrap_mode_combo_box.currentData()
+                ),
+                'ScaledBorderAndShadow': (
+                    ['no', 'yes'][
+                        self._options_group_box.scale_check_box.isChecked()
+                    ]
+                ),
+            }
+        )
 
         self._api.subs.info.update(self._metadata_group_box.get_data())
 
         new_res = (
             int(T.cast(str, self._api.subs.info.get('PlayResX', '0'))),
-            int(T.cast(str, self._api.subs.info.get('PlayResY', '0')))
+            int(T.cast(str, self._api.subs.info.get('PlayResY', '0'))),
         )
-        if old_res != new_res \
-                and old_res[0] and old_res[1] \
-                and new_res[0] and new_res[1] \
-                and bubblesub.ui.util.ask(
-                        'The resolution was changed. '
-                        'Do you want to rescale all the styles now?'
-                ):
+        if (
+            old_res != new_res
+            and old_res[0]
+            and old_res[1]
+            and new_res[0]
+            and new_res[1]
+            and bubblesub.ui.util.ask(
+                'The resolution was changed. '
+                'Do you want to rescale all the styles now?'
+            )
+        ):
             x_factor = new_res[0] / old_res[0]
             y_factor = new_res[1] / old_res[1]
             _rescale_styles(self._api, y_factor)

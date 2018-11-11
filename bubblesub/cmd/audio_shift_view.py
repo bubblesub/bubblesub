@@ -22,10 +22,7 @@ from bubblesub.cmd.common import Pts
 
 
 class AudioShiftViewCommand(BaseCommand):
-    names = [
-        'audio-shift-view',
-        'spectrogram-shift-view',
-    ]
+    names = ['audio-shift-view', 'spectrogram-shift-view']
     help_text = 'Shfits the spectrogram.'
 
     async def run(self) -> None:
@@ -48,12 +45,14 @@ class AudioShiftViewCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-s', '--start',
+            '-s',
+            '--start',
             help='amount to shift the start of the viewport by',
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
-            '-e', '--end',
+            '-e',
+            '--end',
             help='amount to shift the end of the viewport by',
             type=lambda value: Pts(api, value),
         )

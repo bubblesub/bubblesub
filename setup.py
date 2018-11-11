@@ -62,13 +62,13 @@ class GenerateDocumentationCommand(Command):
                     cmd_name, *cmd_args = invocation
                     anchor = self._get_anchor_name('cmd', cmd_name)
                     last_cell.append(
-                        f'<a href="#user-content-{anchor}">{cmd_name}</a> ' +
-                        ' '.join(shlex.quote(arg) for arg in cmd_args)
+                        f'<a href="#user-content-{anchor}">{cmd_name}</a> '
+                        + ' '.join(shlex.quote(arg) for arg in cmd_args)
                     )
                 row = [
                     f'<kbd>{hotkey.shortcut}</kbd>',
                     re.sub('([A-Z])', r' \1', context.name).strip().lower(),
-                    '<code>' + '; '.join(last_cell) + '</code>'
+                    '<code>' + '; '.join(last_cell) + '</code>',
                 ]
                 table.append(row)
 
@@ -78,7 +78,7 @@ class GenerateDocumentationCommand(Command):
         print('', file=handle)
         print(
             self._make_table(['Shortcut', 'Context', 'Command'], table),
-            file=handle
+            file=handle,
         )
 
     def _generate_commands_documentation(self, handle):
@@ -99,7 +99,7 @@ class GenerateDocumentationCommand(Command):
             parser = argparse.ArgumentParser(
                 add_help=False,
                 prog=cls.names[0],
-                formatter_class=argparse.ArgumentDefaultsHelpFormatter
+                formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             )
             cls.decorate_parser(api, parser)
 
@@ -112,7 +112,7 @@ class GenerateDocumentationCommand(Command):
                     'Aliases: '
                     + ', '.join(f'`{alias}`' for alias in cls.names[1:])
                     + '\n',
-                    file=handle
+                    file=handle,
                 )
 
             print(cls.help_text.rstrip(), file=handle)
@@ -128,11 +128,7 @@ class GenerateDocumentationCommand(Command):
             ret = ''
             if not action.required:
                 ret += '['
-            ret += (
-                '|'.join(action.option_strings)
-                or f'{action.dest}'
-                or ''
-            )
+            ret += '|'.join(action.option_strings) or f'{action.dest}' or ''
             if action.option_strings and action.nargs != 0:
                 ret += f'={action.default or "…"}'
             if not action.required:
@@ -141,8 +137,7 @@ class GenerateDocumentationCommand(Command):
 
         desc = 'Usage: `'
         desc += ' '.join(
-            [cmd_name] +
-            [format_action(action) for action in parser._actions]
+            [cmd_name] + [format_action(action) for action in parser._actions]
         )
         desc += '`'
         return desc
@@ -168,9 +163,7 @@ class GenerateDocumentationCommand(Command):
             if action.choices:
                 desc += (
                     ' (can be '
-                    + ', '.join(
-                        f'`{choice!s}`' for choice in action.choices
-                    )
+                    + ', '.join(f'`{choice!s}`' for choice in action.choices)
                     + ')'
                 )
             desc += '\n'
@@ -182,18 +175,14 @@ class GenerateDocumentationCommand(Command):
 
     @staticmethod
     def _make_table(
-            header_names: T.List[str],
-            rows: T.List[T.List[str]]
+        header_names: T.List[str], rows: T.List[T.List[str]]
     ) -> str:
         ret = '| ' + ' | '.join(header_names) + ' |\n'
         ret += '|' + '|'.join([':--' for _ in header_names]) + '|\n'
         for row in rows:
             ret += (
                 '|'
-                + ' | '.join(
-                    str(cell).replace('\n', '<br>')
-                    for cell in row
-                )
+                + ' | '.join(str(cell).replace('\n', '<br>') for cell in row)
                 + ' |\n'
             )
         return ret
@@ -201,11 +190,11 @@ class GenerateDocumentationCommand(Command):
     @staticmethod
     def _repr_type(type_: type) -> str:
         for comp, name in {
-                str: 'string',
-                int: 'integer',
-                float: 'real number',
-                bool: 'boolean',
-                Path: 'path',
+            str: 'string',
+            int: 'integer',
+            float: 'real number',
+            bool: 'boolean',
+            Path: 'path',
         }.items():
             if type_ == comp:
                 return name
@@ -227,6 +216,7 @@ class PyTestCommand(Command):
     def run(self):
         import shlex
         import pytest
+
         errno = pytest.main(shlex.split(self.pytest_args))
         sys.exit(errno)
 
@@ -253,8 +243,9 @@ class LintCommand(Command):
                 'bubblesub/opt',
                 'bubblesub/ass',
                 #'bubblesub/cmd',
-            ] + glob.glob('bubblesub/*.py'),
-            ['pylint', 'bubblesub']
+            ]
+            + glob.glob('bubblesub/*.py'),
+            ['pylint', 'bubblesub'],
         ]
 
         for command in commands:
@@ -277,14 +268,16 @@ class MypyCommand(Command):
     def run(self):
         import subprocess
 
-        status = subprocess.run([
-            'mypy',
-            'bubblesub',
-            '--ignore-missing-imports',
-            '--disallow-untyped-calls',
-            '--disallow-untyped-defs',
-            '--disallow-incomplete-defs',
-        ])
+        status = subprocess.run(
+            [
+                'mypy',
+                'bubblesub',
+                '--ignore-missing-imports',
+                '--disallow-untyped-calls',
+                '--disallow-untyped-defs',
+                '--disallow-incomplete-defs',
+            ]
+        )
         sys.exit(status.returncode)
 
 
@@ -296,16 +289,9 @@ setup(
     version='0.0',
     url='https://github.com/rr-/bubblesub',
     packages=find_packages(),
-
-    entry_points={
-        'console_scripts': [
-            'bubblesub = bubblesub.__main__:main'
-        ]
-    },
-
+    entry_points={'console_scripts': ['bubblesub = bubblesub.__main__:main']},
     package_dir={'bubblesub': 'bubblesub'},
     package_data={'bubblesub': ['data/*', 'data/**/*']},
-
     install_requires=[
         'ffms',
         'numpy',
@@ -320,7 +306,6 @@ setup(
         'ass_tag_parser',
         'Pillow',
     ],
-
     extras_require={
         'develop': [
             'pytest',
@@ -328,17 +313,15 @@ setup(
             'pycodestyle',
             'pydocstyle',
             'mypy',
-            'docstring_parser'
+            'docstring_parser',
         ]
     },
-
     cmdclass={
         'doc': GenerateDocumentationCommand,
         'test': PyTestCommand,
         'lint': LintCommand,
-        'mypy': MypyCommand
+        'mypy': MypyCommand,
     },
-
     classifiers=[
         'Environment :: X11 Applications :: Qt',
         'Development Status :: 4 - Beta',
@@ -349,6 +332,6 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Text Editors',
         'Topic :: Multimedia :: Sound/Audio',
-        'Topic :: Multimedia :: Video'
-    ]
+        'Topic :: Multimedia :: Video',
+    ],
 )

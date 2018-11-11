@@ -29,30 +29,30 @@ class Style(bubblesub.model.ObservableObject):
     """ASS style."""
 
     def __init__(
-            self,
-            name: str,
-            font_name: str = 'Arial',
-            font_size: int = 20,
-            primary_color: Color = Color(255, 255, 255, 0),
-            secondary_color: Color = Color(255, 0, 0, 0),
-            outline_color: Color = Color(32, 32, 32, 0),
-            back_color: Color = Color(32, 32, 32, 127),
-            bold: bool = True,
-            italic: bool = False,
-            underline: bool = False,
-            strike_out: bool = False,
-            scale_x: float = 100.0,
-            scale_y: float = 100.0,
-            spacing: float = 0.0,
-            angle: float = 0.0,
-            border_style: int = 1,
-            outline: float = 3.0,
-            shadow: float = 0.0,
-            alignment: int = 2,
-            margin_left: int = 20,
-            margin_right: int = 20,
-            margin_vertical: int = 20,
-            encoding: int = 1
+        self,
+        name: str,
+        font_name: str = 'Arial',
+        font_size: int = 20,
+        primary_color: Color = Color(255, 255, 255, 0),
+        secondary_color: Color = Color(255, 0, 0, 0),
+        outline_color: Color = Color(32, 32, 32, 0),
+        back_color: Color = Color(32, 32, 32, 127),
+        bold: bool = True,
+        italic: bool = False,
+        underline: bool = False,
+        strike_out: bool = False,
+        scale_x: float = 100.0,
+        scale_y: float = 100.0,
+        spacing: float = 0.0,
+        angle: float = 0.0,
+        border_style: int = 1,
+        outline: float = 3.0,
+        shadow: float = 0.0,
+        alignment: int = 2,
+        margin_left: int = 20,
+        margin_right: int = 20,
+        margin_vertical: int = 20,
+        encoding: int = 1,
     ) -> None:
         """
         Initialize self.
@@ -204,10 +204,7 @@ class StyleList(bubblesub.model.ObservableList[Style]):
     """ASS style list."""
 
     def insert_one(
-            self,
-            name: str,
-            index: T.Optional[int] = None,
-            **kwargs: T.Any
+        self, name: str, index: T.Optional[int] = None, **kwargs: T.Any
     ) -> Style:
         """
         Insert single style at the specified position.
@@ -240,7 +237,7 @@ class StyleList(bubblesub.model.ObservableList[Style]):
         :param idx: where to start the removal
         :param count: how many elements to remove
         """
-        for item in self._items[idx:idx + count]:
+        for item in self._items[idx : idx + count]:
             item.style_list = None
         super().remove(idx, count)
 

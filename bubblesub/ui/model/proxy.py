@@ -26,9 +26,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     """Make ObservableList usable as Qt's QAbstractTableModel."""
 
     def __init__(
-            self,
-            parent: QtCore.QObject,
-            list_: bubblesub.model.ObservableList
+        self, parent: QtCore.QObject, list_: bubblesub.model.ObservableList
     ) -> None:
         """
         Initialize self.
@@ -43,8 +41,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         self._list.items_removed.connect(self._proxy_items_removed)
 
     def rowCount(
-            self,
-            _parent: QtCore.QModelIndex = QtCore.QModelIndex()
+        self, _parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
         """
         Return number of rows.
@@ -55,8 +52,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         return len(self._list)
 
     def columnCount(
-            self,
-            _parent: QtCore.QModelIndex = QtCore.QModelIndex()
+        self, _parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
         """
         Return number of columns.
@@ -67,9 +63,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         return self._column_count
 
     def data(
-            self,
-            index: QtCore.QModelIndex,
-            role: int = QtCore.Qt.DisplayRole
+        self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole
     ) -> T.Any:
         """
         Retrieve cell data at the specified position.
@@ -83,10 +77,10 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         return self._get_data(row_idx, col_idx, role)
 
     def setData(
-            self,
-            index: QtCore.QModelIndex,
-            value: T.Any,
-            role: int = QtCore.Qt.DisplayRole
+        self,
+        index: QtCore.QModelIndex,
+        value: T.Any,
+        role: int = QtCore.Qt.DisplayRole,
     ) -> bool:
         """
         Update cell data at the specified position.
@@ -112,7 +106,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         raise NotImplementedError('not implemented')
 
     def _set_data(
-            self, row_idx: int, col_idx: int, role: int, new_value: T.Any
+        self, row_idx: int, col_idx: int, role: int, new_value: T.Any
     ) -> bool:
         raise NotImplementedError('not implemented')
 
@@ -127,19 +121,17 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
             self.dataChanged.emit(
                 self.index(row_idx, col_idx),
                 self.index(row_idx, col_idx),
-                [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole]
+                [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole],
             )
 
     def _proxy_items_inserted(self, row_idx: int, count: int) -> None:
         if count:
             self.rowsInserted.emit(
-                QtCore.QModelIndex(),
-                row_idx, row_idx + count - 1
+                QtCore.QModelIndex(), row_idx, row_idx + count - 1
             )
 
     def _proxy_items_removed(self, row_idx: int, count: int) -> None:
         if count:
             self.rowsRemoved.emit(
-                QtCore.QModelIndex(),
-                row_idx, row_idx + count - 1
+                QtCore.QModelIndex(), row_idx, row_idx + count - 1
             )

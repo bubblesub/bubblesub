@@ -68,12 +68,13 @@ class FocusWidgetCommand(BaseCommand):
             'target',
             help='which widget to focus',
             type=_TargetWidget,
-            choices=list(_TargetWidget)
+            choices=list(_TargetWidget),
         )
         parser.add_argument(
-            '-s', '--select',
+            '-s',
+            '--select',
             help='whether to select the text',
-            action='store_true'
+            action='store_true',
         )
 
 

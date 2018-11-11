@@ -34,9 +34,7 @@ from bubblesub.ui.menu import setup_cmd_menu
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(
-            self,
-            api: Api,
-            console: 'bubblesub.ui.console.Console'
+        self, api: Api, console: 'bubblesub.ui.console.Console'
     ) -> None:
         super().__init__()
 
@@ -63,8 +61,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.console = console
 
         self.editor_splitter = self._build_splitter(
-            [(4, self.audio), (1, self.editor)],
-            orientation=QtCore.Qt.Vertical,
+            [(4, self.audio), (1, self.editor)], orientation=QtCore.Qt.Vertical
         )
 
         self.top_bar = self._build_splitter(
@@ -79,7 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.main_splitter = self._build_splitter(
             [(1, self.top_bar), (5, self.console_splitter)],
-            orientation=QtCore.Qt.Vertical
+            orientation=QtCore.Qt.Vertical,
         )
 
         console.setParent(self.console_splitter)
@@ -103,8 +100,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
         if self._api.undo.needs_save and not bubblesub.ui.util.ask(
-                'There are unsaved changes. '
-                'Are you sure you want to exit the program?'
+            'There are unsaved changes. '
+            'Are you sure you want to exit the program?'
         ):
             event.ignore()
         else:
@@ -141,9 +138,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update()
 
     def _build_splitter(
-            self,
-            widgets: T.List[T.Tuple[int, QtWidgets.QWidget]],
-            orientation: int,
+        self,
+        widgets: T.List[T.Tuple[int, QtWidgets.QWidget]],
+        orientation: int,
     ) -> QtWidgets.QSplitter:
         splitter = QtWidgets.QSplitter(self, orientation=orientation)
         for i, item in enumerate(widgets):
@@ -159,17 +156,18 @@ class MainWindow(QtWidgets.QMainWindow):
         setup_cmd_menu(
             self._api,
             self.menuBar(),
-            self._api.opt.menu[MenuContext.MainMenu] +
-            [
+            self._api.opt.menu[MenuContext.MainMenu]
+            + [
                 SubMenu(
                     'Pl&ugins',
                     [
                         MenuCommand('Reload plugins', 'reload-cmds'),
                         MenuSeparator(),
-                    ] + self._api.cmd.get_plugin_menu_items()
+                    ]
+                    + self._api.cmd.get_plugin_menu_items(),
                 )
             ],
-            HotkeyContext.Global
+            HotkeyContext.Global,
         )
 
     def _rebuild_hotkeys(self) -> None:
@@ -180,7 +178,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 HotkeyContext.Spectrogram: self.audio,
                 HotkeyContext.SubtitlesGrid: self.subs_grid,
             },
-            self._api.opt.hotkeys
+            self._api.opt.hotkeys,
         )
 
     def _restore_splitters(self) -> None:
@@ -205,6 +203,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def _update_title(self) -> None:
         self.setWindowTitle(
             f'bubblesub - {self._api.subs.path}'
-            if self._api.subs.path else
-            'bubblesub'
+            if self._api.subs.path
+            else 'bubblesub'
         )

@@ -41,13 +41,15 @@ class PlayRegionCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-s', '--start',
+            '-s',
+            '--start',
             help='start of region to play',
             type=lambda value: Pts(api, value),
             default='cf',
         )
         parser.add_argument(
-            '-e', '--end',
+            '-e',
+            '--end',
             help='end of region to play',
             type=lambda value: Pts(api, value),
         )

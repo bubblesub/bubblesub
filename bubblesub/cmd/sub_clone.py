@@ -51,10 +51,11 @@ class SubtitlesCloneCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to clone',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
 
 

@@ -33,10 +33,11 @@ class AudioScrollViewCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-d', '--delta',
+            '-d',
+            '--delta',
             help='factor to shift the viewport by',
             type=float,
-            required=True
+            required=True,
         )
 
 

@@ -37,7 +37,7 @@ class SubtitlesSelectCommand(BaseCommand):
         parser.add_argument(
             'target',
             help='subtitles to select',
-            type=lambda value: SubtitlesSelection(api, value)
+            type=lambda value: SubtitlesSelection(api, value),
         )
 
 

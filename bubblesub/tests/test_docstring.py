@@ -23,7 +23,12 @@ import pytest
 from .common import collect_source_files
 
 IGNORED_ARGUMENTS = {
-    'self', 'args', 'kwargs', '_exc_type', '_exc_val', '_exc_tb'
+    'self',
+    'args',
+    'kwargs',
+    '_exc_type',
+    '_exc_val',
+    '_exc_tb',
 }
 
 
@@ -32,13 +37,10 @@ def is_sentence(text: str) -> bool:
 
 
 def verify_function_params(
-        node: ast.FunctionDef,
-        docstring: docstring_parser.parser.Docstring
+    node: ast.FunctionDef, docstring: docstring_parser.parser.Docstring
 ) -> None:
     expected_arg_names = [
-        arg.arg
-        for arg in node.args.args
-        if arg.arg not in IGNORED_ARGUMENTS
+        arg.arg for arg in node.args.args if arg.arg not in IGNORED_ARGUMENTS
     ]
     if node.args.vararg and node.args.vararg.arg not in IGNORED_ARGUMENTS:
         expected_arg_names.append(node.args.vararg.arg)
@@ -54,10 +56,10 @@ def verify_function_params(
         if param.arg_name not in IGNORED_ARGUMENTS
     ]
 
-    assert \
-        actual_arg_names == expected_arg_names, \
-        f'Documentation for function "{node.name}" mismatches ' \
+    assert actual_arg_names == expected_arg_names, (
+        f'Documentation for function "{node.name}" mismatches '
         f'its signature'
+    )
 
     for arg, desc in zip(actual_arg_names, actual_arg_descs):
         assert desc, f'Param "{arg}" has no description'
@@ -65,20 +67,18 @@ def verify_function_params(
 
 
 def verify_function_returns(
-        node: ast.FunctionDef,
-        docstring: docstring_parser.parser.Docstring
+    node: ast.FunctionDef, docstring: docstring_parser.parser.Docstring
 ) -> None:
     has_returns = any(
-        isinstance(child_node, ast.Return)
-        and child_node.value
+        isinstance(child_node, ast.Return) and child_node.value
         for child_node in ast.walk(node)
     )
 
     if has_returns and node.name != '__exit__':
-        assert \
-            docstring.returns is not None, \
-            'Function "{node.name}" has return statements, ' \
+        assert docstring.returns is not None, (
+            'Function "{node.name}" has return statements, '
             'but no ":return: …" docstring'
+        )
         assert docstring.returns.description, 'Return has no description'
         assert not is_sentence(docstring.returns.description)
 

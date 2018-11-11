@@ -25,9 +25,9 @@ from bubblesub.opt.hotkeys import Hotkey, HotkeyContext
 
 
 def setup_hotkeys(
-        api: Api,
-        context_to_widget_map: T.Dict[HotkeyContext, QtWidgets.QWidget],
-        hotkeys_def: T.Iterable[T.Tuple[HotkeyContext, T.List[Hotkey]]]
+    api: Api,
+    context_to_widget_map: T.Dict[HotkeyContext, QtWidgets.QWidget],
+    hotkeys_def: T.Iterable[T.Tuple[HotkeyContext, T.List[Hotkey]]],
 ) -> None:
     main_widget = context_to_widget_map[HotkeyContext.Global]
     for shortcut in main_widget.findChildren(QtWidgets.QShortcut):
@@ -61,8 +61,7 @@ def setup_hotkeys(
 
     for key_sequence in key_sequences:
         shortcut = QtWidgets.QShortcut(
-            QtGui.QKeySequence(key_sequence),
-            main_widget
+            QtGui.QKeySequence(key_sequence), main_widget
         )
         shortcut.activatedAmbiguously.connect(shortcut.activated.emit)
         shortcut.activated.connect(

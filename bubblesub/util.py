@@ -34,7 +34,7 @@ def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
         milliseconds = 0
 
     milliseconds = int(round(milliseconds))
-    hours, milliseconds = divmod(milliseconds, 3600000)
+    hours, milliseconds = divmod(milliseconds, 3_600_000)
     minutes, milliseconds = divmod(milliseconds, 60000)
     seconds, milliseconds = divmod(milliseconds, 1000)
     return hours, minutes, seconds, milliseconds
@@ -68,7 +68,7 @@ def str_to_ms(text: str) -> int:
         (?P<millisecond>\\d\\d\\d)\\d*$
         '''.strip(),
         text.strip(),
-        re.VERBOSE
+        re.VERBOSE,
     )
 
     if result:
@@ -115,7 +115,7 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
     }
 
     def eval_(
-            node: T.List[ast.stmt]
+        node: T.List[ast.stmt]
     ) -> T.Union[int, float, fractions.Fraction]:
         if isinstance(node, ast.Num):
             return fractions.Fraction(node.n)
@@ -129,8 +129,7 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
 
 
 def make_ranges(
-        indexes: T.Iterable[int],
-        reverse: bool = False
+    indexes: T.Iterable[int], reverse: bool = False
 ) -> T.Iterable[T.Tuple[int, int]]:
     """
     Group indexes together into a list of consecutive ranges.
@@ -173,4 +172,4 @@ def chunks(source: T.List, size: int) -> T.Iterable[T.List]:
     :return: chunks
     """
     for i in range(0, len(source), size):
-        yield source[i:i + size]
+        yield source[i : i + size]

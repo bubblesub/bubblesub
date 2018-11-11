@@ -27,7 +27,7 @@ from bubblesub.ui.model.proxy import ObservableListTableAdapter
 
 
 def _serialize_color(color: Color) -> QtGui.QColor:
-    return QtGui.QColor(color. red, color.green, color.blue, color.alpha)
+    return QtGui.QColor(color.red, color.green, color.blue, color.alpha)
 
 
 def _deserialize_color(color: QtGui.QColor) -> Color:
@@ -59,8 +59,7 @@ class StylesModelColumn(enum.IntEnum):
 
 
 def _getattr_proxy(
-        prop_name: str,
-        wrapper: T.Callable[[T.Any], T.Any]
+    prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
 ) -> T.Callable[[bubblesub.ass.style.Style], T.Any]:
     def func(style: bubblesub.ass.style.Style) -> T.Any:
         return wrapper(getattr(style, prop_name))
@@ -69,8 +68,7 @@ def _getattr_proxy(
 
 
 def _setattr_proxy(
-        prop_name: str,
-        wrapper: T.Callable[[T.Any], T.Any]
+    prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
 ) -> T.Callable[[bubblesub.ass.style.Style, T.Any], None]:
     def func(style: bubblesub.ass.style.Style, value: T.Any) -> None:
         setattr(style, prop_name, wrapper(value))
@@ -96,14 +94,18 @@ _READER_MAP = {
     StylesModelColumn.MarginLeft: _getattr_proxy('margin_left', int),
     StylesModelColumn.MarginRight: _getattr_proxy('margin_right', int),
     StylesModelColumn.MarginVertical: _getattr_proxy('margin_vertical', int),
-    StylesModelColumn.PrimaryColor:
-        _getattr_proxy('primary_color', _serialize_color),
-    StylesModelColumn.SecondaryColor:
-        _getattr_proxy('secondary_color', _serialize_color),
-    StylesModelColumn.BackColor:
-        _getattr_proxy('back_color', _serialize_color),
-    StylesModelColumn.OutlineColor:
-        _getattr_proxy('outline_color', _serialize_color),
+    StylesModelColumn.PrimaryColor: _getattr_proxy(
+        'primary_color', _serialize_color
+    ),
+    StylesModelColumn.SecondaryColor: _getattr_proxy(
+        'secondary_color', _serialize_color
+    ),
+    StylesModelColumn.BackColor: _getattr_proxy(
+        'back_color', _serialize_color
+    ),
+    StylesModelColumn.OutlineColor: _getattr_proxy(
+        'outline_color', _serialize_color
+    ),
 }
 
 _WRITER_MAP = {
@@ -124,14 +126,18 @@ _WRITER_MAP = {
     StylesModelColumn.MarginLeft: _setattr_proxy('margin_left', int),
     StylesModelColumn.MarginRight: _setattr_proxy('margin_right', int),
     StylesModelColumn.MarginVertical: _setattr_proxy('margin_vertical', int),
-    StylesModelColumn.PrimaryColor:
-        _setattr_proxy('primary_color', _deserialize_color),
-    StylesModelColumn.SecondaryColor:
-        _setattr_proxy('secondary_color', _deserialize_color),
-    StylesModelColumn.BackColor:
-        _setattr_proxy('back_color', _deserialize_color),
-    StylesModelColumn.OutlineColor:
-        _setattr_proxy('outline_color', _deserialize_color),
+    StylesModelColumn.PrimaryColor: _setattr_proxy(
+        'primary_color', _deserialize_color
+    ),
+    StylesModelColumn.SecondaryColor: _setattr_proxy(
+        'secondary_color', _deserialize_color
+    ),
+    StylesModelColumn.BackColor: _setattr_proxy(
+        'back_color', _deserialize_color
+    ),
+    StylesModelColumn.OutlineColor: _setattr_proxy(
+        'outline_color', _deserialize_color
+    ),
 }
 
 
@@ -139,14 +145,13 @@ class StylesModel(ObservableListTableAdapter):
     def flags(self, index: QtCore.QModelIndex) -> int:
         if index.column() == StylesModelColumn.Name:
             return T.cast(
-                int,
-                QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+                int, QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
             )
         return T.cast(
             int,
-            QtCore.Qt.ItemIsEnabled |
-            QtCore.Qt.ItemIsSelectable |
-            QtCore.Qt.ItemIsEditable
+            QtCore.Qt.ItemIsEnabled
+            | QtCore.Qt.ItemIsSelectable
+            | QtCore.Qt.ItemIsEditable,
         )
 
     @property
@@ -160,7 +165,7 @@ class StylesModel(ObservableListTableAdapter):
         return QtCore.QVariant()
 
     def _set_data(
-            self, row_idx: int, col_idx: int, role: int, new_value: T.Any
+        self, row_idx: int, col_idx: int, role: int, new_value: T.Any
     ) -> bool:
         style = self._list[row_idx]
         try:

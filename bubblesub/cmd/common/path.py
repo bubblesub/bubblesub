@@ -31,9 +31,9 @@ class FancyPath:
         self.value = value
 
     async def get_load_path(
-            self,
-            file_filter: T.Optional[str] = None,
-            directory: T.Optional[Path] = None,
+        self,
+        file_filter: T.Optional[str] = None,
+        directory: T.Optional[Path] = None,
     ) -> Path:
         if self.value:
             path = Path(self.value).expanduser()
@@ -52,10 +52,10 @@ class FancyPath:
         raise CommandCanceled
 
     async def get_save_path(
-            self,
-            file_filter: T.Optional[str] = None,
-            directory: T.Optional[Path] = None,
-            default_file_name: T.Optional[str] = None
+        self,
+        file_filter: T.Optional[str] = None,
+        directory: T.Optional[Path] = None,
+        default_file_name: T.Optional[str] = None,
     ) -> Path:
         if self.value:
             return Path(self.value).expanduser()
@@ -65,9 +65,10 @@ class FancyPath:
             file_filter=file_filter,
             directory=directory,
             file_name=(
-                None if default_file_name is None else
-                sanitize_file_name(default_file_name)
-            )
+                None
+                if default_file_name is None
+                else sanitize_file_name(default_file_name)
+            ),
         )
         if path:
             return path
@@ -75,15 +76,11 @@ class FancyPath:
         raise CommandCanceled
 
     async def _show_load_dialog(
-            self,
-            *args: T.Any,
-            **kwargs: T.Any
+        self, *args: T.Any, **kwargs: T.Any
     ) -> T.Optional[Path]:
         return bubblesub.ui.util.load_dialog(*args, **kwargs)
 
     async def _show_save_dialog(
-            self,
-            *args: T.Any,
-            **kwargs: T.Any
+        self, *args: T.Any, **kwargs: T.Any
     ) -> T.Optional[Path]:
         return bubblesub.ui.util.save_dialog(*args, **kwargs)

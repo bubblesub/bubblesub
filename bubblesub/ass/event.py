@@ -26,19 +26,19 @@ class Event(bubblesub.model.ObservableObject):
     """ASS event."""
 
     def __init__(
-            self,
-            start: int = 0,
-            end: int = 0,
-            style: str = 'Default',
-            actor: str = '',
-            text: str = '',
-            note: str = '',
-            effect: str = '',
-            layer: int = 0,
-            margin_left: int = 0,
-            margin_right: int = 0,
-            margin_vertical: int = 0,
-            is_comment: bool = False
+        self,
+        start: int = 0,
+        end: int = 0,
+        style: str = 'Default',
+        actor: str = '',
+        text: str = '',
+        note: str = '',
+        effect: str = '',
+        layer: int = 0,
+        margin_left: int = 0,
+        margin_right: int = 0,
+        margin_vertical: int = 0,
+        is_comment: bool = False,
     ) -> None:
         """
         Initialize self.
@@ -217,9 +217,7 @@ class EventList(bubblesub.model.ObservableList[Event]):
     """ASS event list."""
 
     def insert_one(
-            self,
-            idx: T.Optional[int] = None,
-            **kwargs: T.Any
+        self, idx: T.Optional[int] = None, **kwargs: T.Any
     ) -> Event:
         """
         Insert single event at the specified position.
@@ -251,6 +249,6 @@ class EventList(bubblesub.model.ObservableList[Event]):
         :param idx: where to start the removal
         :param count: how many elements to remove
         """
-        for item in self._items[idx:idx + count]:
+        for item in self._items[idx : idx + count]:
             item.event_list = None
         super().remove(idx, count)

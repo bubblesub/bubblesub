@@ -33,9 +33,7 @@ HIGHLIGHTABLE_CHUNKS = {'\N{FULLWIDTH ASTERISK}', '\\N', '\\h', '\\n'}
 
 class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -50,10 +48,10 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
         return fmt
 
     def paint(
-            self,
-            painter: QtGui.QPainter,
-            option: QtWidgets.QStyleOptionViewItem,
-            index: QtCore.QModelIndex
+        self,
+        painter: QtGui.QPainter,
+        option: QtWidgets.QStyleOptionViewItem,
+        index: QtCore.QModelIndex,
     ) -> None:
         model = self.parent().model()
         text = self._process_text(model.data(index, QtCore.Qt.DisplayRole))
@@ -71,11 +69,11 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
         return re.sub('{[^}]+}', '\N{FULLWIDTH ASTERISK}', text)
 
     def _paint_selected(
-            self,
-            painter: QtGui.QPainter,
-            option: QtWidgets.QStyleOptionViewItem,
-            text: str,
-            alignment: int
+        self,
+        painter: QtGui.QPainter,
+        option: QtWidgets.QStyleOptionViewItem,
+        text: str,
+        alignment: int,
     ) -> None:
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(option.palette.color(QtGui.QPalette.Highlight))
@@ -85,12 +83,12 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
         painter.drawText(option.rect, alignment, text)
 
     def _paint_regular(
-            self,
-            painter: QtGui.QPainter,
-            option: QtWidgets.QStyleOptionViewItem,
-            text: str,
-            alignment: int,
-            background: QtGui.QColor
+        self,
+        painter: QtGui.QPainter,
+        option: QtWidgets.QStyleOptionViewItem,
+        text: str,
+        alignment: int,
+        background: QtGui.QColor,
     ) -> None:
         if not isinstance(background, QtCore.QVariant):
             painter.setPen(QtCore.Qt.NoPen)
@@ -99,15 +97,15 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
         rect = option.rect
         metrics = painter.fontMetrics()
-        regex = '({})'.format('|'.join(
-            re.escape(sep) for sep in HIGHLIGHTABLE_CHUNKS
-        ))
+        regex = '({})'.format(
+            '|'.join(re.escape(sep) for sep in HIGHLIGHTABLE_CHUNKS)
+        )
 
         for chunk in re.split(regex, text):
             painter.setPen(
                 get_color(self._api, 'grid/ass-mark')
-                if chunk in HIGHLIGHTABLE_CHUNKS else
-                option.palette.color(QtGui.QPalette.Text)
+                if chunk in HIGHLIGHTABLE_CHUNKS
+                else option.palette.color(QtGui.QPalette.Text)
             )
 
             # chunk = metrics.elidedText(
@@ -120,9 +118,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
 class SubsGrid(QtWidgets.QTableView):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -136,21 +132,18 @@ class SubsGrid(QtWidgets.QTableView):
         )
 
         self._subs_grid_delegate = SubsGridDelegate(self._api, self)
-        for col_idx in {
-                SubtitlesModelColumn.Text,
-                SubtitlesModelColumn.Note
-        }:
+        for col_idx in {SubtitlesModelColumn.Text, SubtitlesModelColumn.Note}:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
                 col_idx, QtWidgets.QHeaderView.Stretch
             )
         for col_idx in {
-                SubtitlesModelColumn.LongDuration,
-                SubtitlesModelColumn.Layer,
-                SubtitlesModelColumn.MarginVertical,
-                SubtitlesModelColumn.MarginLeft,
-                SubtitlesModelColumn.MarginRight,
-                SubtitlesModelColumn.IsComment,
+            SubtitlesModelColumn.LongDuration,
+            SubtitlesModelColumn.Layer,
+            SubtitlesModelColumn.MarginVertical,
+            SubtitlesModelColumn.MarginLeft,
+            SubtitlesModelColumn.MarginRight,
+            SubtitlesModelColumn.IsComment,
         }:
             self.setColumnHidden(col_idx, True)
 
@@ -180,7 +173,7 @@ class SubsGrid(QtWidgets.QTableView):
             self._api,
             self.subtitles_menu,
             self._api.opt.menu[MenuContext.SubtitlesGrid],
-            HotkeyContext.SubtitlesGrid
+            HotkeyContext.SubtitlesGrid,
         )
 
     def _setup_header_menu(self) -> None:
@@ -202,8 +195,7 @@ class SubsGrid(QtWidgets.QTableView):
     def toggle_column(self, action: QtWidgets.QAction) -> None:
         column: SubtitlesModelColumn = action.data()
         self.horizontalHeader().setSectionHidden(
-            column.value,
-            not action.isChecked()
+            column.value, not action.isChecked()
         )
 
     def restore_grid_columns(self) -> None:
@@ -227,8 +219,10 @@ class SubsGrid(QtWidgets.QTableView):
         )
 
     def _sync_sub_selection(self) -> None:
-        if self._seek_to is not None \
-                and self._api.opt.general.video.sync_pos_to_selection:
+        if (
+            self._seek_to is not None
+            and self._api.opt.general.video.sync_pos_to_selection
+        ):
             self._api.media.is_paused = True
             self._api.media.seek(self._seek_to)
             self._seek_to = None
@@ -244,14 +238,11 @@ class SubsGrid(QtWidgets.QTableView):
 
     def _on_subs_load(self) -> None:
         self.scrollTo(
-            self.model().index(0, 0),
-            self.EnsureVisible | self.PositionAtTop
+            self.model().index(0, 0), self.EnsureVisible | self.PositionAtTop
         )
 
     def _sync_grid_selection_to_api(
-            self,
-            _selected: T.List[int],
-            _deselected: T.List[int]
+        self, _selected: T.List[int], _deselected: T.List[int]
     ) -> None:
         rows = self._collect_rows()
         if rows != self._api.subs.selected_indexes:
@@ -264,9 +255,7 @@ class SubsGrid(QtWidgets.QTableView):
             )
 
     def _sync_api_selection_to_grid(
-            self,
-            _rows: T.List[int],
-            _changed: bool
+        self, _rows: T.List[int], _changed: bool
     ) -> None:
         if self._collect_rows() == self._api.subs.selected_indexes:
             return
@@ -292,9 +281,9 @@ class SubsGrid(QtWidgets.QTableView):
 
         self.selectionModel().select(
             selection,
-            QtCore.QItemSelectionModel.Rows |
-            QtCore.QItemSelectionModel.Current |
-            QtCore.QItemSelectionModel.Select
+            QtCore.QItemSelectionModel.Rows
+            | QtCore.QItemSelectionModel.Current
+            | QtCore.QItemSelectionModel.Select,
         )
 
         self.selectionModel().selectionChanged.connect(
@@ -304,7 +293,7 @@ class SubsGrid(QtWidgets.QTableView):
         self.setUpdatesEnabled(True)
 
     def _sync_api_selection_to_video(
-            self, rows: T.List[int], _changed: bool
+        self, rows: T.List[int], _changed: bool
     ) -> None:
         if len(rows) == 1:
             self._seek_to = self._api.subs.events[rows[0]].start

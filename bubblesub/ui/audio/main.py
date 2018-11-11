@@ -24,9 +24,7 @@ from bubblesub.ui.audio.video_preview import VideoPreview
 
 class Audio(QtWidgets.QWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api

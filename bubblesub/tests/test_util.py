@@ -40,12 +40,12 @@ import bubblesub.util
         ([1, 2, 3, 5, 6], True, [(5, 2), (1, 3)]),
         ([1, 2, 3, 5, 6, 8], True, [(8, 1), (5, 2), (1, 3)]),
         ([5, 6, 8, 1, 2, 3], True, [(8, 1), (5, 2), (1, 3)]),
-    ]
+    ],
 )
 def test_make_ranges(
-        indexes: T.Iterable[int],
-        reverse: bool,
-        expected_ranges: T.List[T.Tuple[int, int]]
+    indexes: T.Iterable[int],
+    reverse: bool,
+    expected_ranges: T.List[T.Tuple[int, int]],
 ) -> None:
     actual_ranges = list(bubblesub.util.make_ranges(indexes, reverse=reverse))
     assert actual_ranges == expected_ranges

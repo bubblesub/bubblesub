@@ -63,9 +63,7 @@ class SubMenu(MenuItem):
     """Menu item that opens up another sub menu."""
 
     def __init__(
-            self,
-            name: str,
-            children: T.MutableSequence[MenuItem]
+        self, name: str, children: T.MutableSequence[MenuItem]
     ) -> None:
         """
         Initialize self.
@@ -114,7 +112,7 @@ class MenuConfig(BaseConfig):
             sections[cur_context] += line + '\n'
 
         def _recurse_tree(
-                parent: T.List[MenuItem], depth: int, source: T.List[str]
+            parent: T.List[MenuItem], depth: int, source: T.List[str]
         ) -> None:
             while source:
                 last_line = source[0].rstrip()
@@ -151,6 +149,7 @@ class MenuConfig(BaseConfig):
 
         :return: resulting text
         """
+
         def _recurse_tree(source: T.List[MenuItem]) -> T.Iterable[str]:
             for item in source:
                 if isinstance(item, MenuSeparator):
@@ -159,8 +158,8 @@ class MenuConfig(BaseConfig):
                     yield f"{item.name}|{item.cmdline}"
                 elif isinstance(item, SubMenu):
                     yield from (
-                        [item.name] +
-                        [
+                        [item.name]
+                        + [
                             " " * 4 + subitem
                             for subitem in _recurse_tree(item.children)
                         ]
@@ -190,7 +189,7 @@ class MenuConfig(BaseConfig):
         return self._menu[context]
 
     def __iter__(
-            self
+        self
     ) -> T.Iterator[T.Tuple[MenuContext, T.MutableSequence[MenuItem]]]:
         """
         Let users iterate directly over this config.

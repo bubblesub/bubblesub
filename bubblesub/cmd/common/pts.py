@@ -94,9 +94,7 @@ class Pts:
         self.value = value
 
     async def get(
-            self,
-            origin: T.Optional[int] = None,
-            align_to_near_frame: bool = False
+        self, origin: T.Optional[int] = None, align_to_near_frame: bool = False
     ) -> int:
         ret = await self._get(origin)
         if align_to_near_frame:
@@ -163,10 +161,7 @@ class Pts:
                 raise CommandError(f'syntax error near "{self.value[pos:]}"')
 
     async def _eval_operator(
-            self,
-            left: T.Optional[int],
-            right: _Token,
-            operator: T.Optional[str],
+        self, left: T.Optional[int], right: _Token, operator: T.Optional[str]
     ) -> int:
         try:
             right_val = await self._eval_terminal(
@@ -183,10 +178,7 @@ class Pts:
         raise AssertionError(f'unknown operator: "{operator}"')
 
     async def _eval_terminal(
-            self,
-            token: _Token,
-            origin: T.Optional[int],
-            operator: T.Optional[str],
+        self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
     ) -> int:
         func = getattr(self, '_eval_terminal_' + token.name, None)
         if not func:
@@ -194,18 +186,15 @@ class Pts:
         return await func(token, origin, operator)
 
     async def _eval_terminal_num_ms(
-            self,
-            token: _Token,
-            _origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        token: _Token,
+        _origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         return int(token.match.group('number'))
 
     async def _eval_terminal_num_frame(
-            self,
-            token: _Token,
-            origin: T.Optional[int],
-            operator: T.Optional[str],
+        self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
     ) -> int:
         delta = int(token.match.group('number'))
         if operator is None:
@@ -218,10 +207,7 @@ class Pts:
         raise _ResetValue(self._apply_frame(origin, delta))
 
     async def _eval_terminal_num_keyframe(
-            self,
-            token: _Token,
-            origin: T.Optional[int],
-            operator: T.Optional[str],
+        self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
     ) -> int:
         delta = int(token.match.group('number'))
         if operator is None:
@@ -234,18 +220,18 @@ class Pts:
         raise _ResetValue(self._apply_keyframe(origin, delta))
 
     async def _eval_terminal_default_sub_duration(
-            self,
-            _token: _Token,
-            _origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        _token: _Token,
+        _origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         return self._api.opt.general.subs.default_duration
 
     async def _eval_terminal_rel_frame(
-            self,
-            token: _Token,
-            _origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        token: _Token,
+        _origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         direction = token.match.group('direction')
         if direction == 'p':
@@ -257,10 +243,10 @@ class Pts:
         raise AssertionError(f'unknown direction: "{direction}"')
 
     async def _eval_terminal_rel_keyframe(
-            self,
-            token: _Token,
-            _origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        token: _Token,
+        _origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         direction = token.match.group('direction')
         if direction == 'p':
@@ -272,10 +258,10 @@ class Pts:
         raise AssertionError(f'unknown direction: "{direction}"')
 
     async def _eval_terminal_rel_sub(
-            self,
-            token: _Token,
-            _origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        token: _Token,
+        _origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         direction = token.match.group('direction')
         try:
@@ -294,10 +280,10 @@ class Pts:
         return _sub_boundary(sub, token)
 
     async def _eval_terminal_num_sub(
-            self,
-            token: _Token,
-            _origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        token: _Token,
+        _origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         idx = int(token.match.group('number')) - 1
         idx = max(0, min(idx, len(self._api.subs.events) - 1))
@@ -308,10 +294,10 @@ class Pts:
         return _sub_boundary(sub, token)
 
     async def _eval_terminal_spectrogram(
-            self,
-            token: _Token,
-            _origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        token: _Token,
+        _origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         boundary = token.match.group('boundary')
         if not self._api.media.audio.has_selection:
@@ -323,10 +309,10 @@ class Pts:
         raise AssertionError(f'unknown boundary: "{boundary}"')
 
     async def _eval_terminal_spectrogram_view(
-            self,
-            token: _Token,
-            _origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        token: _Token,
+        _origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         boundary = token.match.group('boundary')
         if boundary == 's':
@@ -336,23 +322,21 @@ class Pts:
         raise AssertionError(f'unknown boundary: "{boundary}"')
 
     async def _eval_terminal_ask(
-            self,
-            _token: _Token,
-            origin: T.Optional[int],
-            _operator: T.Optional[str],
+        self,
+        _token: _Token,
+        origin: T.Optional[int],
+        _operator: T.Optional[str],
     ) -> int:
         return await self._api.gui.exec(self._show_dialog, origin=origin)
 
     async def _show_dialog(
-            self,
-            main_window: QtWidgets.QMainWindow,
-            origin: T.Optional[int],
+        self, main_window: QtWidgets.QMainWindow, origin: T.Optional[int]
     ) -> T.Optional[int]:
         ret = bubblesub.ui.util.time_jump_dialog(
             main_window,
             relative_checked=False,
             show_radio=origin is not None,
-            value=self._api.media.current_pts
+            value=self._api.media.current_pts,
         )
         if ret is None:
             raise CommandCanceled

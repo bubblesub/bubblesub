@@ -51,6 +51,7 @@ def main() -> None:
         bubblesub.cache.wipe_cache()
 
     from bubblesub.api import Api
+
     api = Api(opt, args)
 
     bubblesub.ui.run(api, args)

@@ -112,9 +112,8 @@ def split_invocation(invocation: str) -> T.List[T.List[str]]:
 
     invocations = [
         list(group)
-        for key, group in itertools.groupby(
-            tokens, lambda token: token == ';'
-        ) if not key
+        for key, group in itertools.groupby(tokens, lambda token: token == ';')
+        if not key
     ]
     return invocations
 
@@ -123,10 +122,10 @@ class BaseCommand(abc.ABC):
     """Base class for all commands."""
 
     def __init__(
-            self,
-            api: 'bubblesub.api.Api',
-            args: argparse.Namespace,
-            invocation: str,
+        self,
+        api: 'bubblesub.api.Api',
+        args: argparse.Namespace,
+        invocation: str,
     ) -> None:
         """
         Initialize self.
@@ -142,7 +141,7 @@ class BaseCommand(abc.ABC):
     @bubblesub.model.classproperty
     @abc.abstractproperty
     def names(  # pylint: disable=no-self-argument
-            cls: T.Type['BaseCommand']
+        cls: T.Type['BaseCommand']
     ) -> T.List[str]:
         """
         Return command names.
@@ -180,8 +179,7 @@ class BaseCommand(abc.ABC):
 
     @staticmethod
     def decorate_parser(
-            api: 'bubblesub.api.Api',
-            parser: argparse.ArgumentParser,
+        api: 'bubblesub.api.Api', parser: argparse.ArgumentParser
     ) -> None:
         """
         Configure argument parser with custom command switches.
@@ -220,7 +218,7 @@ class CommandApi(QtCore.QObject):
             self.run(cmd)
 
     def parse_cmdline(
-            self, cmdline: T.Union[str, T.List[T.List[str]]]
+        self, cmdline: T.Union[str, T.List[T.List[str]]]
     ) -> T.List[BaseCommand]:
         """
         Create BaseCommand instances based on given invocation.
@@ -239,9 +237,7 @@ class CommandApi(QtCore.QObject):
                 raise CommandNotFound(f'no command named "{cmd_name}"')
 
             parser = CommandArgumentParser(
-                prog=cls.names[0],
-                description=cls.help_text,
-                add_help=False
+                prog=cls.names[0], description=cls.help_text, add_help=False
             )
             cls.decorate_parser(self._api, parser)
             args = parser.parse_args(cmd_args)
@@ -319,7 +315,7 @@ class CommandApi(QtCore.QObject):
         """
         return sorted(
             self._plugin_menu,
-            key=lambda item: getattr(item, 'name', '').replace('&', '')
+            key=lambda item: getattr(item, 'name', '').replace('&', ''),
         )
 
     def _unload_commands(self) -> None:
@@ -352,7 +348,8 @@ class CommandApi(QtCore.QObject):
                         ['bubblesub', 'cmd']
                         + list(subpath_rel.parent.parts)
                         + [subpath_rel.stem]
-                    ), str(subpath)
+                    ),
+                    str(subpath),
                 )
                 if spec is not None:
                     specs.append(spec)

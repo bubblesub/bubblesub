@@ -27,10 +27,10 @@ from bubblesub.api.cmd import BaseCommand
 
 class _SpellCheckDialog(QtWidgets.QDialog):
     def __init__(
-            self,
-            api: Api,
-            main_window: QtWidgets.QMainWindow,
-            dictionary: enchant.Dict
+        self,
+        api: Api,
+        main_window: QtWidgets.QMainWindow,
+        dictionary: enchant.Dict,
     ) -> None:
         super().__init__(main_window)
         self._main_window = main_window
@@ -92,9 +92,9 @@ class _SpellCheckDialog(QtWidgets.QDialog):
     def _replace(self) -> None:
         text = self.text_edit.toPlainText()
         text = (
-            text[:self.text_edit.textCursor().selectionStart()] +
-            self._replacement_text_edit.text() +
-            text[self.text_edit.textCursor().selectionEnd():]
+            text[: self.text_edit.textCursor().selectionStart()]
+            + self._replacement_text_edit.text()
+            + text[self.text_edit.textCursor().selectionEnd() :]
         )
         self.text_edit.document().setPlainText(text)
         self._next()
@@ -121,29 +121,27 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         return True
 
     def _iter_to_next_mispelt_match(
-            self
+        self
     ) -> T.Optional[T.Tuple[int, int, int, str]]:
         cursor = self.text_edit.textCursor()
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]
             for start, end, word in bubblesub.ass.util.spell_check_ass_line(
-                    self._dictionary, line.text.replace('\\N', '\n')
+                self._dictionary, line.text.replace('\\N', '\n')
             ):
                 assert line.index is not None
-                if len(self._api.subs.selected_indexes) > 1 \
-                        or line.index > self._api.subs.selected_indexes[0] \
-                        or start > cursor.selectionStart() \
-                        or cursor.selectionStart() == cursor.selectionEnd():
+                if (
+                    len(self._api.subs.selected_indexes) > 1
+                    or line.index > self._api.subs.selected_indexes[0]
+                    or start > cursor.selectionStart()
+                    or cursor.selectionStart() == cursor.selectionEnd()
+                ):
                     return line.index, start, end, word
             self._lines_to_spellcheck.pop(0)
         return None
 
     def _focus_match(
-            self,
-            idx: int,
-            start: int,
-            end: int,
-            mispelt_word: str
+        self, idx: int, start: int, end: int, mispelt_word: str
     ) -> None:
         self._api.subs.selected_indexes = [idx]
 

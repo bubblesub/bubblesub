@@ -26,10 +26,7 @@ class BooleanOperation:
         self.operation = operation
 
     def get_description(
-            self,
-            yes_desc: str,
-            no_desc: str,
-            toggle_desc: str
+        self, yes_desc: str, no_desc: str, toggle_desc: str
     ) -> str:
         if self.operation in _YES:
             return yes_desc

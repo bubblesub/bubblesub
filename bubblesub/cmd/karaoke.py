@@ -79,12 +79,11 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
             if group.startswith('{'):
                 match = re.search('\\\\k(\\d+)', group)
                 if match:
-                    syllables.append(_Syllable(
-                        text='',
-                        duration=int(match.group(1))
-                    ))
+                    syllables.append(
+                        _Syllable(text='', duration=int(match.group(1)))
+                    )
                     # remove the leftover \k tag
-                    group = group[:match.start()] + group[match.end():]
+                    group = group[: match.start()] + group[match.end() :]
                     if group == '{}':
                         group = ''
                 syllables[-1].text += group
@@ -97,7 +96,8 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to split',
             type=lambda value: SubtitlesSelection(api, value),
             default='selected',
@@ -126,8 +126,9 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
                     text += sub.text
                     if i != len(subs) - 1:
                         pos = subs[i + 1].start - subs[0].start
-                        text += (
-                            r'{\alpha&HFF&\t(%d,%d,\alpha&H00&)}' % (pos, pos)
+                        text += r'{\alpha&HFF&\t(%d,%d,\alpha&H00&)}' % (
+                            pos,
+                            pos,
                         )
                 subs[0].text = text
             else:
@@ -147,19 +148,17 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to merge',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
         parser.add_argument(
             '--invisible',
             help='use alternative karaoke transformation',
-            action='store_true'
+            action='store_true',
         )
 
 
-COMMANDS = [
-    SubtitlesSplitKaraokeCommand,
-    SubtitlesMergeKaraokeCommand
-]
+COMMANDS = [SubtitlesSplitKaraokeCommand, SubtitlesMergeKaraokeCommand]

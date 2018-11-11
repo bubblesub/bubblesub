@@ -67,8 +67,7 @@ class AudioSourceWorker(bubblesub.worker.Worker):
         if cache_path.exists():
             try:
                 index = ffms.Index.read(
-                    index_file=str(cache_path),
-                    source_file=str(path)
+                    index_file=str(cache_path), source_file=str(path)
                 )
                 if not index.belongs_to_file(str(path)):
                     index = None
@@ -101,9 +100,9 @@ class AudioApi(QtCore.QObject):
     parsed = QtCore.pyqtSignal()
 
     def __init__(
-            self,
-            media_api: 'bubblesub.api.media.media.MediaApi',
-            log_api: 'bubblesub.api.log.LogApi'
+        self,
+        media_api: 'bubblesub.api.media.media.MediaApi',
+        log_api: 'bubblesub.api.log.LogApi',
     ) -> None:
         """
         Initialize self.
@@ -286,8 +285,7 @@ class AudioApi(QtCore.QObject):
         if not self._wait_for_audio_source():
             return None
         return T.cast(
-            T.Optional[int],
-            self._audio_source.properties.SampleFormat
+            T.Optional[int], self._audio_source.properties.SampleFormat
         )
 
     @property
@@ -381,9 +379,9 @@ class AudioApi(QtCore.QObject):
             return self._audio_source.get_audio(start_frame)
 
     def save_wav(
-            self,
-            path_or_handle: T.Union[Path, T.IO],
-            pts_ranges: T.List[T.Tuple[int, int]],
+        self,
+        path_or_handle: T.Union[Path, T.IO],
+        pts_ranges: T.List[T.Tuple[int, int]],
     ) -> None:
         """
         Save samples for the currently loaded audio source as WAV file.
@@ -411,13 +409,14 @@ class AudioApi(QtCore.QObject):
 
     def _create_empty_sample_buffer(self) -> np.array:
         return np.zeros(
-            0, dtype={
+            0,
+            dtype={
                 ffms.FFMS_FMT_U8: np.uint8,
                 ffms.FFMS_FMT_S16: np.int16,
                 ffms.FFMS_FMT_S32: np.int32,
                 ffms.FFMS_FMT_FLT: np.float32,
                 ffms.FFMS_FMT_DBL: np.float64,
-            }[self.sample_format]
+            }[self.sample_format],
         ).reshape(0, max(1, self.channel_count))
 
     def _on_media_state_change(self, state: MediaState) -> None:
@@ -439,8 +438,7 @@ class AudioApi(QtCore.QObject):
         self.zoom_view(1, 0.5)  # emits view_changed
 
     def _got_audio_source(
-            self,
-            result: T.Optional[T.Tuple[Path, ffms.AudioSource]]
+        self, result: T.Optional[T.Tuple[Path, ffms.AudioSource]]
     ) -> None:
         if result is not None:
             path, audio_source = result

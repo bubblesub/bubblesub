@@ -37,7 +37,7 @@ class MuteCommand(BaseCommand):
         parser.add_argument(
             'operation',
             help='whether to mute the audio',
-            type=BooleanOperation
+            type=BooleanOperation,
         )
 
 

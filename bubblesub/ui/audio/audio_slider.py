@@ -26,9 +26,7 @@ from bubblesub.ui.util import get_color
 
 class AudioSlider(BaseAudioWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
@@ -65,11 +63,13 @@ class AudioSlider(BaseAudioWidget):
         if not self._api.media.current_pts:
             return
         x = self._pts_to_x(self._api.media.current_pts)
-        painter.setPen(QtGui.QPen(
-            get_color(self._api, 'spectrogram/video-marker'),
-            1,
-            QtCore.Qt.SolidLine
-        ))
+        painter.setPen(
+            QtGui.QPen(
+                get_color(self._api, 'spectrogram/video-marker'),
+                1,
+                QtCore.Qt.SolidLine,
+            )
+        )
         painter.setBrush(QtCore.Qt.NoBrush)
         painter.drawLine(x, 0, x, self.height())
 

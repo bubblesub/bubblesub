@@ -26,7 +26,7 @@ class AudioCommitSelectionCommand(BaseCommand):
         'audio-commit-sel',
         'audio-commit-selection',
         'spectrogram-commit-sel',
-        'spectrogram-commit-selection'
+        'spectrogram-commit-selection',
     ]
     help_text = (
         'Commits the spectrogram selection into given subtitles. '
@@ -53,10 +53,11 @@ class AudioCommitSelectionCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to commit selection into',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
 
 

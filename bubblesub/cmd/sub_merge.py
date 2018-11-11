@@ -53,18 +53,20 @@ class SubtitlesMergeCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to merge',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
         parser.add_argument(
-            '--concat', '--concatenate',
+            '--concat',
+            '--concatenate',
             help=(
                 'merge the subtitles text '
                 '(otherwise keep only the first subtitle)'
             ),
-            action='store_true'
+            action='store_true',
         )
 
 

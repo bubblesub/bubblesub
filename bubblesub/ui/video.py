@@ -25,9 +25,7 @@ from bubblesub.ui.mpv import MpvWidget
 
 class _VideoPreview(MpvWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(api.media.video.get_opengl_context(), parent)
 
@@ -37,9 +35,7 @@ class _VideoPreview(MpvWidget):
 
 class _VideoButtons(QtWidgets.QWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -77,8 +73,7 @@ class _VideoButtons(QtWidgets.QWidget):
         layout.addWidget(self._playback_speed_spinbox)
 
         self.setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum,
-            QtWidgets.QSizePolicy.Maximum
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum
         )
 
         self._connect_ui_signals()
@@ -120,8 +115,8 @@ class _VideoButtons(QtWidgets.QWidget):
         self._on_video_pause_change()
 
     def _on_playback_speed_spinbox_change(self) -> None:
-        self._api.media.playback_speed = (
-            fractions.Fraction(self._playback_speed_spinbox.value())
+        self._api.media.playback_speed = fractions.Fraction(
+            self._playback_speed_spinbox.value()
         )
         self._on_video_playback_speed_change()
 
@@ -144,9 +139,7 @@ class _VideoButtons(QtWidgets.QWidget):
 
 class _VideoVolumeControl(QtWidgets.QWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -167,8 +160,7 @@ class _VideoVolumeControl(QtWidgets.QWidget):
         layout.setAlignment(self._volume_slider, QtCore.Qt.AlignHCenter)
 
         self.setSizePolicy(
-            QtWidgets.QSizePolicy.Maximum,
-            QtWidgets.QSizePolicy.Minimum
+            QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum
         )
 
         self._connect_ui_signals()
@@ -208,8 +200,8 @@ class _VideoVolumeControl(QtWidgets.QWidget):
         self._mute_btn.setIcon(
             self.style().standardIcon(
                 QtWidgets.QStyle.SP_MediaVolumeMuted
-                if self._mute_btn.isChecked() else
-                QtWidgets.QStyle.SP_MediaVolume
+                if self._mute_btn.isChecked()
+                else QtWidgets.QStyle.SP_MediaVolume
             )
         )
         self._connect_ui_signals()
@@ -217,9 +209,7 @@ class _VideoVolumeControl(QtWidgets.QWidget):
 
 class Video(QtWidgets.QWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api

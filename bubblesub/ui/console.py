@@ -88,7 +88,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
             self.setFormat(
                 start_of_timestamp,
                 start_of_text - start_of_timestamp,
-                self._style_map['timestamp']
+                self._style_map['timestamp'],
             )
             self.setFormat(
                 start_of_text,
@@ -199,9 +199,9 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self._history: T.List[str] = []
 
         self.setObjectName('console-input')
-        self.setFont(QtGui.QFontDatabase.systemFont(
-            QtGui.QFontDatabase.FixedFont
-        ))
+        self.setFont(
+            QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
+        )
 
         self.returnPressed.connect(self._on_return_press)
         self.textEdited.connect(self._on_edit)
@@ -224,8 +224,8 @@ class ConsoleInput(QtWidgets.QLineEdit):
 
         self._compl.index %= len(self._compl.suggestions)
         self.setText(
-            self._compl.prefix[:self._compl.start_pos] +
-            self._compl.suggestions[self._compl.index]
+            self._compl.prefix[: self._compl.start_pos]
+            + self._compl.suggestions[self._compl.index]
         )
         return True
 
@@ -271,11 +271,11 @@ class ConsoleInput(QtWidgets.QLineEdit):
 
     def _make_autocomplete(self) -> Completion:
         compl = Completion(
-            prefix=self.text()[:self.cursorPosition()],
-            suffix=self.text()[self.cursorPosition():],
+            prefix=self.text()[: self.cursorPosition()],
+            suffix=self.text()[self.cursorPosition() :],
             suggestions=[],
             index=0,
-            start_pos=0
+            start_pos=0,
         )
 
         # command names
@@ -298,8 +298,8 @@ class ConsoleInput(QtWidgets.QLineEdit):
                 cls.decorate_parser(self._api, parser)
                 for action in parser._actions:  # pylint: disable=W0212
                     if any(
-                            opt.startswith(match.group('arg'))
-                            for opt in action.option_strings
+                        opt.startswith(match.group('arg'))
+                        for opt in action.option_strings
                     ):
                         compl.start_pos = match.start('arg')
                         compl.suggestions.append(
@@ -319,9 +319,7 @@ class Console(QtWidgets.QWidget):
 
         strip = QtWidgets.QWidget(self)
         self.input = ConsoleInput(api, strip)
-        self.auto_scroll_chkbox = QtWidgets.QCheckBox(
-            'Auto scroll', strip
-        )
+        self.auto_scroll_chkbox = QtWidgets.QCheckBox('Auto scroll', strip)
         self.clear_btn = QtWidgets.QPushButton('Clear', strip)
         self.auto_scroll_chkbox.setChecked(not self.log_window.scroll_lock)
 

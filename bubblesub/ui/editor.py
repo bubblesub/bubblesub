@@ -54,10 +54,10 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
 
 class TextEdit(QtWidgets.QPlainTextEdit):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget,
-            **kwargs: T.Any,
+        self,
+        api: bubblesub.api.Api,
+        parent: QtWidgets.QWidget,
+        **kwargs: T.Any,
     ) -> None:
         super().__init__(parent, **kwargs)
         self._api = api
@@ -84,14 +84,14 @@ class TextEdit(QtWidgets.QPlainTextEdit):
             font = self.font()
             font.setPointSize(new_size)
             self.setFont(font)
-            self._api.opt.general.gui.fonts[self.objectName()] = (
-                self.font().toString()
-            )
+            self._api.opt.general.gui.fonts[
+                self.objectName()
+            ] = self.font().toString()
 
 
 class Editor(QtWidgets.QWidget):
     def __init__(
-            self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
 
@@ -147,8 +147,8 @@ class Editor(QtWidgets.QWidget):
         self.text_edit = TextEdit(
             api, self, tabChangesFocus=True, objectName='text-editor'
         )
-        self.text_edit.highlighter = (
-            SpellCheckHighlighter(api, self.text_edit.document())
+        self.text_edit.highlighter = SpellCheckHighlighter(
+            api, self.text_edit.document()
         )
 
         self.note_edit = TextEdit(
@@ -168,14 +168,14 @@ class Editor(QtWidgets.QWidget):
         bar_layout = QtWidgets.QGridLayout(spacing=4)
         bar_layout.setContentsMargins(0, 0, 0, 0)
         for row, column, label, widget in {
-                (0, 0, 'Style:', self.style_edit),
-                (1, 0, 'Actor:', self.actor_edit),
-                (2, 0, 'Layer:', self.layer_edit),
-                (3, 0, 'Margin:', margins_layout),
-                (0, 1, 'Start time:', self.start_time_edit),
-                (1, 1, 'End time:', self.end_time_edit),
-                (2, 1, 'Duration:', self.duration_edit),
-                (3, 1, '', self.comment_checkbox),
+            (0, 0, 'Style:', self.style_edit),
+            (1, 0, 'Actor:', self.actor_edit),
+            (2, 0, 'Layer:', self.layer_edit),
+            (3, 0, 'Margin:', margins_layout),
+            (0, 1, 'Start time:', self.start_time_edit),
+            (1, 1, 'End time:', self.end_time_edit),
+            (2, 1, 'Duration:', self.duration_edit),
+            (3, 1, '', self.comment_checkbox),
         }:
             if label:
                 bar_layout.addWidget(
@@ -205,18 +205,18 @@ class Editor(QtWidgets.QWidget):
             submit_wrapper=self._submit_wrapper,
         )
         for column, widget in {
-                (SubtitlesModelColumn.Start, self.start_time_edit),
-                (SubtitlesModelColumn.End, self.end_time_edit),
-                (SubtitlesModelColumn.LongDuration, self.duration_edit),
-                (SubtitlesModelColumn.Layer, self.layer_edit),
-                (SubtitlesModelColumn.Actor, self.actor_edit),
-                (SubtitlesModelColumn.Style, self.style_edit),
-                (SubtitlesModelColumn.MarginVertical, self.margin_v_edit),
-                (SubtitlesModelColumn.MarginLeft, self.margin_l_edit),
-                (SubtitlesModelColumn.MarginRight, self.margin_r_edit),
-                (SubtitlesModelColumn.IsComment, self.comment_checkbox),
-                (SubtitlesModelColumn.Text, self.text_edit),
-                (SubtitlesModelColumn.Note, self.note_edit),
+            (SubtitlesModelColumn.Start, self.start_time_edit),
+            (SubtitlesModelColumn.End, self.end_time_edit),
+            (SubtitlesModelColumn.LongDuration, self.duration_edit),
+            (SubtitlesModelColumn.Layer, self.layer_edit),
+            (SubtitlesModelColumn.Actor, self.actor_edit),
+            (SubtitlesModelColumn.Style, self.style_edit),
+            (SubtitlesModelColumn.MarginVertical, self.margin_v_edit),
+            (SubtitlesModelColumn.MarginLeft, self.margin_l_edit),
+            (SubtitlesModelColumn.MarginRight, self.margin_r_edit),
+            (SubtitlesModelColumn.IsComment, self.comment_checkbox),
+            (SubtitlesModelColumn.Text, self.text_edit),
+            (SubtitlesModelColumn.Note, self.note_edit),
         }:
             self._data_widget_mapper.add_mapping(widget, column)
 
@@ -228,7 +228,7 @@ class Editor(QtWidgets.QWidget):
             yield
 
     def _on_selection_change(
-            self, selected: T.List[int], _changed: bool
+        self, selected: T.List[int], _changed: bool
     ) -> None:
         if len(selected) != 1:
             self.setEnabled(False)

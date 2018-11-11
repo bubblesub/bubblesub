@@ -31,8 +31,7 @@ class SeekCommand(BaseCommand):
 
     async def run(self) -> None:
         pts = await self.args.pos.get(
-            origin=self.api.media.current_pts,
-            align_to_near_frame=True
+            origin=self.api.media.current_pts, align_to_near_frame=True
         )
         self.api.media.seek(pts, self.args.precise)
         self.api.media.is_paused = True
@@ -40,7 +39,8 @@ class SeekCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p', '--pos',
+            '-p',
+            '--pos',
             help='where to seek',
             type=lambda value: Pts(api, value),
             required=True,
@@ -50,7 +50,7 @@ class SeekCommand(BaseCommand):
             help=(
                 'whether to use precise seeking at the expense of performance'
             ),
-            action='store_true'
+            action='store_true',
         )
 
 

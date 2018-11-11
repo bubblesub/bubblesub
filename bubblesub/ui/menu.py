@@ -58,10 +58,7 @@ def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
 
 class _CommandAction(QtWidgets.QAction):
     def __init__(
-            self,
-            api: Api,
-            item: MenuCommand,
-            parent: QtWidgets.QWidget
+        self, api: Api, item: MenuCommand, parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
@@ -83,10 +80,10 @@ def _build_hotkey_map(api: Api) -> HotkeyMap:
 
 
 def setup_cmd_menu(
-        api: Api,
-        parent: QtWidgets.QWidget,
-        menu_def: T.Sequence[MenuItem],
-        context: HotkeyContext
+    api: Api,
+    parent: QtWidgets.QWidget,
+    menu_def: T.Sequence[MenuItem],
+    context: HotkeyContext,
 ) -> T.Any:
     hotkey_map = _build_hotkey_map(api)
     stack = [(parent, menu_def)]

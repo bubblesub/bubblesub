@@ -85,7 +85,8 @@ class SubtitleInsertCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-o', '--origin',
+            '-o',
+            '--origin',
             help='where to insert the subtitle',
             type=lambda value: SubtitlesSelection(api, value),
             default='selected',
@@ -94,7 +95,7 @@ class SubtitleInsertCommand(BaseCommand):
         parser.add_argument(
             '--no-align',
             help='don\'t realign the subtitle to video frames',
-            action='store_true'
+            action='store_true',
         )
 
         group = parser.add_mutually_exclusive_group(required=True)
@@ -103,14 +104,14 @@ class SubtitleInsertCommand(BaseCommand):
             dest='dir',
             action='store_const',
             const='before',
-            help='insert before origin'
+            help='insert before origin',
         )
         group.add_argument(
             '--after',
             dest='dir',
             action='store_const',
             const='after',
-            help='insert after origin'
+            help='insert after origin',
         )
 
 

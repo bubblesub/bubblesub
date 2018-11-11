@@ -70,8 +70,7 @@ class OpenCommand(BaseCommand):
             return
 
         path = await self.args.path.get_load_path(
-            file_filter=SUBS_FILE_FILTER,
-            directory=_get_dialog_dir(self.api)
+            file_filter=SUBS_FILE_FILTER, directory=_get_dialog_dir(self.api)
         )
 
         self.api.subs.load_ass(path)
@@ -80,10 +79,11 @@ class OpenCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p', '--path',
+            '-p',
+            '--path',
             help='path to load the subtitles from',
             type=lambda value: FancyPath(api, value),
-            default=''
+            default='',
         )
 
 
@@ -97,8 +97,7 @@ class LoadVideoCommand(BaseCommand):
 
     async def run(self) -> None:
         path = await self.args.path.get_load_path(
-            file_filter=VIDEO_FILE_FILTER,
-            directory=_get_dialog_dir(self.api)
+            file_filter=VIDEO_FILE_FILTER, directory=_get_dialog_dir(self.api)
         )
 
         self.api.media.load(path)
@@ -107,10 +106,11 @@ class LoadVideoCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p', '--path',
+            '-p',
+            '--path',
             help='path to load the video from',
             type=lambda value: FancyPath(api, value),
-            default=''
+            default='',
         )
 
 
@@ -131,7 +131,7 @@ class SaveCommand(BaseCommand):
             path = bubblesub.ui.util.save_dialog(
                 main_window,
                 file_filter=SUBS_FILE_FILTER,
-                directory=_get_dialog_dir(self.api)
+                directory=_get_dialog_dir(self.api),
             )
             if not path:
                 raise CommandCanceled
@@ -154,7 +154,7 @@ class SaveAsCommand(BaseCommand):
             directory=_get_dialog_dir(self.api),
             default_file_name=(
                 self.api.subs.path.name if self.api.subs.path else None
-            )
+            ),
         )
 
         self.api.subs.save_ass(path, remember_path=True)
@@ -163,10 +163,11 @@ class SaveAsCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-p', '--path',
+            '-p',
+            '--path',
             help='optional path to save the subtitles to',
             type=lambda value: FancyPath(api, value),
-            default=''
+            default='',
         )
 
 
@@ -175,5 +176,5 @@ COMMANDS = [
     OpenCommand,
     LoadVideoCommand,
     SaveCommand,
-    SaveAsCommand
+    SaveAsCommand,
 ]

@@ -26,9 +26,7 @@ SLIDER_SIZE = 20
 
 class BaseAudioWidget(QtWidgets.QWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(parent)
         self._api = api

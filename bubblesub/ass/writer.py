@@ -54,38 +54,44 @@ def _write_styles(ass_file: AssFile, handle: T.IO) -> None:
         'Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, '
         'BorderStyle, Outline, Shadow, Alignment, '
         'MarginL, MarginR, MarginV, Encoding',
-        file=handle
+        file=handle,
     )
     for style in ass_file.styles:
         _write_style(style, handle)
 
 
 def _write_style(style: Style, handle: T.IO) -> None:
-    print('Style: ' + ','.join([
-        style.name,
-        style.font_name,
-        f'{style.font_size:d}',
-        _serialize_color(style.primary_color),
-        _serialize_color(style.secondary_color),
-        _serialize_color(style.outline_color),
-        _serialize_color(style.back_color),
-        '-1' if style.bold else '0',
-        '-1' if style.italic else '0',
-        '-1' if style.underline else '0',
-        '-1' if style.strike_out else '0',
-        f'{style.scale_x:}',
-        f'{style.scale_y:}',
-        f'{style.spacing:}',
-        f'{style.angle:}',
-        f'{style.border_style:d}',
-        f'{style.outline:}',
-        f'{style.shadow:}',
-        f'{style.alignment:d}',
-        f'{style.margin_left:d}',
-        f'{style.margin_right:d}',
-        f'{style.margin_vertical:d}',
-        f'{style.encoding:d}',
-    ]), file=handle)
+    print(
+        'Style: '
+        + ','.join(
+            [
+                style.name,
+                style.font_name,
+                f'{style.font_size:d}',
+                _serialize_color(style.primary_color),
+                _serialize_color(style.secondary_color),
+                _serialize_color(style.outline_color),
+                _serialize_color(style.back_color),
+                '-1' if style.bold else '0',
+                '-1' if style.italic else '0',
+                '-1' if style.underline else '0',
+                '-1' if style.strike_out else '0',
+                f'{style.scale_x:}',
+                f'{style.scale_y:}',
+                f'{style.spacing:}',
+                f'{style.angle:}',
+                f'{style.border_style:d}',
+                f'{style.outline:}',
+                f'{style.shadow:}',
+                f'{style.alignment:d}',
+                f'{style.margin_left:d}',
+                f'{style.margin_right:d}',
+                f'{style.margin_vertical:d}',
+                f'{style.encoding:d}',
+            ]
+        ),
+        file=handle,
+    )
 
 
 def _write_events(ass_file: AssFile, handle: T.IO) -> None:
@@ -93,7 +99,7 @@ def _write_events(ass_file: AssFile, handle: T.IO) -> None:
     print(
         'Format: Layer, Start, End, Style, Name, '
         'MarginL, MarginR, MarginV, Effect, Text',
-        file=handle
+        file=handle,
     )
     for event in ass_file.events:
         _write_event(event, handle)
@@ -109,18 +115,25 @@ def _write_event(event: Event, handle: T.IO) -> None:
         text += '{NOTE:%s}' % escape_ass_tag(event.note.replace('\n', '\\N'))
 
     event_type = 'Comment' if event.is_comment else 'Dialogue'
-    print(event_type + ': ' + ','.join([
-        f'{event.layer:d}',
-        _ms_to_timestamp(event.start),
-        _ms_to_timestamp(event.end),
-        event.style,
-        event.actor,
-        f'{event.margin_left:d}',
-        f'{event.margin_right:d}',
-        f'{event.margin_vertical:d}',
-        event.effect,
-        text,
-    ]), file=handle)
+    print(
+        event_type
+        + ': '
+        + ','.join(
+            [
+                f'{event.layer:d}',
+                _ms_to_timestamp(event.start),
+                _ms_to_timestamp(event.end),
+                event.style,
+                event.actor,
+                f'{event.margin_left:d}',
+                f'{event.margin_right:d}',
+                f'{event.margin_vertical:d}',
+                event.effect,
+                text,
+            ]
+        ),
+        file=handle,
+    )
 
 
 def write_ass(ass_file: AssFile, handle: T.IO) -> None:

@@ -57,8 +57,9 @@ class VideoBandWorker(QtCore.QObject):
                 break
 
             frame = (
-                self._api.media.video
-                .get_frame(frame_idx, 1, BAND_Y_RESOLUTION)
+                self._api.media.video.get_frame(
+                    frame_idx, 1, BAND_Y_RESOLUTION
+                )
                 .reshape(BAND_Y_RESOLUTION, 3)
                 .copy()
             )
@@ -113,15 +114,12 @@ class VideoBandWorker(QtCore.QObject):
 
 class VideoPreview(BaseAudioWidget):
     def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget = None
+        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
     ) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(SLIDER_SIZE * 3)
         self.setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum,
-            QtWidgets.QSizePolicy.Maximum
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum
         )
 
         self._worker = VideoBandWorker(api)
@@ -148,8 +146,7 @@ class VideoPreview(BaseAudioWidget):
 
     def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
         self._pixels = np.zeros(
-            [BAND_Y_RESOLUTION, self.width(), 3],
-            dtype=np.uint8
+            [BAND_Y_RESOLUTION, self.width(), 3], dtype=np.uint8
         )
 
     def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
@@ -184,7 +181,7 @@ class VideoPreview(BaseAudioWidget):
             0,
             0,
             painter.viewport().width() - 1,
-            painter.viewport().height() - 1
+            painter.viewport().height() - 1,
         )
 
     def _draw_video_band(self, painter: QtGui.QPainter) -> None:
@@ -204,7 +201,7 @@ class VideoPreview(BaseAudioWidget):
             self._pixels.shape[1],
             self._pixels.shape[0],
             self._pixels.strides[0],
-            QtGui.QImage.Format_RGB888
+            QtGui.QImage.Format_RGB888,
         )
         painter.save()
         painter.scale(1, painter.viewport().height() / (BAND_Y_RESOLUTION - 1))
@@ -218,6 +215,5 @@ class VideoPreview(BaseAudioWidget):
         scale = self._audio.view_size / self.width()
         pts = int(x * scale + self._audio.view_start)
         return max(
-            0,
-            bisect.bisect_left(self._api.media.video.timecodes, pts) - 1
+            0, bisect.bisect_left(self._api.media.video.timecodes, pts) - 1
         )

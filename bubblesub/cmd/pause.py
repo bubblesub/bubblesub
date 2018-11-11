@@ -30,8 +30,8 @@ class PauseCommand(BaseCommand):
         return self.api.media.is_loaded
 
     async def run(self) -> None:
-        self.api.media.is_paused = (
-            self.args.operation.apply(self.api.media.is_paused)
+        self.api.media.is_paused = self.args.operation.apply(
+            self.api.media.is_paused
         )
 
     @staticmethod
@@ -39,7 +39,7 @@ class PauseCommand(BaseCommand):
         parser.add_argument(
             'operation',
             help='whether to pause the video',
-            type=BooleanOperation
+            type=BooleanOperation,
         )
 
 

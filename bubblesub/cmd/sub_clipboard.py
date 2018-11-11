@@ -30,11 +30,9 @@ from bubblesub.util import ms_to_str, str_to_ms
 
 
 def _pickle(data: T.Any) -> str:
-    return (
-        base64.b64encode(
-            zlib.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
-        ).decode()
-    )
+    return base64.b64encode(
+        zlib.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
+    ).decode()
 
 
 def _unpickle(text: str) -> T.Any:
@@ -61,10 +59,7 @@ class SubtitlesCopyCommand(BaseCommand):
         elif self.args.subject == 'times':
             QtWidgets.QApplication.clipboard().setText(
                 '\n'.join(
-                    '{} - {}'.format(
-                        ms_to_str(sub.start),
-                        ms_to_str(sub.end)
-                    )
+                    '{} - {}'.format(ms_to_str(sub.start), ms_to_str(sub.end))
                     for sub in subs
                 )
             )
@@ -76,16 +71,18 @@ class SubtitlesCopyCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to paste into',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
         parser.add_argument(
-            '-s', '--subject',
+            '-s',
+            '--subject',
             help='subject to copy',
             choices=('text', 'times', 'all'),
-            default='all'
+            default='all',
         )
 
 
@@ -120,7 +117,8 @@ class SubtitlesPasteCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-o', '--origin',
+            '-o',
+            '--origin',
             help='where to paste the subtitles',
             type=lambda value: SubtitlesSelection(api, value),
             default='selected',
@@ -132,14 +130,14 @@ class SubtitlesPasteCommand(BaseCommand):
             dest='dir',
             action='store_const',
             const='before',
-            help='paste before origin'
+            help='paste before origin',
         )
         group.add_argument(
             '--after',
             dest='dir',
             action='store_const',
             const='after',
-            help='paste after origin'
+            help='paste after origin',
         )
 
 
@@ -166,8 +164,9 @@ class SubtitlesPasteIntoCommand(BaseCommand):
             raise CommandError(
                 f'size mismatch ('
                 f'selected {len(subs)} lines, '
-                f'got {len(lines)} lines in clipboard)'
-                .format(len(subs), len(lines))
+                f'got {len(lines)} lines in clipboard)'.format(
+                    len(subs), len(lines)
+                )
             )
 
         with self.api.undo.capture():
@@ -180,10 +179,9 @@ class SubtitlesPasteIntoCommand(BaseCommand):
                 for line in lines:
                     try:
                         start, end = line.split('-', 1)
-                        times.append((
-                            str_to_ms(start.strip()),
-                            str_to_ms(end.strip())
-                        ))
+                        times.append(
+                            (str_to_ms(start.strip()), str_to_ms(end.strip()))
+                        )
                     except ValueError:
                         raise ValueError(f'invalid time format: {line}')
 
@@ -197,13 +195,15 @@ class SubtitlesPasteIntoCommand(BaseCommand):
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '-t', '--target',
+            '-t',
+            '--target',
             help='subtitles to paste the subject into',
             type=lambda value: SubtitlesSelection(api, value),
-            default='selected'
+            default='selected',
         )
         parser.add_argument(
-            '-s', '--subject',
+            '-s',
+            '--subject',
             help='subject to copy',
             choices=('text', 'times'),
             required=True,
@@ -213,5 +213,5 @@ class SubtitlesPasteIntoCommand(BaseCommand):
 COMMANDS = [
     SubtitlesCopyCommand,
     SubtitlesPasteCommand,
-    SubtitlesPasteIntoCommand
+    SubtitlesPasteIntoCommand,
 ]

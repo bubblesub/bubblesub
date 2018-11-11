@@ -33,11 +33,11 @@ class UndoState:
     """Simplified application state."""
 
     def __init__(
-            self,
-            events: bubblesub.ass.event.EventList,
-            styles: bubblesub.ass.style.StyleList,
-            info: bubblesub.ass.info.Metadata,
-            selected_indexes: T.List[int]
+        self,
+        events: bubblesub.ass.event.EventList,
+        styles: bubblesub.ass.style.StyleList,
+        info: bubblesub.ass.info.Metadata,
+        selected_indexes: T.List[int],
     ) -> None:
         """
         Initialize self.
@@ -236,18 +236,18 @@ class UndoApi:
         self._ignore = False
 
     def _discard_redo(self) -> None:
-        self._stack = self._stack[:self._stack_pos + 1]
+        self._stack = self._stack[: self._stack_pos + 1]
         self._stack_pos = len(self._stack) - 1
 
     def _discard_old_undo(self) -> None:
         if len(self._stack) <= self._max_undo or self._max_undo <= 0:
             return
         assert self._stack_pos == len(self._stack) - 1
-        self._stack = self._stack[-self._max_undo:]
+        self._stack = self._stack[-self._max_undo :]
         self._stack_pos = len(self._stack) - 1
 
     def _push(
-            self, old_state: T.Optional[UndoState], new_state: UndoState
+        self, old_state: T.Optional[UndoState], new_state: UndoState
     ) -> None:
         """
         Discard any redo information and push given state.
@@ -277,7 +277,7 @@ class UndoApi:
             events=self._subs_api.events,
             styles=self._subs_api.styles,
             info=self._subs_api.info,
-            selected_indexes=self._subs_api.selected_indexes
+            selected_indexes=self._subs_api.selected_indexes,
         )
 
     def _apply_state(self, state: UndoState) -> None:

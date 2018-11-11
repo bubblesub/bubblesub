@@ -84,9 +84,12 @@ class SubtitlesSelection:
             return True
 
         if self.target in {
-                'one-below', 'one-above',
-                'first', 'last',
-                'ask-time', 'ask-number'
+            'one-below',
+            'one-above',
+            'first',
+            'last',
+            'ask-time',
+            'ask-number',
         }:
             return len(self.api.subs.events) > 0
 
@@ -115,10 +118,12 @@ class SubtitlesSelection:
         if self.target == 'one-below':
             if not self.api.subs.selected_indexes:
                 return [0]
-            return [min(
-                self.api.subs.selected_indexes[-1] + 1,
-                len(self.api.subs.events) - 1
-            )]
+            return [
+                min(
+                    self.api.subs.selected_indexes[-1] + 1,
+                    len(self.api.subs.events) - 1,
+                )
+            ]
 
         if self.target == 'selected':
             return self.api.subs.selected_indexes
@@ -163,8 +168,7 @@ class SubtitlesSelection:
         return [self.api.subs.events[idx] for idx in await self.get_indexes()]
 
     async def _show_number_dialog(
-            self,
-            main_window: QtWidgets.QMainWindow
+        self, main_window: QtWidgets.QMainWindow
     ) -> T.Optional[int]:
         dialog = QtWidgets.QInputDialog(main_window)
         dialog.setLabelText('Line number to jump to:')
@@ -178,18 +182,17 @@ class SubtitlesSelection:
         return None
 
     async def _show_time_dialog(
-            self,
-            main_window: QtWidgets.QMainWindow
+        self, main_window: QtWidgets.QMainWindow
     ) -> T.Optional[int]:
         ret = bubblesub.ui.util.time_jump_dialog(
             main_window,
             value=(
                 self.api.subs.selected_events[0].start
-                if self.api.subs.has_selection else
-                0
+                if self.api.subs.has_selection
+                else 0
             ),
             relative_checked=False,
-            show_radio=False
+            show_radio=False,
         )
         if ret is None:
             return None

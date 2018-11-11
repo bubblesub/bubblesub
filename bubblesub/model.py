@@ -268,9 +268,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         yield from self._items
 
     def get(
-            self,
-            idx: int,
-            default: T.Optional[TItem] = None
+        self, idx: int, default: T.Optional[TItem] = None
     ) -> T.Optional[TItem]:
         """
         Retrieve item at given position.
@@ -318,7 +316,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         :param idx: where to start the removal
         :param count: how many elements to remove
         """
-        self._items = self._items[:idx] + self._items[idx + count:]
+        self._items = self._items[:idx] + self._items[idx + count :]
         self.items_removed.emit(idx, count)
 
     def clear(self) -> None:
