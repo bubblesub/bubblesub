@@ -20,15 +20,16 @@ import typing as T
 
 from PyQt5 import QtWidgets
 
-import bubblesub.api
+from bubblesub.api import Api
+from bubblesub.api.cmd import CommandError
 from bubblesub.opt.hotkeys import HotkeyContext
-from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuCommand
+from bubblesub.opt.menu import MenuItem
 from bubblesub.opt.menu import MenuSeparator
 from bubblesub.opt.menu import SubMenu
 
 
-HotkeyMap = T.Dict[T.Tuple[HotkeyContext, T.Tuple[str, ...]], str]
+HotkeyMap = T.Dict[T.Tuple[HotkeyContext, str], str]
 
 
 def _window_from_menu(menu: QtWidgets.QMenu) -> QtWidgets.QWidget:
@@ -62,34 +63,31 @@ def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
 class _CommandAction(QtWidgets.QAction):
     def __init__(
             self,
-            api: bubblesub.api.Api,
+            api: Api,
             item: MenuCommand,
             parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
-        self.commands = [
-            api.cmd.instantiate(invocation)
-            for invocation in item.invocations
-        ]
+        self.commands = api.cmd.parse_cmdline(item.cmdline)
         self.triggered.connect(self._on_trigger)
         self.setText(item.name)
 
     def _on_trigger(self) -> None:
         for cmd in self.commands:
-            self.api.cmd.run_cmd(cmd)
+            self.api.cmd.run(cmd)
 
 
-def _build_hotkey_map(api: bubblesub.api.Api) -> HotkeyMap:
+def _build_hotkey_map(api: Api) -> HotkeyMap:
     ret: HotkeyMap = {}
     for context, hotkeys in api.opt.hotkeys:
         for hotkey in hotkeys:
-            ret[context, hotkey.invocations] = hotkey.shortcut
+            ret[context, hotkey.cmdline] = hotkey.shortcut
     return ret
 
 
 def setup_cmd_menu(
-        api: bubblesub.api.Api,
+        api: Api,
         parent: QtWidgets.QWidget,
         menu_def: T.Sequence[MenuItem],
         context: HotkeyContext
@@ -116,11 +114,11 @@ def setup_cmd_menu(
             elif isinstance(item, MenuCommand):
                 try:
                     action = _CommandAction(api, item, parent)
-                except bubblesub.api.cmd.CommandError as ex:
+                except CommandError as ex:
                     api.log.error(str(ex))
                     continue
 
-                shortcut = hotkey_map.get((context, item.invocations))
+                shortcut = hotkey_map.get((context, item.cmdline))
                 if shortcut is not None:
                     action.setText(action.text() + '\t' + shortcut)
 

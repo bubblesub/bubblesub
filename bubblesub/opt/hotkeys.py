@@ -35,19 +35,15 @@ class HotkeyContext(enum.Enum):
 class Hotkey:
     """Hotkey definition."""
 
-    def __init__(
-            self,
-            shortcut: str,
-            *invocations: str,
-    ) -> None:
+    def __init__(self, shortcut: str, cmdline: str) -> None:
         """
         Initialize self.
 
         :param shortcut: key combination that activates the hotkey
-        :param invocations: invocations to execute
+        :param cmdline: command line to execute
         """
         self.shortcut = shortcut
-        self.invocations: T.Tuple[str, ...] = invocations
+        self.cmdline = cmdline
 
 
 class HotkeysConfig(BaseConfig):
@@ -83,12 +79,10 @@ class HotkeysConfig(BaseConfig):
                 continue
 
             try:
-                shortcut, commands = re.split(r'\s+', line, maxsplit=1)
+                shortcut, cmdline = re.split(r'\s+', line, maxsplit=1)
             except ValueError:
                 raise ValueError(f'syntax error near line #{i} ({line})')
-            # TODO: change command parsing
-            commands = [command.strip() for command in commands.split(';')]
-            self.hotkeys[cur_context].append(Hotkey(shortcut, *commands))
+            self.hotkeys[cur_context].append(Hotkey(shortcut, cmdline))
 
     def dumps(self) -> str:
         """
@@ -103,9 +97,7 @@ class HotkeysConfig(BaseConfig):
 
             lines.append(f'[{context.value}]')
             for hotkey in hotkeys:
-                lines.append(
-                    f'{hotkey.shortcut:20s} {";".join(hotkey.invocations)}'
-                )
+                lines.append(f'{hotkey.shortcut:20s} {hotkey.cmdline}')
             lines.append('')
 
         while not lines[-1]:

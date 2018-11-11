@@ -39,7 +39,7 @@ def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
     app.aboutToQuit.connect(api.media.stop)
 
     if args.file:
-        api.cmd.run_invocation(['open', '--path', args.file])
+        api.cmd.run_cmdline([['open', '--path', args.file]])
 
     main_window = bubblesub.ui.main_window.MainWindow(api, console)
     api.gui.set_main_window(main_window)

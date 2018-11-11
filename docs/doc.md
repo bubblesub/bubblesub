@@ -21,7 +21,7 @@ Context refers to the currently focused widget.
 |<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.e-500ms -e=a.e</code> |
 |<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.e -e=a.e+500ms</code> |
 |<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
-|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s</code><br><code><a href="#user-content-cmd-pause">pause</a> off</code> |
+|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s; <a href="#user-content-cmd-pause">pause</a> off</code> |
 |<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f</code> |
 |<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f</code> |
 |<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms</code> |

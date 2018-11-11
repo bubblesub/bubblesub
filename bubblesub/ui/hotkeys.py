@@ -42,11 +42,9 @@ def setup_hotkeys(
     for context, hotkeys in hotkeys_def:
         parent = context_to_widget_map[context]
         for hotkey in hotkeys:
+            # parse cmdline here to report configuration errors early
             try:
-                cmds = [
-                    api.cmd.instantiate(invocation)
-                    for invocation in hotkey.invocations
-                ]
+                cmds = api.cmd.parse_cmdline(hotkey.cmdline)
             except CommandError as ex:
                 api.log.error(str(ex))
                 continue
@@ -60,7 +58,7 @@ def setup_hotkeys(
             if (widget, keys) in cmd_map:
                 cmds = cmd_map[widget, keys]
                 for cmd in cmds:
-                    api.cmd.run_cmd(cmd)
+                    api.cmd.run(cmd)
                 break
             widget = widget.parent()
 

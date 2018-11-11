@@ -24,17 +24,14 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-import bubblesub.api
-import bubblesub.ui.util
+from bubblesub.api import Api
+from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogLevel
+from bubblesub.ui.util import get_color
 
 
 class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtCore.QObject
-    ) -> None:
+    def __init__(self, api: Api, parent: QtCore.QObject) -> None:
         super().__init__(parent)
         self._api = api
 
@@ -103,7 +100,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
 
     def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
         fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(bubblesub.ui.util.get_color(self._api, color_name))
+        fmt.setForeground(get_color(self._api, color_name))
         fmt.setFont(self._font)
         return fmt
 
@@ -111,11 +108,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
 class ConsoleLogWindow(QtWidgets.QTextEdit):
     scroll_lock_changed = QtCore.pyqtSignal()
 
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._api = api
         self._scroll_lock = False
@@ -198,11 +191,7 @@ class Completion:
 
 
 class ConsoleInput(QtWidgets.QLineEdit):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._api = api
         self._edited = False
@@ -271,7 +260,14 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self._history.append(self.text())
         self._history_pos = len(self._history)
 
-        self._api.cmd.run_invocation(self.text())
+        try:
+            cmds = self._api.cmd.parse_cmdline(self.text())
+        except CommandError as ex:
+            self._api.log.error(str(ex))
+        else:
+            for cmd in cmds:
+                self._api.cmd.run(cmd)
+
         self.setText('')
         self._edited = False
 
@@ -317,11 +313,7 @@ class ConsoleInput(QtWidgets.QLineEdit):
 
 
 class Console(QtWidgets.QWidget):
-    def __init__(
-            self,
-            api: bubblesub.api.Api,
-            parent: QtWidgets.QWidget
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
 
         self._api = api

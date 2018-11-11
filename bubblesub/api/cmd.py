@@ -26,6 +26,7 @@ import argparse
 import asyncio
 import importlib.util
 import io
+import itertools
 import shlex
 import time
 import traceback
@@ -94,30 +95,49 @@ class CommandArgumentParser(argparse.ArgumentParser):
         raise BadInvocation(message)
 
 
-def split_invocation(invocation: str) -> T.Tuple[str, T.List[str]]:
+def split_invocation(invocation: str) -> T.List[T.List[str]]:
     """
     Split invocation into name and arguments array.
 
     :param invocation: command line to parse
     :return: tuple containing command name and arguments
     """
-    name, *args = shlex.split(invocation)
-    return (name, args)
+    splitter = shlex.shlex(invocation, punctuation_chars=';')
+    splitter.wordchars = ''.join(
+        char
+        for char in invocation
+        if char not in splitter.quotes + splitter.whitespace + ';'
+    )
+    tokens = list(splitter)
+
+    invocations = [
+        list(group)
+        for key, group in itertools.groupby(
+            tokens, lambda token: token == ';'
+        ) if not key
+    ]
+    return invocations
 
 
 class BaseCommand(abc.ABC):
     """Base class for all commands."""
 
-    def __init__(self, api: 'bubblesub.api.Api', invocation: str) -> None:
+    def __init__(
+            self,
+            api: 'bubblesub.api.Api',
+            args: argparse.Namespace,
+            invocation: str,
+    ) -> None:
         """
         Initialize self.
 
         :param api: core API
-        :param invocation: command invocation
+        :param args: command arguments
+        :param invocation: cmdline how the comment was ran
         """
         self.api = api
+        self.args = args
         self.invocation = invocation
-        self.args = self.parse_args(api, split_invocation(invocation)[1])
 
     @bubblesub.model.classproperty
     @abc.abstractproperty
@@ -158,28 +178,6 @@ class BaseCommand(abc.ABC):
         """Carry out the command."""
         raise NotImplementedError('command has no implementation')
 
-    @classmethod
-    def parse_args(
-            cls: T.Type['BaseCommand'],
-            api: 'bubblesub.api.Api',
-            invocation: T.List[str]
-    ) -> argparse.Namespace:
-        """
-        Convert command invocation.
-
-        :param cls: type inheriting from BaseCommand
-        :param api: core API
-        :param invocation: command line
-        :return: parsed arguments for command
-        """
-        parser = CommandArgumentParser(
-            prog=cls.names[0],
-            description=cls.help_text,
-            add_help=False
-        )
-        cls.decorate_parser(api, parser)
-        return parser.parse_args(invocation)
-
     @staticmethod
     def decorate_parser(
             api: 'bubblesub.api.Api',
@@ -212,33 +210,55 @@ class CommandApi(QtCore.QObject):
 
         self.reload_commands()
 
-    def run_invocation(self, invocation: T.Union[T.List[str], str]) -> None:
+    def run_cmdline(self, cmdline: T.Union[str, T.List[T.List[str]]]) -> None:
         """
-        Execute given invocation.
+        Run given cmdline.
 
-        :param invocation: invocation to run
+        :param cmdline: either a list of command arguments, or a plain string
         """
-        if not invocation:
-            return
-        if isinstance(invocation, list):
-            invocation = ' '.join(shlex.quote(arg) for arg in invocation)
+        for cmd in self.parse_cmdline(cmdline):
+            self.run(cmd)
 
-        try:
-            cmd = self.instantiate(invocation)
-        except Exception as ex:  # pylint: disable=broad-except
-            self._api.log.error(str(ex))
-        else:
-            self.run_cmd(cmd)
+    def parse_cmdline(
+            self, cmdline: T.Union[str, T.List[T.List[str]]]
+    ) -> T.List[BaseCommand]:
+        """
+        Create BaseCommand instances based on given invocation.
 
-    def run_cmd(self, cmd: BaseCommand) -> None:
+        :param cmdline: either a list of command arguments, or a plain string
+        :return: list of command instances
+        """
+        ret: T.List[BaseCommand] = []
+        if not isinstance(cmdline, list):
+            cmdline = split_invocation(cmdline)
+
+        for invocation in cmdline:
+            cmd_name, *cmd_args = invocation
+            cls = self._registry.get(cmd_name, None)
+            if not cls:
+                raise CommandNotFound(f'no command named "{cmd_name}"')
+
+            parser = CommandArgumentParser(
+                prog=cls.names[0],
+                description=cls.help_text,
+                add_help=False
+            )
+            cls.decorate_parser(self._api, parser)
+            args = parser.parse_args(cmd_args)
+
+            ret.append(cls(self._api, args, ' '.join(invocation)))
+
+        return ret
+
+    def run(self, cmd: BaseCommand) -> None:
         """
         Execute given command.
 
         :param cmd: command to run
         """
-        asyncio.ensure_future(self.run_cmd_async(cmd))
+        asyncio.ensure_future(self.run_async(cmd))
 
-    async def run_cmd_async(self, cmd: BaseCommand) -> bool:
+    async def run_async(self, cmd: BaseCommand) -> bool:
         """
         Execute given command asynchronously.
 
@@ -265,25 +285,6 @@ class CommandApi(QtCore.QObject):
         took = end_time - start_time
         self._api.log.debug(f'{cmd.invocation}: took {took:.04f} s')
         return True
-
-    def instantiate(
-            self, invocation: T.Union[T.List[str], str]
-    ) -> BaseCommand:
-        """
-        Retrieve command instance by its name and arguments.
-
-        :param invocation: invocation
-        :return: BaseCommand instance
-        """
-        if isinstance(invocation, list):
-            invocation = ' '.join(shlex.quote(arg) for arg in invocation)
-
-        name, _args = split_invocation(invocation)
-        cls = self.get(name)
-        if not cls:
-            raise CommandNotFound(f'no command named "{name}"')
-        instance = cls(self._api, invocation)
-        return T.cast(BaseCommand, instance)
 
     def get(self, name: str) -> T.Optional[T.Type[BaseCommand]]:
         """
