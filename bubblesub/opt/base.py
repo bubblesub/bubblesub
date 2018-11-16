@@ -20,6 +20,10 @@ import abc
 from pathlib import Path
 
 
+class ConfigError(RuntimeError):
+    pass
+
+
 class BaseConfig(abc.ABC):
     """Base config."""
 
@@ -63,7 +67,10 @@ class BaseConfig(abc.ABC):
         """
         full_path = root_dir / self.file_name
         if full_path.exists():
-            self.loads(full_path.read_text())
+            try:
+                self.loads(full_path.read_text())
+            except ConfigError as ex:
+                raise ConfigError(f"error loading {full_path}: {ex}")
 
     def save(self, root_dir: Path) -> None:
         """

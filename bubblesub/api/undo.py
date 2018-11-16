@@ -141,7 +141,7 @@ class UndoApi:
         :param opt: configuration
         :param subs_api: subtitles API
         """
-        self._max_undo = opt.general.max_undo + 1
+        self._opt = opt
         self._subs_api = subs_api
         self._stack: T.List[T.Tuple[T.Optional[UndoState], UndoState]] = []
         self._stack_pos = -1
@@ -240,10 +240,11 @@ class UndoApi:
         self._stack_pos = len(self._stack) - 1
 
     def _discard_old_undo(self) -> None:
-        if len(self._stack) <= self._max_undo or self._max_undo <= 0:
+        max_undo = self._opt.general.max_undo
+        if len(self._stack) < max_undo or max_undo <= 0:
             return
         assert self._stack_pos == len(self._stack) - 1
-        self._stack = self._stack[-self._max_undo :]
+        self._stack = self._stack[-max_undo + 1 :]
         self._stack_pos = len(self._stack) - 1
 
     def _push(

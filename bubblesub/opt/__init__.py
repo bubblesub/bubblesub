@@ -17,3 +17,4 @@
 """Program configuration."""
 
 from .options import Options
+from .base import ConfigError

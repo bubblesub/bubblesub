@@ -35,23 +35,20 @@ import bubblesub.opt
 class Api:
     """Core class grouping all descendant APIs."""
 
-    def __init__(
-        self, opt: bubblesub.opt.Options, args: argparse.Namespace
-    ) -> None:
+    def __init__(self, args: argparse.Namespace) -> None:
         """
         Initialize self.
 
-        :param opt: configuration
         :param args: CLI arguments
         """
-        self.opt = opt
+        self.opt = bubblesub.opt.Options()
         self.log = bubblesub.api.log.LogApi()
         self.gui = bubblesub.api.gui.GuiApi(self)
         self.subs = bubblesub.api.subs.SubtitlesApi()
         self.media = bubblesub.api.media.MediaApi(
-            self.subs, self.log, opt, args
+            self.subs, self.log, self.opt, args
         )
-        self.undo = bubblesub.api.undo.UndoApi(opt, self.subs)
+        self.undo = bubblesub.api.undo.UndoApi(self.opt, self.subs)
         self.cmd = bubblesub.api.cmd.CommandApi(self)
 
         self.gui.quit_confirmed.connect(self.media.unload)

@@ -90,8 +90,7 @@ class GenerateDocumentationCommand(Command):
         args = argparse.Namespace()
         setattr(args, "no_video", True)
 
-        opt = bubblesub.opt.Options()
-        api = bubblesub.api.Api(opt, args)
+        api = bubblesub.api.Api(args)
         api.cmd.reload_commands()
 
         print("# Default commands", file=handle)

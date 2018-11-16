@@ -39,6 +39,4 @@ def collect_source_files(root: Path = APP_ROOT_DIR) -> T.Iterable[Path]:
 def api() -> bubblesub.api.Api:
     args = argparse.Namespace()
     setattr(args, "no_video", True)
-
-    opt = bubblesub.opt.Options()
-    return bubblesub.api.Api(opt, args)
+    return bubblesub.api.Api(args)

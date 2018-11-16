@@ -120,7 +120,6 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         api.log.logged.connect(self._on_log)
 
     def _on_log(self, level: LogLevel, text: str) -> None:
-        print(f"{datetime.datetime.now()} [{level.name.lower()[0]}] {text}")
         if level == LogLevel.Debug:
             return
 

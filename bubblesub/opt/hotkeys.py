@@ -22,7 +22,7 @@ import typing as T
 from pathlib import Path
 
 from bubblesub.data import ROOT_DIR
-from bubblesub.opt.base import BaseConfig
+from bubblesub.opt.base import BaseConfig, ConfigError
 
 
 class HotkeyContext(enum.Enum):
@@ -78,15 +78,20 @@ class HotkeysConfig(BaseConfig):
             if not line or line.startswith("#"):
                 continue
 
-            match = re.match(r"\[(\w+)\]", line)
+            match = re.match(r"^\[(.*)\]$", line)
             if match:
-                cur_context = HotkeyContext(match.group(1))
+                try:
+                    cur_context = HotkeyContext(match.group(1))
+                except ValueError:
+                    raise ConfigError(
+                        f'"{match.group(1)}" is not a valid hotkey context'
+                    )
                 continue
 
             try:
                 shortcut, cmdline = re.split(r"\s+", line, maxsplit=1)
             except ValueError:
-                raise ValueError(f"syntax error near line #{i} ({line})")
+                raise ConfigError(f"syntax error near line #{i} ({line})")
             self.hotkeys[cur_context].append(Hotkey(shortcut, cmdline))
 
     def create_example_file(self, root_dir: Path) -> None:

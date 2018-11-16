@@ -43,22 +43,13 @@ def main() -> None:
     """CLI endpoint."""
     args = parse_args()
 
-    opt = bubblesub.opt.Options()
-    if not args.no_config:
-        opt.load(opt.DEFAULT_PATH)
-
     if args.wipe_cache:
         bubblesub.cache.wipe_cache()
 
     from bubblesub.api import Api
 
-    api = Api(opt, args)
-
+    api = Api(args)
     bubblesub.ui.run(api, args)
-
-    if not args.no_config:
-        assert opt.root_dir is not None
-        opt.save(opt.root_dir)
 
 
 if __name__ == "__main__":

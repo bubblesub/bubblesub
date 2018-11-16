@@ -109,9 +109,14 @@ class MenuConfig(BaseConfig):
             if not line or line.startswith("#"):
                 continue
 
-            match = re.match(r"\[(\w+)\]", line)
+            match = re.match(r"^\[(.*)\]$", line)
             if match:
-                cur_context = MenuContext(match.group(1))
+                try:
+                    cur_context = MenuContext(match.group(1))
+                except ValueError:
+                    raise ConfigError(
+                        f'"{match.group(1)}" is not a valid menu context'
+                    )
                 continue
             if cur_context not in sections:
                 sections[cur_context] = ""

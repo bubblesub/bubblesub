@@ -16,6 +16,7 @@
 
 """Logging API."""
 
+import datetime
 import enum
 
 from PyQt5 import QtCore
@@ -84,4 +85,7 @@ class LogApi(QtCore.QObject):
         :param text: text to log
         """
         for line in text.split("\n"):
+            print(
+                f"{datetime.datetime.now()} [{level.name.lower()[0]}] {line}"
+            )
             self.logged.emit(level, line)
