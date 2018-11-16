@@ -254,6 +254,13 @@ class ConsoleInput(QtWidgets.QLineEdit):
         if not self.text():
             return
 
+        try:
+            index = self._history.index(self.text())
+        except ValueError:
+            pass
+        else:
+            del self._history[index]
+
         self._history.append(self.text())
         self._history_pos = len(self._history)
 
