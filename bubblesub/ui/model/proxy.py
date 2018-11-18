@@ -43,8 +43,12 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         self._list.items_about_to_be_removed.connect(
             self._proxy_items_about_to_be_removed
         )
+        self._list.items_about_to_be_moved.connect(
+            self._proxy_items_about_to_be_moved
+        )
         self._list.items_inserted.connect(self._proxy_items_inserted)
         self._list.items_removed.connect(self._proxy_items_removed)
+        self._list.items_moved.connect(self._proxy_items_moved)
 
     def rowCount(
         self, _parent: QtCore.QModelIndex = QtCore.QModelIndex()
@@ -146,6 +150,18 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
                 QtCore.QModelIndex(), row_idx, row_idx + count - 1
             )
 
+    def _proxy_items_about_to_be_moved(
+        self, row_idx: int, count: int, new_row_idx: int
+    ) -> None:
+        if count:
+            self.rowsAboutToBeMoved.emit(
+                QtCore.QModelIndex(),
+                row_idx,
+                row_idx + count - 1,
+                QtCore.QModelIndex(),
+                new_row_idx,
+            )
+
     def _proxy_items_inserted(self, row_idx: int, count: int) -> None:
         if count:
             self.rowsInserted.emit(
@@ -156,4 +172,16 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         if count:
             self.rowsRemoved.emit(
                 QtCore.QModelIndex(), row_idx, row_idx + count - 1
+            )
+
+    def _proxy_items_moved(
+        self, row_idx: int, count: int, new_row_idx: int
+    ) -> None:
+        if count:
+            self.rowsMoved.emit(
+                QtCore.QModelIndex(),
+                row_idx,
+                row_idx + count - 1,
+                QtCore.QModelIndex(),
+                new_row_idx,
             )

@@ -44,6 +44,7 @@ class Audio(QtWidgets.QWidget):
 
         api.subs.events.items_inserted.connect(self._sync_selection)
         api.subs.events.items_removed.connect(self._sync_selection)
+        api.subs.events.items_moved.connect(self._sync_selection)
         api.subs.selection_changed.connect(
             lambda _rows, _changed: self._sync_selection()
         )

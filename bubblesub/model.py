@@ -152,11 +152,13 @@ class ObservableListSignals(QtCore.QObject):
     annotations required by ObservableList.
     """
 
+    item_changed = QtCore.pyqtSignal([int])
     items_about_to_be_inserted = QtCore.pyqtSignal([int, int])
     items_about_to_be_removed = QtCore.pyqtSignal([int, int])
+    items_about_to_be_moved = QtCore.pyqtSignal([int, int, int])
     items_inserted = QtCore.pyqtSignal([int, int])
     items_removed = QtCore.pyqtSignal([int, int])
-    item_changed = QtCore.pyqtSignal([int])
+    items_moved = QtCore.pyqtSignal([int, int, int])
 
 
 class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
@@ -167,6 +169,15 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         super().__init__()
         self._signals = ObservableListSignals()
         self._items: T.List[TItem] = []
+
+    @property
+    def item_changed(self) -> QtCore.pyqtSignal:
+        """
+        Proxy item_changed event.
+
+        :return: signal
+        """
+        return self._signals.item_changed
 
     @property
     def items_about_to_be_inserted(self) -> QtCore.pyqtSignal:
@@ -187,6 +198,15 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         return self._signals.items_about_to_be_removed
 
     @property
+    def items_about_to_be_moved(self) -> QtCore.pyqtSignal:
+        """
+        Proxy items_about_to_be_moved event.
+
+        :return: signal
+        """
+        return self._signals.items_about_to_be_moved
+
+    @property
     def items_inserted(self) -> QtCore.pyqtSignal:
         """
         Proxy items_inserted event.
@@ -205,13 +225,13 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         return self._signals.items_removed
 
     @property
-    def item_changed(self) -> QtCore.pyqtSignal:
+    def items_moved(self) -> QtCore.pyqtSignal:
         """
-        Proxy items_changed event.
+        Proxy items_moved event.
 
         :return: signal
         """
-        return self._signals.item_changed
+        return self._signals.items_moved
 
     def __getstate__(self) -> T.Any:
         """
@@ -359,18 +379,22 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         """
         self.remove(0, len(self))
 
-    def move(self, idx: int, new_idx: int) -> None:
+    def move(self, idx: int, count: int, new_idx: int) -> None:
         """
         Move one item to a new position.
 
-        Emits items_removed and items_inserted events.
+        Emits items_about_to_be_moved and items_moved events.
 
         :param idx: source position
+        :param count: how many elements to move
         :param new_idx: target position
         """
         item = self._items[idx]
-        self.remove(idx, 1)
-        self.insert(new_idx, item)
+        self.items_about_to_be_moved.emit(idx, count, new_idx)
+        items = self._items[idx : idx + count]
+        self._items = self._items[:idx] + self._items[idx + count :]
+        self._items = self._items[:new_idx] + items + self._items[new_idx:]
+        self.items_moved.emit(idx, count, new_idx)
 
     def replace(self, values: T.List[TItem]) -> None:
         """

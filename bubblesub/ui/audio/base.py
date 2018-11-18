@@ -36,9 +36,10 @@ class BaseAudioWidget(QtWidgets.QWidget):
 
         api.media.audio.selection_changed.connect(update)
         api.media.audio.view_changed.connect(update)
+        api.subs.events.item_changed.connect(update)
         api.subs.events.items_inserted.connect(update)
         api.subs.events.items_removed.connect(update)
-        api.subs.events.item_changed.connect(update)
+        api.subs.events.items_moved.connect(update)
 
     @property
     def _audio(self) -> bubblesub.api.media.audio.AudioApi:

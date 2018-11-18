@@ -323,7 +323,7 @@ class _StyleList(QtWidgets.QWidget):
         assert idx is not None
 
         with self._api.undo.capture():
-            self._api.subs.styles.move(idx, idx - 1)
+            self._api.subs.styles.move(idx, 1, idx - 1)
         self._styles_list_view.selectionModel().select(
             self._model.index(idx - 1, 0),
             QtCore.QItemSelectionModel.Clear
@@ -338,7 +338,7 @@ class _StyleList(QtWidgets.QWidget):
         assert idx is not None
 
         with self._api.undo.capture():
-            self._api.subs.styles.move(idx, idx + 1)
+            self._api.subs.styles.move(idx, 1, idx + 1)
         self._styles_list_view.selectionModel().select(
             self._model.index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear
