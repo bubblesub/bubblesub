@@ -170,9 +170,9 @@ def get_color(api: bubblesub.api.Api, color_name: str) -> QtGui.QColor:
     current_palette = api.opt.general.gui.current_palette
     try:
         palette_def = api.opt.general.gui.palettes[current_palette]
+        color_value = palette_def[color_name]
     except KeyError:
         return QtGui.QVariant()
-    color_value = palette_def[color_name]
     return QtGui.QColor(*color_value)
 
 
