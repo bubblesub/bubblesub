@@ -203,22 +203,7 @@ class Style(bubblesub.model.ObservableObject):
 class StyleList(bubblesub.model.ObservableList[Style]):
     """ASS style list."""
 
-    def insert_one(
-        self, name: str, index: T.Optional[int] = None, **kwargs: T.Any
-    ) -> Style:
-        """
-        Insert single style at the specified position.
-
-        :param name: name of the style
-        :param index: index to add the new style at
-        :param kwargs: arguments compatible with Style's constructor
-        :return: created style
-        """
-        style = Style(name=name, **kwargs)
-        self.insert(len(self) if index is None else index, [style])
-        return style
-
-    def insert(self, idx: int, items: T.List[Style]) -> None:
+    def insert(self, idx: int, *items: T.List[Style]) -> None:
         """
         Insert styles at the specified position.
 
@@ -228,7 +213,7 @@ class StyleList(bubblesub.model.ObservableList[Style]):
         for item in items:
             assert item.style_list is None, "Style belongs to another list"
             item.style_list = self
-        super().insert(idx, items)
+        super().insert(idx, *items)
 
     def remove(self, idx: int, count: int) -> None:
         """

@@ -293,25 +293,35 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
                 return idx
         return None
 
-    def insert(self, idx: int, items: T.List[TItem]) -> None:
+    def append(self, *items: TItem) -> None:
+        """
+        Insert new values at the end of the list.
+
+        Emits items_about_to_be_inserted items_inserted events.
+
+        :param items: items to append
+        """
+        self.insert(len(self), *items)
+
+    def insert(self, idx: int, *items: TItem) -> None:
         """
         Insert new values at given position.
 
-        Emits items_inserted event.
+        Emits items_about_to_be_inserted and items_inserted events.
 
         :param idx: where to put the new items
         :param items: items to insert
         """
         if not items:
             return
-        self._items = self._items[:idx] + items + self._items[idx:]
+        self._items = self._items[:idx] + list(items) + self._items[idx:]
         self.items_inserted.emit(idx, len(items))
 
     def remove(self, idx: int, count: int) -> None:
         """
         Remove part of the collection's content.
 
-        Emits items_removed event.
+        Emits items_about_to_be_removed and items_removed events.
 
         :param idx: where to start the removal
         :param count: how many elements to remove
@@ -323,7 +333,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         """
         Clear the entire collection.
 
-        Emits items_removed event.
+        Emits items_about_to_be_removed and items_removed events.
         """
         self.remove(0, len(self))
 
@@ -338,15 +348,16 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         """
         item = self._items[idx]
         self.remove(idx, 1)
-        self.insert(new_idx, [item])
+        self.insert(new_idx, item)
 
     def replace(self, values: T.List[TItem]) -> None:
         """
         Replace the entire collection with new content.
 
-        Emits items_removed and items_inserted events.
+        Emits items_about_to_be_removed, items_removed,
+        items_about_to_be_inserted and items_inserted events.
 
         :param values: new content
         """
         self.clear()
-        self.insert(0, values)
+        self.insert(0, *values)

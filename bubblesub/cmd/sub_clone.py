@@ -44,7 +44,7 @@ class SubtitlesCloneCommand(BaseCommand):
             sub_copies: T.List[Event] = []
             for idx in reversed(indexes):
                 sub_copy = copy(self.api.subs.events[idx])
-                self.api.subs.events.insert(idx + 1, [sub_copy])
+                self.api.subs.events.insert(idx + 1, sub_copy)
                 sub_copies.append(sub_copy)
             self.api.subs.selected_indexes = [sub.index for sub in sub_copies]
 

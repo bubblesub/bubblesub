@@ -31,6 +31,8 @@ import bubblesub.data
 import bubblesub.ui.ass_renderer
 import bubblesub.ui.util
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ass.event import Event, EventList
+from bubblesub.ass.style import Style, StyleList
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
 
 
@@ -120,18 +122,17 @@ class _StylePreview(QtWidgets.QGroupBox):
         fake_style.name = "Default"
         if self._api.media.is_loaded:
             fake_style.scale(resolution[1] / self._api.media.video.height)
+        fake_style_list = StyleList()
+        fake_style_list.append(fake_style)
 
-        fake_style_list = bubblesub.ass.style.StyleList()
-        fake_style_list.insert(0, [fake_style])
-
-        fake_event_list = bubblesub.ass.event.EventList()
-        fake_event_list.insert_one(
-            0,
+        fake_event = Event(
             start=0,
             end=1000,
             text=self._editor.toPlainText().replace("\n", "\\N"),
             style=fake_style.name,
         )
+        fake_event_list = EventList()
+        fake_event_list.append(fake_event)
 
         fake_info = bubblesub.ass.info.Metadata()
 
@@ -242,8 +243,9 @@ class _StyleList(QtWidgets.QWidget):
         if not style_name:
             return
 
-        style = self._api.subs.styles.insert_one(style_name)
-        idx = self._api.subs.styles.index(style)
+        style = Style(name=style_name)
+        self._api.subs.styles.append(style)
+        idx = style.index
         assert idx is not None
 
         self._styles_list_view.selectionModel().select(
@@ -303,7 +305,7 @@ class _StyleList(QtWidgets.QWidget):
         style_copy = copy(style)
         style_copy.name += " (copy)"
         with self._api.undo.capture():
-            self._api.subs.styles.insert(idx + 1, [style_copy])
+            self._api.subs.styles.insert(idx + 1, style_copy)
         self._styles_list_view.selectionModel().select(
             self._styles_list_view.model().index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear

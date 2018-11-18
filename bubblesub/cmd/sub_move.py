@@ -58,7 +58,7 @@ class SubtitlesMoveCommand(BaseCommand):
             raise CommandUnavailable("cannot move further up")
         for idx, count in make_ranges(indexes):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
-            self.api.subs.events.insert(idx - 1, chunk)
+            self.api.subs.events.insert(idx - 1, *chunk)
             self.api.subs.events.remove(idx + count, count)
             yield from chunk
 
@@ -67,7 +67,7 @@ class SubtitlesMoveCommand(BaseCommand):
             raise CommandUnavailable("cannot move further down")
         for idx, count in make_ranges(indexes, reverse=True):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
-            self.api.subs.events.insert(idx + count + 1, chunk)
+            self.api.subs.events.insert(idx + count + 1, *chunk)
             self.api.subs.events.remove(idx, count)
             yield from chunk
 
@@ -83,7 +83,7 @@ class SubtitlesMoveCommand(BaseCommand):
             self.api.subs.events.remove(idx, count)
 
         sub_copies.reverse()
-        self.api.subs.events.insert(base_idx, sub_copies)
+        self.api.subs.events.insert(base_idx, *sub_copies)
         return sub_copies
 
     async def _show_dialog(

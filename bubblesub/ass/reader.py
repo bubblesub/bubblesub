@@ -20,8 +20,9 @@ import re
 import typing as T
 from pathlib import Path
 
+from bubblesub.ass.event import Event
 from bubblesub.ass.file import AssFile
-from bubblesub.ass.style import Color
+from bubblesub.ass.style import Color, Style
 from bubblesub.ass.util import unescape_ass_tag
 
 TIMESTAMP_RE = re.compile(r"(\d{1,2}):(\d{2}):(\d{2})[.,](\d{2,3})")
@@ -77,30 +78,32 @@ def _styles_section_handler(
     _, rest = line.split(": ", 1)
     field_values = rest.strip().split(",")
     field_dict = dict(zip(ctx.field_names, field_values))
-    ass_file.styles.insert_one(
-        name=field_dict["Name"],
-        font_name=field_dict["Fontname"],
-        font_size=int(float(field_dict["Fontsize"])),
-        primary_color=_deserialize_color(field_dict["PrimaryColour"]),
-        secondary_color=_deserialize_color(field_dict["SecondaryColour"]),
-        outline_color=_deserialize_color(field_dict["OutlineColour"]),
-        back_color=_deserialize_color(field_dict["BackColour"]),
-        bold=field_dict["Bold"] == "-1",
-        italic=field_dict["Italic"] == "-1",
-        underline=field_dict["Underline"] == "-1",
-        strike_out=field_dict["StrikeOut"] == "-1",
-        scale_x=float(field_dict["ScaleX"]),
-        scale_y=float(field_dict["ScaleY"]),
-        spacing=float(field_dict["Spacing"]),
-        angle=float(field_dict["Angle"]),
-        border_style=int(field_dict["BorderStyle"]),
-        outline=float(field_dict["Outline"]),
-        shadow=float(field_dict["Shadow"]),
-        alignment=int(field_dict["Alignment"]),
-        margin_left=int(float(field_dict["MarginL"])),
-        margin_right=int(float(field_dict["MarginR"])),
-        margin_vertical=int(float(field_dict["MarginV"])),
-        encoding=int(field_dict["Encoding"]),
+    ass_file.styles.append(
+        Style(
+            name=field_dict["Name"],
+            font_name=field_dict["Fontname"],
+            font_size=int(float(field_dict["Fontsize"])),
+            primary_color=_deserialize_color(field_dict["PrimaryColour"]),
+            secondary_color=_deserialize_color(field_dict["SecondaryColour"]),
+            outline_color=_deserialize_color(field_dict["OutlineColour"]),
+            back_color=_deserialize_color(field_dict["BackColour"]),
+            bold=field_dict["Bold"] == "-1",
+            italic=field_dict["Italic"] == "-1",
+            underline=field_dict["Underline"] == "-1",
+            strike_out=field_dict["StrikeOut"] == "-1",
+            scale_x=float(field_dict["ScaleX"]),
+            scale_y=float(field_dict["ScaleY"]),
+            spacing=float(field_dict["Spacing"]),
+            angle=float(field_dict["Angle"]),
+            border_style=int(field_dict["BorderStyle"]),
+            outline=float(field_dict["Outline"]),
+            shadow=float(field_dict["Shadow"]),
+            alignment=int(field_dict["Alignment"]),
+            margin_left=int(float(field_dict["MarginL"])),
+            margin_right=int(float(field_dict["MarginR"])),
+            margin_vertical=int(float(field_dict["MarginV"])),
+            encoding=int(field_dict["Encoding"]),
+        )
     )
 
 
@@ -134,19 +137,21 @@ def _events_section_handler(
         start = int(match.group("start"))
         end = int(match.group("end"))
 
-    ass_file.events.insert_one(
-        layer=int(field_dict["Layer"]),
-        start=(start or _timestamp_to_ms(field_dict["Start"])),
-        end=(end or _timestamp_to_ms(field_dict["End"])),
-        style=field_dict["Style"],
-        actor=field_dict["Name"],
-        margin_left=int(field_dict["MarginL"]),
-        margin_right=int(field_dict["MarginR"]),
-        margin_vertical=int(field_dict["MarginV"]),
-        effect=field_dict["Effect"],
-        text=text,
-        note=note,
-        is_comment=event_type == "Comment",
+    ass_file.events.append(
+        Event(
+            layer=int(field_dict["Layer"]),
+            start=(start or _timestamp_to_ms(field_dict["Start"])),
+            end=(end or _timestamp_to_ms(field_dict["End"])),
+            style=field_dict["Style"],
+            actor=field_dict["Name"],
+            margin_left=int(field_dict["MarginL"]),
+            margin_right=int(field_dict["MarginR"]),
+            margin_vertical=int(field_dict["MarginV"]),
+            effect=field_dict["Effect"],
+            text=text,
+            note=note,
+            is_comment=event_type == "Comment",
+        )
     )
 
 

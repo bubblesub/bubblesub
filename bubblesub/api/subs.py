@@ -23,10 +23,10 @@ from PyQt5 import QtCore
 
 import bubblesub.ass.reader
 import bubblesub.ass.writer
-from bubblesub.ass.event import EventList
+from bubblesub.ass.event import Event, EventList
 from bubblesub.ass.file import AssFile
 from bubblesub.ass.info import Metadata
-from bubblesub.ass.style import StyleList
+from bubblesub.ass.style import Style, StyleList
 
 
 class SubtitlesApi(QtCore.QObject):
@@ -47,7 +47,7 @@ class SubtitlesApi(QtCore.QObject):
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
         self.ass_file = AssFile()
-        self.ass_file.styles.insert_one(name="Default")
+        self.ass_file.styles.append(Style(name="Default"))
         self.info_changed = self.ass_file.info.changed
         self.events.items_removed.connect(self._on_items_removed)
 
@@ -143,7 +143,7 @@ class SubtitlesApi(QtCore.QObject):
         self.selection_changed.emit(new_selection, changed)
 
     @property
-    def selected_events(self) -> T.List[bubblesub.ass.event.Event]:
+    def selected_events(self) -> T.List[Event]:
         """
         Return list of selected events.
 
@@ -158,7 +158,7 @@ class SubtitlesApi(QtCore.QObject):
         self.ass_file.info.clear()
         self.ass_file.events.clear()
         self.ass_file.styles.clear()
-        self.ass_file.styles.insert_one(name="Default")
+        self.ass_file.styles.append(Style(name="Default"))
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:

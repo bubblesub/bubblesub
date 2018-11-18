@@ -216,21 +216,7 @@ class Event(bubblesub.model.ObservableObject):
 class EventList(bubblesub.model.ObservableList[Event]):
     """ASS event list."""
 
-    def insert_one(
-        self, idx: T.Optional[int] = None, **kwargs: T.Any
-    ) -> Event:
-        """
-        Insert single event at the specified position.
-
-        :param idx: index to add the new event at
-        :param kwargs: arguments compatible with Event's constructor
-        :return: created event
-        """
-        subtitle = Event(**kwargs)
-        self.insert(len(self) if idx is None else idx, [subtitle])
-        return subtitle
-
-    def insert(self, idx: int, items: T.List[Event]) -> None:
+    def insert(self, idx: int, *items: T.List[Event]) -> None:
         """
         Insert events at the specified position.
 
@@ -240,7 +226,7 @@ class EventList(bubblesub.model.ObservableList[Event]):
         for item in items:
             assert item.event_list is None, "Event belongs to another list"
             item.event_list = self
-        super().insert(idx, items)
+        super().insert(idx, *items)
 
     def remove(self, idx: int, count: int) -> None:
         """

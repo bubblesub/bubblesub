@@ -44,7 +44,7 @@ class SubtitlesSplitCommand(BaseCommand):
                 if split_pos < sub.start or split_pos > sub.end:
                     continue
                 idx = sub.index
-                self.api.subs.events.insert(idx + 1, [copy(sub)])
+                self.api.subs.events.insert(idx + 1, copy(sub))
                 self.api.subs.events[idx].end = split_pos
                 self.api.subs.events[idx + 1].start = split_pos
                 self.api.subs.selected_indexes = [idx, idx + 1]

@@ -66,7 +66,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                     start = sub_copy.end
                     new_subs.append(sub_copy)
 
-                self.api.subs.events.insert(idx, new_subs)
+                self.api.subs.events.insert(idx, *new_subs)
                 new_selection += new_subs
 
             self.api.subs.selected_indexes = [

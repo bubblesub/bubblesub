@@ -111,7 +111,7 @@ class SubtitlesPasteCommand(BaseCommand):
 
         items = T.cast(T.List[Event], _unpickle(text))
         with self.api.undo.capture():
-            self.api.subs.events.insert(idx, items)
+            self.api.subs.events.insert(idx, *items)
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
 
     @staticmethod

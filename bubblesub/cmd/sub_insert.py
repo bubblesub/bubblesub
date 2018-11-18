@@ -19,6 +19,7 @@ import typing as T
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ass.event import Event
 from bubblesub.cmd.common import SubtitlesSelection
 
 
@@ -40,8 +41,8 @@ class SubtitleInsertCommand(BaseCommand):
             end = self.api.media.video.align_pts_to_near_frame(end)
 
         with self.api.undo.capture():
-            self.api.subs.events.insert_one(
-                idx, start=start, end=end, style="Default"
+            self.api.subs.events.insert(
+                idx, Event(start=start, end=end, style="Default")
             )
             self.api.subs.selected_indexes = [idx]
 
