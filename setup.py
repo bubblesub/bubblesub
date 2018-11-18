@@ -55,22 +55,21 @@ class GenerateDocumentationCommand(Command):
         opt = bubblesub.opt.Options()
 
         table = []
-        for context, hotkeys in opt.hotkeys:
-            for hotkey in hotkeys:
-                last_cell = []
-                for invocation in split_invocation(hotkey.cmdline):
-                    cmd_name, *cmd_args = invocation
-                    anchor = self._get_anchor_name("cmd", cmd_name)
-                    last_cell.append(
-                        f'<a href="#user-content-{anchor}">{cmd_name}</a> '
-                        + " ".join(shlex.quote(arg) for arg in cmd_args)
-                    )
-                row = [
-                    f"<kbd>{hotkey.shortcut}</kbd>",
-                    re.sub("([A-Z])", r" \1", context.name).strip().lower(),
-                    "<code>" + "; ".join(last_cell) + "</code>",
-                ]
-                table.append(row)
+        for hotkey in opt.hotkeys:
+            last_cell = []
+            for invocation in split_invocation(hotkey.cmdline):
+                cmd_name, *cmd_args = invocation
+                anchor = self._get_anchor_name("cmd", cmd_name)
+                last_cell.append(
+                    f'<a href="#user-content-{anchor}">{cmd_name}</a> '
+                    + " ".join(shlex.quote(arg) for arg in cmd_args)
+                )
+            row = [
+                f"<kbd>{hotkey.shortcut}</kbd>",
+                re.sub("([A-Z])", r" \1", hotkey.context.name).strip().lower(),
+                "<code>" + "; ".join(last_cell) + "</code>",
+            ]
+            table.append(row)
 
         print("# Default hotkeys", file=handle)
         print("", file=handle)

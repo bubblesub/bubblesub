@@ -36,13 +36,17 @@ class HotkeyContext(enum.Enum):
 class Hotkey:
     """Hotkey definition."""
 
-    def __init__(self, shortcut: str, cmdline: str) -> None:
+    def __init__(
+        self, context: HotkeyContext, shortcut: str, cmdline: str
+    ) -> None:
         """
         Initialize self.
 
+        :param context: context in the gui the hotkey works for
         :param shortcut: key combination that activates the hotkey
         :param cmdline: command line to execute
         """
+        self.context = context
         self.shortcut = shortcut
         self.cmdline = cmdline
 
@@ -54,16 +58,12 @@ class HotkeysConfig(BaseConfig):
 
     def __init__(self) -> None:
         """Initialize self."""
-        self.hotkeys: T.Dict[HotkeyContext, T.List[Hotkey]] = {
-            context: [] for context in HotkeyContext
-        }
+        self._hotkeys: T.List[Hotkey] = []
         super().__init__()
 
     def reset(self) -> None:
         """Reset to factory defaults."""
-        for context in HotkeyContext:
-            self.hotkeys[context].clear()
-
+        self._hotkeys.clear()
         self.loads((ROOT_DIR / self.file_name).read_text())
 
     def loads(self, text: str) -> None:
@@ -92,7 +92,9 @@ class HotkeysConfig(BaseConfig):
                 shortcut, cmdline = re.split(r"\s+", line, maxsplit=1)
             except ValueError:
                 raise ConfigError(f"syntax error near line #{i} ({line})")
-            self.hotkeys[cur_context].append(Hotkey(shortcut, cmdline))
+            self._hotkeys.append(
+                Hotkey(context=cur_context, shortcut=shortcut, cmdline=cmdline)
+            )
 
     def create_example_file(self, root_dir: Path) -> None:
         """
@@ -106,10 +108,10 @@ class HotkeysConfig(BaseConfig):
                 (ROOT_DIR / self.file_name).with_suffix(".example").read_text()
             )
 
-    def __iter__(self) -> T.Iterator[T.Tuple[HotkeyContext, T.List[Hotkey]]]:
+    def __iter__(self) -> T.Iterator[Hotkey]:
         """
         Let users iterate directly over this config.
 
         :return: iterator
         """
-        return iter(self.hotkeys.items())
+        return iter(self._hotkeys)

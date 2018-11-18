@@ -27,7 +27,7 @@ from bubblesub.opt.hotkeys import Hotkey, HotkeyContext
 def setup_hotkeys(
     api: Api,
     context_to_widget_map: T.Dict[HotkeyContext, QtWidgets.QWidget],
-    hotkeys_def: T.Iterable[T.Tuple[HotkeyContext, T.List[Hotkey]]],
+    hotkeys: T.Iterable[Hotkey],
 ) -> None:
     main_widget = context_to_widget_map[HotkeyContext.Global]
     for shortcut in main_widget.findChildren(QtWidgets.QShortcut):
@@ -36,18 +36,17 @@ def setup_hotkeys(
     key_sequences: T.List[str] = []
     cmd_map: T.Dict[T.Tuple[QtWidgets.QWidget, str], T.List[BaseCommand]] = {}
 
-    for context, hotkeys in hotkeys_def:
-        parent = context_to_widget_map[context]
-        for hotkey in hotkeys:
-            # parse cmdline here to report configuration errors early
-            try:
-                cmds = api.cmd.parse_cmdline(hotkey.cmdline)
-            except CommandError as ex:
-                api.log.error(str(ex))
-                continue
+    for hotkey in hotkeys:
+        parent = context_to_widget_map[hotkey.context]
+        # parse cmdline here to report configuration errors early
+        try:
+            cmds = api.cmd.parse_cmdline(hotkey.cmdline)
+        except CommandError as ex:
+            api.log.error(str(ex))
+            continue
 
-            cmd_map[parent, hotkey.shortcut] = cmds
-            key_sequences.append(hotkey.shortcut)
+        cmd_map[parent, hotkey.shortcut] = cmds
+        key_sequences.append(hotkey.shortcut)
 
     def _on_activate(keys: str) -> None:
         widget = QtWidgets.QApplication.focusWidget()

@@ -73,9 +73,8 @@ class _CommandAction(QtWidgets.QAction):
 
 def _build_hotkey_map(api: Api) -> HotkeyMap:
     ret: HotkeyMap = {}
-    for context, hotkeys in api.opt.hotkeys:
-        for hotkey in hotkeys:
-            ret[context, hotkey.cmdline] = hotkey.shortcut
+    for hotkey in api.opt.hotkeys:
+        ret[hotkey.context, hotkey.cmdline] = hotkey.shortcut
     return ret
 
 
