@@ -37,6 +37,12 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         super().__init__(parent)
         self._list = list_
         self._list.item_changed.connect(self._proxy_data_changed)
+        self._list.items_about_to_be_inserted.connect(
+            self._proxy_items_about_to_be_inserted
+        )
+        self._list.items_about_to_be_removed.connect(
+            self._proxy_items_about_to_be_removed
+        )
         self._list.items_inserted.connect(self._proxy_items_inserted)
         self._list.items_removed.connect(self._proxy_items_removed)
 
@@ -122,6 +128,22 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
                 self.index(row_idx, col_idx),
                 self.index(row_idx, col_idx),
                 [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole],
+            )
+
+    def _proxy_items_about_to_be_inserted(
+        self, row_idx: int, count: int
+    ) -> None:
+        if count:
+            self.rowsAboutToBeInserted.emit(
+                QtCore.QModelIndex(), row_idx, row_idx + count - 1
+            )
+
+    def _proxy_items_about_to_be_removed(
+        self, row_idx: int, count: int
+    ) -> None:
+        if count:
+            self.rowsAboutToBeRemoved.emit(
+                QtCore.QModelIndex(), row_idx, row_idx + count - 1
             )
 
     def _proxy_items_inserted(self, row_idx: int, count: int) -> None:

@@ -152,6 +152,8 @@ class ObservableListSignals(QtCore.QObject):
     annotations required by ObservableList.
     """
 
+    items_about_to_be_inserted = QtCore.pyqtSignal([int, int])
+    items_about_to_be_removed = QtCore.pyqtSignal([int, int])
     items_inserted = QtCore.pyqtSignal([int, int])
     items_removed = QtCore.pyqtSignal([int, int])
     item_changed = QtCore.pyqtSignal([int])
@@ -165,6 +167,24 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         super().__init__()
         self._signals = ObservableListSignals()
         self._items: T.List[TItem] = []
+
+    @property
+    def items_about_to_be_inserted(self) -> QtCore.pyqtSignal:
+        """
+        Proxy items_about_to_be_inserted event.
+
+        :return: signal
+        """
+        return self._signals.items_about_to_be_inserted
+
+    @property
+    def items_about_to_be_removed(self) -> QtCore.pyqtSignal:
+        """
+        Proxy items_about_to_be_removed event.
+
+        :return: signal
+        """
+        return self._signals.items_about_to_be_removed
 
     @property
     def items_inserted(self) -> QtCore.pyqtSignal:
@@ -314,6 +334,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         """
         if not items:
             return
+        self.items_about_to_be_inserted.emit(idx, len(items))
         self._items = self._items[:idx] + list(items) + self._items[idx:]
         self.items_inserted.emit(idx, len(items))
 
@@ -326,6 +347,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         :param idx: where to start the removal
         :param count: how many elements to remove
         """
+        self.items_about_to_be_removed.emit(idx, count)
         self._items = self._items[:idx] + self._items[idx + count :]
         self.items_removed.emit(idx, count)
 

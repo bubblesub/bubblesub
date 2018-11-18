@@ -40,6 +40,7 @@ class _StylePreview(QtWidgets.QGroupBox):
     def __init__(
         self,
         api: bubblesub.api.Api,
+        model: StylesModel,
         selection_model: QtCore.QItemSelectionModel,
         parent: QtWidgets.QWidget,
     ) -> None:
@@ -81,9 +82,10 @@ class _StylePreview(QtWidgets.QGroupBox):
         self._background_combobox.currentIndexChanged.connect(
             self._on_background_change
         )
-        api.subs.styles.item_changed.connect(self.update_preview)
-        api.subs.styles.items_inserted.connect(self.update_preview)
-        api.subs.styles.items_removed.connect(self.update_preview)
+
+        model.dataChanged.connect(self.update_preview)
+        model.rowsInserted.connect(self.update_preview)
+        model.rowsRemoved.connect(self.update_preview)
         selection_model.selectionChanged.connect(self.update_preview)
 
     def _on_background_change(self) -> None:
@@ -168,6 +170,7 @@ class _StyleList(QtWidgets.QWidget):
     ) -> None:
         super().__init__(parent)
         self._api = api
+        self._model = model
         selection_model.selectionChanged.connect(self._on_selection_change)
 
         self._styles_list_view = QtWidgets.QListView(self)
@@ -249,7 +252,7 @@ class _StyleList(QtWidgets.QWidget):
         assert idx is not None
 
         self._styles_list_view.selectionModel().select(
-            self._styles_list_view.model().index(idx, 0),
+            self._model.index(idx, 0),
             QtCore.QItemSelectionModel.Clear
             | QtCore.QItemSelectionModel.Select,
         )
@@ -307,7 +310,7 @@ class _StyleList(QtWidgets.QWidget):
         with self._api.undo.capture():
             self._api.subs.styles.insert(idx + 1, style_copy)
         self._styles_list_view.selectionModel().select(
-            self._styles_list_view.model().index(idx + 1, 0),
+            self._model.index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear
             | QtCore.QItemSelectionModel.Select,
         )
@@ -322,7 +325,7 @@ class _StyleList(QtWidgets.QWidget):
         with self._api.undo.capture():
             self._api.subs.styles.move(idx, idx - 1)
         self._styles_list_view.selectionModel().select(
-            self._styles_list_view.model().index(idx - 1, 0),
+            self._model.index(idx - 1, 0),
             QtCore.QItemSelectionModel.Clear
             | QtCore.QItemSelectionModel.Select,
         )
@@ -337,7 +340,7 @@ class _StyleList(QtWidgets.QWidget):
         with self._api.undo.capture():
             self._api.subs.styles.move(idx, idx + 1)
         self._styles_list_view.selectionModel().select(
-            self._styles_list_view.model().index(idx + 1, 0),
+            self._model.index(idx + 1, 0),
             QtCore.QItemSelectionModel.Clear
             | QtCore.QItemSelectionModel.Select,
         )
@@ -361,8 +364,7 @@ class _StyleList(QtWidgets.QWidget):
                     line.style = new_name
 
         self._styles_list_view.selectionModel().select(
-            self._styles_list_view.model().index(idx, 0),
-            QtCore.QItemSelectionModel.Select,
+            self._model.index(idx, 0), QtCore.QItemSelectionModel.Select
         )
 
 
@@ -623,7 +625,6 @@ class _StyleEditor(QtWidgets.QWidget):
         parent: QtWidgets.QWidget,
     ) -> None:
         super().__init__(parent)
-        self._model = model
         self._mapper = bubblesub.ui.util.ImmediateDataWidgetMapper(
             model, {_AlignmentGroupBox: "changed"}
         )
@@ -679,7 +680,7 @@ class _StylesManagerDialog(QtWidgets.QDialog):
         self._style_list = _StyleList(api, model, selection_model, self)
         self._style_editor = _StyleEditor(model, selection_model, self)
         self._style_editor.setEnabled(False)
-        self._preview_box = _StylePreview(api, selection_model, self)
+        self._preview_box = _StylePreview(api, model, selection_model, self)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.addWidget(self._style_list)
