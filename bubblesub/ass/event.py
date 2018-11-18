@@ -216,7 +216,7 @@ class Event(bubblesub.model.ObservableObject):
 class EventList(bubblesub.model.ObservableList[Event]):
     """ASS event list."""
 
-    def insert(self, idx: int, *items: T.List[Event]) -> None:
+    def insert(self, idx: int, *items: Event) -> None:
         """
         Insert events at the specified position.
 

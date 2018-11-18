@@ -203,7 +203,7 @@ class Style(bubblesub.model.ObservableObject):
 class StyleList(bubblesub.model.ObservableList[Style]):
     """ASS style list."""
 
-    def insert(self, idx: int, *items: T.List[Style]) -> None:
+    def insert(self, idx: int, *items: Style) -> None:
         """
         Insert styles at the specified position.
 

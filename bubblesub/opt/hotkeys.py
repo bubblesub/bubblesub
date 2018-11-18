@@ -21,6 +21,8 @@ import re
 import typing as T
 from pathlib import Path
 
+from PyQt5 import QtCore
+
 from bubblesub.data import ROOT_DIR
 from bubblesub.opt.base import BaseConfig, ConfigError
 
@@ -51,14 +53,21 @@ class Hotkey:
         self.cmdline = cmdline
 
 
+class _HotkeysConfigSignals(QtCore.QObject):
+    # QObject doesn't play nice with multiple inheritance, hence composition
+    changed = QtCore.pyqtSignal()
+
+
 class HotkeysConfig(BaseConfig):
     """Configuration for global and widget-centric GUI hotkeys."""
 
+    changed = property(lambda self: self._signals.changed)
     file_name = "hotkeys.conf"
 
     def __init__(self) -> None:
         """Initialize self."""
         self._hotkeys: T.List[Hotkey] = []
+        self._signals = _HotkeysConfigSignals()
         super().__init__()
 
     def reset(self) -> None:
@@ -115,3 +124,39 @@ class HotkeysConfig(BaseConfig):
         :return: iterator
         """
         return iter(self._hotkeys)
+
+    def __getitem__(self, key: T.Any) -> T.Optional[str]:
+        context, shortcut = key
+        for hotkey in self._hotkeys:
+            if hotkey.context == context and hotkey.shortcut == shortcut:
+                return hotkey.cmdline
+        return None
+
+    def __setitem__(self, key: T.Any, cmdline: T.Optional[str]) -> None:
+        context, shortcut = self._parse_key(key)
+        if cmdline is None:
+            for i, hotkey in enumerate(self._hotkeys):
+                if hotkey.context == context and hotkey.shortcut == shortcut:
+                    del self._hotkeys[i]
+                    self.changed.emit()
+            return
+
+        for hotkey in self._hotkeys:
+            if hotkey.shortcut == shortcut and hotkey.cmdline == cmdline:
+                if cmdline != hotkey.cmdline:
+                    hotkey.cmdline = cmdline
+                    self.changed.emit()
+                return
+
+        self._hotkeys.append(
+            Hotkey(context=context, shortcut=shortcut, cmdline=cmdline)
+        )
+        self.changed.emit()
+
+    def _parse_key(self, key: T.Any) -> T.Tuple[HotkeyContext, str]:
+        msg = "key must be a context-shortcut tuple"
+        assert isinstance(key, tuple), msg
+        assert len(key) == 2, msg
+        assert isinstance(key[0], HotkeyContext), msg
+        assert isinstance(key[1], str), msg
+        return (key[0], key[1])

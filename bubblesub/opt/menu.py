@@ -22,7 +22,7 @@ import typing as T
 from pathlib import Path
 
 from bubblesub.data import ROOT_DIR
-from bubblesub.opt.base import BaseConfig
+from bubblesub.opt.base import BaseConfig, ConfigError
 
 
 class MenuContext(enum.Enum):

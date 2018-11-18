@@ -52,6 +52,7 @@ class MainWindow(QtWidgets.QMainWindow):
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._rebuild_menu)
         api.cmd.commands_loaded.connect(self._rebuild_hotkeys)
+        api.opt.hotkeys.changed.connect(self._rebuild_hotkeys)
 
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
