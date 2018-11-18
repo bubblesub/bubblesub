@@ -382,7 +382,7 @@ class AudioPreview(BaseAudioWidget):
     def _draw_keyframes(self, painter: QtGui.QPainter) -> None:
         h = painter.viewport().height()
         color = get_color(self._api, "spectrogram/keyframe")
-        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.DashLine))
+        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         for keyframe in self._api.media.video.keyframes:
             timecode = self._api.media.video.timecodes[keyframe]
             x = self._pts_to_x(timecode)
