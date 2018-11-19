@@ -24,6 +24,7 @@ interesting, complex ways.
 import abc
 import argparse
 import asyncio
+import contextlib
 import importlib.util
 import io
 import itertools
@@ -230,6 +231,7 @@ class CommandApi(QtCore.QObject):
         self._api = api
         self._registry: T.Dict[str, T.Type[BaseCommand]] = {}
         self._plugin_menu: T.List[MenuItem] = []
+        self._modules: T.List[T.Any] = []
 
         self.reload_commands()
 
@@ -349,6 +351,12 @@ class CommandApi(QtCore.QObject):
 
     def _unload_commands(self) -> None:
         """Unloads registered commands.."""
+        for module in self._modules:
+            with self._guard():
+                try:
+                    module.on_unload(self._api)
+                except AttributeError:
+                    pass
         self._plugin_menu[:] = []
         for name, cls in list(self._registry.items()):
             self._api.log.debug(f"unregistering {cls} as {name}")
@@ -384,19 +392,43 @@ class CommandApi(QtCore.QObject):
                     specs.append(spec)
 
         for spec in specs:
-            try:
+            with self._guard():
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)
-                for cls in mod.COMMANDS:
-                    for name in cls.names:
-                        self._api.log.debug(f"registering {cls} as {name}")
-                        self._registry[name] = cls
-                try:
-                    menu = mod.MENU
-                except AttributeError:
-                    pass
-                else:
-                    self._plugin_menu += menu
-            except Exception as ex:  # pylint: disable=broad-except
-                self._api.log.error(str(ex))
-                traceback.print_exc()
+                self._load_module(mod)
+
+    def _load_module(self, mod: importlib.types.ModuleType) -> None:
+        # commands
+        try:
+            commands = mod.COMMANDS
+        except AttributeError:
+            pass
+        else:
+            for cls in commands:
+                for name in cls.names:
+                    self._api.log.debug(f"registering {cls} as {name}")
+                    self._registry[name] = cls
+
+        # menu
+        try:
+            menu = mod.MENU
+        except AttributeError:
+            pass
+        else:
+            self._plugin_menu += menu
+
+        # load hook
+        try:
+            mod.on_load(self._api)
+        except AttributeError:
+            pass
+
+        self._modules.append(mod)
+
+    @contextlib.contextmanager
+    def _guard(self) -> T.Generator:
+        try:
+            yield
+        except Exception as ex:  # pylint: disable=broad-except
+            self._api.log.error(str(ex))
+            traceback.print_exc()
