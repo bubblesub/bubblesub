@@ -23,12 +23,19 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError
 from bubblesub.opt.hotkeys import Hotkey, HotkeyContext
 
+cmd_cache: T.Dict[str, T.List[BaseCommand]] = {}
+
 
 def setup_hotkeys(
     api: Api,
     context_to_widget_map: T.Dict[HotkeyContext, QtWidgets.QWidget],
     hotkeys: T.Iterable[Hotkey],
+    clear_cache: bool = False,
 ) -> None:
+    global cmd_cache
+    if clear_cache:
+        cmd_cache.clear()
+
     main_widget = context_to_widget_map[HotkeyContext.Global]
     for shortcut in main_widget.findChildren(QtWidgets.QShortcut):
         shortcut.setParent(None)
@@ -38,12 +45,19 @@ def setup_hotkeys(
 
     for hotkey in hotkeys:
         parent = context_to_widget_map[hotkey.context]
-        # parse cmdline here to report configuration errors early
-        try:
-            cmds = api.cmd.parse_cmdline(hotkey.cmdline)
-        except CommandError as ex:
-            api.log.error(str(ex))
-            continue
+
+        # cache to speed up hotkey runtime changes
+        cmds = cmd_cache.get(hotkey.cmdline)
+
+        if not cmds:
+            # parse cmdline here to report configuration errors early
+            try:
+                cmds = api.cmd.parse_cmdline(hotkey.cmdline)
+            except CommandError as ex:
+                api.log.error(str(ex))
+                continue
+            else:
+                cmd_cache[hotkey.cmdline] = cmds
 
         cmd_map[parent, hotkey.shortcut] = cmds
         key_sequences.append(hotkey.shortcut)

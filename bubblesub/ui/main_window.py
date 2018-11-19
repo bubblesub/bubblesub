@@ -51,8 +51,12 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._rebuild_menu)
-        api.cmd.commands_loaded.connect(self._rebuild_hotkeys)
-        api.opt.hotkeys.changed.connect(self._rebuild_hotkeys)
+        api.cmd.commands_loaded.connect(
+            lambda: self._rebuild_hotkeys(clear_cache=True)
+        )
+        api.opt.hotkeys.changed.connect(
+            lambda: self._rebuild_hotkeys(clear_cache=False)
+        )
 
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
@@ -171,7 +175,7 @@ class MainWindow(QtWidgets.QMainWindow):
             HotkeyContext.Global,
         )
 
-    def _rebuild_hotkeys(self) -> None:
+    def _rebuild_hotkeys(self, clear_cache=False) -> None:
         setup_hotkeys(
             self._api,
             {
@@ -180,6 +184,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 HotkeyContext.SubtitlesGrid: self.subs_grid,
             },
             self._api.opt.hotkeys,
+            clear_cache=clear_cache,
         )
 
     def _restore_splitters(self) -> None:
