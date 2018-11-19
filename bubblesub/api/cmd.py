@@ -27,7 +27,6 @@ import asyncio
 import importlib.util
 import io
 import itertools
-import shlex
 import time
 import traceback
 import typing as T
@@ -102,20 +101,44 @@ def split_invocation(invocation: str) -> T.List[T.List[str]]:
     :param invocation: command line to parse
     :return: tuple containing command name and arguments
     """
-    splitter = shlex.shlex(invocation, punctuation_chars=";")
-    splitter.wordchars = "".join(
-        char
-        for char in invocation
-        if char not in splitter.quotes + splitter.whitespace + ";"
-    )
-    tokens = list(splitter)
+    cmds: T.List[T.List[str]] = []
+    cmd: T.List[str] = []
 
-    invocations = [
-        list(group)
-        for key, group in itertools.groupby(tokens, lambda token: token == ";")
-        if not key
-    ]
-    return invocations
+    invocation = invocation.strip()
+    while invocation:
+        char = invocation[0]
+        invocation = invocation[1:]
+
+        if char in "'\"":
+            while invocation:
+                char2 = invocation[0]
+                invocation = invocation[1:]
+                if char2 == char:
+                    break
+                if cmd:
+                    cmd[-1] += char2
+                else:
+                    cmd.append(char2)
+            continue
+
+        if char == ";":
+            cmds.append(cmd)
+            cmd = []
+            continue
+
+        if char in " \t":
+            cmd.append("")
+            continue
+
+        if cmd:
+            cmd[-1] += char
+        else:
+            cmd.append(char)
+
+    if cmd:
+        cmds.append(cmd)
+
+    return cmds
 
 
 class BaseCommand(abc.ABC):
