@@ -57,16 +57,16 @@ class SubtitlesSetCommand(BaseCommand):
                         align_to_near_frame=not self.args.no_align,
                     )
 
-                if self.args.text:
+                if self.args.text is not None:
                     sub.text = self.args.text.format(**params)
 
-                if self.args.note:
+                if self.args.note is not None:
                     sub.note = self.args.note.format(**params)
 
-                if self.args.actor:
+                if self.args.actor is not None:
                     sub.actor = self.args.actor.format(**params)
 
-                if self.args.style:
+                if self.args.style is not None:
                     sub.style = self.args.style.format(**params)
 
                 if self.args.comment:
