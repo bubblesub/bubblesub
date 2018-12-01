@@ -28,7 +28,7 @@ import bubblesub.ui.video
 from bubblesub.api import Api
 from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuCommand, MenuContext, MenuSeparator, SubMenu
-from bubblesub.ui.hotkeys import setup_hotkeys
+from bubblesub.ui.hotkeys import HotkeyManager
 from bubblesub.ui.menu import setup_cmd_menu
 
 
@@ -51,12 +51,6 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._rebuild_menu)
-        api.cmd.commands_loaded.connect(
-            lambda: self._rebuild_hotkeys(clear_cache=True)
-        )
-        api.opt.hotkeys.changed.connect(
-            lambda: self._rebuild_hotkeys(clear_cache=False)
-        )
 
         self.video = bubblesub.ui.video.Video(api, self)
         self.audio = bubblesub.ui.audio.Audio(api, self)
@@ -98,7 +92,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.apply_palette(T.cast(str, api.opt.general.gui.current_palette))
         self._restore_splitters()
         self._rebuild_menu()
-        self._rebuild_hotkeys()
+
+        HotkeyManager(
+            api,
+            {
+                HotkeyContext.Global: self,
+                HotkeyContext.Spectrogram: self.audio,
+                HotkeyContext.SubtitlesGrid: self.subs_grid,
+            },
+        )
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         bubblesub.ui.util.get_color.cache_clear()
@@ -173,18 +175,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 )
             ],
             HotkeyContext.Global,
-        )
-
-    def _rebuild_hotkeys(self, clear_cache=False) -> None:
-        setup_hotkeys(
-            self._api,
-            {
-                HotkeyContext.Global: self,
-                HotkeyContext.Spectrogram: self.audio,
-                HotkeyContext.SubtitlesGrid: self.subs_grid,
-            },
-            self._api.opt.hotkeys,
-            clear_cache=clear_cache,
         )
 
     def _restore_splitters(self) -> None:

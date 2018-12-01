@@ -23,60 +23,80 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError
 from bubblesub.opt.hotkeys import Hotkey, HotkeyContext
 
-cmd_cache: T.Dict[str, T.List[BaseCommand]] = {}
 
+class HotkeyManager:
+    def __init__(
+        self, api: Api, context_map: T.Dict[HotkeyContext, QtWidgets.QWidget]
+    ) -> None:
+        self._api = api
+        self._hotkey_context_map = context_map
 
-def setup_hotkeys(
-    api: Api,
-    context_to_widget_map: T.Dict[HotkeyContext, QtWidgets.QWidget],
-    hotkeys: T.Iterable[Hotkey],
-    clear_cache: bool = False,
-) -> None:
-    global cmd_cache
-    if clear_cache:
-        cmd_cache.clear()
+        self._cmd_map: T.Dict[
+            T.Tuple[QtWidgets.QWidget, str],
+            T.Tuple[QtWidgets.QShortcut, T.List[BaseCommand]],
+        ] = {}
 
-    main_widget = context_to_widget_map[HotkeyContext.Global]
-    for shortcut in main_widget.findChildren(QtWidgets.QShortcut):
-        shortcut.setParent(None)
+        self._rebuild()
 
-    key_sequences: T.List[str] = []
-    cmd_map: T.Dict[T.Tuple[QtWidgets.QWidget, str], T.List[BaseCommand]] = {}
+        api.cmd.commands_loaded.connect(self._rebuild)
+        api.opt.hotkeys.changed.connect(self._on_hotkey_change)
+        api.opt.hotkeys.added.connect(self._on_hotkey_add)
+        api.opt.hotkeys.deleted.connect(self._on_hotkey_delete)
 
-    for hotkey in hotkeys:
-        parent = context_to_widget_map[hotkey.context]
+    def _rebuild(self) -> None:
+        for qt_shortcut, _cmds in self._cmd_map.values():
+            qt_shortcut.setParent(None)
+        for hotkey in self._api.opt.hotkeys:
+            self._set_hotkey(hotkey.context, hotkey.shortcut, hotkey.cmdline)
 
-        # cache to speed up hotkey runtime changes
-        cmds = cmd_cache.get(hotkey.cmdline)
+    def _on_hotkey_add(self, hotkey: Hotkey) -> None:
+        self._set_hotkey(hotkey.context, hotkey.shortcut, hotkey.cmdline)
 
-        if not cmds:
-            # parse cmdline here to report configuration errors early
-            try:
-                cmds = api.cmd.parse_cmdline(hotkey.cmdline)
-            except CommandError as ex:
-                api.log.error(str(ex))
-                continue
-            else:
-                cmd_cache[hotkey.cmdline] = cmds
+    def _on_hotkey_delete(self, hotkey: Hotkey) -> None:
+        self._set_hotkey(hotkey.context, hotkey.shortcut, None)
 
-        cmd_map[parent, hotkey.shortcut] = cmds
-        key_sequences.append(hotkey.shortcut)
+    def _on_hotkey_change(self, hotkey: Hotkey) -> None:
+        self._set_hotkey(hotkey.context, hotkey.shortcut, hotkey.cmdline)
 
-    def _on_activate(keys: str) -> None:
-        widget = QtWidgets.QApplication.focusWidget()
-        while widget:
-            if (widget, keys) in cmd_map:
-                cmds = cmd_map[widget, keys]
-                for cmd in cmds:
-                    api.cmd.run(cmd)
-                break
-            widget = widget.parent()
+    def _set_hotkey(
+        self,
+        context: HotkeyContext,
+        shortcut: str,
+        cmdline: T.Optional[T.Union[str, T.List[T.List[str]]]],
+    ) -> None:
+        widget = self._hotkey_context_map[context]
+        shortcut = shortcut.lower()
 
-    for key_sequence in key_sequences:
-        shortcut = QtWidgets.QShortcut(
-            QtGui.QKeySequence(key_sequence), main_widget
+        if cmdline is None:
+            result: T.Optional[
+                T.Tuple[QtWidgets.QShortcut, T.List[BaseCommand]],
+            ] = self._cmd_map.pop((widget, shortcut), None)
+            if result:
+                qt_shortcut, _cmds = result
+                qt_shortcut.setParent(None)
+            return
+
+        # parse cmdline here to report configuration errors early
+        try:
+            cmds = self._api.cmd.parse_cmdline(cmdline)
+        except CommandError as ex:
+            self._api.log.error(str(ex))
+            return
+
+        def _on_activate(keys: str) -> None:
+            widget = QtWidgets.QApplication.focusWidget()
+            while widget:
+                if (widget, keys) in self._cmd_map:
+                    _qt_shortcut, cmds = self._cmd_map[widget, keys]
+                    for cmd in cmds:
+                        self._api.cmd.run(cmd)
+                    break
+                widget = widget.parent()
+
+        qt_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(shortcut), widget)
+        qt_shortcut.activatedAmbiguously.connect(qt_shortcut.activated.emit)
+        qt_shortcut.activated.connect(
+            functools.partial(_on_activate, shortcut)
         )
-        shortcut.activatedAmbiguously.connect(shortcut.activated.emit)
-        shortcut.activated.connect(
-            functools.partial(_on_activate, key_sequence)
-        )
+
+        self._cmd_map[widget, shortcut] = (qt_shortcut, cmds)

@@ -55,13 +55,17 @@ class Hotkey:
 
 class _HotkeysConfigSignals(QtCore.QObject):
     # QObject doesn't play nice with multiple inheritance, hence composition
-    changed = QtCore.pyqtSignal()
+    changed = QtCore.pyqtSignal([Hotkey])
+    added = QtCore.pyqtSignal([Hotkey])
+    deleted = QtCore.pyqtSignal([Hotkey])
 
 
 class HotkeysConfig(BaseConfig):
     """Configuration for global and widget-centric GUI hotkeys."""
 
     changed = property(lambda self: self._signals.changed)
+    added = property(lambda self: self._signals.added)
+    deleted = property(lambda self: self._signals.deleted)
     file_name = "hotkeys.conf"
 
     def __init__(self) -> None:
@@ -141,17 +145,16 @@ class HotkeysConfig(BaseConfig):
                 and hotkey.shortcut.lower() == shortcut.lower()
             ):
                 if cmdline is None:
+                    self.deleted.emit(self._hotkeys[i])
                     del self._hotkeys[i]
-                    self.changed.emit()
                 elif cmdline != hotkey.cmdline:
                     hotkey.cmdline = cmdline
-                    self.changed.emit()
+                    self.changed.emit(hotkey)
                 return
 
-        self._hotkeys.append(
-            Hotkey(context=context, shortcut=shortcut, cmdline=cmdline)
-        )
-        self.changed.emit()
+        hotkey = Hotkey(context=context, shortcut=shortcut, cmdline=cmdline)
+        self._hotkeys.append(hotkey)
+        self.added.emit(hotkey)
 
     def _parse_key(self, key: T.Any) -> T.Tuple[HotkeyContext, str]:
         msg = "key must be a context-shortcut tuple"
