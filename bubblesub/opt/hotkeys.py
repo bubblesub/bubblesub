@@ -134,16 +134,16 @@ class HotkeysConfig(BaseConfig):
 
     def __setitem__(self, key: T.Any, cmdline: T.Optional[str]) -> None:
         context, shortcut = self._parse_key(key)
-        if cmdline is None:
-            for i, hotkey in enumerate(self._hotkeys):
-                if hotkey.context == context and hotkey.shortcut == shortcut:
+
+        for i, hotkey in enumerate(self._hotkeys):
+            if (
+                hotkey.context == context
+                and hotkey.shortcut.lower() == shortcut.lower()
+            ):
+                if cmdline is None:
                     del self._hotkeys[i]
                     self.changed.emit()
-            return
-
-        for hotkey in self._hotkeys:
-            if hotkey.shortcut == shortcut and hotkey.cmdline == cmdline:
-                if cmdline != hotkey.cmdline:
+                elif cmdline != hotkey.cmdline:
                     hotkey.cmdline = cmdline
                     self.changed.emit()
                 return
