@@ -383,6 +383,7 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         self.font_name_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
         self.font_size_edit = QtWidgets.QSpinBox(self)
         self.font_size_edit.setMinimum(0)
+        self.font_size_edit.setMaximum(999)
         self.bold_checkbox = QtWidgets.QCheckBox("Bold", self)
         self.italic_checkbox = QtWidgets.QCheckBox("Italic", self)
         self.underline_checkbox = QtWidgets.QCheckBox("Underline", self)
