@@ -173,3 +173,17 @@ def chunks(source: T.List, size: int) -> T.Iterable[T.List]:
     """
     for i in range(0, len(source), size):
         yield source[i : i + size]
+
+
+def first(source: T.List, default: T.Any = None) -> T.Any:
+    """
+    Return first element from a list or default value if the list is empty.
+
+    :param source: source list
+    :param default: default value
+    :return: first element or default value
+    """
+    try:
+        return next(iter(source))
+    except StopIteration:
+        return default

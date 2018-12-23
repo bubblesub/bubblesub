@@ -18,6 +18,7 @@
 
 import itertools
 import typing as T
+from math import inf
 
 import regex
 from PyQt5 import QtWidgets
@@ -26,6 +27,7 @@ import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
+from bubblesub.util import first
 
 IDX_REGEX = regex.compile(
     r"^(?P<token>\d+)(?:(?P<token>\.\.\.?|,)(?P<token>\d+))*$"
@@ -112,12 +114,32 @@ class SubtitlesSelection:
 
         if self.target == "one-above":
             if not self.api.subs.selected_indexes:
-                return [len(self.api.subs.events) - 1]
+                target_sub = first(
+                    sub
+                    for sub in sorted(
+                        self.api.subs.events,
+                        key=lambda sub: sub.start,
+                        reverse=True,
+                    )
+                    if sub.start <= self.api.media.current_pts
+                )
+                return [
+                    target_sub.index
+                    if target_sub
+                    else len(self.api.subs.events) - 1
+                ]
             return [max(0, self.api.subs.selected_indexes[0] - 1)]
 
         if self.target == "one-below":
             if not self.api.subs.selected_indexes:
-                return [0]
+                target_sub = first(
+                    sub
+                    for sub in sorted(
+                        self.api.subs.events, key=lambda sub: sub.start
+                    )
+                    if sub.start >= self.api.media.current_pts
+                )
+                return [target_sub.index if target_sub else 0]
             return [
                 min(
                     self.api.subs.selected_indexes[-1] + 1,
@@ -198,12 +220,12 @@ class SubtitlesSelection:
             return None
 
         target_pts, _is_relative = ret
-        best_distance = None
+        best_distance = inf
         best_idx = None
         for i, sub in enumerate(self.api.subs.events):
             center = (sub.start + sub.end) / 2
             distance = abs(target_pts - center)
-            if best_distance is None or distance < best_distance:
+            if distance < best_distance:
                 best_distance = distance
                 best_idx = i
         if best_idx is None:

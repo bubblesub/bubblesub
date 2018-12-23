@@ -25,49 +25,61 @@ from bubblesub.cmd.common import SubtitlesSelection
 
 
 @pytest.mark.parametrize(
-    "expr,sub_count,sub_selection,expected_indexes",
+    "expr,sub_count,sub_selection,current_pts,expected_indexes",
     [
         # basic
-        ("none", 3, ..., []),
-        ("all", 3, ..., [0, 1, 2]),
-        ("selected", 3, [], []),
-        ("selected", 3, [0], [0]),
-        ("selected", 3, [1, 2], [1, 2]),
+        ("none", 3, ..., ..., []),
+        ("all", 3, ..., ..., [0, 1, 2]),
+        ("selected", 3, [], ..., []),
+        ("selected", 3, [0], ..., [0]),
+        ("selected", 3, [1, 2], ..., [1, 2]),
         # first/last
-        ("first", 3, ..., [0]),
-        ("last", 3, ..., [2]),
-        ("first", 0, ..., []),
-        ("last", 0, ..., []),
+        ("first", 3, ..., ..., [0]),
+        ("last", 3, ..., ..., [2]),
+        ("first", 0, ..., ..., []),
+        ("last", 0, ..., ..., []),
         # specific
-        ("1", 2, ..., [0]),
-        ("2", 2, ..., [1]),
-        ("0", 2, ..., []),
-        ("3", 2, ..., []),
+        ("1", 2, ..., ..., [0]),
+        ("2", 2, ..., ..., [1]),
+        ("0", 2, ..., ..., []),
+        ("3", 2, ..., ..., []),
         # comma
-        ("1,2", 2, ..., [0, 1]),
-        ("0,3", 2, ..., []),
+        ("1,2", 2, ..., ..., [0, 1]),
+        ("0,3", 2, ..., ..., []),
         # ranges
-        ("2..4", 5, ..., [1, 2, 3]),
-        ("0..2", 5, ..., [0, 1]),
-        ("4..6", 5, ..., [3, 4]),
-        ("4..2", 5, ..., [1, 2, 3]),
+        ("2..4", 5, ..., ..., [1, 2, 3]),
+        ("0..2", 5, ..., ..., [0, 1]),
+        ("4..6", 5, ..., ..., [3, 4]),
+        ("4..2", 5, ..., ..., [1, 2, 3]),
         # above/below selection
-        ("one-above", 3, [1, 2], [0]),
-        ("one-below", 3, [0, 1], [2]),
-        ("one-above", 3, [], [2]),
-        ("one-below", 3, [], [0]),
+        ("one-above", 3, [1, 2], ..., [0]),
+        ("one-above", 3, [], 0, [0]),
+        ("one-above", 3, [], 1, [0]),
+        ("one-above", 3, [], 100, [1]),
+        ("one-above", 3, [], 101, [1]),
+        ("one-below", 3, [0, 1], ..., [2]),
+        ("one-below", 3, [], 0, [0]),
+        ("one-below", 3, [], 1, [1]),
+        ("one-below", 3, [], 100, [1]),
+        ("one-below", 3, [], 101, [2]),
     ],
 )
 def test_get_all_indexes(
     expr: str,
     sub_count: int,
     sub_selection: T.Union[T.List[int], T.Any],
+    current_pts: T.Union[int, T.Any],
     expected_indexes: T.Union[T.List[int], T.Type[CommandError]],
 ) -> None:
     api = MagicMock()
+    api.media.current_pts = current_pts
     api.subs.events = [MagicMock() for _ in range(sub_count)]
     for i, event in enumerate(api.subs.events):
+        event.index = i
+        event.num = i + 1
         event.prev = api.subs.events[i - 1] if i > 0 else None
+        event.start = i * 100
+        event.end = i * 100 + 50
         try:
             event.next = api.subs.events[i + 1]
         except LookupError:
