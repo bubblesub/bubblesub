@@ -16,6 +16,7 @@
 
 """Video API."""
 
+import bisect
 import threading
 import time
 import typing as T
@@ -138,9 +139,19 @@ class VideoApi(QtCore.QObject):
         :param pts: PTS to align
         :return: aligned PTS
         """
-        if not self.timecodes:
-            return pts
-        return min(self.timecodes, key=lambda x: abs(x - pts))
+        if self.timecodes:
+            max_idx = len(self.timecodes) - 1
+            idx1 = max(
+                0, min(max_idx, bisect.bisect_right(self.timecodes, pts) - 1)
+            )
+            idx2 = max(
+                0, min(max_idx, bisect.bisect_left(self.timecodes, pts))
+            )
+            return min(
+                [self.timecodes[idx1], self.timecodes[idx2]],
+                key=lambda val: abs(val - pts),
+            )
+        return pts
 
     def align_pts_to_prev_frame(self, pts: int) -> int:
         """
@@ -150,9 +161,12 @@ class VideoApi(QtCore.QObject):
         :return: aligned PTS
         """
         if self.timecodes:
-            for timecode in reversed(self.timecodes):
-                if timecode <= pts:
-                    return timecode
+            idx = bisect.bisect_right(self.timecodes, pts) - 1
+            if idx >= len(self.timecodes):
+                return self.timecodes[-1]
+            if pts < self.timecodes[idx]:
+                return pts
+            return self.timecodes[idx]
         return pts
 
     def align_pts_to_next_frame(self, pts: int) -> int:
@@ -163,9 +177,12 @@ class VideoApi(QtCore.QObject):
         :return: aligned PTS
         """
         if self.timecodes:
-            for timecode in self.timecodes:
-                if timecode >= pts:
-                    return timecode
+            idx = bisect.bisect_left(self.timecodes, pts)
+            if idx >= len(self.timecodes):
+                return pts
+            if pts < 0:
+                return self.timecodes[0]
+            return self.timecodes[idx]
         return pts
 
     @property
@@ -291,5 +308,7 @@ class VideoApi(QtCore.QObject):
 
         self._video_source = video_source
         self._timecodes = [int(pts) for pts in video_source.track.timecodes]
-        self._keyframes = [int(pts) for pts in video_source.track.keyframes]
+        self._keyframes = [int(idx) for idx in video_source.track.keyframes]
+        self._timecodes.sort()
+        self._keyframes.sort()
         self.parsed.emit()
