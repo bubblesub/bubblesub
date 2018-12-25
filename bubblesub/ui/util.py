@@ -21,8 +21,11 @@ from pathlib import Path
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api
+import bubblesub.api.api
 import bubblesub.util
+
+SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
+VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
 
 
 def error(msg: str) -> None:
@@ -166,7 +169,7 @@ class TimeEdit(QtWidgets.QLineEdit):
 
 
 @functools.lru_cache(maxsize=None)
-def get_color(api: bubblesub.api.Api, color_name: str) -> QtGui.QColor:
+def get_color(api: "bubblesub.api.api.Api", color_name: str) -> QtGui.QColor:
     current_palette = api.opt.general.gui.current_palette
     try:
         palette_def = api.opt.general.gui.palettes[current_palette]

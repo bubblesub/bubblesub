@@ -18,10 +18,12 @@
 
 import contextlib
 import typing as T
+from pathlib import Path
 
 from PyQt5 import QtCore, QtWidgets
 
 import bubblesub.api.api  # pylint: disable=unused-import
+from bubblesub.ui.util import SUBS_FILE_FILTER, save_dialog
 
 
 class GuiApi(QtCore.QObject):
@@ -65,6 +67,43 @@ class GuiApi(QtCore.QObject):
     def quit(self) -> None:
         """Exit the application."""
         self.quit_requested.emit()
+
+    def confirm_unsaved_changes(self) -> bool:
+        if not self._api.undo.needs_save:
+            return True
+
+        doc_path = self._api.subs.path
+        doc_name = doc_path.name if doc_path else "Untitled"
+
+        box = QtWidgets.QMessageBox()
+        box.setWindowTitle("Question")
+        box.setText(f'Do you wish to save changes to "{doc_name}"?')
+        box.setIcon(QtWidgets.QMessageBox.Question)
+        box.addButton(box.Save)
+        box.addButton(box.Discard)
+        box.addButton(box.Cancel)
+
+        response = T.cast(int, box.exec_())
+        if response == box.Save:
+            if not doc_path:
+                doc_path = save_dialog(
+                    self._main_window,
+                    file_filter=SUBS_FILE_FILTER,
+                    directory=self.get_dialog_dir(),
+                )
+                if not doc_path:
+                    return False
+            self._api.subs.save_ass(doc_path, remember_path=True)
+            return True
+        if response == box.Discard:
+            return True
+        assert response == box.Cancel
+        return False
+
+    def get_dialog_dir(self) -> T.Optional[Path]:
+        if self._api.subs.path:
+            return self._api.subs.path.parent
+        return None
 
     @contextlib.contextmanager
     def throttle_updates(self) -> T.Any:

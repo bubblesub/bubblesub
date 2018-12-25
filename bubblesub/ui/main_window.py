@@ -106,16 +106,13 @@ class MainWindow(QtWidgets.QMainWindow):
         bubblesub.ui.util.get_color.cache_clear()
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
-        if self._api.undo.needs_save and not bubblesub.ui.util.ask(
-            "There are unsaved changes. "
-            "Are you sure you want to exit the program?"
-        ):
-            event.ignore()
-        else:
+        if self._api.gui.confirm_unsaved_changes():
             self._api.gui.quit_confirmed.emit()
             self.audio.shutdown()
             self.video.shutdown()
             event.accept()
+        else:
+            event.ignore()
 
     def apply_palette(self, palette_name: str) -> None:
         try:
