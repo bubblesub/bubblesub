@@ -22,24 +22,25 @@ import PIL.Image
 import PIL.ImageQt
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api
-import bubblesub.ass.file
 import bubblesub.ass.info
-import bubblesub.ass.style
-import bubblesub.ass.writer
-import bubblesub.data
-import bubblesub.ui.ass_renderer
-import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event, EventList
 from bubblesub.ass.style import Style, StyleList
+from bubblesub.ui.ass_renderer import AssRenderer
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
+from bubblesub.ui.util import (
+    ColorPicker,
+    ImmediateDataWidgetMapper,
+    ask,
+    get_text_edit_row_height,
+)
 
 
 class _StylePreview(QtWidgets.QGroupBox):
     def __init__(
         self,
-        api: bubblesub.api.Api,
+        api: Api,
         model: StylesModel,
         selection_model: QtCore.QItemSelectionModel,
         parent: QtWidgets.QWidget,
@@ -48,15 +49,13 @@ class _StylePreview(QtWidgets.QGroupBox):
         self._api = api
         self._selection_model = selection_model
 
-        self._renderer = bubblesub.ui.ass_renderer.AssRenderer()
+        self._renderer = AssRenderer()
 
         self._editor = QtWidgets.QPlainTextEdit()
         self._editor.setPlainText(api.opt.general.styles.preview_test_text)
         self._editor.setFixedWidth(400)
         self._editor.setTabChangesFocus(True)
-        self._editor.setFixedHeight(
-            bubblesub.ui.util.get_text_edit_row_height(self._editor, 2)
-        )
+        self._editor.setFixedHeight(get_text_edit_row_height(self._editor, 2))
 
         self._background_combobox = QtWidgets.QComboBox()
         for i, path in enumerate(api.opt.get_assets("style_preview_bk")):
@@ -101,7 +100,7 @@ class _StylePreview(QtWidgets.QGroupBox):
         )
 
     @property
-    def _selected_style(self) -> T.Optional[bubblesub.ass.style.Style]:
+    def _selected_style(self) -> T.Optional[Style]:
         try:
             idx = self._selection_model.selectedIndexes()[0].row()
         except IndexError:
@@ -163,7 +162,7 @@ class _StylePreview(QtWidgets.QGroupBox):
 class _StyleList(QtWidgets.QWidget):
     def __init__(
         self,
-        api: bubblesub.api.Api,
+        api: Api,
         model: StylesModel,
         selection_model: QtCore.QItemSelectionModel,
         parent: QtWidgets.QWidget,
@@ -211,7 +210,7 @@ class _StyleList(QtWidgets.QWidget):
         layout.addWidget(strip)
 
     @property
-    def _selected_style(self) -> T.Optional[bubblesub.ass.style.Style]:
+    def _selected_style(self) -> T.Optional[Style]:
         selected_row = self._selected_row
         if selected_row is None:
             return None
@@ -286,9 +285,7 @@ class _StyleList(QtWidgets.QWidget):
         style = self._selected_style
         assert style is not None
 
-        if not bubblesub.ui.util.ask(
-            f'Are you sure you want to remove style "{style.name}"?'
-        ):
+        if not ask(f'Are you sure you want to remove style "{style.name}"?'):
             return
 
         idx = self._api.subs.styles.index(style)
@@ -370,16 +367,10 @@ class _StyleList(QtWidgets.QWidget):
 
 class _FontGroupBox(QtWidgets.QGroupBox):
     def __init__(
-        self,
-        parent: QtWidgets.QWidget,
-        mapper: bubblesub.ui.util.ImmediateDataWidgetMapper,
+        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Font", parent)
-        self.font_name_edit = QtWidgets.QComboBox(self)
-        self.font_name_edit.setEditable(False)
-        self.font_name_edit.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum
-        )
+        self.font_name_edit = QtWidgets.QFontComboBox(self)
         self.font_name_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
         self.font_size_edit = QtWidgets.QSpinBox(self)
         self.font_size_edit.setMinimum(0)
@@ -388,14 +379,6 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         self.italic_checkbox = QtWidgets.QCheckBox("Italic", self)
         self.underline_checkbox = QtWidgets.QCheckBox("Underline", self)
         self.strike_out_checkbox = QtWidgets.QCheckBox("Strike-out", self)
-
-        all_fonts = sorted(
-            set(
-                re.sub(r" \[.*\]", "", font_name)
-                for font_name in QtGui.QFontDatabase().families()
-            )
-        )
-        self.font_name_edit.addItems(all_fonts)
 
         layout = QtWidgets.QGridLayout(self)
         layout.addWidget(QtWidgets.QLabel("Name:", self), 0, 0)
@@ -424,9 +407,7 @@ class _AlignmentGroupBox(QtWidgets.QGroupBox):
     changed = QtCore.pyqtSignal()
 
     def __init__(
-        self,
-        parent: QtWidgets.QWidget,
-        mapper: bubblesub.ui.util.ImmediateDataWidgetMapper,
+        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Alignment", parent)
         self.radio_buttons = {
@@ -480,15 +461,13 @@ class _AlignmentGroupBox(QtWidgets.QGroupBox):
 
 class _ColorsGroupBox(QtWidgets.QGroupBox):
     def __init__(
-        self,
-        parent: QtWidgets.QWidget,
-        mapper: bubblesub.ui.util.ImmediateDataWidgetMapper,
+        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Colors", parent)
-        self.primary_color_button = bubblesub.ui.util.ColorPicker(self)
-        self.secondary_color_button = bubblesub.ui.util.ColorPicker(self)
-        self.outline_color_button = bubblesub.ui.util.ColorPicker(self)
-        self.back_color_button = bubblesub.ui.util.ColorPicker(self)
+        self.primary_color_button = ColorPicker(self)
+        self.secondary_color_button = ColorPicker(self)
+        self.outline_color_button = ColorPicker(self)
+        self.back_color_button = ColorPicker(self)
 
         layout = QtWidgets.QGridLayout(self)
         layout.setColumnStretch(0, 1)
@@ -516,9 +495,7 @@ class _ColorsGroupBox(QtWidgets.QGroupBox):
 
 class _OutlineGroupBox(QtWidgets.QGroupBox):
     def __init__(
-        self,
-        parent: QtWidgets.QWidget,
-        mapper: bubblesub.ui.util.ImmediateDataWidgetMapper,
+        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Outline", parent)
         self.outline_width_edit = QtWidgets.QDoubleSpinBox(self)
@@ -546,9 +523,7 @@ class _OutlineGroupBox(QtWidgets.QGroupBox):
 
 class _MarginGroupBox(QtWidgets.QGroupBox):
     def __init__(
-        self,
-        parent: QtWidgets.QWidget,
-        mapper: bubblesub.ui.util.ImmediateDataWidgetMapper,
+        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Margins", parent)
         self.margin_left_edit = QtWidgets.QSpinBox(self)
@@ -582,9 +557,7 @@ class _MarginGroupBox(QtWidgets.QGroupBox):
 
 class _MiscGroupBox(QtWidgets.QGroupBox):
     def __init__(
-        self,
-        parent: QtWidgets.QWidget,
-        mapper: bubblesub.ui.util.ImmediateDataWidgetMapper,
+        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Transformations", parent)
         self.scale_x_edit = QtWidgets.QDoubleSpinBox(self)
@@ -626,7 +599,7 @@ class _StyleEditor(QtWidgets.QWidget):
         parent: QtWidgets.QWidget,
     ) -> None:
         super().__init__(parent)
-        self._mapper = bubblesub.ui.util.ImmediateDataWidgetMapper(
+        self._mapper = ImmediateDataWidgetMapper(
             model, {_AlignmentGroupBox: "changed"}
         )
         selection_model.selectionChanged.connect(self._on_selection_change)
@@ -671,9 +644,7 @@ class _StyleEditor(QtWidgets.QWidget):
 
 
 class _StylesManagerDialog(QtWidgets.QDialog):
-    def __init__(
-        self, api: bubblesub.api.Api, main_window: QtWidgets.QMainWindow
-    ) -> None:
+    def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
         super().__init__(main_window)
         model = StylesModel(self, api.subs.styles)
         selection_model = QtCore.QItemSelectionModel(model)
