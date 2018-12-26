@@ -27,11 +27,11 @@ from bubblesub.ui.model.proxy import ObservableListTableAdapter
 
 
 def _serialize_color(color: Color) -> QtGui.QColor:
-    return QtGui.QColor(color.red, color.green, color.blue, color.alpha)
+    return QtGui.QColor(color.red, color.green, color.blue, 255 - color.alpha)
 
 
 def _deserialize_color(color: QtGui.QColor) -> Color:
-    return Color(color.red(), color.green(), color.blue(), color.alpha())
+    return Color(color.red(), color.green(), color.blue(), 255 - color.alpha())
 
 
 class StylesModelColumn(enum.IntEnum):
