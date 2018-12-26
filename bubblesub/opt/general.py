@@ -214,7 +214,7 @@ class StylesConfig:
     def __init__(self) -> None:
         """Initialize self."""
         self.preview_test_text = "Test テスト\n0123456789"
-        self.preview_background = "transparency-grid.png"
+        self.preview_background = "grid.png"
 
     def loads(self, cfg: configparser.RawConfigParser) -> None:
         """

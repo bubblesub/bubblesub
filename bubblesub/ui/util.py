@@ -22,7 +22,8 @@ from pathlib import Path
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import bubblesub.api.api
-import bubblesub.util
+from bubblesub.data import ROOT_DIR
+from bubblesub.util import ms_to_str, str_to_ms
 
 SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
 VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
@@ -64,24 +65,45 @@ def blend_colors(
     )
 
 
+class ColorPickerPreview(QtWidgets.QFrame):
+    def __init__(self, parent: QtWidgets.QWidget) -> None:
+        super().__init__(parent)
+        self._background = QtGui.QPixmap(
+            str(ROOT_DIR / "style_preview_bk" / "grid.png")
+        )
+        self._color = QtGui.QColor(0, 0, 0, 0)
+        self.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        painter.drawTiledPixmap(self.frameRect(), self._background)
+        painter.fillRect(self.frameRect(), self._color)
+        painter.end()
+        super().paintEvent(event)
+
+    def set_color(self, color: QtGui.QColor) -> None:
+        self._color = color
+        self.update()
+
+
 class ColorPicker(QtWidgets.QWidget):
     changed = QtCore.pyqtSignal()
 
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
-        self._label = QtWidgets.QLabel(self)
-        self._label.setSizePolicy(
+        self._preview = ColorPickerPreview(self)
+        self._preview.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum
         )
         self._button = QtWidgets.QPushButton("Change", self)
         self._button.clicked.connect(self._on_button_click)
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._label)
+        layout.addWidget(self._preview)
         layout.addWidget(self._button)
-        self._label.setMinimumHeight(self._button.height())
+        self._preview.setMinimumHeight(self._button.height())
         self._color = QtGui.QColor(0, 0, 0, 0)
-        self.set_color(self._color)
 
     def _on_button_click(self, _event: QtGui.QMouseEvent) -> None:
         dialog = QtWidgets.QColorDialog(self)
@@ -94,15 +116,8 @@ class ColorPicker(QtWidgets.QWidget):
         return self._color
 
     def set_color(self, color: QtGui.QColor) -> None:
-        style = """QLabel:enabled {{
-            background-color: #{:02x}{:02x}{:02x};
-            opacity: {};
-            border: 1px solid black;
-        }}""".format(
-            color.red(), color.green(), color.blue(), color.alpha()
-        )
-        self._label.setStyleSheet(style)
         if self._color != color:
+            self._preview.set_color(color)
             self._color = color
             self.changed.emit()
 
@@ -157,10 +172,10 @@ class TimeEdit(QtWidgets.QLineEdit):
         self.set_value(value)
 
     def get_value(self) -> int:
-        return bubblesub.util.str_to_ms(self.text())
+        return str_to_ms(self.text())
 
     def set_value(self, time: int) -> None:
-        text = bubblesub.util.ms_to_str(time)
+        text = ms_to_str(time)
         if self._allow_negative and time >= 0:
             text = "+" + text
         self.setText(text)
