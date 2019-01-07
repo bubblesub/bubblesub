@@ -23,6 +23,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import bubblesub.api.api
 from bubblesub.data import ROOT_DIR
+from bubblesub.ui.color_dialog import ColorDialog
 from bubblesub.util import ms_to_str, str_to_ms
 
 SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
@@ -106,11 +107,9 @@ class ColorPicker(QtWidgets.QWidget):
         self._color = QtGui.QColor(0, 0, 0, 0)
 
     def _on_button_click(self, _event: QtGui.QMouseEvent) -> None:
-        dialog = QtWidgets.QColorDialog(self)
-        dialog.setCurrentColor(self._color)
-        dialog.setOption(dialog.ShowAlphaChannel, True)
+        dialog = ColorDialog(self._color, self)
         if dialog.exec_():
-            self.set_color(dialog.selectedColor())
+            self.set_color(dialog.value())
 
     def get_color(self) -> QtGui.QColor:
         return self._color
