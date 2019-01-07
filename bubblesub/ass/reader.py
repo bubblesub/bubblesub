@@ -26,7 +26,7 @@ from bubblesub.ass.style import Color, Style
 from bubblesub.ass.util import unescape_ass_tag
 
 TIMESTAMP_RE = re.compile(r"(\d{1,2}):(\d{2}):(\d{2})[.,](\d{2,3})")
-SECTION_HEADING_RE = re.compile(r"^\[([^\]]+)\]")
+SECTION_HEADING_RE = re.compile(r"^\[([^\]]+)\]$")
 
 
 def _deserialize_color(text: str) -> Color:
@@ -176,7 +176,13 @@ def load_ass(handle: T.IO, ass_file: AssFile) -> None:
 
     handler: T.Optional[T.Callable[[str, AssFile, _ReadContext], None]] = None
 
-    for i, line in enumerate(handle):
+    text = handle.read()
+    text = text.replace("\r", "")
+    if text.startswith("\N{BOM}"):
+        text = text[len("\N{BOM}") :]
+    lines = text.split("\n")
+
+    for i, line in enumerate(lines):
         line = line.strip()
         if not line:
             continue
