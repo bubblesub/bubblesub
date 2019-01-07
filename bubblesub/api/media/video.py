@@ -17,6 +17,7 @@
 """Video API."""
 
 import bisect
+import math
 import threading
 import time
 import typing as T
@@ -307,8 +308,10 @@ class VideoApi(QtCore.QObject):
             return
 
         self._video_source = video_source
-        self._timecodes = [int(pts) for pts in video_source.track.timecodes]
-        self._keyframes = [int(idx) for idx in video_source.track.keyframes]
+        self._timecodes = [
+            int(round(pts)) for pts in video_source.track.timecodes
+        ]
+        self._keyframes = [idx for idx in video_source.track.keyframes]
         self._timecodes.sort()
         self._keyframes.sort()
         self.parsed.emit()
