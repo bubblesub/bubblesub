@@ -321,6 +321,7 @@ setup(
         "quamash",
         "regex",
         "pyenchant",
+        "pyqtcolordialog",
         "pympv",
         "xdg",
         "ass_tag_parser",

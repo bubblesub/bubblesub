@@ -20,10 +20,10 @@ import typing as T
 from pathlib import Path
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from pyqtcolordialog import QColorDialog
 
 import bubblesub.api.api
 from bubblesub.data import ROOT_DIR
-from bubblesub.ui.color_dialog import ColorDialog
 from bubblesub.util import ms_to_str, str_to_ms
 
 SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
@@ -107,9 +107,9 @@ class ColorPicker(QtWidgets.QWidget):
         self._color = QtGui.QColor(0, 0, 0, 0)
 
     def _on_button_click(self, _event: QtGui.QMouseEvent) -> None:
-        dialog = ColorDialog(self._color, self)
-        if dialog.exec_():
-            self.set_color(dialog.value())
+        color = QColorDialog.getColor(self._color, self)
+        if color.isValid():
+            self.set_color(color)
 
     def get_color(self) -> QtGui.QColor:
         return self._color
