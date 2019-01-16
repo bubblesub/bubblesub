@@ -221,5 +221,5 @@ def read_ass(source: T.Union[Path, T.IO]) -> AssFile:
         with source.open("r") as handle:
             load_ass(handle, ass_file)
     else:
-        load_ass(handle, ass_file)
+        load_ass(source, ass_file)
     return ass_file
