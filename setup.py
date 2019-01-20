@@ -326,6 +326,7 @@ setup(
         "xdg",
         "ass_tag_parser",
         "Pillow",
+        "pluginbase",
     ],
     extras_require={
         "develop": [

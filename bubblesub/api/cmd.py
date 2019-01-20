@@ -33,6 +33,7 @@ import traceback
 import typing as T
 from pathlib import Path
 
+from pluginbase import PluginBase
 from PyQt5 import QtCore
 
 import bubblesub.api.api
@@ -232,7 +233,7 @@ class CommandApi(QtCore.QObject):
         self._registry: T.Dict[str, T.Type[BaseCommand]] = {}
         self._plugin_menu: T.List[MenuItem] = []
         self._modules: T.List[T.Any] = []
-
+        self._plugin_base = PluginBase(package="bubblesub.api.cmd.plugins")
         self.reload_commands()
 
     def run_cmdline(self, cmdline: T.Union[str, T.List[T.List[str]]]) -> None:
@@ -333,9 +334,14 @@ class CommandApi(QtCore.QObject):
     def reload_commands(self) -> None:
         """Rescans filesystem for commands."""
         self._unload_commands()
-        self._load_commands(Path(__file__).parent.parent / "cmd")
-        if self._api.opt.root_dir:
-            self._load_commands(self._api.opt.root_dir / "scripts")
+        self._load_commands(
+            [Path(__file__).parent.parent / "cmd"]
+            + (
+                [self._api.opt.root_dir / "scripts"]
+                if self._api.opt.root_dir
+                else []
+            )
+        )
         self.commands_loaded.emit()
 
     def get_plugin_menu_items(self) -> T.List[MenuItem]:
@@ -360,9 +366,10 @@ class CommandApi(QtCore.QObject):
         self._plugin_menu[:] = []
         for name, cls in list(self._registry.items()):
             self._api.log.debug(f"unregistering {cls} as {name}")
+        self._modules.clear()
         self._registry.clear()
 
-    def _load_commands(self, path: Path) -> None:
+    def _load_commands(self, paths: T.List[Path]) -> None:
         """
         Load commands from the specified path.
 
@@ -374,27 +381,13 @@ class CommandApi(QtCore.QObject):
 
         :param path: dictionary containing plugin definitions
         """
-        specs = []
-        if path.exists():
-            for subpath in path.glob("*.py"):
-                if subpath.stem == "__init__":
-                    continue
-                subpath_rel = subpath.relative_to(path)
-                spec = importlib.util.spec_from_file_location(
-                    ".".join(
-                        ["bubblesub", "cmd"]
-                        + list(subpath_rel.parent.parts)
-                        + [subpath_rel.stem]
-                    ),
-                    str(subpath),
-                )
-                if spec is not None:
-                    specs.append(spec)
 
-        for spec in specs:
+        self._plugin_source = self._plugin_base.make_plugin_source(
+            searchpath=list(map(str, paths))
+        )
+        for plugin in self._plugin_source.list_plugins():
             with self._guard():
-                mod = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(mod)
+                mod = self._plugin_source.load_plugin(plugin)
                 self._load_module(mod)
 
     def _load_module(self, mod: importlib.types.ModuleType) -> None:
