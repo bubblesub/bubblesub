@@ -20,9 +20,8 @@
 
 import argparse
 
-import bubblesub.cache
-import bubblesub.opt
 import bubblesub.ui.ui
+from bubblesub.cache import wipe_cache
 
 
 def parse_args() -> argparse.Namespace:
@@ -44,7 +43,7 @@ def main() -> None:
     args = parse_args()
 
     if args.wipe_cache:
-        bubblesub.cache.wipe_cache()
+        wipe_cache()
 
     from bubblesub.api import Api
 

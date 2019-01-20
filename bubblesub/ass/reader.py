@@ -161,7 +161,7 @@ def _dummy_handler(
     pass
 
 
-def load_ass(handle: T.IO, ass_file: AssFile) -> None:
+def load_ass(handle: T.IO[str], ass_file: AssFile) -> None:
     """
     Load ASS from the specified source.
 
@@ -209,7 +209,7 @@ def load_ass(handle: T.IO, ass_file: AssFile) -> None:
             raise ValueError(f'corrupt ASS file at line #{i+1}: "{line}"')
 
 
-def read_ass(source: T.Union[Path, T.IO]) -> AssFile:
+def read_ass(source: T.Union[Path, T.IO[str]]) -> AssFile:
     """
     Read ASS from the specified source.
 

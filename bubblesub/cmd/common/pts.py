@@ -23,10 +23,10 @@ from dataclasses import dataclass
 import regex
 from PyQt5 import QtWidgets
 
-import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandError, CommandUnavailable
 from bubblesub.ass.event import Event
+from bubblesub.ui.util import time_jump_dialog
 
 
 def _bisect(source: T.List[int], origin: int, delta: int) -> int:
@@ -332,7 +332,7 @@ class Pts:
     async def _show_dialog(
         self, main_window: QtWidgets.QMainWindow, origin: T.Optional[int]
     ) -> T.Optional[int]:
-        ret = bubblesub.ui.util.time_jump_dialog(
+        ret = time_jump_dialog(
             main_window,
             relative_checked=False,
             show_radio=origin is not None,

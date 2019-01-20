@@ -19,14 +19,12 @@ from math import floor
 
 from PyQt5 import QtCore, QtWidgets
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.ui.mpv import MpvWidget
 
 
 class _VideoPreview(MpvWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api.media.video.get_opengl_context(), parent)
 
     def sizeHint(self) -> QtCore.QSize:
@@ -34,9 +32,7 @@ class _VideoPreview(MpvWidget):
 
 
 class _VideoButtons(QtWidgets.QWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
 
@@ -138,9 +134,7 @@ class _VideoButtons(QtWidgets.QWidget):
 
 
 class _VideoVolumeControl(QtWidgets.QWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
 
@@ -208,9 +202,7 @@ class _VideoVolumeControl(QtWidgets.QWidget):
 
 
 class Video(QtWidgets.QWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
 

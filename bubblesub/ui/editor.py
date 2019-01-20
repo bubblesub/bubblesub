@@ -20,14 +20,18 @@ import typing as T
 import enchant
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api
-import bubblesub.ui.util
+from bubblesub.api import Api
 from bubblesub.ass.util import spell_check_ass_line
 from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
+from bubblesub.ui.util import (
+    ImmediateDataWidgetMapper,
+    TimeEdit,
+    get_text_edit_row_height,
+)
 
 
 class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
-    def __init__(self, api: bubblesub.api.Api, *args: T.Any) -> None:
+    def __init__(self, api: Api, *args: T.Any) -> None:
         super().__init__(*args)
 
         spell_check_lang = api.opt.general.spell_check
@@ -54,10 +58,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
 
 class TextEdit(QtWidgets.QPlainTextEdit):
     def __init__(
-        self,
-        api: bubblesub.api.Api,
-        parent: QtWidgets.QWidget,
-        **kwargs: T.Any,
+        self, api: Api, parent: QtWidgets.QWidget, **kwargs: T.Any
     ) -> None:
         super().__init__(parent, **kwargs)
         self._api = api
@@ -71,9 +72,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
                 font.fromString(font_def)
                 self.setFont(font)
 
-        self.setMinimumHeight(
-            bubblesub.ui.util.get_text_edit_row_height(self, 2)
-        )
+        self.setMinimumHeight(get_text_edit_row_height(self, 2))
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.modifiers() & QtCore.Qt.ControlModifier:
@@ -90,9 +89,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
 
 
 class Editor(QtWidgets.QWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
 
         self._api = api
@@ -128,17 +125,11 @@ class Editor(QtWidgets.QWidget):
             self, minimum=0, maximum=999, objectName="margin-right-editor"
         )
 
-        self.start_time_edit = bubblesub.ui.util.TimeEdit(
-            self, objectName="start-time-editor"
-        )
+        self.start_time_edit = TimeEdit(self, objectName="start-time-editor")
 
-        self.end_time_edit = bubblesub.ui.util.TimeEdit(
-            self, objectName="end-time-editor"
-        )
+        self.end_time_edit = TimeEdit(self, objectName="end-time-editor")
 
-        self.duration_edit = bubblesub.ui.util.TimeEdit(
-            self, objectName="duration-editor"
-        )
+        self.duration_edit = TimeEdit(self, objectName="duration-editor")
 
         self.comment_checkbox = QtWidgets.QCheckBox(
             "Comment", self, objectName="comment-checkbox"
@@ -195,7 +186,7 @@ class Editor(QtWidgets.QWidget):
         layout.setStretchFactor(self.note_edit, 1)
         self.setEnabled(False)
 
-        self._data_widget_mapper = bubblesub.ui.util.ImmediateDataWidgetMapper(
+        self._data_widget_mapper = ImmediateDataWidgetMapper(
             model=SubtitlesModel(
                 self,
                 api,

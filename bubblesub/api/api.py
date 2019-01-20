@@ -24,12 +24,12 @@ to manipulate it.
 import argparse
 
 import bubblesub.api.cmd
-import bubblesub.api.gui
-import bubblesub.api.log
-import bubblesub.api.media
-import bubblesub.api.subs
-import bubblesub.api.undo
-import bubblesub.opt
+from bubblesub.api.gui import GuiApi
+from bubblesub.api.log import LogApi
+from bubblesub.api.media import MediaApi
+from bubblesub.api.subs import SubtitlesApi
+from bubblesub.api.undo import UndoApi
+from bubblesub.opt import Options
 
 
 class Api:
@@ -41,14 +41,13 @@ class Api:
 
         :param args: CLI arguments
         """
-        self.opt = bubblesub.opt.Options()
-        self.log = bubblesub.api.log.LogApi()
-        self.gui = bubblesub.api.gui.GuiApi(self)
-        self.subs = bubblesub.api.subs.SubtitlesApi()
-        self.media = bubblesub.api.media.MediaApi(
-            self.subs, self.log, self.opt, args
-        )
-        self.undo = bubblesub.api.undo.UndoApi(self.opt, self.subs)
+        self.opt = Options()
+        self.log = LogApi()
+        self.subs = SubtitlesApi()
+        self.media = MediaApi(self.subs, self.log, self.opt, args)
+        self.undo = UndoApi(self.opt, self.subs)
+
+        self.gui = GuiApi(self)
         self.cmd = bubblesub.api.cmd.CommandApi(self)
 
         self.gui.quit_confirmed.connect(self.media.unload)

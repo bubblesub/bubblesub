@@ -20,7 +20,7 @@ import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuContext
 from bubblesub.ui.menu import setup_cmd_menu
@@ -31,9 +31,7 @@ HIGHLIGHTABLE_CHUNKS = {"\N{FULLWIDTH ASTERISK}", "\\N", "\\h", "\\n"}
 
 
 class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
         self._format = self._create_format()
@@ -116,9 +114,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class SubsGrid(QtWidgets.QTableView):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
         self.setObjectName("subtitles-grid")
@@ -171,8 +167,8 @@ class SubsGrid(QtWidgets.QTableView):
         setup_cmd_menu(
             self._api,
             self.subtitles_menu,
-            self._api.opt.menu[MenuContext.SubtitlesGrid],
-            HotkeyContext.SubtitlesGrid,
+            self._api.opt.menu[MenuContext.SubsGrid],
+            HotkeyContext.SubsGrid,
         )
 
     def _setup_header_menu(self) -> None:

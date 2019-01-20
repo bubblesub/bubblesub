@@ -41,7 +41,7 @@ class _TargetWidget(enum.Enum):
     EndTimeEditor = "end-time-editor"
     DurationEditor = "duration-editor"
     CommentCheckbox = "comment-checkbox"
-    SubtitlesGrid = "subtitles-grid"
+    SubsGrid = "subtitles-grid"
     Spectrogram = "spectrogram"
     Console = "console"
     ConsoleInput = "console-input"

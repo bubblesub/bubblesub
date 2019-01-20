@@ -18,15 +18,12 @@ import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api
-import bubblesub.api.media.audio
+from bubblesub.api import Api
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
 
 
 class AudioSlider(BaseAudioWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
         api.media.current_pts_changed.connect(

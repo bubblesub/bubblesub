@@ -20,8 +20,7 @@ from pathlib import Path
 
 import pytest
 
-import bubblesub.api
-import bubblesub.opt
+from bubblesub.api import Api
 
 APP_ROOT_DIR = Path(__file__).parent.parent
 TESTS_ROOT_DIR = APP_ROOT_DIR / "tests"
@@ -36,7 +35,7 @@ def collect_source_files(root: Path = APP_ROOT_DIR) -> T.Iterable[Path]:
 
 
 @pytest.fixture
-def api() -> bubblesub.api.Api:
+def api() -> Api:
     args = argparse.Namespace()
     setattr(args, "no_video", True)
-    return bubblesub.api.Api(args)
+    return Api(args)

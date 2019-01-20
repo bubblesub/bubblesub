@@ -24,6 +24,7 @@ import json
 import re
 import typing as T
 import zlib
+from pathlib import Path
 
 from bubblesub.opt.base import BaseConfig
 
@@ -531,3 +532,13 @@ class GeneralConfig(BaseConfig):
             cfg.write(handle)
             handle.seek(0)
             return handle.read()
+
+    def save(self, root_dir: Path) -> None:
+        """
+        Save internals of this config to a specified directory.
+
+        :param root_dir: directory where to put the config file
+        """
+        full_path = root_dir / self.file_name
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        full_path.write_text(self.dumps())

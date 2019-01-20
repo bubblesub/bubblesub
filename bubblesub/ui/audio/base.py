@@ -18,16 +18,14 @@ import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api
-import bubblesub.api.media.audio
+from bubblesub.api import Api
+from bubblesub.api.media.audio import AudioApi
 
 SLIDER_SIZE = 20
 
 
 class BaseAudioWidget(QtWidgets.QWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
 
@@ -42,7 +40,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
         api.subs.events.items_moved.connect(update)
 
     @property
-    def _audio(self) -> bubblesub.api.media.audio.AudioApi:
+    def _audio(self) -> AudioApi:
         return self._api.media.audio
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:

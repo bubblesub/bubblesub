@@ -140,7 +140,6 @@ class ObservableObject:
 
         Called after class properties have changed.
         """
-        pass
 
 
 class _ObservableListSignals(QtCore.QObject):
@@ -333,7 +332,6 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         :param count: how many elements to move
         :param new_idx: target position
         """
-        item = self._items[idx]
         self.items_about_to_be_moved.emit(idx, count, new_idx)
         items = self._items[idx : idx + count]
         self._items = self._items[:idx] + self._items[idx + count :]

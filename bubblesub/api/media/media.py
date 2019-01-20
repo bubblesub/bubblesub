@@ -27,14 +27,14 @@ from pathlib import Path
 import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore
 
-import bubblesub.ass.writer
-import bubblesub.util
 from bubblesub.api.log import LogApi
 from bubblesub.api.media.audio import AudioApi
 from bubblesub.api.media.state import MediaState
 from bubblesub.api.media.video import VideoApi
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.ass.writer import write_ass
 from bubblesub.opt import Options
+from bubblesub.util import ms_to_str
 
 
 class MediaApi(QtCore.QObject):
@@ -80,7 +80,7 @@ class MediaApi(QtCore.QObject):
         self._subs_api.loaded.connect(self._on_subs_load)
         self._subs_api.info_changed.connect(self._on_subs_change)
 
-        for list_ in [self._subs_api.events, self._subs_api.styles]:
+        for list_ in (self._subs_api.events, self._subs_api.styles):
             list_.item_changed.connect(self._on_subs_change)
             list_.items_inserted.connect(self._on_subs_change)
             list_.items_removed.connect(self._on_subs_change)
@@ -184,7 +184,7 @@ class MediaApi(QtCore.QObject):
         if pts != self.current_pts:
             self._mpv.command(
                 "seek",
-                bubblesub.util.ms_to_str(pts),
+                ms_to_str(pts),
                 "absolute+exact" if precise else "absolute",
             )
 
@@ -360,7 +360,7 @@ class MediaApi(QtCore.QObject):
             end -= 1
         assert end is not None
         end = max(0, end)
-        self._mpv.set_option("end", bubblesub.util.ms_to_str(end))
+        self._mpv.set_option("end", ms_to_str(end))
 
     def _mpv_unloaded(self) -> None:
         self._mpv_ready = False
@@ -391,7 +391,7 @@ class MediaApi(QtCore.QObject):
         if self._mpv.get_property("sub"):
             self._mpv.command("sub_remove")
         with io.StringIO() as handle:
-            bubblesub.ass.writer.write_ass(self._subs_api.ass_file, handle)
+            write_ass(self._subs_api.ass_file, handle)
             self._mpv.command("sub_add", "memory://" + handle.getvalue())
         self._need_subs_refresh = False
 

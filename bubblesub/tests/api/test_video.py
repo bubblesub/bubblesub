@@ -22,10 +22,6 @@ import pytest
 from bubblesub.api.media.video import VideoApi
 
 
-def video_api() -> VideoApi:
-    return VideoApi(media_api, log_api, mpv_)
-
-
 def _test_align_pts_to_frame(
     origin: int,
     expected: int,
@@ -38,8 +34,8 @@ def _test_align_pts_to_frame(
     with mock.patch(
         VideoApi.__module__ + "." + VideoApi.__name__ + ".timecodes",
         new_callable=mock.PropertyMock,
-    ) as VideoApiMock:
-        VideoApiMock.return_value = [0, 10, 20]
+    ) as video_api_mock:
+        video_api_mock.return_value = [0, 10, 20]
 
         video_api = VideoApi(media_api, log_api, mpv_)
         actual = align_func(video_api)(origin)

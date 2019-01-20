@@ -18,15 +18,14 @@ import typing as T
 
 from PyQt5 import QtCore
 
-import bubblesub.cache
-import bubblesub.model
+from bubblesub.model import ObservableList
 
 
 class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     """Make ObservableList usable as Qt's QAbstractTableModel."""
 
     def __init__(
-        self, parent: QtCore.QObject, list_: bubblesub.model.ObservableList
+        self, parent: QtCore.QObject, list_: ObservableList[T.Any]
     ) -> None:
         """
         Initialize self.

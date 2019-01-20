@@ -16,16 +16,14 @@
 
 from PyQt5 import QtCore, QtWidgets
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.ui.audio.audio_preview import AudioPreview
 from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.video_preview import VideoPreview
 
 
 class Audio(QtWidgets.QWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
         self._audio_preview = AudioPreview(self._api, self)

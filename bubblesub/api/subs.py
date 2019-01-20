@@ -21,12 +21,12 @@ from pathlib import Path
 
 from PyQt5 import QtCore
 
-import bubblesub.ass.reader
-import bubblesub.ass.writer
 from bubblesub.ass.event import Event, EventList
 from bubblesub.ass.file import AssFile
 from bubblesub.ass.info import Metadata
+from bubblesub.ass.reader import load_ass
 from bubblesub.ass.style import Style, StyleList
+from bubblesub.ass.writer import write_ass
 
 
 class SubtitlesApi(QtCore.QObject):
@@ -170,7 +170,7 @@ class SubtitlesApi(QtCore.QObject):
         assert path
         path = Path(path)
         with path.open("r") as handle:
-            bubblesub.ass.reader.load_ass(handle, self.ass_file)
+            load_ass(handle, self.ass_file)
 
         self.selected_indexes = []
         self._path = path
@@ -191,7 +191,7 @@ class SubtitlesApi(QtCore.QObject):
         if remember_path:
             self._path = path
         with path.open("w") as handle:
-            bubblesub.ass.writer.write_ass(self.ass_file, handle)
+            write_ass(self.ass_file, handle)
         if remember_path:
             self.saved.emit()
 

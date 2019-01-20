@@ -41,7 +41,7 @@ def _ms_to_timestamp(milliseconds: int) -> str:
     return f"{hours:01d}:{minutes:02d}:{seconds:02d}.{milliseconds // 10:02d}"
 
 
-def _write_info(ass_file: AssFile, handle: T.IO) -> None:
+def _write_info(ass_file: AssFile, handle: T.IO[str]) -> None:
     info: T.Dict[str, str] = OrderedDict()
     info["ScriptType"] = "sentinel"  # make sure script type is the first entry
     info.update(ass_file.info.items())
@@ -50,7 +50,7 @@ def _write_info(ass_file: AssFile, handle: T.IO) -> None:
         print(key, value, sep=": ", file=handle)
 
 
-def _write_styles(ass_file: AssFile, handle: T.IO) -> None:
+def _write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
     print("\n[V4+ Styles]", file=handle)
     print(
         "Format: Name, Fontname, Fontsize, PrimaryColour, "
@@ -64,7 +64,7 @@ def _write_styles(ass_file: AssFile, handle: T.IO) -> None:
         _write_style(style, handle)
 
 
-def _write_style(style: Style, handle: T.IO) -> None:
+def _write_style(style: Style, handle: T.IO[str]) -> None:
     print(
         "Style: "
         + ",".join(
@@ -98,7 +98,7 @@ def _write_style(style: Style, handle: T.IO) -> None:
     )
 
 
-def _write_events(ass_file: AssFile, handle: T.IO) -> None:
+def _write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
     print("\n[Events]", file=handle)
     print(
         "Format: Layer, Start, End, Style, Name, "
@@ -109,7 +109,7 @@ def _write_events(ass_file: AssFile, handle: T.IO) -> None:
         _write_event(event, handle)
 
 
-def _write_event(event: Event, handle: T.IO) -> None:
+def _write_event(event: Event, handle: T.IO[str]) -> None:
     text = event.text
 
     if event.start is not None and event.end is not None:
@@ -140,7 +140,7 @@ def _write_event(event: Event, handle: T.IO) -> None:
     )
 
 
-def write_ass(ass_file: AssFile, handle: T.IO) -> None:
+def write_ass(ass_file: AssFile, handle: T.IO[str]) -> None:
     """
     Save ASS to the specified target.
 

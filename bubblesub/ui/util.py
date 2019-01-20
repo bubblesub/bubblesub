@@ -29,7 +29,7 @@ SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
 VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
 
 
-def error(msg: str) -> None:
+def show_error(msg: str) -> None:
     box = QtWidgets.QMessageBox()
     box.setWindowTitle("Error")
     box.setIcon(QtWidgets.QMessageBox.Critical)
@@ -37,7 +37,7 @@ def error(msg: str) -> None:
     box.exec_()
 
 
-def notice(msg: str) -> None:
+def show_notice(msg: str) -> None:
     box = QtWidgets.QMessageBox()
     box.setWindowTitle("Information")
     box.setIcon(QtWidgets.QMessageBox.Information)
@@ -45,7 +45,7 @@ def notice(msg: str) -> None:
     box.exec_()
 
 
-def ask(msg: str) -> bool:
+def show_prompt(msg: str) -> bool:
     box = QtWidgets.QMessageBox()
     box.setWindowTitle("Question")
     box.setText(msg)
@@ -297,7 +297,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         self,
         model: QtCore.QAbstractItemModel,
         signal_map: T.Optional[T.Dict[QtWidgets.QWidget, str]] = None,
-        submit_wrapper: T.Callable = None,
+        submit_wrapper: T.Optional[T.Callable[[], T.Iterator]] = None,
     ) -> None:
         super().__init__()
         self._model = model
@@ -306,7 +306,9 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         self._populating_model = 0
         self._row_idx: T.Optional[int] = None
         self._item_delegate = QtWidgets.QItemDelegate(self)
-        self._submit_wrapper = submit_wrapper or contextlib.nullcontext
+        self._submit_wrapper: T.Callable[
+            [], T.Iterator
+        ] = submit_wrapper or contextlib.nullcontext
 
         self._signal_map: T.Dict[QtWidgets.QWidget, str] = {
             QtWidgets.QCheckBox: "clicked",
@@ -322,13 +324,13 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         model.dataChanged.connect(self._model_data_change)
 
     @contextlib.contextmanager
-    def block_widget_signals(self) -> T.Generator:
+    def block_widget_signals(self) -> T.Iterator:
         self._populating_widgets += 1
         yield
         self._populating_widgets -= 1
 
     @contextlib.contextmanager
-    def block_model_signals(self) -> T.Generator:
+    def block_model_signals(self) -> T.Iterator:
         self._populating_model += 1
         yield
         self._populating_model -= 1

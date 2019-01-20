@@ -35,7 +35,7 @@ class Worker(QtCore.QThread):
         super().__init__(parent=None)
         self._running = False
         self._clearing = False
-        self._queue: queue.LifoQueue = queue.LifoQueue()
+        self._queue: queue.LifoQueue[T.Any] = queue.LifoQueue()
 
     def run(self) -> None:
         """
@@ -105,7 +105,6 @@ class Worker(QtCore.QThread):
         Executed in the worker thread before the task processing loop is about
         to start.
         """
-        pass
 
     def _end_work(self) -> None:
         """
@@ -114,7 +113,6 @@ class Worker(QtCore.QThread):
         Executed in the worker thread after the task processing loop was
         aborted by the .stop() method call.
         """
-        pass
 
     def _do_work(self, task: T.Any) -> T.Any:
         """

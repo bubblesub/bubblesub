@@ -20,9 +20,9 @@ from collections import OrderedDict
 import ass_tag_parser
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ui.util import show_prompt
 
 
 def _rescale_styles(api: Api, factor: float) -> None:
@@ -316,7 +316,7 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
             and old_res[1]
             and new_res[0]
             and new_res[1]
-            and bubblesub.ui.util.ask(
+            and show_prompt(
                 "The resolution was changed. "
                 "Do you want to rescale all the styles now?"
             )

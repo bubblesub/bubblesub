@@ -19,9 +19,9 @@
 import typing as T
 from pathlib import Path
 
-import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandUnavailable
+from bubblesub.ui.util import load_dialog, save_dialog
 from bubblesub.util import sanitize_file_name
 
 
@@ -78,9 +78,9 @@ class FancyPath:
     async def _show_load_dialog(
         self, *args: T.Any, **kwargs: T.Any
     ) -> T.Optional[Path]:
-        return bubblesub.ui.util.load_dialog(*args, **kwargs)
+        return load_dialog(*args, **kwargs)
 
     async def _show_save_dialog(
         self, *args: T.Any, **kwargs: T.Any
     ) -> T.Optional[Path]:
-        return bubblesub.ui.util.save_dialog(*args, **kwargs)
+        return save_dialog(*args, **kwargs)

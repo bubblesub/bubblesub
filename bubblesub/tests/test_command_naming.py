@@ -17,7 +17,7 @@
 import re
 import typing as T
 
-import bubblesub.api
+from bubblesub.api import Api
 from bubblesub.tests.common import api  # pylint: disable=unused-import
 
 
@@ -61,7 +61,7 @@ def verify_name(cls_name: str, cmd_name: str) -> None:
 
 
 def test_command_naming(  # pylint: disable=redefined-outer-name
-    api: bubblesub.api.Api
+    api: Api
 ) -> None:
     api.cmd.reload_commands()
 

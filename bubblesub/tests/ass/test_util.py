@@ -16,7 +16,7 @@
 
 import pytest
 
-import bubblesub.ass.util
+from bubblesub.ass.util import iter_words_ass_line
 
 
 @pytest.mark.parametrize(
@@ -35,8 +35,5 @@ import bubblesub.ass.util
     ],
 )
 def test_iter_words_ass_line(ass_text, expected):
-    actual = [
-        match.group(0)
-        for match in bubblesub.ass.util.iter_words_ass_line(ass_text)
-    ]
+    actual = [match.group(0) for match in iter_words_ass_line(ass_text)]
     assert actual == expected

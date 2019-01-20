@@ -32,7 +32,7 @@ class HotkeyContext(enum.Enum):
 
     Global = "global"
     Spectrogram = "spectrogram"
-    SubtitlesGrid = "subtitles_grid"
+    SubsGrid = "subtitles_grid"
 
 
 class Hotkey:

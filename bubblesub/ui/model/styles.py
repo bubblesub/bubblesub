@@ -19,10 +19,7 @@ import typing as T
 
 from PyQt5 import QtCore, QtGui
 
-import bubblesub.api
-import bubblesub.cache
-import bubblesub.model
-from bubblesub.ass.style import Color
+from bubblesub.ass.style import Color, Style
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 
 
@@ -60,8 +57,8 @@ class StylesModelColumn(enum.IntEnum):
 
 def _getattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[bubblesub.ass.style.Style], T.Any]:
-    def func(style: bubblesub.ass.style.Style) -> T.Any:
+) -> T.Callable[[Style], T.Any]:
+    def func(style: Style) -> T.Any:
         return wrapper(getattr(style, prop_name))
 
     return func
@@ -69,8 +66,8 @@ def _getattr_proxy(
 
 def _setattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[bubblesub.ass.style.Style, T.Any], None]:
-    def func(style: bubblesub.ass.style.Style, value: T.Any) -> None:
+) -> T.Callable[[Style, T.Any], None]:
+    def func(style: Style, value: T.Any) -> None:
         setattr(style, prop_name, wrapper(value))
 
     return func

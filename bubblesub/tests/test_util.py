@@ -18,7 +18,7 @@ import typing as T
 
 import pytest
 
-import bubblesub.util
+from bubblesub.util import make_ranges
 
 
 @pytest.mark.parametrize(
@@ -47,5 +47,5 @@ def test_make_ranges(
     reverse: bool,
     expected_ranges: T.List[T.Tuple[int, int]],
 ) -> None:
-    actual_ranges = list(bubblesub.util.make_ranges(indexes, reverse=reverse))
+    actual_ranges = list(make_ranges(indexes, reverse=reverse))
     assert actual_ranges == expected_ranges

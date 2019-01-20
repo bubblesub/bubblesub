@@ -21,11 +21,10 @@ import pickle
 import typing as T
 import zlib
 
-import bubblesub.ass.event
-import bubblesub.ass.info
-import bubblesub.ass.style
-import bubblesub.util
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.ass.event import EventList
+from bubblesub.ass.info import Metadata
+from bubblesub.ass.style import StyleList
 from bubblesub.opt import Options
 
 
@@ -34,9 +33,9 @@ class UndoState:
 
     def __init__(
         self,
-        events: bubblesub.ass.event.EventList,
-        styles: bubblesub.ass.style.StyleList,
-        info: bubblesub.ass.info.Metadata,
+        events: EventList,
+        styles: StyleList,
+        info: Metadata,
         selected_indexes: T.List[int],
     ) -> None:
         """
@@ -53,22 +52,22 @@ class UndoState:
         self.selected_indexes = selected_indexes
 
     @property
-    def events(self) -> bubblesub.ass.event.EventList:
+    def events(self) -> EventList:
         """
         Return list of remembered events.
 
         :return: list of remembered events
         """
-        return T.cast(bubblesub.ass.event.EventList, _unpickle(self._events))
+        return T.cast(EventList, _unpickle(self._events))
 
     @property
-    def styles(self) -> bubblesub.ass.style.StyleList:
+    def styles(self) -> StyleList:
         """
         Return list of remembered styles.
 
         :return: list of remembered styles
         """
-        return T.cast(bubblesub.ass.style.StyleList, _unpickle(self._styles))
+        return T.cast(StyleList, _unpickle(self._styles))
 
     @property
     def info(self) -> T.Dict[str, str]:

@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import re
 import typing as T
 from copy import copy
 
@@ -22,18 +21,18 @@ import PIL.Image
 import PIL.ImageQt
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.ass.info
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event, EventList
+from bubblesub.ass.info import Metadata
 from bubblesub.ass.style import Style, StyleList
 from bubblesub.ui.ass_renderer import AssRenderer
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
 from bubblesub.ui.util import (
     ColorPicker,
     ImmediateDataWidgetMapper,
-    ask,
     get_text_edit_row_height,
+    show_prompt,
 )
 
 
@@ -135,7 +134,7 @@ class _StylePreview(QtWidgets.QGroupBox):
         fake_event_list = EventList()
         fake_event_list.append(fake_event)
 
-        fake_info = bubblesub.ass.info.Metadata()
+        fake_info = Metadata()
 
         image = PIL.Image.new(mode="RGBA", size=resolution)
 
@@ -285,7 +284,9 @@ class _StyleList(QtWidgets.QWidget):
         style = self._selected_style
         assert style is not None
 
-        if not ask(f'Are you sure you want to remove style "{style.name}"?'):
+        if not show_prompt(
+            f'Are you sure you want to remove style "{style.name}"?'
+        ):
             return
 
         idx = self._api.subs.styles.index(style)

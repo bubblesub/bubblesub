@@ -29,13 +29,11 @@ class MenuContext(enum.Enum):
     """Which GUI widget the menu appears in."""
 
     MainMenu = "main"
-    SubtitlesGrid = "subtitles_grid"
+    SubsGrid = "subtitles_grid"
 
 
 class MenuItem:
     """Base menu item in GUI."""
-
-    pass
 
 
 class MenuCommand(MenuItem):
@@ -56,8 +54,6 @@ class MenuCommand(MenuItem):
 
 class MenuSeparator(MenuItem):
     """Empty horizontal line."""
-
-    pass
 
 
 class SubMenu(MenuItem):

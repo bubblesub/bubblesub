@@ -18,11 +18,10 @@
 
 import typing as T
 
-import bubblesub.ass
-import bubblesub.model
+from bubblesub.model import ObservableList, ObservableObject
 
 
-class Event(bubblesub.model.ObservableObject):
+class Event(ObservableObject):
     """ASS event."""
 
     def __init__(
@@ -213,7 +212,7 @@ class Event(bubblesub.model.ObservableObject):
         return ret
 
 
-class EventList(bubblesub.model.ObservableList[Event]):
+class EventList(ObservableList[Event]):
     """ASS event list."""
 
     def insert(self, idx: int, *items: Event) -> None:

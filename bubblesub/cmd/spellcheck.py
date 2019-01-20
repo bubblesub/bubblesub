@@ -19,10 +19,10 @@ import typing as T
 import enchant
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.ass.util
-import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ass.util import spell_check_ass_line
+from bubblesub.ui.util import show_error, show_notice
 
 
 class _SpellCheckDialog(QtWidgets.QDialog):
@@ -113,7 +113,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
     def _next(self) -> bool:
         ret = self._iter_to_next_mispelt_match()
         if ret is None:
-            bubblesub.ui.util.notice("No more results.")
+            show_notice("No more results.")
             self.reject()
             return False
         idx, start, end, word = ret
@@ -126,7 +126,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         cursor = self.text_edit.textCursor()
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]
-            for start, end, word in bubblesub.ass.util.spell_check_ass_line(
+            for start, end, word in spell_check_ass_line(
                 self._dictionary, line.text.replace("\\N", "\n")
             ):
                 assert line.index is not None
@@ -176,13 +176,13 @@ class SpellCheckCommand(BaseCommand):
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         spell_check_lang = self.api.opt.general.spell_check
         if not spell_check_lang:
-            bubblesub.ui.util.error("Spell check was disabled in config.")
+            show_error("Spell check was disabled in config.")
             return
 
         try:
             dictionary = enchant.Dict(spell_check_lang)
         except enchant.errors.DictNotFoundError:
-            bubblesub.ui.util.error(
+            show_error(
                 f"Spell check language {spell_check_lang} was not found."
             )
             return

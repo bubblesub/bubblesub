@@ -25,9 +25,8 @@ import abc
 import argparse
 import asyncio
 import contextlib
-import importlib.util
+import importlib
 import io
-import itertools
 import time
 import traceback
 import typing as T
@@ -36,15 +35,13 @@ from pathlib import Path
 from pluginbase import PluginBase
 from PyQt5 import QtCore
 
-import bubblesub.api.api
-import bubblesub.model
+import bubblesub.api  # pylint: disable=unused-import
+from bubblesub.model import classproperty
 from bubblesub.opt.menu import MenuItem
 
 
 class CommandError(RuntimeError):
     """Base class for all command related errors."""
-
-    pass
 
 
 class CommandCanceled(CommandError):
@@ -70,13 +67,9 @@ class CommandUnavailable(CommandError):
 class CommandNotFound(CommandError):
     """The given command was not found."""
 
-    pass
-
 
 class BadInvocation(CommandError):
     """The given invocation was invalid."""
-
-    pass
 
 
 class CommandArgumentParser(argparse.ArgumentParser):
@@ -165,7 +158,7 @@ class BaseCommand(abc.ABC):
         self.args = args
         self.invocation = invocation
 
-    @bubblesub.model.classproperty
+    @classproperty
     @abc.abstractproperty
     def names(  # pylint: disable=no-self-argument
         cls: T.Type["BaseCommand"]
@@ -180,7 +173,7 @@ class BaseCommand(abc.ABC):
         """
         raise NotImplementedError("command has no name")
 
-    @bubblesub.model.classproperty
+    @classproperty
     @abc.abstractproperty
     def help_text(self) -> str:
         """
@@ -214,7 +207,6 @@ class BaseCommand(abc.ABC):
         :param api: core API
         :param parser: parser to configure
         """
-        pass
 
 
 class CommandApi(QtCore.QObject):
@@ -234,6 +226,7 @@ class CommandApi(QtCore.QObject):
         self._plugin_menu: T.List[MenuItem] = []
         self._modules: T.List[T.Any] = []
         self._plugin_base = PluginBase(package="bubblesub.api.cmd.plugins")
+        self._plugin_source = None
         self.reload_commands()
 
     def run_cmdline(self, cmdline: T.Union[str, T.List[T.List[str]]]) -> None:
@@ -379,7 +372,7 @@ class CommandApi(QtCore.QObject):
         Optionally, it can have a `MENU` global constant that contains
         menu item collection that get put in the plugin menu.
 
-        :param path: dictionary containing plugin definitions
+        :param paths: paths to load the commands from
         """
 
         self._plugin_source = self._plugin_base.make_plugin_source(

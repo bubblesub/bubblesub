@@ -22,11 +22,11 @@ import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 from bubblesub.opt.general import SearchMode
+from bubblesub.ui.util import show_notice
 
 MAX_HISTORY_ENTRIES = 25
 
@@ -403,7 +403,7 @@ class _SearchDialog(QtWidgets.QDialog):
         count = _replace_all(
             self._api, self._handler, self._search_regex, self._target_text
         )
-        bubblesub.ui.util.notice(
+        show_notice(
             f"Replaced {count} occurences."
             if count
             else "No occurences found."
@@ -413,13 +413,13 @@ class _SearchDialog(QtWidgets.QDialog):
         self._push_search_history()
         result = _search(self._api, self._handler, self._search_regex, reverse)
         if not result:
-            bubblesub.ui.util.notice("No occurences found.")
+            show_notice("No occurences found.")
         self._update_replacement_enabled()
 
     def _count(self) -> None:
         self._push_search_history()
         count = _count(self._api, self._handler, self._search_regex)
-        bubblesub.ui.util.notice(
+        show_notice(
             f"Found {count} occurences." if count else "No occurences found."
         )
 
@@ -540,7 +540,7 @@ class SearchRepeatCommand(BaseCommand):
             self.args.reverse,
         )
         if not result:
-            bubblesub.ui.util.notice("No occurences found.")
+            show_notice("No occurences found.")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

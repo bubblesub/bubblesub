@@ -18,24 +18,21 @@ import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.ui.audio
-import bubblesub.ui.console
-import bubblesub.ui.editor
-import bubblesub.ui.statusbar
-import bubblesub.ui.subs_grid
-import bubblesub.ui.util
-import bubblesub.ui.video
 from bubblesub.api import Api
 from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuCommand, MenuContext, MenuSeparator, SubMenu
+from bubblesub.ui.audio import Audio
+from bubblesub.ui.console import Console
+from bubblesub.ui.editor import Editor
 from bubblesub.ui.hotkeys import HotkeyManager
 from bubblesub.ui.menu import setup_cmd_menu
+from bubblesub.ui.statusbar import StatusBar
+from bubblesub.ui.subs_grid import SubsGrid
+from bubblesub.ui.video import Video
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(
-        self, api: Api, console: "bubblesub.ui.console.Console"
-    ) -> None:
+    def __init__(self, api: Api, console: Console) -> None:
         super().__init__()
 
         self._api = api
@@ -52,11 +49,11 @@ class MainWindow(QtWidgets.QMainWindow):
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._rebuild_menu)
 
-        self.video = bubblesub.ui.video.Video(api, self)
-        self.audio = bubblesub.ui.audio.Audio(api, self)
-        self.editor = bubblesub.ui.editor.Editor(api, self)
-        self.subs_grid = bubblesub.ui.subs_grid.SubsGrid(api, self)
-        self.status_bar = bubblesub.ui.statusbar.StatusBar(api, self)
+        self.video = Video(api, self)
+        self.audio = Audio(api, self)
+        self.editor = Editor(api, self)
+        self.subs_grid = SubsGrid(api, self)
+        self.status_bar = StatusBar(api, self)
         self.console = console
 
         self.editor_splitter = self._build_splitter(
@@ -89,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid.setFocus()
 
         self.subs_grid.restore_grid_columns()
-        self.apply_palette(T.cast(str, api.opt.general.gui.current_palette))
+        self.apply_palette(api.opt.general.gui.current_palette)
         self._restore_splitters()
         self._rebuild_menu()
 
@@ -98,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
             {
                 HotkeyContext.Global: self,
                 HotkeyContext.Spectrogram: self.audio,
-                HotkeyContext.SubtitlesGrid: self.subs_grid,
+                HotkeyContext.SubsGrid: self.subs_grid,
             },
         )
 

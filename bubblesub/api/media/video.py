@@ -17,7 +17,6 @@
 """Video API."""
 
 import bisect
-import math
 import threading
 import time
 import typing as T
@@ -28,22 +27,20 @@ import mpv  # pylint: disable=wrong-import-order
 import numpy as np
 from PyQt5 import QtCore
 
-import bubblesub.api.log
-import bubblesub.api.media.media
-import bubblesub.cache
-import bubblesub.util
-import bubblesub.worker
+import bubblesub.api.media.media  # pylint: disable=unused-import
+from bubblesub.api.log import LogApi
 from bubblesub.api.media.state import MediaState
+from bubblesub.worker import Worker
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
 _PIX_FMT = [ffms.get_pix_fmt("rgb24")]
 
 
-class VideoSourceWorker(bubblesub.worker.Worker):
+class VideoSourceWorker(Worker):
     """Detached video source provider."""
 
-    def __init__(self, log_api: "bubblesub.api.log.LogApi") -> None:
+    def __init__(self, log_api: LogApi) -> None:
         """
         Initialize self.
 
@@ -79,7 +76,7 @@ class VideoApi(QtCore.QObject):
     def __init__(
         self,
         media_api: "bubblesub.api.media.media.MediaApi",
-        log_api: "bubblesub.api.log.LogApi",
+        log_api: LogApi,
         mpv_: mpv.Context,
     ) -> None:
         """
@@ -194,6 +191,7 @@ class VideoApi(QtCore.QObject):
         :return: video width in pixels
         """
         if self.has_video_source:
+            assert self._video_source
             with _SAMPLER_LOCK:
                 return self._video_source.get_frame(0).EncodedWidth
         return 0
@@ -206,6 +204,7 @@ class VideoApi(QtCore.QObject):
         :return: video height in pixels
         """
         if self.has_video_source:
+            assert self._video_source
             with _SAMPLER_LOCK:
                 return self._video_source.get_frame(0).EncodedHeight
         return 0
@@ -265,6 +264,7 @@ class VideoApi(QtCore.QObject):
                 or frame_idx >= len(self.timecodes)
             ):
                 return np.zeros(width * height * 3).reshape((width, height, 3))
+            assert self._video_source
 
             new_output_fmt = (_PIX_FMT, width, height, ffms.FFMS_RESIZER_AREA)
             if self._last_output_fmt != new_output_fmt:

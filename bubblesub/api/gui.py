@@ -21,9 +21,9 @@ import functools
 import typing as T
 from pathlib import Path
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api.api  # pylint: disable=unused-import
+import bubblesub.api  # pylint: disable=unused-import
 from bubblesub.ui.util import SUBS_FILE_FILTER, save_dialog
 
 
@@ -35,7 +35,7 @@ class GuiApi(QtCore.QObject):
     begin_update_requested = QtCore.pyqtSignal()
     end_update_requested = QtCore.pyqtSignal()
 
-    def __init__(self, api: "bubblesub.api.api.Api") -> None:
+    def __init__(self, api: "bubblesub.api.Api") -> None:
         """
         Initialize self.
 

@@ -26,21 +26,21 @@ import numpy as np
 import scipy.io.wavfile
 from PyQt5 import QtCore
 
-import bubblesub.api.log
-import bubblesub.api.media.media
-import bubblesub.cache
-import bubblesub.util
-import bubblesub.worker
+import bubblesub.api.media.media  # pylint: disable=unused-import
+from bubblesub.api.log import LogApi
 from bubblesub.api.media.state import MediaState
+from bubblesub.cache import get_cache_file_path
+from bubblesub.util import hash_digest
+from bubblesub.worker import Worker
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
 
 
-class AudioSourceWorker(bubblesub.worker.Worker):
+class AudioSourceWorker(Worker):
     """Detached audio source provider."""
 
-    def __init__(self, log_api: "bubblesub.api.log.LogApi") -> None:
+    def __init__(self, log_api: "LogApi") -> None:
         """
         Initialize self.
 
@@ -59,9 +59,9 @@ class AudioSourceWorker(bubblesub.worker.Worker):
         path = T.cast(Path, task)
         self._log_api.info(f"started loading audio ({path})")
 
-        path_hash = bubblesub.util.hash_digest(path)
+        path_hash = hash_digest(path)
         cache_name = f"{path_hash}-audio-index"
-        cache_path = bubblesub.cache.get_cache_file_path(cache_name)
+        cache_path = get_cache_file_path(cache_name)
 
         index = None
         if cache_path.exists():
@@ -100,9 +100,7 @@ class AudioApi(QtCore.QObject):
     parsed = QtCore.pyqtSignal()
 
     def __init__(
-        self,
-        media_api: "bubblesub.api.media.media.MediaApi",
-        log_api: "bubblesub.api.log.LogApi",
+        self, media_api: "bubblesub.api.media.media.MediaApi", log_api: LogApi
     ) -> None:
         """
         Initialize self.
@@ -245,6 +243,7 @@ class AudioApi(QtCore.QObject):
         """
         if not self._wait_for_audio_source():
             return 0
+        assert self._audio_source
         return T.cast(int, self._audio_source.properties.Channels)
 
     @property
@@ -256,6 +255,7 @@ class AudioApi(QtCore.QObject):
         """
         if not self._wait_for_audio_source():
             return 0
+        assert self._audio_source
         return T.cast(int, self._audio_source.properties.BitsPerSample)
 
     @property
@@ -273,6 +273,7 @@ class AudioApi(QtCore.QObject):
         # - FirstTime
         # - LastTime
         # - SampleFormat
+        assert self._audio_source
         return T.cast(int, self._audio_source.properties.SampleRate)
 
     @property
@@ -284,6 +285,7 @@ class AudioApi(QtCore.QObject):
         """
         if not self._wait_for_audio_source():
             return None
+        assert self._audio_source
         return T.cast(
             T.Optional[int], self._audio_source.properties.SampleFormat
         )
@@ -297,6 +299,7 @@ class AudioApi(QtCore.QObject):
         """
         if not self._wait_for_audio_source():
             return 0
+        assert self._audio_source
         return T.cast(int, self._audio_source.properties.NumSamples)
 
     def unselect(self) -> None:

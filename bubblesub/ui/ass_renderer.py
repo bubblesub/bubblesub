@@ -26,9 +26,9 @@ import typing as T
 import numpy as np
 import PIL.Image
 
-import bubblesub.ass.event
-import bubblesub.ass.info
-import bubblesub.ass.style
+from bubblesub.ass.event import Event, EventList
+from bubblesub.ass.info import Metadata
+from bubblesub.ass.style import Style, StyleList
 
 _libass = ctypes.cdll.LoadLibrary(ctypes.util.find_library("ass"))
 _libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
@@ -87,7 +87,9 @@ _AssImage._fields_ = [
 ]
 
 
-def _make_libass_setter(name: str, types: T.List) -> T.Callable:
+def _make_libass_setter(
+    name: str, types: T.List
+) -> T.Callable[[T.Any], T.Any]:
     fun = _libass[name]
     fun.argtypes = [ctypes.c_void_p] + types
 
@@ -273,7 +275,7 @@ class _AssStyle(ctypes.Structure):
     def _after_init(self, track: "_AssTrack") -> None:
         self._track = track
 
-    def populate(self, style: bubblesub.ass.style.Style) -> None:
+    def populate(self, style: Style) -> None:
         self.name = _encode_str(style.name)
         self.fontname = _encode_str(style.font_name)
         self.fontsize = style.font_size
@@ -324,7 +326,7 @@ class _AssEvent(ctypes.Structure):
                 return i
         return -1
 
-    def populate(self, event: bubblesub.ass.event.Event) -> None:
+    def populate(self, event: Event) -> None:
         self.start_ms = int(event.start)
         self.duration_ms = int(event.end - event.start)
         self.layer = event.layer
@@ -402,11 +404,7 @@ class _AssTrack(ctypes.Structure):
         _libc.free(self.events_arr)
         _libc.free(ctypes.byref(self))
 
-    def populate(
-        self,
-        style_list: bubblesub.ass.style.StyleList,
-        event_list: bubblesub.ass.event.EventList,
-    ) -> None:
+    def populate(self, style_list: StyleList, event_list: EventList) -> None:
         self.type = _AssTrack.TYPE_ASS
 
         self.style_format = _encode_str(
@@ -482,16 +480,16 @@ class AssRenderer:
         self._renderer = self._ctx.make_renderer()
         self._renderer.set_fonts()
         self._track: T.Optional["_AssTrack"] = None
-        self.style_list: T.Optional[bubblesub.ass.style.StyleList] = None
-        self.event_list: T.Optional[bubblesub.ass.event.EventList] = None
-        self.info: T.Optional[bubblesub.ass.info.Metadata] = None
+        self.style_list: T.Optional[StyleList] = None
+        self.event_list: T.Optional[EventList] = None
+        self.info: T.Optional[Metadata] = None
         self.video_resolution: T.Optional[T.Tuple[int, int]] = None
 
     def set_source(
         self,
-        style_list: bubblesub.ass.style.StyleList,
-        event_list: bubblesub.ass.event.EventList,
-        info: bubblesub.ass.info.Metadata,
+        style_list: StyleList,
+        event_list: EventList,
+        info: Metadata,
         video_resolution: T.Tuple[int, int],
     ) -> None:
         self.style_list = style_list

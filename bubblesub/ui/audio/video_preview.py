@@ -21,12 +21,11 @@ import typing as T
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api
-import bubblesub.api.media.audio
-import bubblesub.cache
-import bubblesub.util
+from bubblesub.api import Api
 from bubblesub.api.media.state import MediaState
+from bubblesub.cache import load_cache, save_cache
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
+from bubblesub.util import hash_digest
 
 NOT_CACHED = object()
 BAND_Y_RESOLUTION = 30
@@ -35,7 +34,7 @@ BAND_Y_RESOLUTION = 30
 class VideoBandWorker(QtCore.QObject):
     cache_updated = QtCore.pyqtSignal()
 
-    def __init__(self, api: bubblesub.api.Api) -> None:
+    def __init__(self, api: Api) -> None:
         super().__init__()
         self._api = api
         self._queue: queue.Queue = queue.Queue()
@@ -102,20 +101,18 @@ class VideoBandWorker(QtCore.QObject):
 
     @property
     def _cache_name(self) -> str:
-        return bubblesub.util.hash_digest(self._api.media.path) + "-video-band"
+        return hash_digest(self._api.media.path) + "-video-band"
 
     def _load_from_cache(self) -> T.Dict[int, np.array]:
-        cache = bubblesub.cache.load_cache(self._cache_name)
+        cache = load_cache(self._cache_name)
         return cache or {}
 
     def _save_to_cache(self) -> None:
-        bubblesub.cache.save_cache(self._cache_name, self.cache)
+        save_cache(self._cache_name, self.cache)
 
 
 class VideoPreview(BaseAudioWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(SLIDER_SIZE * 3)
         self.setSizePolicy(

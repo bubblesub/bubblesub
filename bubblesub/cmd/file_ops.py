@@ -15,8 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import typing as T
-from pathlib import Path
 
 from PyQt5 import QtWidgets
 

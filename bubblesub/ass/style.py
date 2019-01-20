@@ -19,13 +19,12 @@
 import typing as T
 from collections import namedtuple
 
-import bubblesub.ass
-import bubblesub.model
+from bubblesub.model import ObservableList, ObservableObject
 
 Color = namedtuple("Color", ["red", "green", "blue", "alpha"])
 
 
-class Style(bubblesub.model.ObservableObject):
+class Style(ObservableObject):
     """ASS style."""
 
     def __init__(
@@ -200,7 +199,7 @@ class Style(bubblesub.model.ObservableObject):
         return ret
 
 
-class StyleList(bubblesub.model.ObservableList[Style]):
+class StyleList(ObservableList[Style]):
     """ASS style list."""
 
     def insert(self, idx: int, *items: Style) -> None:

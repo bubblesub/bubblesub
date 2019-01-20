@@ -22,12 +22,12 @@ import ffms
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.api
-import bubblesub.api.media.audio
-import bubblesub.worker
+from bubblesub.api import Api
 from bubblesub.api.media.state import MediaState
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
 from bubblesub.ui.util import blend_colors
+from bubblesub.util import chunks
+from bubblesub.worker import Worker
 
 try:
     import pyfftw
@@ -42,8 +42,8 @@ CACHING = object()
 CHUNK_SIZE = 50
 
 
-class SpectrumWorker(bubblesub.worker.Worker):
-    def __init__(self, api: bubblesub.api.Api) -> None:
+class SpectrumWorker(Worker):
+    def __init__(self, api: Api) -> None:
         super().__init__()
         self._api = api
         self._input: T.Any = None
@@ -117,9 +117,7 @@ class DragMode(enum.Enum):
 
 
 class AudioPreview(BaseAudioWidget):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget = None
-    ) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 2.5))
         self._spectrum_worker = None
@@ -261,7 +259,7 @@ class AudioPreview(BaseAudioWidget):
 
         # since the task queue is a LIFO queue, in order to render the columns
         # left-to-right, they need to be iterated backwards (hence reversed()).
-        for chunk in bubblesub.util.chunks(
+        for chunk in chunks(
             list(sorted(pts_to_update, reverse=True)), CHUNK_SIZE
         ):
             self._spectrum_worker.schedule_task(reversed(chunk))

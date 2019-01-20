@@ -23,10 +23,10 @@ from math import inf
 import regex
 from PyQt5 import QtWidgets
 
-import bubblesub.ui.util
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import Event
+from bubblesub.ui.util import time_jump_dialog
 from bubblesub.util import first
 
 IDX_REGEX = regex.compile(
@@ -206,7 +206,7 @@ class SubtitlesSelection:
     async def _show_time_dialog(
         self, main_window: QtWidgets.QMainWindow
     ) -> T.Optional[int]:
-        ret = bubblesub.ui.util.time_jump_dialog(
+        ret = time_jump_dialog(
             main_window,
             value=(
                 self.api.subs.selected_events[0].start
