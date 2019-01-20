@@ -33,40 +33,46 @@ def _rescale_styles(api: Api, factor: float) -> None:
 def _rescale_ass_tags(api: Api, x_factor: float, y_factor: float) -> None:
     for event in api.subs.events:
         try:
-            ass_struct = ass_tag_parser.parse_ass(event.text)
-        except ass_tag_parser.ParsingError:
+            ass_line = ass_tag_parser.parse_ass(event.text)
+        except ass_tag_parser.ParseError:
             return
-        for item in ass_struct:
-            if item["type"] != "tags":
-                continue
-            for subitem in item["children"]:
-                if subitem["type"] in {
-                    "border",
-                    "border-x",
-                    "border-y",
-                    "shadow",
-                    "shadow-x",
-                    "shadow-y",
-                    "rotation-x",
-                    "rotation-y",
-                    "rotation-z",
-                }:
-                    subitem["size"] *= y_factor
 
-                if subitem["type"] in {"rotation-origin", "position"}:
-                    subitem["x"] = int(subitem["x"] * x_factor)
-                    subitem["y"] = int(subitem["y"] * y_factor)
+        def visitor(item: ass_tag_parser.AssItem) -> None:
+            if isinstance(
+                item,
+                (
+                    ass_tag_parser.AssTagBorder,
+                    ass_tag_parser.AssTagXBorder,
+                    ass_tag_parser.AssTagYBorder,
+                    ass_tag_parser.AssTagShadow,
+                    ass_tag_parser.AssTagXShadow,
+                    ass_tag_parser.AssTagYShadow,
+                ),
+            ):
+                item.size *= y_factor
 
-                if subitem["type"] == "movement":
-                    subitem["x1"] = int(subitem["x1"] * x_factor)
-                    subitem["y1"] = int(subitem["y1"] * y_factor)
-                    subitem["x2"] = int(subitem["x2"] * x_factor)
-                    subitem["y2"] = int(subitem["y2"] * y_factor)
+            elif isinstance(
+                item,
+                (
+                    ass_tag_parser.AssTagPosition,
+                    ass_tag_parser.AssTagRotationOrigin,
+                ),
+            ):
+                item.x = int(item.x * x_factor)
+                item.y = int(item.y * y_factor)
 
-                if subitem["type"] == "font-size":
-                    subitem["size"] = int(subitem["size"] * y_factor)
+            elif isinstance(item, ass_tag_parser.AssTagMove):
+                item.x1 = int(item.x1 * x_factor)
+                item.y1 = int(item.y1 * y_factor)
+                item.x2 = int(item.x2 * x_factor)
+                item.y2 = int(item.y2 * y_factor)
 
-        event.text = ass_tag_parser.serialize_ass(ass_struct)
+            elif isinstance(item, ass_tag_parser.AssTagFontSize):
+                item.size = int(item.size * y_factor)
+
+        ass_tag_parser.walk_ass_line(ass_line, visitor)
+
+        event.text = ass_tag_parser.compose_ass(ass_line)
 
 
 class _OptionsGropuBox(QtWidgets.QGroupBox):

@@ -106,19 +106,27 @@ def spell_check_ass_line(
     :return: iterator over tuples with start, end and text
     """
     try:
-        ass_struct = ass_tag_parser.parse_ass(text)
-    except ass_tag_parser.ParsingError:
+        ass_line = ass_tag_parser.parse_ass(text)
+    except ass_tag_parser.ParseError:
         return
-    for item in ass_struct:
-        if item["type"] != "text":
-            continue
 
-        text_start, _text_end = item["pos"]
-        for match in iter_words_ass_line(item["text"]):
-            word = match.group(0)
-            if not dictionary.check(word):
-                yield (
-                    text_start + match.start(),
-                    text_start + match.end(),
-                    word,
-                )
+    results: T.List[T.Tuple[int, int, str]] = []
+
+    def visitor(item: ass_tag_parser.AssItem) -> None:
+        nonlocal results
+
+        if isinstance(item, ass_tag_parser.AssText):
+            for match in iter_words_ass_line(item.text):
+                word = match.group(0)
+                if not dictionary.check(word):
+                    results.append(
+                        (
+                            item.meta.start + match.start(),
+                            item.meta.start + match.end(),
+                            word,
+                        )
+                    )
+
+    ass_tag_parser.walk_ass_line(ass_line, visitor)
+
+    yield from results
