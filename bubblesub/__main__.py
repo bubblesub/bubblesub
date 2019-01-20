@@ -22,7 +22,7 @@ import argparse
 
 import bubblesub.cache
 import bubblesub.opt
-import bubblesub.ui
+import bubblesub.ui.ui
 
 
 def parse_args() -> argparse.Namespace:
@@ -49,7 +49,7 @@ def main() -> None:
     from bubblesub.api import Api
 
     api = Api(args)
-    bubblesub.ui.run(api, args)
+    bubblesub.ui.ui.run(api, args)
 
 
 if __name__ == "__main__":

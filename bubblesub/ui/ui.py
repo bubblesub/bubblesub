@@ -21,13 +21,13 @@ import sys
 import quamash
 from PyQt5 import QtCore, QtWidgets
 
-import bubblesub.api
 import bubblesub.ui.console
 import bubblesub.ui.main_window
+from bubblesub.api import Api
 from bubblesub.opt import ConfigError
 
 
-def run(api: bubblesub.api.Api, args: argparse.Namespace) -> None:
+def run(api: Api, args: argparse.Namespace) -> None:
     QtCore.pyqtRemoveInputHook()
     app = QtWidgets.QApplication(sys.argv + ["--name", "bubblesub"])
     app.setApplicationName("bubblesub")
