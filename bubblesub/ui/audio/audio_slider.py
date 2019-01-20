@@ -21,7 +21,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import bubblesub.api
 import bubblesub.api.media.audio
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
-from bubblesub.ui.util import get_color
 
 
 class AudioSlider(BaseAudioWidget):
@@ -65,7 +64,7 @@ class AudioSlider(BaseAudioWidget):
         x = self._pts_to_x(self._api.media.current_pts)
         painter.setPen(
             QtGui.QPen(
-                get_color(self._api, "spectrogram/video-marker"),
+                self._api.gui.get_color("spectrogram/video-marker"),
                 1,
                 QtCore.Qt.SolidLine,
             )

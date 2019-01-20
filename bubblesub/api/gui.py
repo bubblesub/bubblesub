@@ -17,10 +17,11 @@
 """GUI API."""
 
 import contextlib
+import functools
 import typing as T
 from pathlib import Path
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 
 import bubblesub.api.api  # pylint: disable=unused-import
 from bubblesub.ui.util import SUBS_FILE_FILTER, save_dialog
@@ -99,6 +100,16 @@ class GuiApi(QtCore.QObject):
             return True
         assert response == box.Cancel
         return False
+
+    @functools.lru_cache(maxsize=None)
+    def get_color(self, color_name: str) -> QtGui.QColor:
+        current_palette = self._api.opt.general.gui.current_palette
+        try:
+            palette_def = self._api.opt.general.gui.palettes[current_palette]
+            color_value = palette_def[color_name]
+        except KeyError:
+            return QtGui.QVariant()
+        return QtGui.QColor(*color_value)
 
     def get_dialog_dir(self) -> T.Optional[Path]:
         if self._api.subs.path:

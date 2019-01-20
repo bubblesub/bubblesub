@@ -103,7 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def changeEvent(self, _event: QtCore.QEvent) -> None:
-        bubblesub.ui.util.get_color.cache_clear()
+        self._api.gui.get_color.cache_clear()
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
         if self._api.gui.confirm_unsaved_changes():

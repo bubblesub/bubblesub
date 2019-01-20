@@ -27,7 +27,7 @@ import bubblesub.api.media.audio
 import bubblesub.worker
 from bubblesub.api.media.state import MediaState
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
-from bubblesub.ui.util import blend_colors, get_color
+from bubblesub.ui.util import blend_colors
 
 try:
     import pyfftw
@@ -381,7 +381,7 @@ class AudioPreview(BaseAudioWidget):
 
     def _draw_keyframes(self, painter: QtGui.QPainter) -> None:
         h = painter.viewport().height()
-        color = get_color(self._api, "spectrogram/keyframe")
+        color = self._api.gui.get_color("spectrogram/keyframe")
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         for keyframe in self._api.media.video.keyframes:
             timecode = self._api.media.video.timecodes[keyframe]
@@ -411,7 +411,9 @@ class AudioPreview(BaseAudioWidget):
 
             painter.setPen(
                 QtGui.QPen(
-                    get_color(self._api, f"spectrogram/{color_key}-sub-line"),
+                    self._api.gui.get_color(
+                        f"spectrogram/{color_key}-sub-line"
+                    ),
                     1,
                     QtCore.Qt.SolidLine,
                 )
@@ -420,8 +422,8 @@ class AudioPreview(BaseAudioWidget):
             if is_label_visible or is_selected:
                 painter.setBrush(
                     QtGui.QBrush(
-                        get_color(
-                            self._api, f"spectrogram/{color_key}-sub-line"
+                        self._api.gui.get_color(
+                            f"spectrogram/{color_key}-sub-line"
                         )
                         if is_selected
                         else self.palette().window()
@@ -436,7 +438,9 @@ class AudioPreview(BaseAudioWidget):
 
             painter.setBrush(
                 QtGui.QBrush(
-                    get_color(self._api, f"spectrogram/{color_key}-sub-fill")
+                    self._api.gui.get_color(
+                        f"spectrogram/{color_key}-sub-fill"
+                    )
                 )
             )
             painter.drawRect(x1, 0, x2 - x1, h - 1)
@@ -444,8 +448,8 @@ class AudioPreview(BaseAudioWidget):
             if is_label_visible:
                 painter.setPen(
                     QtGui.QPen(
-                        get_color(
-                            self._api, f"spectrogram/{color_key}-sub-text"
+                        self._api.gui.get_color(
+                            f"spectrogram/{color_key}-sub-text"
                         ),
                         1,
                         QtCore.Qt.SolidLine,
@@ -466,13 +470,13 @@ class AudioPreview(BaseAudioWidget):
         )
         painter.setPen(
             QtGui.QPen(
-                get_color(self._api, f"{color_key}-line"),
+                self._api.gui.get_color(f"{color_key}-line"),
                 1,
                 QtCore.Qt.SolidLine,
             )
         )
         painter.setBrush(
-            QtGui.QBrush(get_color(self._api, f"{color_key}-fill"))
+            QtGui.QBrush(self._api.gui.get_color(f"{color_key}-fill"))
         )
         x1 = self._pts_to_x(self._audio.selection_start)
         x2 = self._pts_to_x(self._audio.selection_end)
@@ -483,7 +487,7 @@ class AudioPreview(BaseAudioWidget):
             return
         x = self._pts_to_x(self._api.media.current_pts)
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(get_color(self._api, "spectrogram/video-marker"))
+        painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
 
         width = 7
         polygon = QtGui.QPolygonF()

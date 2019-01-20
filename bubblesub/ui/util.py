@@ -22,7 +22,6 @@ from pathlib import Path
 from PyQt5 import QtCore, QtGui, QtWidgets
 from pyqtcolordialog import QColorDialog
 
-import bubblesub.api.api
 from bubblesub.data import ROOT_DIR
 from bubblesub.util import ms_to_str, str_to_ms
 
@@ -180,17 +179,6 @@ class TimeEdit(QtWidgets.QLineEdit):
         self.setText(text)
         self.textEdited.emit(self.text())
         self.setCursorPosition(0)
-
-
-@functools.lru_cache(maxsize=None)
-def get_color(api: "bubblesub.api.api.Api", color_name: str) -> QtGui.QColor:
-    current_palette = api.opt.general.gui.current_palette
-    try:
-        palette_def = api.opt.general.gui.palettes[current_palette]
-        color_value = palette_def[color_name]
-    except KeyError:
-        return QtGui.QVariant()
-    return QtGui.QColor(*color_value)
 
 
 def load_dialog(

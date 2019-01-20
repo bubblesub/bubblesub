@@ -25,7 +25,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogLevel
-from bubblesub.ui.util import get_color
 
 
 class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
@@ -98,7 +97,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
 
     def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
         fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(get_color(self._api, color_name))
+        fmt.setForeground(self._api.gui.get_color(color_name))
         fmt.setFont(self._font)
         return fmt
 

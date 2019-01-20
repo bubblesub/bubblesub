@@ -25,7 +25,6 @@ from bubblesub.opt.hotkeys import HotkeyContext
 from bubblesub.opt.menu import MenuContext
 from bubblesub.ui.menu import setup_cmd_menu
 from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
-from bubblesub.ui.util import get_color
 
 MAGIC_MARGIN = 2  # ????
 HIGHLIGHTABLE_CHUNKS = {"\N{FULLWIDTH ASTERISK}", "\\N", "\\h", "\\n"}
@@ -44,7 +43,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
     def _create_format(self) -> QtGui.QTextCharFormat:
         fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(get_color(self._api, "grid/ass-mark"))
+        fmt.setForeground(self._api.gui.get_color("grid/ass-mark"))
         return fmt
 
     def paint(
@@ -103,7 +102,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
 
         for chunk in re.split(regex, text):
             painter.setPen(
-                get_color(self._api, "grid/ass-mark")
+                self._api.gui.get_color("grid/ass-mark")
                 if chunk in HIGHLIGHTABLE_CHUNKS
                 else option.palette.color(QtGui.QPalette.Text)
             )

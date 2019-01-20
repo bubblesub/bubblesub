@@ -24,7 +24,7 @@ from bubblesub.api import Api
 from bubblesub.ass.event import Event
 from bubblesub.ass.util import character_count
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
-from bubblesub.ui.util import blend_colors, get_color
+from bubblesub.ui.util import blend_colors
 from bubblesub.util import ms_to_str, str_to_ms
 
 
@@ -207,7 +207,7 @@ class SubtitlesModel(ObservableListTableAdapter):
 
         if role == QtCore.Qt.BackgroundRole:
             if subtitle.is_comment:
-                return get_color(self._api, "grid/comment")
+                return self._api.gui.get_color("grid/comment")
             if col_idx == SubtitlesModelColumn.CharsPerSec:
                 return self._get_background_cps(subtitle)
 
