@@ -77,6 +77,7 @@ class VideoBandWorker(QtCore.QObject):
 
     def _on_media_state_change(self, state: MediaState) -> None:
         if state == MediaState.Unloaded:
+            self._clear_queue()
             if self._anything_to_save:
                 self._save_to_cache()
         elif state == MediaState.Loading:
