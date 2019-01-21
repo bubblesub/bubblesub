@@ -58,11 +58,13 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 self.api.subs.events.remove(idx, 1)
 
                 new_subs: T.List[Event] = []
-                for syllable in syllables:
+                for i, syllable in enumerate(syllables):
                     sub_copy = copy(sub)
-                    sub_copy.text = syllable.text
                     sub_copy.start = start
                     sub_copy.end = min(end, start + syllable.duration * 10)
+                    sub_copy.text = syllable.text
+                    if i > 0:
+                        sub_copy.note = ''
                     start = sub_copy.end
                     new_subs.append(sub_copy)
 
