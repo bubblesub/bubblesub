@@ -37,7 +37,7 @@ def _rescale_ass_tags(api: Api, x_factor: float, y_factor: float) -> None:
         except ass_tag_parser.ParseError:
             return
 
-        def visitor(item: ass_tag_parser.AssItem) -> None:
+        for item in ass_line:
             if isinstance(
                 item,
                 (
@@ -69,8 +69,6 @@ def _rescale_ass_tags(api: Api, x_factor: float, y_factor: float) -> None:
 
             elif isinstance(item, ass_tag_parser.AssTagFontSize):
                 item.size = int(item.size * y_factor)
-
-        ass_tag_parser.walk_ass_line(ass_line, visitor)
 
         event.text = ass_tag_parser.compose_ass(ass_line)
 

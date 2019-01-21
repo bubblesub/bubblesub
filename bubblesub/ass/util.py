@@ -112,9 +112,7 @@ def spell_check_ass_line(
 
     results: T.List[T.Tuple[int, int, str]] = []
 
-    def visitor(item: ass_tag_parser.AssItem) -> None:
-        nonlocal results
-
+    for item in ass_line:
         if isinstance(item, ass_tag_parser.AssText):
             for match in iter_words_ass_line(item.text):
                 word = match.group(0)
@@ -126,7 +124,5 @@ def spell_check_ass_line(
                             word,
                         )
                     )
-
-    ass_tag_parser.walk_ass_line(ass_line, visitor)
 
     yield from results
