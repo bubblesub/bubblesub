@@ -84,6 +84,9 @@ def setup_cmd_menu(
     menu_def: T.Sequence[MenuItem],
     context: HotkeyContext,
 ) -> T.Any:
+    for action in parent.actions():
+        parent.removeAction(action)
+
     hotkey_map = _build_hotkey_map(api)
     stack = [(parent, menu_def)]
 

@@ -47,7 +47,7 @@ class MainWindow(QtWidgets.QMainWindow):
             lambda: self.setUpdatesEnabled(True)
         )
         api.subs.loaded.connect(self._update_title)
-        api.cmd.commands_loaded.connect(self._rebuild_menu)
+        api.cmd.commands_loaded.connect(self._setup_menu)
 
         self.video = Video(api, self)
         self.audio = Audio(api, self)
@@ -88,7 +88,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid.restore_grid_columns()
         self.apply_palette(api.opt.general.gui.current_palette)
         self._restore_splitters()
-        self._rebuild_menu()
+        self._setup_menu()
 
         HotkeyManager(
             api,
@@ -150,10 +150,7 @@ class MainWindow(QtWidgets.QMainWindow):
             splitter.setStretchFactor(i, stretch_factor)
         return splitter
 
-    def _rebuild_menu(self) -> None:
-        for action in self.menuBar().actions():
-            self.menuBar().removeAction(action)
-
+    def _setup_menu(self) -> None:
         setup_cmd_menu(
             self._api,
             self.menuBar(),

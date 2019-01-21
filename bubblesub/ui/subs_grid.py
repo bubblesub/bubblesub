@@ -142,6 +142,9 @@ class SubsGrid(QtWidgets.QTableView):
         }:
             self.setColumnHidden(col_idx, True)
 
+        self._subs_menu = QtWidgets.QMenu(self)
+
+        api.cmd.commands_loaded.connect(self._rebuild_subs_menu)
         api.gui.quit_confirmed.connect(self._store_grid_columns)
         api.subs.loaded.connect(self._on_subs_load)
         api.subs.selection_changed.connect(self._sync_api_selection_to_video)
@@ -150,7 +153,7 @@ class SubsGrid(QtWidgets.QTableView):
             self._sync_grid_selection_to_api
         )
 
-        self._setup_subtitles_menu()
+        self._setup_subs_menu()
         self._setup_header_menu()
 
         self._seek_to: T.Optional[int] = None
@@ -160,13 +163,15 @@ class SubsGrid(QtWidgets.QTableView):
         timer.timeout.connect(self._sync_sub_selection)
         timer.start()
 
-    def _setup_subtitles_menu(self) -> None:
+    def _setup_subs_menu(self) -> None:
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._open_subtitles_menu)
-        self.subtitles_menu = QtWidgets.QMenu(self)
+        self.customContextMenuRequested.connect(self._open_subs_menu)
+        self._rebuild_subs_menu()
+
+    def _rebuild_subs_menu(self) -> None:
         setup_cmd_menu(
             self._api,
-            self.subtitles_menu,
+            self._subs_menu,
             self._api.opt.menu[MenuContext.SubsGrid],
             HotkeyContext.SubsGrid,
         )
@@ -222,8 +227,8 @@ class SubsGrid(QtWidgets.QTableView):
             self._api.media.seek(self._seek_to)
             self._seek_to = None
 
-    def _open_subtitles_menu(self, position: QtCore.QPoint) -> None:
-        self.subtitles_menu.exec_(self.viewport().mapToGlobal(position))
+    def _open_subs_menu(self, position: QtCore.QPoint) -> None:
+        self._subs_menu.exec_(self.viewport().mapToGlobal(position))
 
     def _collect_rows(self) -> T.List[int]:
         rows = set()
