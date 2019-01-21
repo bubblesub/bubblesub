@@ -54,7 +54,10 @@ def load_cache(cache_name: str) -> T.Any:
     cache_path = get_cache_file_path(cache_name)
     if cache_path.exists():
         with cache_path.open(mode="rb") as handle:
-            return pickle.load(handle)
+            try:
+                return pickle.load(handle)
+            except EOFError:
+                return None
     return None
 
 
