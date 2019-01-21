@@ -15,12 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import re
 import typing as T
 from copy import copy
 
+import ass_tag_parser
+
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand, CommandUnavailable
+from bubblesub.api.cmd import BaseCommand, CommandUnavailable, CommandError
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import SubtitlesSelection
 
@@ -52,7 +53,10 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
 
                 start = sub.start
                 end = sub.end
-                syllables = self._get_syllables(sub.text)
+                try:
+                    syllables = list(self._get_syllables(sub.text))
+                except ass_tag_parser.ParseError as ex:
+                    raise CommandError(str(ex))
 
                 idx = sub.index
                 self.api.subs.events.remove(idx, 1)
@@ -61,10 +65,10 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 for i, syllable in enumerate(syllables):
                     sub_copy = copy(sub)
                     sub_copy.start = start
-                    sub_copy.end = min(end, start + syllable.duration * 10)
+                    sub_copy.end = min(end, start + syllable.duration)
                     sub_copy.text = syllable.text
                     if i > 0:
-                        sub_copy.note = ''
+                        sub_copy.note = ""
                     start = sub_copy.end
                     new_subs.append(sub_copy)
 
@@ -75,25 +79,30 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 sub.index for sub in new_selection
             ]
 
-    def _get_syllables(self, text: str) -> T.List[_Syllable]:
-        syllables = [_Syllable(text="", duration=0)]
-        for group in re.split("({[^{}]*})", text):
-            if group.startswith("{"):
-                match = re.search("\\\\k(\\d+)", group)
-                if match:
-                    syllables.append(
-                        _Syllable(text="", duration=int(match.group(1)))
-                    )
-                    # remove the leftover \k tag
-                    group = group[: match.start()] + group[match.end() :]
-                    if group == "{}":
-                        group = ""
-                syllables[-1].text += group
-            else:
-                syllables[-1].text += group
-        if not syllables[0].text and syllables[0].duration == 0:
-            syllables = syllables[1:]
-        return syllables
+    def _get_syllables(self, text: str) -> T.Iterable[_Syllable]:
+        chunks: T.List[T.List[ass_tag_parser.AssItem]] = [[]]
+        durations: T.List[int] = [0]
+
+        for item in ass_tag_parser.parse_ass(text):
+            if isinstance(item, ass_tag_parser.AssTagKaraoke):
+                durations.append(item.duration)
+                chunks.append([])
+            elif not isinstance(
+                item,
+                (
+                    ass_tag_parser.AssTagListOpening,
+                    ass_tag_parser.AssTagListEnding,
+                ),
+            ):
+                chunks[-1].append(item)
+
+        while chunks and durations and not chunks[0] and not durations[0]:
+            chunks.pop(0)
+            durations.pop(0)
+
+        for duration, chunk in zip(durations, chunks):
+            text = ass_tag_parser.compose_ass(chunk)
+            yield _Syllable(text, duration)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
