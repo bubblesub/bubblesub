@@ -144,7 +144,7 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
                 subs[0].text = text
             else:
                 subs[0].text = "".join(
-                    ("{\\k%d}" % (sub.duration // 10)) + sub.text
+                    ("{\\k%.01f}" % (sub.duration / 10)) + sub.text
                     for sub in subs
                 )
 
