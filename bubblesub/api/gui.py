@@ -120,5 +120,7 @@ class GuiApi(QtCore.QObject):
     def throttle_updates(self) -> T.Any:
         """Throttle updates to GUI."""
         self.begin_update_requested.emit()
-        yield
-        self.end_update_requested.emit()
+        try:
+            yield
+        finally:
+            self.end_update_requested.emit()

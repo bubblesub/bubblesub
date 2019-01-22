@@ -200,14 +200,16 @@ class UndoApi:
             self._push(self._prev_state, cur_state)
 
         self._prev_state = self._make_state()
-        yield
-        cur_state = self._make_state()
-        self._push(self._prev_state, cur_state)
+        try:
+            yield
+        finally:
+            cur_state = self._make_state()
+            self._push(self._prev_state, cur_state)
 
-        if is_nested:
-            self._prev_state = cur_state
-        else:
-            self._prev_state = None
+            if is_nested:
+                self._prev_state = cur_state
+            else:
+                self._prev_state = None
 
     def undo(self) -> None:
         """Restore previous application state."""
