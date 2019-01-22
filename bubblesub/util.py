@@ -17,10 +17,10 @@
 """Miscellaneous functions and classes for general purpose usage."""
 
 import fractions
-import hashlib
 import itertools
 import re
 import typing as T
+from pathlib import Path
 
 
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
@@ -84,16 +84,6 @@ def str_to_ms(text: str) -> int:
     raise ValueError(f'invalid time format: "{text}"')
 
 
-def hash_digest(subject: T.Any) -> str:
-    """
-    Return MD5 digest of given subject.
-
-    :param subject: any
-    :return: MD5 digest
-    """
-    return hashlib.md5(str(subject).encode("utf-8")).hexdigest()
-
-
 def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
     """
     Evaluate simple expression.
@@ -150,13 +140,17 @@ def make_ranges(
         yield (start_idx, end_idx + 1 - start_idx)
 
 
-def sanitize_file_name(file_name: str) -> str:
+def sanitize_file_name(file_name: T.Union[Path, str]) -> str:
     """
     Remove unusable characters from a file name.
 
     :param file_name: file name to sanitize
     :return: sanitized file name
     """
+    if isinstance(file_name, Path):
+        file_name = str(file_name.resolve())
+
+    file_name = file_name.replace("/", "_")
     file_name = file_name.replace(":", ".")
     file_name = file_name.replace(" ", "_")
     file_name = re.sub(r"(?u)[^-\w.]", "", file_name)

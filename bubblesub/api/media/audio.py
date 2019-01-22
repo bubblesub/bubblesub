@@ -30,7 +30,7 @@ import bubblesub.api.media.media  # pylint: disable=unused-import
 from bubblesub.api.log import LogApi
 from bubblesub.api.media.state import MediaState
 from bubblesub.cache import get_cache_file_path
-from bubblesub.util import hash_digest
+from bubblesub.util import sanitize_file_name
 from bubblesub.worker import Worker
 
 _LOADING = object()
@@ -59,9 +59,9 @@ class AudioSourceWorker(Worker):
         path = T.cast(Path, task)
         self._log_api.info(f"started loading audio ({path})")
 
-        path_hash = hash_digest(path)
-        cache_name = f"{path_hash}-audio-index"
-        cache_path = get_cache_file_path(cache_name)
+        cache_path = get_cache_file_path(
+            f"{sanitize_file_name(path)}-audio-index"
+        )
 
         index = None
         if cache_path.exists():

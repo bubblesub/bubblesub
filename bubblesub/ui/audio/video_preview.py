@@ -25,7 +25,7 @@ from bubblesub.api import Api
 from bubblesub.api.media.state import MediaState
 from bubblesub.cache import load_cache, save_cache
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
-from bubblesub.util import hash_digest
+from bubblesub.util import sanitize_file_name
 
 NOT_CACHED = object()
 BAND_Y_RESOLUTION = 30
@@ -102,7 +102,7 @@ class VideoBandWorker(QtCore.QObject):
 
     @property
     def _cache_name(self) -> str:
-        return hash_digest(self._api.media.path) + "-video-band"
+        return sanitize_file_name(self._api.media.path) + "-video-band"
 
     def _load_from_cache(self) -> T.Dict[int, np.array]:
         cache = load_cache(self._cache_name)
