@@ -26,6 +26,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event, EventList
 from bubblesub.ass.info import Metadata
 from bubblesub.ass.style import Style, StyleList
+from bubblesub.data import ROOT_DIR
 from bubblesub.ui.ass_renderer import AssRenderer
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
 from bubblesub.ui.util import (
@@ -366,11 +367,24 @@ class _StyleList(QtWidgets.QWidget):
         )
 
 
+def _refresh_font_db() -> None:
+    # XXX:
+    # Qt doesn't expose API to refresh the fonts, so we try to trick it into
+    # invalidating its internal database by adding a dummy application font.
+    # On Linux, this works with `fc-cache -r`.
+    font_db = QtGui.QFontDatabase()
+    font_db.addApplicationFont(str(ROOT_DIR / "AdobeBlank.ttf"))
+    font_db.removeAllApplicationFonts()
+
+
 class _FontGroupBox(QtWidgets.QGroupBox):
     def __init__(
         self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Font", parent)
+
+        _refresh_font_db()
+
         self.font_name_edit = QtWidgets.QFontComboBox(self)
         self.font_name_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
         self.font_name_edit.setSizeAdjustPolicy(
