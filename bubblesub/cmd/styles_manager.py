@@ -377,6 +377,32 @@ def _refresh_font_db() -> None:
     font_db.removeAllApplicationFonts()
 
 
+def _get_font_families() -> T.List[str]:
+    return list(
+        sorted(
+            set(
+                [
+                    family
+                    if " [" not in family
+                    else family[0 : family.index(" [")]
+                    for family in QtGui.QFontDatabase().families()
+                ]
+            )
+        )
+    )
+
+
+class _FontComboBox(QtWidgets.QComboBox):
+    def __init__(self, parent: QtWidgets.QWidget) -> None:
+        super().__init__(
+            parent,
+            editable=True,
+            insertPolicy=QtWidgets.QComboBox.NoInsert,
+            sizeAdjustPolicy=QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon,
+        )
+        self.addItems(_get_font_families())
+
+
 class _FontGroupBox(QtWidgets.QGroupBox):
     def __init__(
         self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
@@ -385,11 +411,7 @@ class _FontGroupBox(QtWidgets.QGroupBox):
 
         _refresh_font_db()
 
-        self.font_name_edit = QtWidgets.QFontComboBox(self)
-        self.font_name_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
-        self.font_name_edit.setSizeAdjustPolicy(
-            QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon
-        )
+        self.font_name_edit = _FontComboBox(self)
         self.font_size_edit = QtWidgets.QSpinBox(self)
         self.font_size_edit.setMinimum(0)
         self.font_size_edit.setMaximum(999)
