@@ -54,15 +54,15 @@ class _StylePreview(QtWidgets.QGroupBox):
         self._renderer = AssRenderer()
 
         self._editor = QtWidgets.QPlainTextEdit()
-        self._editor.setPlainText(api.opt.general.styles.preview_test_text)
+        self._editor.setPlainText(api.cfg.opt["styles"]["preview_test_text"])
         self._editor.setFixedWidth(400)
         self._editor.setTabChangesFocus(True)
         self._editor.setFixedHeight(get_text_edit_row_height(self._editor, 2))
 
         self._background_combobox = QtWidgets.QComboBox()
-        for i, path in enumerate(api.opt.get_assets("style_preview_bk")):
+        for i, path in enumerate(api.cfg.get_assets("style_preview_bk")):
             self._background_combobox.addItem(path.name, path.resolve())
-            if path.name == api.opt.general.styles.preview_background:
+            if path.name == api.cfg.opt["styles"]["preview_background"]:
                 self._background_combobox.setCurrentIndex(i)
 
         self._preview_box = QtWidgets.QLabel(self)
@@ -91,14 +91,14 @@ class _StylePreview(QtWidgets.QGroupBox):
 
     def _on_background_change(self) -> None:
         self.update_preview()
-        self._api.opt.general.styles.preview_background = (
-            self._background_combobox.currentData().name
-        )
+        self._api.cfg.opt["styles"][
+            "preview_background"
+        ] = self._background_combobox.currentData().name
 
     def _on_text_change(self) -> None:
         self.preview_text_changed.emit()
         self.update_preview()
-        self._api.opt.general.styles.preview_test_text = self.preview_text
+        self._api.cfg.opt["styles"]["preview_test_text"] = self.preview_text
 
     @property
     def preview_text(self) -> str:

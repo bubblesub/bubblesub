@@ -14,34 +14,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Program options."""
+"""Program configuration."""
 
 import typing as T
 from pathlib import Path
 
 import xdg
 
+from bubblesub.cfg.hotkeys import HotkeysConfig
+from bubblesub.cfg.menu import MenuConfig
+from bubblesub.cfg.options import OptionsConfig
 from bubblesub.data import ROOT_DIR
-from bubblesub.opt.general import GeneralConfig
-from bubblesub.opt.hotkeys import HotkeysConfig
-from bubblesub.opt.menu import MenuConfig
 
 
-class Options:
+class Config:
     """Umbrella class containing all the configuration."""
 
     DEFAULT_PATH = Path(xdg.XDG_CONFIG_HOME) / "bubblesub"
 
     def __init__(self) -> None:
         """Initialize self."""
-        self.general = GeneralConfig()
+        self.opt = OptionsConfig()
         self.hotkeys = HotkeysConfig()
         self.menu = MenuConfig()
         self.root_dir = Path()
 
     def reset(self) -> None:
         """Reset configuration to factory defaults."""
-        self.general.reset()
+        self.opt.reset()
         self.hotkeys.reset()
         self.menu.reset()
 
@@ -52,7 +52,7 @@ class Options:
         :param root_dir: root directory to load the configuration from
         """
         self.root_dir = root_dir
-        self.general.load(root_dir)
+        self.opt.load(root_dir)
         self.hotkeys.load(root_dir)
         self.menu.load(root_dir)
 
@@ -62,7 +62,7 @@ class Options:
 
         :param root_dir: root directory to save the configuration to
         """
-        self.general.save(root_dir)
+        self.opt.save(root_dir)
         self.hotkeys.create_example_file(root_dir)
         self.menu.create_example_file(root_dir)
 

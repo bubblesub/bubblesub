@@ -131,7 +131,7 @@ class VideoPreview(BaseAudioWidget):
         self._pixels: np.array = np.zeros([0, 0, 3], dtype=np.uint8)
 
         timer = QtCore.QTimer(self)
-        timer.setInterval(api.opt.general.audio.spectrogram_sync_interval)
+        timer.setInterval(api.cfg.opt["audio"]["spectrogram_sync_interval"])
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 

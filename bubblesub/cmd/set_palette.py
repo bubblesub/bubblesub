@@ -38,7 +38,7 @@ class SetPaletteCommand(BaseCommand):
             "palette_name",
             help="name of the palette to change to",
             type=str,
-            choices=list(api.opt.general.gui.palettes.keys()),
+            choices=list(api.cfg.opt["gui"]["palettes"]),
         )
 
 

@@ -22,8 +22,8 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
-from bubblesub.opt.hotkeys import HotkeyContext
-from bubblesub.opt.menu import MenuCommand, MenuItem, MenuSeparator, SubMenu
+from bubblesub.cfg.hotkeys import HotkeyContext
+from bubblesub.cfg.menu import MenuCommand, MenuItem, MenuSeparator, SubMenu
 
 HotkeyMap = T.Dict[T.Tuple[HotkeyContext, str], str]
 
@@ -73,7 +73,7 @@ class _CommandAction(QtWidgets.QAction):
 
 def _build_hotkey_map(api: Api) -> HotkeyMap:
     ret: HotkeyMap = {}
-    for hotkey in api.opt.hotkeys:
+    for hotkey in api.cfg.hotkeys:
         ret[hotkey.context, hotkey.cmdline] = hotkey.shortcut
     return ret
 

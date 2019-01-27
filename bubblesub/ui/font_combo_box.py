@@ -140,7 +140,7 @@ class FontComboBox(QtWidgets.QComboBox):
             sizeAdjustPolicy=QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon,
         )
         self.addItems(_get_font_families())
-        if api.opt.general.gui.preview_fonts:
+        if api.cfg.opt["gui"]["preview_fonts"]:
             self.setItemDelegate(_FontFamilyDelegate(self))
             self.setStyleSheet(
                 "QComboBox QAbstractItemView { min-width: 800px; }"

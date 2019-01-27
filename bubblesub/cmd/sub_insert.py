@@ -81,7 +81,7 @@ class SubtitleInsertCommand(BaseCommand):
 
     @property
     def _duration(self) -> int:
-        return self.api.opt.general.subs.default_duration
+        return self.api.cfg.opt["subs"]["default_duration"]
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

@@ -49,13 +49,13 @@ class GenerateDocumentationCommand(Command):
     def _generate_hotkeys_documentation(self, handle):
         import re
         import shlex
-        import bubblesub.opt
+        import bubblesub.cfg
         from bubblesub.api.cmd import split_invocation
 
-        opt = bubblesub.opt.Options()
+        cfg = bubblesub.cfg.Config()
 
         table = []
-        for hotkey in opt.hotkeys:
+        for hotkey in cfg.hotkeys:
             last_cell = []
             for invocation in split_invocation(hotkey.cmdline):
                 cmd_name, *cmd_args = invocation
@@ -83,7 +83,7 @@ class GenerateDocumentationCommand(Command):
     def _generate_commands_documentation(self, handle):
         import argparse
 
-        import bubblesub.opt
+        import bubblesub.cfg
         import bubblesub.api.cmd
 
         args = argparse.Namespace()
@@ -326,6 +326,7 @@ setup(
         "xdg",
         "ass_tag_parser",
         "Pillow",
+        "pyyaml",
         "pluginbase",
     ],
     extras_require={

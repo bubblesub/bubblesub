@@ -16,6 +16,7 @@
 
 import abc
 import argparse
+import enum
 import re
 import traceback
 import typing as T
@@ -25,10 +26,18 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
-from bubblesub.opt.general import SearchMode
 from bubblesub.ui.util import show_notice
 
 MAX_HISTORY_ENTRIES = 25
+
+
+class SearchMode(enum.IntEnum):
+    """Search mode in subtitles grid."""
+
+    Text = 1
+    Note = 2
+    Actor = 3
+    Style = 4
 
 
 def _create_search_regex(
@@ -440,24 +449,24 @@ class _SearchDialog(QtWidgets.QDialog):
     def _load_opt(self) -> None:
         self.search_text_edit.clear()
         self.search_text_edit.addItems(
-            [item for item in self._opt.history if item]
+            [item for item in self._opt["history"] if item]
         )
-        self.case_chkbox.setChecked(self._opt.case_sensitive)
-        self.regex_chkbox.setChecked(self._opt.use_regexes)
-        self.search_mode_group_box.set_value(self._opt.mode)
+        self.case_chkbox.setChecked(self._opt["case_sensitive"])
+        self.regex_chkbox.setChecked(self._opt["use_regexes"])
+        self.search_mode_group_box.set_value(self._opt["mode"])
 
     def _save_opt(self) -> None:
-        self._opt.history = [
+        self._opt["history"] = [
             self.search_text_edit.itemText(i)
             for i in range(self.search_text_edit.count())
         ]
-        self._opt.use_regexes = self._use_regexes
-        self._opt.case_sensitive = self._case_sensitive
-        self._opt.mode = self._mode
+        self._opt["use_regexes"] = self._use_regexes
+        self._opt["case_sensitive"] = self._case_sensitive
+        self._opt["mode"] = int(self._mode)
 
     @property
     def _opt(self) -> T.Any:
-        return self._api.opt.general.search
+        return self._api.cfg.opt["search"]
 
     @property
     def _text(self) -> str:
@@ -522,20 +531,20 @@ class SearchRepeatCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return len(self.api.opt.general.search.history) > 0
+        return len(self.api.cfg.opt["search"]["history"]) > 0
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        handler = _HANDLERS[self.api.opt.general.search.mode](main_window)
+        handler = _HANDLERS[self.api.cfg.opt["search"]["mode"]](main_window)
         result = _search(
             self.api,
             handler,
             _create_search_regex(
-                self.api.opt.general.search.history[0],
-                self.api.opt.general.search.case_sensitive,
-                self.api.opt.general.search.use_regexes,
+                self.api.cfg.opt["search"]["history"][0],
+                self.api.cfg.opt["search"]["case_sensitive"],
+                self.api.cfg.opt["search"]["use_regexes"],
             ),
             self.args.reverse,
         )

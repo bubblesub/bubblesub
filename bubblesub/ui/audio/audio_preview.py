@@ -131,7 +131,7 @@ class AudioPreview(BaseAudioWidget):
         self._generate_color_table()
 
         timer = QtCore.QTimer(self)
-        timer.setInterval(api.opt.general.audio.spectrogram_sync_interval)
+        timer.setInterval(api.cfg.opt["audio"]["spectrogram_sync_interval"])
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
@@ -245,7 +245,7 @@ class AudioPreview(BaseAudioWidget):
         }
         self._spectrum_worker.clear_tasks()
 
-        horizontal_res = self._api.opt.general.audio.spectrogram_resolution
+        horizontal_res = self._api.cfg.opt["audio"]["spectrogram_resolution"]
         max_pts = self._api.media.max_pts
 
         pts_to_update = set()
@@ -352,7 +352,7 @@ class AudioPreview(BaseAudioWidget):
             painter.drawText(x + 2, text_height + (h - text_height) / 2, text)
 
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
-        horizontal_res = self._api.opt.general.audio.spectrogram_resolution
+        horizontal_res = self._api.cfg.opt["audio"]["spectrogram_resolution"]
 
         pixels = self._pixels.transpose()
         prev_column = np.zeros([pixels.shape[1]], dtype=np.uint8)

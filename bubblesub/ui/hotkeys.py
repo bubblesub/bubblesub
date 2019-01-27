@@ -21,7 +21,7 @@ from PyQt5 import QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError
-from bubblesub.opt.hotkeys import Hotkey, HotkeyContext
+from bubblesub.cfg.hotkeys import Hotkey, HotkeyContext
 
 
 class HotkeyManager:
@@ -39,14 +39,14 @@ class HotkeyManager:
         self._rebuild()
 
         api.cmd.commands_loaded.connect(self._rebuild)
-        api.opt.hotkeys.changed.connect(self._on_hotkey_change)
-        api.opt.hotkeys.added.connect(self._on_hotkey_add)
-        api.opt.hotkeys.deleted.connect(self._on_hotkey_delete)
+        api.cfg.hotkeys.changed.connect(self._on_hotkey_change)
+        api.cfg.hotkeys.added.connect(self._on_hotkey_add)
+        api.cfg.hotkeys.deleted.connect(self._on_hotkey_delete)
 
     def _rebuild(self) -> None:
         for qt_shortcut, _cmds in self._cmd_map.values():
             qt_shortcut.setParent(None)
-        for hotkey in self._api.opt.hotkeys:
+        for hotkey in self._api.cfg.hotkeys:
             self._set_hotkey(hotkey.context, hotkey.shortcut, hotkey.cmdline)
 
     def _on_hotkey_add(self, hotkey: Hotkey) -> None:

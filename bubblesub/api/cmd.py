@@ -36,8 +36,8 @@ from pluginbase import PluginBase
 from PyQt5 import QtCore
 
 import bubblesub.api  # pylint: disable=unused-import
+from bubblesub.cfg.menu import MenuItem
 from bubblesub.model import classproperty
-from bubblesub.opt.menu import MenuItem
 
 
 class CommandError(RuntimeError):
@@ -330,8 +330,8 @@ class CommandApi(QtCore.QObject):
         self._load_commands(
             [Path(__file__).parent.parent / "cmd"]
             + (
-                [self._api.opt.root_dir / "scripts"]
-                if self._api.opt.root_dir
+                [self._api.cfg.root_dir / "scripts"]
+                if self._api.cfg.root_dir
                 else []
             )
         )

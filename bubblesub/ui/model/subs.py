@@ -243,7 +243,9 @@ class SubtitlesModel(ObservableListTableAdapter):
         ratio = character_count(subtitle.text) / (
             abs(subtitle.duration) / 1000.0
         )
-        character_limit = self._api.opt.general.subs.max_characters_per_second
+        character_limit = self._api.cfg.opt["subs"][
+            "max_characters_per_second"
+        ]
 
         ratio -= character_limit
         ratio = max(0, ratio)

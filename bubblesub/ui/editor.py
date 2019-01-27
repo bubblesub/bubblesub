@@ -34,7 +34,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
     def __init__(self, api: Api, *args: T.Any) -> None:
         super().__init__(*args)
 
-        spell_check_lang = api.opt.general.spell_check
+        spell_check_lang = api.cfg.opt["gui"]["spell_check"]
         try:
             self._dictionary = (
                 enchant.Dict(spell_check_lang) if spell_check_lang else None
@@ -63,7 +63,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
         super().__init__(parent, **kwargs)
         self._api = api
         try:
-            font_def = self._api.opt.general.gui.fonts[self.objectName()]
+            font_def = self._api.cfg.opt["gui"]["fonts"][self.objectName()]
         except KeyError:
             pass
         else:
@@ -83,7 +83,7 @@ class TextEdit(QtWidgets.QPlainTextEdit):
             font = self.font()
             font.setPointSize(new_size)
             self.setFont(font)
-            self._api.opt.general.gui.fonts[
+            self._api.cfg.opt["gui"]["fonts"][
                 self.objectName()
             ] = self.font().toString()
 
@@ -188,7 +188,7 @@ class Editor(QtWidgets.QWidget):
             model=SubtitlesModel(
                 self,
                 api,
-                convert_newlines=self._api.opt.general.convert_newlines,
+                convert_newlines=self._api.cfg.opt["gui"]["convert_newlines"],
             ),
             signal_map={TextEdit: "textChanged"},
             submit_wrapper=self._submit_wrapper,

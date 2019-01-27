@@ -225,7 +225,7 @@ class Pts:
         _origin: T.Optional[int],
         _operator: T.Optional[str],
     ) -> int:
-        return self._api.opt.general.subs.default_duration
+        return self._api.cfg.opt["subs"]["default_duration"]
 
     async def _eval_terminal_rel_frame(
         self,

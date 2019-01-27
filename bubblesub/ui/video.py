@@ -52,7 +52,7 @@ class _VideoButtons(QtWidgets.QWidget):
             "Seek to selected subtitles", self
         )
         self._sync_video_pos_checkbox.setChecked(
-            self._api.opt.general.video.sync_pos_to_selection
+            self._api.cfg.opt["video"]["sync_pos_to_selection"]
         )
 
         self._playback_speed_spinbox = QtWidgets.QDoubleSpinBox()
@@ -128,9 +128,9 @@ class _VideoButtons(QtWidgets.QWidget):
         self._connect_ui_signals()
 
     def _on_sync_video_pos_checkbox_click(self) -> None:
-        self._api.opt.general.video.sync_pos_to_selection = (
-            self._sync_video_pos_checkbox.isChecked()
-        )
+        self._api.cfg.opt["video"][
+            "sync_pos_to_selection"
+        ] = self._sync_video_pos_checkbox.isChecked()
 
 
 class _VideoVolumeControl(QtWidgets.QWidget):

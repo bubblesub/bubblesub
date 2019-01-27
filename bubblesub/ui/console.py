@@ -159,7 +159,7 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
                 return
             font.setPointSize(new_size)
             self._syntax_highlight.set_font(font)
-            self._api.opt.general.gui.fonts["console"] = font.toString()
+            self._api.cfg.opt["gui"]["fonts"]["console"] = font.toString()
         else:
             super().wheelEvent(event)
             maximum = self.verticalScrollBar().maximum()

@@ -23,8 +23,8 @@ from pathlib import Path
 
 from PyQt5 import QtCore
 
+from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import ROOT_DIR
-from bubblesub.opt.base import BaseConfig, ConfigError
 
 
 class HotkeyContext(enum.Enum):
@@ -60,7 +60,7 @@ class _HotkeysConfigSignals(QtCore.QObject):
     deleted = QtCore.pyqtSignal([Hotkey])
 
 
-class HotkeysConfig(BaseConfig):
+class HotkeysConfig(SubConfig):
     """Configuration for global and widget-centric GUI hotkeys."""
 
     changed = property(lambda self: self._signals.changed)
@@ -74,17 +74,10 @@ class HotkeysConfig(BaseConfig):
         self._signals = _HotkeysConfigSignals()
         super().__init__()
 
-    def reset(self) -> None:
-        """Reset to factory defaults."""
+    def _clear(self) -> None:
         self._hotkeys.clear()
-        self.loads((ROOT_DIR / self.file_name).read_text())
 
-    def loads(self, text: str) -> None:
-        """
-        Load internals from a human readable representation.
-
-        :param text: source text
-        """
+    def _loads(self, text: str) -> None:
         cur_context = HotkeyContext.Global
         for i, line in enumerate(text.split("\n"), 1):
             line = line.strip()

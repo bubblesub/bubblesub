@@ -1,0 +1,133 @@
+# built-in program configuration
+
+basic:
+    max_undo: 1000
+
+audio:
+    spectrogram_resolution: 10
+    spectrogram_sync_interval: 65
+
+video:
+    subs_sync_interval: 65
+    sync_pos_to_selection: true
+
+subs:
+    max_characters_per_second: 15
+    default_duration: 2000
+
+styles:
+    preview_background: grid.png
+    preview_test_text: "Test テスト\n0123456789"
+
+gui:
+    spell_check: "en_US"
+    convert_newlines: true
+    current_palette: "light"
+    preview_fonts: true
+
+    grid_columns: {}
+    splitters: {}
+    fonts: {}
+
+    palettes:
+        dark:
+            Window:                          "#353535"
+            Active+WindowText:               "#FFFFFF"
+            Inactive+WindowText:             "#FFFFFF"
+            Disabled+WindowText:             "#646464"
+            Base:                            "#191919"
+            AlternateBase:                   "#353535"
+            Active+Text:                     "#FFFFFF"
+            Inactive+Text:                   "#FFFFFF"
+            Disabled+Text:                   "#646464"
+            BrightText:                      "#FFFFFF"
+            Button:                          "#353535"
+            Active+ButtonText:               "#FFFFFF"
+            Inactive+ButtonText:             "#FFFFFF"
+            Disabled+ButtonText:             "#646464"
+            Link:                            "#2A82DA"
+            Highlight:                       "#2A82DA"
+            HighlightedText:                 "#000000"
+            ToolTipBase:                     "#FFFFFF"
+            ToolTipText:                     "#FFFFFF"
+            spectrogram/video-marker:        "#00A000"
+            spectrogram/keyframe:            "#C8640078"
+            spectrogram/selected-sub-text:   "#FFFFFF"
+            spectrogram/selected-sub-line:   "#2A82DADC"
+            spectrogram/selected-sub-fill:   "#2A82DA32"
+            spectrogram/unselected-sub-text: "#646464"
+            spectrogram/unselected-sub-line: "#2A82DA78"
+            spectrogram/unselected-sub-fill: "#2A82DA1E"
+            spectrogram/focused-sel-line:    "#90A000DC"
+            spectrogram/focused-sel-fill:    "#A0FF003C"
+            spectrogram/unfocused-sel-line:  "#90A0006E"
+            spectrogram/unfocused-sel-fill:  "#A0FF001E"
+            grid/ass-mark:                   "#FF6464"
+            grid/comment:                    "#353535"
+            console/error:                   "#FF0000"
+            console/warning:                 "#C86400"
+            console/info:                    "#FFFFFF"
+            console/debug:                   "#0064C8"
+            console/timestamp:               "#828282"
+            console/command:                 "#64C864"
+
+        light:
+            Window:                          "#EFEBE7"
+            Active+WindowText:               "#000000"
+            Inactive+WindowText:             "#000000"
+            Disabled+WindowText:             "#BEBEBE"
+            Active+Base:                     "#FFFFFF"
+            Inactive+Base:                   "#FFFFFF"
+            Disabled+Base:                   "#EFEBE7"
+            AlternateBase:                   "#F7F5F3"
+            Active+Text:                     "#000000"
+            Inactive+Text:                   "#000000"
+            Disabled+Text:                   "#BEBEBE"
+            BrightText:                      "#FFFFFF"
+            Button:                          "#EFEBE7"
+            Active+ButtonText:               "#000000"
+            Inactive+ButtonText:             "#000000"
+            Disabled+ButtonText:             "#BEBEBE"
+            Active+Highlight:                "#308CC6"
+            Inactive+Highlight:              "#308CC6"
+            Disabled+Highlight:              "#918D7E"
+            HighlightedText:                 "#FFFFFF"
+            Light:                           "#FFFFFF"
+            Midlight:                        "#CBC7C4"
+            Active+Dark:                     "#9F9D9A"
+            Inactive+Dark:                   "#9F9D9A"
+            Disabled+Dark:                   "#BEB6AE"
+            Mid:                             "#B8B5B2"
+            Active+Shadow:                   "#767472"
+            Inactive+Shadow:                 "#767472"
+            Disabled+Shadow:                 "#B1AEAB"
+            Link:                            "#0000FF"
+            LinkVisited:                     "#FF00FF"
+            ToolTipBase:                     "#FFFFDC"
+            ToolTipText:                     "#000000"
+            spectrogram/video-marker:        "#00A000"
+            spectrogram/keyframe:            "#FF800078"
+            spectrogram/selected-sub-text:   "#FFFFFF"
+            spectrogram/selected-sub-line:   "#2A82DADC"
+            spectrogram/selected-sub-fill:   "#2A82DA32"
+            spectrogram/unselected-sub-text: "#000000"
+            spectrogram/unselected-sub-line: "#2A82DA78"
+            spectrogram/unselected-sub-fill: "#2A82DA1E"
+            spectrogram/focused-sel-line:    "#90A000DC"
+            spectrogram/focused-sel-fill:    "#A0FF003C"
+            spectrogram/unfocused-sel-line:  "#90A0006E"
+            spectrogram/unfocused-sel-fill:  "#A0FF001E"
+            grid/ass-mark:                   "#E60000"
+            grid/comment:                    "#EFEBE7"
+            console/error:                   "#FF0000"
+            console/warning:                 "#C86400"
+            console/info:                    "#000000"
+            console/debug:                   "#0064C8"
+            console/timestamp:               "#787878"
+            console/command:                 "#008000"
+
+search:
+    case_sensitive: false
+    use_regexes: false
+    mode: 1
+    history: []

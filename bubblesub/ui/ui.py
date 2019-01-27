@@ -24,7 +24,7 @@ from PyQt5 import QtCore, QtWidgets
 import bubblesub.ui.console
 import bubblesub.ui.main_window
 from bubblesub.api import Api
-from bubblesub.opt import ConfigError
+from bubblesub.cfg import ConfigError
 
 
 def run(api: Api, args: argparse.Namespace) -> None:
@@ -40,7 +40,7 @@ def run(api: Api, args: argparse.Namespace) -> None:
 
     try:
         if not args.no_config:
-            api.opt.load(api.opt.DEFAULT_PATH)
+            api.cfg.load(api.cfg.DEFAULT_PATH)
             api.cmd.reload_commands()
     except ConfigError as ex:
         api.log.error(str(ex))
@@ -57,5 +57,5 @@ def run(api: Api, args: argparse.Namespace) -> None:
         loop.run_forever()
 
     if not args.no_config:
-        assert api.opt.root_dir is not None
-        api.opt.save(api.opt.root_dir)
+        assert api.cfg.root_dir is not None
+        api.cfg.save(api.cfg.root_dir)

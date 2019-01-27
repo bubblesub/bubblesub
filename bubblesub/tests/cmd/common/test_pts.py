@@ -242,7 +242,7 @@ def test_audio(
 
 def test_default_subtitle_duration() -> None:
     api = MagicMock()
-    api.opt.general.subs.default_duration = 123
+    api.cfg.opt = {"subs": {"default_duration": 123}}
     pts = Pts(api, "dsd")
 
     _assert_pts_value(pts, 123)

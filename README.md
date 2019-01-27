@@ -45,7 +45,7 @@ file](https://github.com/rr-/bubblesub/tree/master/docs/doc.md).
 
 - `$XDG_CONFIG_HOME/bubblesub/scripts`: contains user plugins
 - `$XDG_CONFIG_HOME/bubblesub/`: contains user configuration
-    - `general.ini`: general options
+    - `options.yaml`: general options
     - `hotkeys.conf`: configurable user hotkeys
     - `menu.conf`: configurable additional user menus
 - `$XDG_CACHE_HOME/bubblesub/`: used to cache time codes and such
@@ -65,7 +65,7 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import SubtitlesSelection
-from bubblesub.opt.menu import MenuCommand, SubMenu
+from bubblesub.cfg.menu import MenuCommand, SubMenu
 
 
 class SpeechRecognitionCommand(BaseCommand):

@@ -25,7 +25,7 @@ from bubblesub.api.subs import SubtitlesApi
 from bubblesub.ass.event import EventList
 from bubblesub.ass.info import Metadata
 from bubblesub.ass.style import StyleList
-from bubblesub.opt import Options
+from bubblesub.cfg import Config
 
 
 class UndoState:
@@ -133,14 +133,14 @@ def _unpickle(data: bytes) -> T.Any:
 class UndoApi:
     """The undo API."""
 
-    def __init__(self, opt: Options, subs_api: SubtitlesApi) -> None:
+    def __init__(self, cfg: Config, subs_api: SubtitlesApi) -> None:
         """
         Initialize self.
 
-        :param opt: configuration
+        :param cfg: program configuration
         :param subs_api: subtitles API
         """
-        self._opt = opt
+        self._cfg = cfg
         self._subs_api = subs_api
         self._stack: T.List[T.Tuple[T.Optional[UndoState], UndoState]] = []
         self._stack_pos = -1
@@ -241,7 +241,7 @@ class UndoApi:
         self._stack_pos = len(self._stack) - 1
 
     def _discard_old_undo(self) -> None:
-        max_undo = self._opt.general.max_undo
+        max_undo = self._cfg.opt["basic"]["max_undo"]
         if len(self._stack) < max_undo or max_undo <= 0:
             return
         assert self._stack_pos == len(self._stack) - 1

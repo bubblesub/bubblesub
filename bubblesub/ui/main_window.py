@@ -19,8 +19,8 @@ import typing as T
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.opt.hotkeys import HotkeyContext
-from bubblesub.opt.menu import MenuCommand, MenuContext, MenuSeparator, SubMenu
+from bubblesub.cfg.hotkeys import HotkeyContext
+from bubblesub.cfg.menu import MenuCommand, MenuContext, MenuSeparator, SubMenu
 from bubblesub.ui.audio import Audio
 from bubblesub.ui.console import Console
 from bubblesub.ui.editor import Editor
@@ -86,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid.setFocus()
 
         self.subs_grid.restore_grid_columns()
-        self.apply_palette(api.opt.general.gui.current_palette)
+        self.apply_palette(api.cfg.opt["gui"]["current_palette"])
         self._restore_splitters()
         self._setup_menu()
 
@@ -113,14 +113,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def apply_palette(self, palette_name: str) -> None:
         try:
-            palette_def = self._api.opt.general.gui.palettes[palette_name]
+            palette_def = self._api.cfg.opt["gui"]["palettes"][palette_name]
         except KeyError:
             raise ValueError(f'unknown palette: "{palette_name}"')
 
-        self._api.opt.general.gui.current_palette = palette_name
+        self._api.cfg.opt["gui"]["current_palette"] = palette_name
 
         palette = QtGui.QPalette()
-        for color_type, color_value in palette_def.items():
+        for color_type in palette_def.keys():
+            color = self._api.gui.get_color(color_type)
             if "+" in color_type:
                 group_name, role_name = color_type.split("+")
             else:
@@ -129,11 +130,9 @@ class MainWindow(QtWidgets.QMainWindow):
             target_group = getattr(QtGui.QPalette, group_name, None)
             target_role = getattr(QtGui.QPalette, role_name, None)
             if target_group is not None and target_role is not None:
-                palette.setColor(
-                    target_group, target_role, QtGui.QColor(*color_value)
-                )
+                palette.setColor(target_group, target_role, color)
             elif target_role is not None:
-                palette.setColor(target_role, QtGui.QColor(*color_value))
+                palette.setColor(target_role, color)
         self.setPalette(palette)
 
         self.update()
@@ -154,7 +153,7 @@ class MainWindow(QtWidgets.QMainWindow):
         setup_cmd_menu(
             self._api,
             self.menuBar(),
-            self._api.opt.menu[MenuContext.MainMenu]
+            self._api.cfg.menu[MenuContext.MainMenu]
             + [
                 SubMenu(
                     "Pl&ugins",
@@ -170,7 +169,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _restore_splitters(self) -> None:
         def _load(widget: QtWidgets.QWidget, key: str) -> None:
-            data = self._api.opt.general.gui.splitters.get(key, None)
+            data = self._api.cfg.opt["gui"]["splitters"].get(key, None)
             if data:
                 widget.restoreState(data)
 
@@ -180,11 +179,11 @@ class MainWindow(QtWidgets.QMainWindow):
         _load(self.console_splitter, "console")
 
     def _store_splitters(self) -> None:
-        self._api.opt.general.gui.splitters = {
-            "top": self.top_bar.saveState(),
-            "editor": self.editor_splitter.saveState(),
-            "main": self.main_splitter.saveState(),
-            "console": self.console_splitter.saveState(),
+        self._api.cfg.opt["gui"]["splitters"] = {
+            "top": bytes(self.top_bar.saveState()),
+            "editor": bytes(self.editor_splitter.saveState()),
+            "main": bytes(self.main_splitter.saveState()),
+            "console": bytes(self.console_splitter.saveState()),
         }
 
     def _update_title(self) -> None:

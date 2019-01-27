@@ -174,7 +174,7 @@ class SpellCheckCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        spell_check_lang = self.api.opt.general.spell_check
+        spell_check_lang = self.api.cfg.opt["gui"]["spell_check"]
         if not spell_check_lang:
             show_error("Spell check was disabled in config.")
             return

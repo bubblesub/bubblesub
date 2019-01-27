@@ -21,8 +21,8 @@ import typing as T
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.opt.hotkeys import HotkeyContext
-from bubblesub.opt.menu import MenuContext
+from bubblesub.cfg.hotkeys import HotkeyContext
+from bubblesub.cfg.menu import MenuContext
 from bubblesub.ui.menu import setup_cmd_menu
 from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
 
@@ -172,7 +172,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         setup_cmd_menu(
             self._api,
             self._subs_menu,
-            self._api.opt.menu[MenuContext.SubtitlesGrid],
+            self._api.cfg.menu[MenuContext.SubtitlesGrid],
             HotkeyContext.SubtitlesGrid,
         )
 
@@ -200,7 +200,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
 
     def restore_grid_columns(self) -> None:
         header = self.horizontalHeader()
-        data = self._api.opt.general.gui.grid_columns
+        data = self._api.cfg.opt["gui"]["grid_columns"]
         if data:
             header.restoreState(data)
         for action in header.actions():
@@ -214,14 +214,14 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self._subs_grid_delegate.on_palette_change()
 
     def _store_grid_columns(self) -> None:
-        self._api.opt.general.gui.grid_columns = (
+        self._api.cfg.opt["gui"]["grid_columns"] = bytes(
             self.horizontalHeader().saveState()
         )
 
     def _sync_sub_selection(self) -> None:
         if (
             self._seek_to is not None
-            and self._api.opt.general.video.sync_pos_to_selection
+            and self._api.cfg.opt["video"]["sync_pos_to_selection"]
         ):
             self._api.media.is_paused = True
             self._api.media.seek(self._seek_to)

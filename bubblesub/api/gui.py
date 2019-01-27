@@ -18,6 +18,7 @@
 
 import contextlib
 import functools
+import re
 import typing as T
 from pathlib import Path
 
@@ -103,12 +104,18 @@ class GuiApi(QtCore.QObject):
 
     @functools.lru_cache(maxsize=None)
     def get_color(self, color_name: str) -> QtGui.QColor:
-        current_palette = self._api.opt.general.gui.current_palette
+        current_palette = self._api.cfg.opt["gui"]["current_palette"]
         try:
-            palette_def = self._api.opt.general.gui.palettes[current_palette]
-            color_value = palette_def[color_name]
+            palette_def = self._api.cfg.opt["gui"]["palettes"][current_palette]
+            color_name = palette_def[color_name]
+            color_value = tuple(
+                int(match.group(1), 16)
+                for match in re.finditer(
+                    "([0-9a-fA-F]{2})", color_name.lstrip("#")
+                )
+            )
         except KeyError:
-            return QtGui.QVariant()
+            return QtGui.QColor()
         return QtGui.QColor(*color_value)
 
     def get_dialog_dir(self) -> T.Optional[Path]:

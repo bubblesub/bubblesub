@@ -21,8 +21,8 @@ import re
 import typing as T
 from pathlib import Path
 
+from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import ROOT_DIR
-from bubblesub.opt.base import BaseConfig, ConfigError
 
 
 class MenuContext(enum.Enum):
@@ -72,7 +72,7 @@ class SubMenu(MenuItem):
         self.children = children
 
 
-class MenuConfig(BaseConfig):
+class MenuConfig(SubConfig):
     """Configuration for GUI menu."""
 
     file_name = "menu.conf"
@@ -84,19 +84,11 @@ class MenuConfig(BaseConfig):
         }
         super().__init__()
 
-    def reset(self) -> None:
-        """Reset to factory defaults."""
+    def _clear(self) -> None:
         for context in MenuContext:
             self._menu[context].clear()
 
-        self.loads((ROOT_DIR / self.file_name).read_text())
-
-    def loads(self, text: str) -> None:
-        """
-        Load internals from a human readable representation.
-
-        :param text: source text
-        """
+    def _loads(self, text: str) -> None:
         sections: T.Dict[MenuContext, str] = {}
         cur_context = MenuContext.MainMenu
         lines = text.split("\n")

@@ -33,7 +33,7 @@ from bubblesub.api.media.state import MediaState
 from bubblesub.api.media.video import VideoApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.ass.writer import write_ass
-from bubblesub.opt import Options
+from bubblesub.cfg import Config
 from bubblesub.util import ms_to_str
 
 
@@ -52,7 +52,7 @@ class MediaApi(QtCore.QObject):
         self,
         subs_api: SubtitlesApi,
         log_api: LogApi,
-        opt: Options,
+        cfg: Config,
         args: argparse.Namespace,
     ) -> None:
         """
@@ -60,7 +60,7 @@ class MediaApi(QtCore.QObject):
 
         :param subs_api: subtitles API
         :param log_api: logging API
-        :param opt: configuration
+        :param cfg: program configuration
         :param args: CLI arguments
         """
         super().__init__()
@@ -122,7 +122,7 @@ class MediaApi(QtCore.QObject):
         self.audio = AudioApi(self, log_api)
 
         self._timer = QtCore.QTimer(parent=None)
-        self._timer.setInterval(opt.general.video.subs_sync_interval)
+        self._timer.setInterval(cfg.opt["video"]["subs_sync_interval"])
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
     def start(self) -> None:
