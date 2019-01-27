@@ -222,11 +222,11 @@ class CommandApi(QtCore.QObject):
         """
         super().__init__()
         self._api = api
-        self._registry: T.Dict[str, T.Type[BaseCommand]] = {}
+        self._cmd_registry: T.Dict[str, T.Type[BaseCommand]] = {}
         self._plugin_menu: T.List[MenuItem] = []
-        self._modules: T.List[T.Any] = []
         self._plugin_base = PluginBase(package="bubblesub.api.cmd.plugins")
-        self._plugin_source = None
+        self._plugin_sources: T.Dict[str, T.Any] = {}
+        self._plugin_modules: T.List[T.Any] = []
         self.reload_commands()
 
     def run_cmdline(self, cmdline: T.Union[str, T.List[T.List[str]]]) -> None:
@@ -253,7 +253,7 @@ class CommandApi(QtCore.QObject):
 
         for invocation in cmdline:
             cmd_name, *cmd_args = invocation
-            cls = self._registry.get(cmd_name, None)
+            cls = self._cmd_registry.get(cmd_name, None)
             if not cls:
                 raise CommandNotFound(f'no command named "{cmd_name}"')
 
@@ -314,7 +314,7 @@ class CommandApi(QtCore.QObject):
         :param name: name to search for
         :return: type if command found, None otherwise
         """
-        return self._registry.get(name, None)
+        return self._cmd_registry.get(name, None)
 
     def get_all(self) -> T.List[T.Type[BaseCommand]]:
         """
@@ -322,19 +322,20 @@ class CommandApi(QtCore.QObject):
 
         :return: list of types
         """
-        return list(set(self._registry.values()))
+        return list(set(self._cmd_registry.values()))
 
     def reload_commands(self) -> None:
         """Rescans filesystem for commands."""
         self._unload_commands()
         self._load_commands(
-            [Path(__file__).parent.parent / "cmd"]
-            + (
-                [self._api.cfg.root_dir / "scripts"]
-                if self._api.cfg.root_dir
-                else []
-            )
+            Path(__file__).parent.parent / "cmd",
+            identifier="bubblesub.api.cmd.core",
         )
+        if self._api.cfg.root_dir:
+            self._load_commands(
+                self._api.cfg.root_dir / "scripts",
+                identifier="bubblesub.api.cmd.user",
+            )
         self.commands_loaded.emit()
 
     def get_plugin_menu_items(self) -> T.List[MenuItem]:
@@ -350,19 +351,20 @@ class CommandApi(QtCore.QObject):
 
     def _unload_commands(self) -> None:
         """Unloads registered commands.."""
-        for module in self._modules:
+        for module in self._plugin_modules:
             with self._guard():
                 try:
                     module.on_unload(self._api)
                 except AttributeError:
                     pass
         self._plugin_menu[:] = []
-        for name, cls in list(self._registry.items()):
+        for name, cls in self._cmd_registry.items():
             self._api.log.debug(f"unregistering {cls} as {name}")
-        self._modules.clear()
-        self._registry.clear()
+        self._cmd_registry.clear()
+        self._plugin_modules.clear()
+        self._plugin_sources.clear()
 
-    def _load_commands(self, paths: T.List[Path]) -> None:
+    def _load_commands(self, path: Path, identifier: str) -> None:
         """
         Load commands from the specified path.
 
@@ -372,16 +374,18 @@ class CommandApi(QtCore.QObject):
         Optionally, it can have a `MENU` global constant that contains
         menu item collection that get put in the plugin menu.
 
-        :param paths: paths to load the commands from
+        :param path: directory to load the commands from
+        :param identifier: unique identifier for this collection of commands
         """
 
-        self._plugin_source = self._plugin_base.make_plugin_source(
-            searchpath=list(map(str, paths))
+        plugin_source = self._plugin_base.make_plugin_source(
+            searchpath=[str(path)], identifier=identifier
         )
-        for plugin in self._plugin_source.list_plugins():
+        for plugin in plugin_source.list_plugins():
             with self._guard():
-                mod = self._plugin_source.load_plugin(plugin)
+                mod = plugin_source.load_plugin(plugin)
                 self._load_module(mod)
+        self._plugin_sources[identifier] = plugin_source
 
     def _load_module(self, mod: importlib.types.ModuleType) -> None:
         # commands
@@ -393,7 +397,7 @@ class CommandApi(QtCore.QObject):
             for cls in commands:
                 for name in cls.names:
                     self._api.log.debug(f"registering {cls} as {name}")
-                    self._registry[name] = cls
+                    self._cmd_registry[name] = cls
 
         # menu
         try:
@@ -409,7 +413,7 @@ class CommandApi(QtCore.QObject):
         except AttributeError:
             pass
 
-        self._modules.append(mod)
+        self._plugin_modules.append(mod)
 
     @contextlib.contextmanager
     def _guard(self) -> T.Generator:

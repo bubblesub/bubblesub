@@ -50,7 +50,7 @@ class OptionsConfig(SubConfig):
         return target
 
     def _dumps(self) -> str:
-        return yaml.dump(self._storage, indent=4)
+        return yaml.dump(self._storage, indent=4, default_flow_style=False)
 
     def __getitem__(self, key: T.Any) -> T.Any:
         return self._storage[key]
