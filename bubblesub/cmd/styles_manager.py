@@ -373,6 +373,9 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         super().__init__("Font", parent)
         self.font_name_edit = QtWidgets.QFontComboBox(self)
         self.font_name_edit.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
+        self.font_name_edit.setSizeAdjustPolicy(
+            QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon
+        )
         self.font_size_edit = QtWidgets.QSpinBox(self)
         self.font_size_edit.setMinimum(0)
         self.font_size_edit.setMaximum(999)
