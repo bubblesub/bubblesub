@@ -27,7 +27,7 @@ from bubblesub.ui.editor import Editor
 from bubblesub.ui.hotkeys import HotkeyManager
 from bubblesub.ui.menu import setup_cmd_menu
 from bubblesub.ui.statusbar import StatusBar
-from bubblesub.ui.subs_grid import SubsGrid
+from bubblesub.ui.subs_grid import SubtitlesGrid
 from bubblesub.ui.video import Video
 
 
@@ -52,7 +52,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.video = Video(api, self)
         self.audio = Audio(api, self)
         self.editor = Editor(api, self)
-        self.subs_grid = SubsGrid(api, self)
+        self.subs_grid = SubtitlesGrid(api, self)
         self.status_bar = StatusBar(api, self)
         self.console = console
 
@@ -95,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
             {
                 HotkeyContext.Global: self,
                 HotkeyContext.Spectrogram: self.audio,
-                HotkeyContext.SubsGrid: self.subs_grid,
+                HotkeyContext.SubtitlesGrid: self.subs_grid,
             },
         )
 

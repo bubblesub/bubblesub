@@ -30,7 +30,7 @@ MAGIC_MARGIN = 2  # ????
 HIGHLIGHTABLE_CHUNKS = {"\N{FULLWIDTH ASTERISK}", "\\N", "\\h", "\\n"}
 
 
-class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
+class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
@@ -113,7 +113,7 @@ class SubsGridDelegate(QtWidgets.QStyledItemDelegate):
             rect = rect.adjusted(metrics.width(chunk), 0, 0, 0)
 
 
-class SubsGrid(QtWidgets.QTableView):
+class SubtitlesGrid(QtWidgets.QTableView):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
@@ -126,7 +126,7 @@ class SubsGrid(QtWidgets.QTableView):
             self.fontMetrics().height() + MAGIC_MARGIN
         )
 
-        self._subs_grid_delegate = SubsGridDelegate(self._api, self)
+        self._subs_grid_delegate = SubtitlesGridDelegate(self._api, self)
         for col_idx in {SubtitlesModelColumn.Text, SubtitlesModelColumn.Note}:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
@@ -172,8 +172,8 @@ class SubsGrid(QtWidgets.QTableView):
         setup_cmd_menu(
             self._api,
             self._subs_menu,
-            self._api.opt.menu[MenuContext.SubsGrid],
-            HotkeyContext.SubsGrid,
+            self._api.opt.menu[MenuContext.SubtitlesGrid],
+            HotkeyContext.SubtitlesGrid,
         )
 
     def _setup_header_menu(self) -> None:

@@ -29,7 +29,7 @@ class MenuContext(enum.Enum):
     """Which GUI widget the menu appears in."""
 
     MainMenu = "main"
-    SubsGrid = "subtitles_grid"
+    SubtitlesGrid = "subtitles_grid"
 
 
 class MenuItem:
