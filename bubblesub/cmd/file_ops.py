@@ -110,7 +110,7 @@ class SaveCommand(BaseCommand):
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         path = self.api.subs.path
         if not path:
-            path = save_dialog(
+            path = await save_dialog(
                 main_window,
                 file_filter=SUBS_FILE_FILTER,
                 directory=self.api.gui.get_dialog_dir(),

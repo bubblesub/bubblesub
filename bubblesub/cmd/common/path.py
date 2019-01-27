@@ -78,9 +78,9 @@ class FancyPath:
     async def _show_load_dialog(
         self, *args: T.Any, **kwargs: T.Any
     ) -> T.Optional[Path]:
-        return load_dialog(*args, **kwargs)
+        return await load_dialog(*args, **kwargs)
 
     async def _show_save_dialog(
         self, *args: T.Any, **kwargs: T.Any
     ) -> T.Optional[Path]:
-        return save_dialog(*args, **kwargs)
+        return await save_dialog(*args, **kwargs)

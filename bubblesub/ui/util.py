@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import asyncio
 import contextlib
 import functools
 import typing as T
@@ -181,24 +182,36 @@ class TimeEdit(QtWidgets.QLineEdit):
         self.setCursorPosition(0)
 
 
-def load_dialog(
+async def load_dialog(
     parent: QtWidgets.QWidget,
     file_filter: str,
     directory: T.Optional[Path] = None,
 ) -> T.Optional[Path]:
-    path, _ = QtWidgets.QFileDialog.getOpenFileName(
-        parent,
-        directory=(
-            str(directory)
-            if directory is not None
-            else T.cast(str, QtCore.QDir.homePath())
-        ),
-        filter=file_filter,
+    real_directory = (
+        str(directory)
+        if directory is not None
+        else T.cast(str, QtCore.QDir.homePath())
     )
-    return Path(path) if path else None
+    dialog = QtWidgets.QFileDialog(
+        parent, "Open File", directory=real_directory, filter=file_filter
+    )
+    dialog.setFileMode(dialog.ExistingFile)
+    dialog.setAcceptMode(dialog.AcceptOpen)
+    future = asyncio.Future()
+
+    def on_accept():
+        future.set_result(Path(dialog.selectedFiles()[0]))
+
+    def on_reject():
+        future.set_result(None)
+
+    dialog.accepted.connect(on_accept)
+    dialog.rejected.connect(on_reject)
+    dialog.open()
+    return await future
 
 
-def save_dialog(
+async def save_dialog(
     parent: QtWidgets.QWidget,
     file_filter: T.Optional[str],
     directory: T.Optional[Path] = None,
@@ -211,10 +224,27 @@ def save_dialog(
     )
     if file_name:
         real_directory += "/" + file_name
-    path, _ = QtWidgets.QFileDialog.getSaveFileName(
-        parent, directory=real_directory, filter=file_filter or "Any file (*)"
+
+    dialog = QtWidgets.QFileDialog(
+        parent,
+        "Save File",
+        directory=real_directory,
+        filter=file_filter or "Any File (*)",
     )
-    return Path(path) if path else None
+    dialog.setFileMode(dialog.ExistingFile)
+    dialog.setAcceptMode(dialog.AcceptSave)
+    future = asyncio.Future()
+
+    def on_accept():
+        future.set_result(Path(dialog.selectedFiles()[0]))
+
+    def on_reject():
+        future.set_result(None)
+
+    dialog.accepted.connect(on_accept)
+    dialog.rejected.connect(on_reject)
+    dialog.open()
+    return await future
 
 
 def time_jump_dialog(
