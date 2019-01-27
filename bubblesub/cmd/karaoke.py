@@ -21,7 +21,7 @@ from copy import copy
 import ass_tag_parser
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand, CommandUnavailable, CommandError
+from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.cmd.common import SubtitlesSelection
 

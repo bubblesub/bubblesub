@@ -126,9 +126,7 @@ class Editor(QtWidgets.QWidget):
         )
 
         self.start_time_edit = TimeEdit(self, objectName="start-time-editor")
-
         self.end_time_edit = TimeEdit(self, objectName="end-time-editor")
-
         self.duration_edit = TimeEdit(self, objectName="duration-editor")
 
         self.comment_checkbox = QtWidgets.QCheckBox(
@@ -226,16 +224,19 @@ class Editor(QtWidgets.QWidget):
             self._data_widget_mapper.set_current_index(None)
             return
 
-        with self._data_widget_mapper.block_widget_signals():
-            self.actor_edit.clear()
-            self.actor_edit.addItems(
-                sorted(list(set(sub.actor for sub in self._api.subs.events)))
-            )
+        self.actor_edit.blockSignals(True)
+        self.actor_edit.clear()
+        self.actor_edit.addItems(
+            sorted(list(set(sub.actor for sub in self._api.subs.events)))
+        )
+        self.actor_edit.blockSignals(False)
 
-            self.style_edit.clear()
-            self.style_edit.addItems(
-                sorted(list(set(sub.style for sub in self._api.subs.events)))
-            )
+        self.style_edit.blockSignals(True)
+        self.style_edit.clear()
+        self.style_edit.addItems(
+            sorted(list(set(sub.style for sub in self._api.subs.events)))
+        )
+        self.style_edit.blockSignals(False)
 
         self.setEnabled(True)
         self._data_widget_mapper.set_current_index(selected[0])

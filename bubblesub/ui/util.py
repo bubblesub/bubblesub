@@ -302,8 +302,6 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         super().__init__()
         self._model = model
         self._mappings: T.List[T.Tuple[QtWidgets.QWidget, int]] = []
-        self._populating_widgets = 0
-        self._populating_model = 0
         self._row_idx: T.Optional[int] = None
         self._item_delegate = QtWidgets.QItemDelegate(self)
         self._submit_wrapper: T.Callable[
@@ -323,18 +321,6 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
 
         model.dataChanged.connect(self._model_data_change)
 
-    @contextlib.contextmanager
-    def block_widget_signals(self) -> T.Iterator:
-        self._populating_widgets += 1
-        yield
-        self._populating_widgets -= 1
-
-    @contextlib.contextmanager
-    def block_model_signals(self) -> T.Iterator:
-        self._populating_model += 1
-        yield
-        self._populating_model -= 1
-
     def add_mapping(self, widget: QtWidgets.QWidget, idx: int) -> None:
         for type_, signal_name in self._signal_map.items():
             if isinstance(widget, type_):
@@ -349,47 +335,52 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
     def set_current_index(self, row_idx: T.Optional[int]) -> None:
         self._row_idx = row_idx
         for widget, col_idx in self._mappings:
-            with self.block_widget_signals():
-                self._write_to_widget(widget, row_idx, col_idx)
+            self._write_to_widget(widget, row_idx, col_idx)
 
     def _widget_data_change(self, sender_col_idx: int) -> None:
-        if self._populating_widgets or self._row_idx is None:
+        if self._row_idx is None:
             return
-        with self.block_model_signals():
-            for widget, col_idx in self._mappings:
-                if sender_col_idx == col_idx:
-                    with self._submit_wrapper():
-                        self._write_to_model(widget, self._row_idx, col_idx)
+        for widget, col_idx in self._mappings:
+            if sender_col_idx == col_idx:
+                self._write_to_model(widget, self._row_idx, col_idx)
 
     def _model_data_change(
         self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex
     ) -> None:
-        if self._populating_model or self._row_idx is None:
+        if self._row_idx is None:
             return
         for widget, col_idx in self._mappings:
             if (
                 top_left.row() <= self._row_idx <= bottom_right.row()
                 and top_left.column() <= col_idx <= bottom_right.column()
             ):
-                with self.block_widget_signals():
-                    self._write_to_widget(widget, self._row_idx, col_idx)
+                self._write_to_widget(widget, self._row_idx, col_idx)
 
     def _write_to_widget(
         self, widget: QtWidgets.QWidget, row_idx: T.Optional[int], col_idx: int
     ) -> None:
         name = widget.metaObject().userProperty().name()
-        value = (
+        cur_value = (
             QtCore.QVariant()
             if row_idx is None
             else self._model.index(row_idx, col_idx).data(QtCore.Qt.EditRole)
         )
-        widget.setProperty(name, value)
+        prev_value = widget.property(name)
+        if cur_value != prev_value:
+            widget.setProperty(name, cur_value)
 
     def _write_to_model(
         self, widget: QtWidgets.QWidget, row_idx: int, col_idx: int
     ) -> None:
         name = widget.metaObject().userProperty().name()
-        value = widget.property(name)
-        self._model.setData(
-            self._model.index(row_idx, col_idx), value, QtCore.Qt.EditRole
+        cur_value = widget.property(name)
+        prev_value = self._model.data(
+            self._model.index(row_idx, col_idx), QtCore.Qt.EditRole
         )
+        if cur_value != prev_value:
+            with self._submit_wrapper():
+                self._model.setData(
+                    self._model.index(row_idx, col_idx),
+                    cur_value,
+                    QtCore.Qt.EditRole,
+                )
