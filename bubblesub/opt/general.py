@@ -372,6 +372,7 @@ class GuiConfig:
         self.splitters: T.Dict[str, bytes] = {}
         self.grid_columns: T.Optional[bytes] = None
         self.fonts = {"text-editor": "", "note-editor": "", "console": ""}
+        self.preview_fonts = True
         self.palettes: T.Dict[str, T.Dict[str, T.Tuple[int, ...]]] = {
             "dark": PALETTE_DARK,
             "light": PALETTE_LIGHT,
@@ -385,6 +386,9 @@ class GuiConfig:
         """
         self.current_palette = cfg.get(
             "gui", "current_palette", fallback=self.current_palette
+        )
+        self.preview_fonts = cfg.getboolean(
+            "gui", "preview_fonts", fallback=self.preview_fonts
         )
         if cfg.get("gui", "grid_columns", fallback=""):
             self.grid_columns = _decompress(cfg.get("gui", "grid_columns"))
@@ -432,6 +436,7 @@ class GuiConfig:
             "gui": {
                 "current_palette": self.current_palette,
                 "grid_columns": _compress(self.grid_columns),
+                "preview_fonts": self.preview_fonts,
             },
             "gui.splitters": {
                 key: _compress(value) for key, value in self.splitters.items()

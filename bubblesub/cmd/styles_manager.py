@@ -26,8 +26,8 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import Event, EventList
 from bubblesub.ass.info import Metadata
 from bubblesub.ass.style import Style, StyleList
-from bubblesub.data import ROOT_DIR
 from bubblesub.ui.ass_renderer import AssRenderer
+from bubblesub.ui.font_combo_box import FontComboBox, refresh_font_db
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
 from bubblesub.ui.util import (
     ColorPicker,
@@ -38,6 +38,8 @@ from bubblesub.ui.util import (
 
 
 class _StylePreview(QtWidgets.QGroupBox):
+    preview_text_changed = QtCore.pyqtSignal([])
+
     def __init__(
         self,
         api: Api,
@@ -94,10 +96,13 @@ class _StylePreview(QtWidgets.QGroupBox):
         )
 
     def _on_text_change(self) -> None:
+        self.preview_text_changed.emit()
         self.update_preview()
-        self._api.opt.general.styles.preview_test_text = (
-            self._editor.toPlainText()
-        )
+        self._api.opt.general.styles.preview_test_text = self.preview_text
+
+    @property
+    def preview_text(self) -> str:
+        return self._editor.toPlainText()
 
     @property
     def _selected_style(self) -> T.Optional[Style]:
@@ -129,7 +134,7 @@ class _StylePreview(QtWidgets.QGroupBox):
         fake_event = Event(
             start=0,
             end=1000,
-            text=self._editor.toPlainText().replace("\n", "\\N"),
+            text=self.preview_text.replace("\n", "\\N"),
             style=fake_style.name,
         )
         fake_event_list = EventList()
@@ -367,51 +372,18 @@ class _StyleList(QtWidgets.QWidget):
         )
 
 
-def _refresh_font_db() -> None:
-    # XXX:
-    # Qt doesn't expose API to refresh the fonts, so we try to trick it into
-    # invalidating its internal database by adding a dummy application font.
-    # On Linux, this works with `fc-cache -r`.
-    font_db = QtGui.QFontDatabase()
-    font_db.addApplicationFont(str(ROOT_DIR / "AdobeBlank.ttf"))
-    font_db.removeAllApplicationFonts()
-
-
-def _get_font_families() -> T.List[str]:
-    return list(
-        sorted(
-            set(
-                [
-                    family
-                    if " [" not in family
-                    else family[0 : family.index(" [")]
-                    for family in QtGui.QFontDatabase().families()
-                ]
-            )
-        )
-    )
-
-
-class _FontComboBox(QtWidgets.QComboBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
-        super().__init__(
-            parent,
-            editable=True,
-            insertPolicy=QtWidgets.QComboBox.NoInsert,
-            sizeAdjustPolicy=QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon,
-        )
-        self.addItems(_get_font_families())
-
-
 class _FontGroupBox(QtWidgets.QGroupBox):
     def __init__(
-        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
+        self,
+        api: Api,
+        parent: QtWidgets.QWidget,
+        mapper: ImmediateDataWidgetMapper,
     ) -> None:
         super().__init__("Font", parent)
 
-        _refresh_font_db()
+        refresh_font_db()
 
-        self.font_name_edit = _FontComboBox(self)
+        self.font_name_edit = FontComboBox(api, self)
         self.font_size_edit = QtWidgets.QSpinBox(self)
         self.font_size_edit.setMinimum(0)
         self.font_size_edit.setMaximum(999)
@@ -634,6 +606,7 @@ class _MiscGroupBox(QtWidgets.QGroupBox):
 class _StyleEditor(QtWidgets.QWidget):
     def __init__(
         self,
+        api: Api,
         model: StylesModel,
         selection_model: QtCore.QItemSelectionModel,
         parent: QtWidgets.QWidget,
@@ -644,7 +617,7 @@ class _StyleEditor(QtWidgets.QWidget):
         )
         selection_model.selectionChanged.connect(self._on_selection_change)
 
-        self.font_group_box = _FontGroupBox(self, self._mapper)
+        self.font_group_box = _FontGroupBox(api, self, self._mapper)
         self.colors_group_box = _ColorsGroupBox(self, self._mapper)
         self.outline_group_box = _OutlineGroupBox(self, self._mapper)
         self.misc_group_box = _MiscGroupBox(self, self._mapper)
@@ -690,9 +663,10 @@ class _StylesManagerDialog(QtWidgets.QDialog):
         selection_model = QtCore.QItemSelectionModel(model)
 
         self._style_list = _StyleList(api, model, selection_model, self)
-        self._style_editor = _StyleEditor(model, selection_model, self)
+        self._style_editor = _StyleEditor(api, model, selection_model, self)
         self._style_editor.setEnabled(False)
         self._preview_box = _StylePreview(api, model, selection_model, self)
+        self._preview_box.preview_text_changed.connect(self._sync_preview_text)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.addWidget(self._style_list)
@@ -701,8 +675,15 @@ class _StylesManagerDialog(QtWidgets.QDialog):
 
         self.setWindowTitle("Styles manager")
 
+        self._sync_preview_text()
+
     def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
         self._preview_box.update_preview()
+
+    def _sync_preview_text(self) -> None:
+        self._style_editor.font_group_box.font_name_edit.set_sample_text(
+            self._preview_box.preview_text
+        )
 
 
 class ManageStylesCommand(BaseCommand):
