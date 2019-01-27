@@ -381,7 +381,8 @@ class _FontGroupBox(QtWidgets.QGroupBox):
     ) -> None:
         super().__init__("Font", parent)
 
-        refresh_font_db()
+        if api.cfg.opt["gui"]["try_to_refresh_fonts"]:
+            refresh_font_db()
 
         self.font_name_edit = FontComboBox(api, self)
         self.font_size_edit = QtWidgets.QSpinBox(self)

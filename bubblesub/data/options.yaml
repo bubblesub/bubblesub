@@ -24,6 +24,7 @@ gui:
     convert_newlines: true
     current_palette: "light"
     preview_fonts: true
+    try_to_refresh_fonts: true
 
     grid_columns: {}
     splitters: {}
