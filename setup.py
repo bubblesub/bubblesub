@@ -327,6 +327,7 @@ setup(
         "ass_tag_parser",
         "Pillow",
         "pyyaml",
+        "parsimonious",
         "pluginbase",
     ],
     extras_require={

@@ -17,16 +17,212 @@
 """Presentation timestamp, usable as an argument to commands."""
 
 import bisect
+import enum
 import typing as T
 from dataclasses import dataclass
 
-import regex
+import parsimonious
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandError, CommandUnavailable
 from bubblesub.ass.event import Event
 from bubblesub.ui.util import time_jump_dialog
+
+GRAMMAR = """
+line =
+    unary_operation /
+    binary_operation /
+    operand
+
+right_hand = binary_operation / operand
+unary_operation = operator _ right_hand
+binary_operation = operand _ operator _ right_hand
+
+operand =
+    time /
+    frame /
+    keyframe /
+    subtitle /
+    audio_selection /
+    audio_view /
+    rel_frame /
+    rel_keyframe /
+    rel_subtitle /
+    dialog /
+    default_duration
+
+time             = number _ 'ms'
+frame            = number _ 'f'
+keyframe         = number _ 'kf'
+subtitle         = 's' number (start / end)
+audio_selection  = 'a' (start / end)
+audio_view       = 'av' (start / end)
+rel_frame        = rel 'f'
+rel_keyframe     = rel 'kf'
+rel_subtitle     = rel 's' (start / end)
+default_duration = 'dsd' / 'default_duration'
+dialog           = 'ask'
+
+_                = ~'\\s*'
+number           = ~'\\d+'
+operator         = '+' / '-'
+rel              = 'c' / 'p' / 'n'
+start            = '.start' / '.s'
+end              = '.end' / '.e'
+"""
+
+
+class _AsyncNodeVisitor:
+    """Port of parsimonious node visitor that works with asyncio"""
+
+    grammar = None
+
+    async def visit(self, node: T.Any) -> T.Any:
+        method = getattr(self, "visit_" + node.expr_name, self.generic_visit)
+        return await method(node, [await self.visit(n) for n in node])
+
+    async def generic_visit(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        raise NotImplementedError(
+            "No visitor method was defined for this expression: %s"
+            % node.expr.as_rule()
+        )
+
+    async def parse(self, text: str, pos: int = 0) -> T.Any:
+        return await self._parse_or_match(text, pos, "parse")
+
+    async def match(self, text: str, pos: int = 0) -> T.Any:
+        return await self._parse_or_match(text, pos, "match")
+
+    async def _parse_or_match(
+        self, text: str, pos: int, method_name: str
+    ) -> T.Any:
+        if not self.grammar:
+            raise RuntimeError(
+                "The {cls}.{method}() shortcut won't work because {cls} was "
+                "never associated with a specific "
+                "grammar. Fill out its "
+                "`grammar` attribute, and try again.".format(
+                    cls=self.__class__.__name__, method=method_name
+                )
+            )
+        return await self.visit(
+            getattr(self.grammar, method_name)(text, pos=pos)
+        )
+
+
+class _Token(enum.IntEnum):
+    previous = enum.auto()
+    next = enum.auto()
+    current = enum.auto()
+    start = enum.auto()
+    end = enum.auto()
+
+    @staticmethod
+    def start_end(obj: T.Any, token: "_Token") -> T.Any:
+        if token == _Token.start:
+            return obj.start
+        if token == _Token.end:
+            return obj.end
+        raise NotImplementedError(f'unknown boundary: "{token}"')
+
+    @staticmethod
+    def prev_next(obj: T.Any, token: "_Token") -> T.Any:
+        if token == _Token.previous:
+            return obj.prev
+        if token == _Token.current:
+            return obj
+        if token == _Token.next:
+            return obj.next
+        raise NotImplementedError(f'unknown direction: "{token}"')
+
+    @staticmethod
+    def delta_from_direction(token: "_Token") -> int:
+        mapping = {_Token.previous: -1, _Token.current: 0, _Token.next: 1}
+        try:
+            return mapping[token]
+        except LookupError:
+            raise NotImplementedError(f'unknown direction: "{token}"')
+
+
+class _TimeUnit(enum.IntEnum):
+    ms = 0
+    frame = 1
+    keyframe = 2
+
+
+@dataclass
+class _Time:
+    value: int = 0
+    unit: _TimeUnit = _TimeUnit.ms
+
+    @staticmethod
+    def add(t1: "_Time", t2: "_Time", api: Api) -> "_Time":
+        return _Time.mod(t1, t2, api, lambda v1, v2: v1 + v2)
+
+    @staticmethod
+    def sub(t1: "_Time", t2: "_Time", api: Api) -> "_Time":
+        return _Time.mod(t1, t2, api, lambda v1, v2: v1 - v2)
+
+    @staticmethod
+    def mod(
+        t1: "_Time", t2: "_Time", api: Api, op: T.Callable[[int, int], int]
+    ) -> "_Time":
+        """
+        Performs time arithmetic.
+
+        Tries to preserve frame numbers between math operations if possible.
+        Resolves basic frame arithmetic into actual frame times.
+
+        :param t1: lefthand time
+        :param t2: righthand time
+        :param api: core API
+        :param op: what to do with the time values
+        :return: resulting time
+        """
+        if t1.unit == t2.unit:
+            return _Time(op(t1.value, t2.value), t1.unit)
+        if t2.unit == _TimeUnit.ms:
+            return _Time(op(t1.unpack(api), t2.value))
+        if t2.unit == _TimeUnit.frame:
+            return _Time(_apply_frame(api, t1.unpack(api), op(0, t2.value)))
+        if t2.unit == _TimeUnit.keyframe:
+            return _Time(_apply_keyframe(api, t1.unpack(api), op(0, t2.value)))
+        raise NotImplementedError(f"unknown time unit: {t2.unit}")
+
+    def unpack(self, api: Api) -> int:
+        """
+        Resolves frame indexes into pts.
+
+        :param api: core API
+        :return: resolved pts
+        """
+        if self.unit == _TimeUnit.frame:
+            if not api.media.video.timecodes:
+                raise CommandError("timecode information is not available")
+            idx = max(1, min(self.value, len(api.media.video.timecodes))) - 1
+            return api.media.video.timecodes[idx]
+        if self.unit == _TimeUnit.keyframe:
+            if not api.media.video.timecodes:
+                raise CommandError("keyframe information is not available")
+            idx = max(1, min(self.value, len(api.media.video.keyframes))) - 1
+            return api.media.video.timecodes[api.media.video.keyframes[idx]]
+        if self.unit == _TimeUnit.ms:
+            return self.value
+        raise NotImplementedError(f"unknown unit: {self.unit}")
+
+
+def _flatten(items: T.Any) -> T.List[T.Any]:
+    if isinstance(items, (list, tuple)):
+        return [
+            item
+            for sublist in items
+            for item in _flatten(sublist)
+            if item is not None
+        ]
+    return [items]
 
 
 def _bisect(source: T.List[int], origin: int, delta: int) -> int:
@@ -43,55 +239,184 @@ def _bisect(source: T.List[int], origin: int, delta: int) -> int:
     return source[idx]
 
 
-OPERATORS = {"add": r"\+", "sub": "-"}
-TERMINALS = {
-    "rel_sub": r"(?P<direction>[cpn])s\.(?P<boundary>[se])",
-    "rel_frame": "(?P<direction>[cpn])f",
-    "rel_keyframe": "(?P<direction>[cpn])kf",
-    "spectrogram": r"a\.(?P<boundary>[se])",
-    "spectrogram_view": r"a\.v(?P<boundary>[se])",
-    "num_sub": r"s(?P<number>\d+)\.(?P<boundary>[se])",
-    "num_frame": r"(?P<number>\d+)f",
-    "num_keyframe": r"(?P<number>\d+)kf",
-    "num_ms": r"(?P<number>\d+)ms",
-    "ask": "ask",
-    "default_sub_duration": "dsd",
-}
-
-TOKENS = {}
-TOKENS.update(OPERATORS)
-TOKENS.update(TERMINALS)
+def _apply_frame(api: Api, origin: int, delta: int) -> int:
+    if not api.media.video.timecodes:
+        raise CommandError("timecode information is not available")
+    return _bisect(api.media.video.timecodes, origin, delta)
 
 
-class _ResetValue(Exception):
-    def __init__(self, value: int) -> None:
-        super().__init__()
-        self.value = value
+def _apply_keyframe(api: Api, origin: int, delta: int) -> int:
+    if not api.media.video.keyframes:
+        raise CommandError("keyframe information is not available")
+    possible_pts = [
+        api.media.video.timecodes[i] for i in api.media.video.keyframes
+    ]
+    return _bisect(possible_pts, origin, delta)
 
 
-@dataclass
-class _Token:
-    name: str
-    match: T.Match[str]
+class _PtsNodeVisitor(_AsyncNodeVisitor):
+    unwrapped_exceptions = (CommandError,)
+    grammar = parsimonious.Grammar(GRAMMAR)
 
-    @property
-    def text(self) -> str:
-        return self.match.group(0)
+    def __init__(self, api: Api, origin: T.Optional[int]) -> None:
+        self._api = api
+        self._origin = origin
 
+    # --- grammar features ---
 
-def _sub_boundary(subtitle: Event, token: _Token) -> int:
-    boundary = token.match.group("boundary")
-    if boundary == "s":
-        return subtitle.start
-    if boundary == "e":
-        return subtitle.end
-    raise AssertionError(f'unknown boundary: "{boundary}"')
+    async def generic_visit(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        if not node.expr_name and not node.children:
+            return node.text
+        return _flatten(visited)
+
+    async def visit_unary_operation(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        operator, time = _flatten(visited)
+        if self._origin is not None:
+            return await self.visit_binary_operation(
+                node, [_Time(self._origin), operator, time]
+            )
+        if operator == "-":
+            time.value *= -1
+        return time
+
+    async def visit_binary_operation(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        time1, operator, time2 = _flatten(visited)
+        try:
+            func = {"+": _Time.add, "-": _Time.sub}[operator]
+        except LookupError:
+            raise NotImplementedError(f"unknown operator: {operator}")
+        return func(time1, time2, self._api)
+
+    async def visit_line(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        return _flatten(visited)[0].unpack(self._api)
+
+    # --- basic tokens ---
+
+    async def visit_number(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        return int(node.text)
+
+    async def visit_rel(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        try:
+            return {
+                "c": _Token.current,
+                "p": _Token.previous,
+                "n": _Token.next,
+            }[node.text]
+        except LookupError:
+            raise NotImplementedError(f"unknown relation: {node.text}")
+
+    async def visit_start(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        return _Token.start
+
+    async def visit_end(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        return _Token.end
+
+    # --- times ---
+
+    async def visit_time(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        return _Time(_flatten(visited)[0])
+
+    async def visit_subtitle(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        _, num, boundary = _flatten(visited)
+        idx = max(1, min(num, len(self._api.subs.events))) - 1
+        sub = self._api.subs.events.get(idx)
+        return _Time(_Token.start_end(sub, boundary) if sub else 0)
+
+    async def visit_frame(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        num, _ = _flatten(visited)
+        return _Time(num, _TimeUnit.frame)
+
+    async def visit_keyframe(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        num, _ = _flatten(visited)
+        return _Time(num, _TimeUnit.keyframe)
+
+    async def visit_rel_subtitle(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        direction, _, boundary = _flatten(visited)
+        try:
+            sub = self._api.subs.selected_events[0]
+            sub = _Token.prev_next(sub, direction)
+        except LookupError:
+            sub = None
+        return _Time(_Token.start_end(sub, boundary) if sub else 0)
+
+    async def visit_rel_frame(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        direction, _ = _flatten(visited)
+        origin = self._api.media.current_pts
+        if direction == _Token.current:
+            return _Time(origin)
+        delta = _Token.delta_from_direction(direction)
+        return _Time(_apply_frame(self._api, origin, delta))
+
+    async def visit_rel_keyframe(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        direction, _ = _flatten(visited)
+        origin = self._api.media.current_pts
+        delta = _Token.delta_from_direction(direction)
+        return _Time(_apply_keyframe(self._api, origin, delta))
+
+    async def visit_audio_selection(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        if not self._api.media.audio.has_selection:
+            raise CommandUnavailable("audio selection is not available")
+        _, boundary = _flatten(visited)
+        if boundary == _Token.start:
+            return _Time(self._api.media.audio.selection_start)
+        if boundary == _Token.end:
+            return _Time(self._api.media.audio.selection_end)
+        raise NotImplementedError(f'unknown boundary: "{boundary}"')
+
+    async def visit_audio_view(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        _, boundary = _flatten(visited)
+        if boundary == _Token.start:
+            return _Time(self._api.media.audio.view_start)
+        if boundary == _Token.end:
+            return _Time(self._api.media.audio.view_end)
+        raise NotImplementedError(f'unknown boundary: "{boundary}"')
+
+    async def visit_default_duration(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        return _Time(self._api.cfg.opt["subs"]["default_duration"])
+
+    async def visit_dialog(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        ret = await self._api.gui.exec(
+            time_jump_dialog,
+            relative_checked=False,
+            show_radio=self._origin is not None,
+            value=self._api.media.current_pts,
+        )
+        if ret is None:
+            raise CommandCanceled
+
+        value, is_relative = ret
+        if is_relative:
+            assert self._origin is not None
+            return _Time(self._origin + value)
+        return _Time(value)
 
 
 class Pts:
-    def __init__(self, api: Api, value: str) -> None:
+    def __init__(self, api: Api, expr: str) -> None:
         self._api = api
-        self.value = value
+        self.expr = expr
 
     async def get(
         self, origin: T.Optional[int] = None, align_to_near_frame: bool = False
@@ -101,264 +426,9 @@ class Pts:
             ret = self._api.media.video.align_pts_to_near_frame(ret)
         return ret
 
-    async def _get(self, value: T.Optional[int]) -> int:
-        # simple LL(1) parser / evaulator
-        tokens = list(self._tokenize())
-        if not tokens:
-            raise CommandError("empty value")
-
-        first_terminal = True
-        while tokens:
-            token = tokens.pop(0)
-
-            if token.name in TERMINALS.keys():
-                if not first_terminal:
-                    raise CommandError("expected operator")
-                value = await self._eval_operator(
-                    left=value, right=token, operator=None
-                )
-                first_terminal = False
-
-            elif token.name in OPERATORS.keys():
-                if not tokens:
-                    raise CommandError("missing operand")
-
-                operator = token.text
-                adjacent_token = tokens.pop(0)
-
-                if adjacent_token.name in TERMINALS.keys():
-                    value = await self._eval_operator(
-                        left=value, right=adjacent_token, operator=operator
-                    )
-
-                elif adjacent_token.name in OPERATORS.keys():
-                    raise CommandError(
-                        "operator must be followed by an operand"
-                    )
-
-                else:
-                    raise AssertionError(f'unknown token: "{token.text}"')
-
-            else:
-                raise AssertionError(f'unknown token: "{token.text}"')
-
-        assert value is not None
-        return value
-
-    def _tokenize(self) -> T.Iterable[_Token]:
-        pos = 0
-        while pos < len(self.value):
-            if self.value[pos].isspace():
-                pos += 1
-                continue
-            for name, rgx in TOKENS.items():
-                match = regex.match(rgx, self.value, pos=pos)
-                if match and match.start() == pos:
-                    yield _Token(name=name, match=match)
-                    pos = match.end()
-                    break
-            else:
-                raise CommandError(f'syntax error near "{self.value[pos:]}"')
-
-    async def _eval_operator(
-        self, left: T.Optional[int], right: _Token, operator: T.Optional[str]
-    ) -> int:
+    async def _get(self, origin: T.Optional[int]) -> int:
         try:
-            right_val = await self._eval_terminal(
-                right, origin=left, operator=operator
-            )
-        except _ResetValue as ex:
-            return ex.value
-        if operator is None:
-            return right_val
-        if operator == "+":
-            return (left or 0) + right_val
-        if operator == "-":
-            return (left or 0) - right_val
-        raise AssertionError(f'unknown operator: "{operator}"')
-
-    async def _eval_terminal(
-        self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
-    ) -> int:
-        func = getattr(self, "_eval_terminal_" + token.name, None)
-        if not func:
-            raise AssertionError(f'unknown token: "{token.name}"')
-        return await func(token, origin, operator)
-
-    async def _eval_terminal_num_ms(
-        self,
-        token: _Token,
-        _origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        return int(token.match.group("number"))
-
-    async def _eval_terminal_num_frame(
-        self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
-    ) -> int:
-        delta = int(token.match.group("number"))
-        if operator is None:
-            return self._apply_frame(0, delta)
-        origin = origin or 0
-        if operator == "-":
-            delta *= -1
-        elif operator != "+":
-            raise AssertionError(f'unknown operator: "{operator}"')
-        raise _ResetValue(self._apply_frame(origin, delta))
-
-    async def _eval_terminal_num_keyframe(
-        self, token: _Token, origin: T.Optional[int], operator: T.Optional[str]
-    ) -> int:
-        delta = int(token.match.group("number"))
-        if operator is None:
-            return self._apply_keyframe(0, delta)
-        origin = origin or 0
-        if operator == "-":
-            delta *= -1
-        elif operator != "+":
-            raise AssertionError(f'unknown operator: "{operator}"')
-        raise _ResetValue(self._apply_keyframe(origin, delta))
-
-    async def _eval_terminal_default_sub_duration(
-        self,
-        _token: _Token,
-        _origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        return self._api.cfg.opt["subs"]["default_duration"]
-
-    async def _eval_terminal_rel_frame(
-        self,
-        token: _Token,
-        _origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        direction = token.match.group("direction")
-        if direction == "p":
-            return self._apply_frame(self._api.media.current_pts, -1)
-        if direction == "c":
-            return self._api.media.current_pts
-        if direction == "n":
-            return self._apply_frame(self._api.media.current_pts, 1)
-        raise AssertionError(f'unknown direction: "{direction}"')
-
-    async def _eval_terminal_rel_keyframe(
-        self,
-        token: _Token,
-        _origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        direction = token.match.group("direction")
-        if direction == "p":
-            return self._apply_keyframe(self._api.media.current_pts, -1)
-        if direction == "c":
-            return self._apply_keyframe(self._api.media.current_pts, 0)
-        if direction == "n":
-            return self._apply_keyframe(self._api.media.current_pts, 1)
-        raise AssertionError(f'unknown direction: "{direction}"')
-
-    async def _eval_terminal_rel_sub(
-        self,
-        token: _Token,
-        _origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        direction = token.match.group("direction")
-        try:
-            if direction == "p":
-                sub = self._api.subs.selected_events[0].prev
-            elif direction == "c":
-                sub = self._api.subs.selected_events[0]
-            elif direction == "n":
-                sub = self._api.subs.selected_events[-1].next
-            else:
-                raise AssertionError(f'unknown direction: "{direction}"')
-            if not sub:
-                raise LookupError
-        except LookupError:
-            return 0
-        return _sub_boundary(sub, token)
-
-    async def _eval_terminal_num_sub(
-        self,
-        token: _Token,
-        _origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        idx = int(token.match.group("number")) - 1
-        idx = max(0, min(idx, len(self._api.subs.events) - 1))
-        try:
-            sub = self._api.subs.events[idx]
-        except LookupError:
-            return 0
-        return _sub_boundary(sub, token)
-
-    async def _eval_terminal_spectrogram(
-        self,
-        token: _Token,
-        _origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        boundary = token.match.group("boundary")
-        if not self._api.media.audio.has_selection:
-            raise CommandUnavailable
-        if boundary == "s":
-            return self._api.media.audio.selection_start
-        if boundary == "e":
-            return self._api.media.audio.selection_end
-        raise AssertionError(f'unknown boundary: "{boundary}"')
-
-    async def _eval_terminal_spectrogram_view(
-        self,
-        token: _Token,
-        _origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        boundary = token.match.group("boundary")
-        if boundary == "s":
-            return self._api.media.audio.view_start
-        if boundary == "e":
-            return self._api.media.audio.view_end
-        raise AssertionError(f'unknown boundary: "{boundary}"')
-
-    async def _eval_terminal_ask(
-        self,
-        _token: _Token,
-        origin: T.Optional[int],
-        _operator: T.Optional[str],
-    ) -> int:
-        return await self._api.gui.exec(self._show_dialog, origin=origin)
-
-    async def _show_dialog(
-        self, main_window: QtWidgets.QMainWindow, origin: T.Optional[int]
-    ) -> T.Optional[int]:
-        ret = await time_jump_dialog(
-            main_window,
-            relative_checked=False,
-            show_radio=origin is not None,
-            value=self._api.media.current_pts,
-        )
-        if ret is None:
-            raise CommandCanceled
-
-        value, is_relative = ret
-        if is_relative:
-            assert origin is not None
-            return origin + value
-        return value
-
-    def _apply_frame(self, origin: int, delta: int) -> int:
-        if not self._api.media.video.timecodes:
-            raise CommandError("timecode information is not available")
-
-        return _bisect(self._api.media.video.timecodes, origin, delta)
-
-    def _apply_keyframe(self, origin: int, delta: int) -> int:
-        if not self._api.media.video.keyframes:
-            raise CommandError("keyframe information is not available")
-
-        possible_pts = [
-            self._api.media.video.timecodes[i]
-            for i in self._api.media.video.keyframes
-        ]
-        return _bisect(possible_pts, origin, delta)
+            node_visitor = _PtsNodeVisitor(self._api, origin)
+            return await node_visitor.parse(self.expr.strip())
+        except parsimonious.exceptions.ParseError as ex:
+            raise CommandError(f"syntax error near {ex.pos}: {ex}")

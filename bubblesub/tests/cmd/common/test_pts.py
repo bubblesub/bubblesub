@@ -21,6 +21,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from bubblesub.api.cmd import CommandError, CommandUnavailable
+from bubblesub.ass.event import Event, EventList
 from bubblesub.cmd.common import Pts
 
 
@@ -69,7 +70,7 @@ def _assert_pts_value(
         ("ms", 0, CommandError),
         ("cfcf", None, CommandError),
         ("cfcf", 0, CommandError),
-        ("0 ms", None, CommandError),
+        ("0 ms", None, 0),
         ("0ms + 0ms", None, 0),
         ("0ms  +  0ms", None, 0),
         ("  0ms  +  0ms  ", None, 0),
@@ -120,9 +121,9 @@ def test_subtitles(
     expected_value: int,
 ) -> None:
     api = MagicMock()
-    api.subs.events = [
-        MagicMock(start=start, end=end) for start, end in sub_times
-    ]
+    api.subs.events = EventList()
+    for start, end in sub_times:
+        api.subs.events.append(Event(start=start, end=end))
     for i, event in enumerate(api.subs.events):
         event.prev = api.subs.events[i - 1] if i > 0 else None
         try:
@@ -163,6 +164,9 @@ def test_subtitles(
         ("20ms-1f", [10, 20, 30], ..., [], 10),
         ("21ms-1f", [10, 20, 30], ..., [], 20),
         ("31ms-1f", [10, 20, 30], ..., [], 30),
+        ("1f+1f", [10, 20, 30], ..., [], 20),
+        ("1f+1ms", [10, 20, 30], ..., [], 11),
+        ("1f+1ms+1f", [10, 20, 30], ..., [], 20),
         ("ckf", [10, 20, 30, 40], 1, [0, 1, 3], 20),
         ("ckf", [10, 20, 30, 40], 2, [0, 1, 3], 20),
         ("pkf", [10, 20, 30, 40], 1, [0, 1, 3], 10),
@@ -221,7 +225,7 @@ def test_frames(
         ("a.e", None, CommandUnavailable),
     ],
 )
-def test_audio(
+def test_audio_selection(
     expr: str,
     selection: T.Optional[T.Tuple[int, int]],
     expected_value: T.Union[int, T.Type[CommandError]],
@@ -236,7 +240,19 @@ def test_audio(
         api.media.audio.selection_start = None
         api.media.audio.selection_end = None
     pts = Pts(api, expr)
+    _assert_pts_value(pts, expected_value)
 
+
+@pytest.mark.parametrize(
+    "expr,view,expected_value", [("av.s", (1, 2), 1), ("av.e", (1, 2), 2)]
+)
+def test_audio_view(
+    expr: str, view: T.Optional[T.Tuple[int, int]], expected_value: int
+) -> None:
+    api = MagicMock()
+    api.media.audio.view_start = view[0]
+    api.media.audio.view_end = view[1]
+    pts = Pts(api, expr)
     _assert_pts_value(pts, expected_value)
 
 

@@ -317,7 +317,6 @@ async def time_jump_dialog(
     return await future
 
 
-
 def get_text_edit_row_height(
     editor: QtWidgets.QPlainTextEdit, rows: int
 ) -> int:
