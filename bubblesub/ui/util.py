@@ -247,7 +247,7 @@ async def save_dialog(
     return await future
 
 
-def time_jump_dialog(
+async def time_jump_dialog(
     parent: QtWidgets.QWidget,
     value: int = 0,
     relative_label: str = "Time:",
@@ -302,10 +302,20 @@ def time_jump_dialog(
         def value(self) -> T.Tuple[int, bool]:
             return (self._time_edit.get_value(), self._radio_rel.isChecked())
 
+    future = asyncio.Future()
     dialog = TimeJumpDialog(parent)
-    if dialog.exec_():
-        return dialog.value()
-    return None
+
+    def on_accept():
+        future.set_result(dialog.value())
+
+    def on_reject():
+        future.set_result(None)
+
+    dialog.accepted.connect(on_accept)
+    dialog.rejected.connect(on_reject)
+    dialog.open()
+    return await future
+
 
 
 def get_text_edit_row_height(

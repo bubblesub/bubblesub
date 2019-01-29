@@ -332,7 +332,7 @@ class Pts:
     async def _show_dialog(
         self, main_window: QtWidgets.QMainWindow, origin: T.Optional[int]
     ) -> T.Optional[int]:
-        ret = time_jump_dialog(
+        ret = await time_jump_dialog(
             main_window,
             relative_checked=False,
             show_radio=origin is not None,

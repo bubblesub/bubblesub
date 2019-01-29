@@ -206,7 +206,7 @@ class SubtitlesSelection:
     async def _show_time_dialog(
         self, main_window: QtWidgets.QMainWindow
     ) -> T.Optional[int]:
-        ret = time_jump_dialog(
+        ret = await time_jump_dialog(
             main_window,
             value=(
                 self.api.subs.selected_events[0].start

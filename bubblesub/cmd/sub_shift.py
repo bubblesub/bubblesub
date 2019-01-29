@@ -62,7 +62,7 @@ class SubtitlesShiftCommand(BaseCommand):
     async def _get_delta(
         self, subs: T.List[Event], main_window: QtWidgets.QMainWindow
     ) -> T.Optional[Pts]:
-        ret = time_jump_dialog(
+        ret = await time_jump_dialog(
             main_window,
             absolute_label="Time to move to:",
             relative_label="Time to add:",
