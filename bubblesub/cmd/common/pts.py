@@ -52,10 +52,13 @@ operand =
     dialog /
     default_duration
 
-time             = number _ 'ms'
-frame            = number _ 'f'
-keyframe         = number _ 'kf'
-subtitle         = 's' number (start / end)
+time             = milliseconds / seconds / minutes
+milliseconds     = integer _ 'ms'
+seconds          = decimal _ 's'
+minutes          = decimal _ 'm' (_ decimal _ 's')?
+frame            = integer _ 'f'
+keyframe         = integer _ 'kf'
+subtitle         = 's' integer (start / end)
 audio_selection  = 'a' (start / end)
 audio_view       = 'av' (start / end)
 rel_frame        = rel 'f'
@@ -65,7 +68,8 @@ default_duration = 'dsd' / 'default_duration'
 dialog           = 'ask'
 
 _                = ~'\\s*'
-number           = ~'\\d+'
+decimal           = ~'\\d+(\.\\d+)?'
+integer           = ~'\\d+'
 operator         = '+' / '-'
 rel              = 'c' / 'p' / 'n'
 start            = '.start' / '.s'
@@ -298,8 +302,11 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
 
     # --- basic tokens ---
 
-    async def visit_number(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_integer(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
         return int(node.text)
+
+    async def visit_decimal(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        return float(node.text)
 
     async def visit_rel(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
         try:
@@ -319,8 +326,24 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
 
     # --- times ---
 
-    async def visit_time(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_milliseconds(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
         return _Time(_flatten(visited)[0])
+
+    async def visit_seconds(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        return _Time(int(_flatten(visited)[0] * 1000))
+
+    async def visit_minutes(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        visited = _flatten(visited)
+        minutes = visited[0]
+        seconds = visited[2] if len(visited) >= 3 and visited[2] else 0
+        seconds += minutes * 60
+        return _Time(int(seconds * 1000))
 
     async def visit_subtitle(
         self, node: T.Any, visited: T.List[T.Any]

@@ -74,6 +74,16 @@ def _assert_pts_value(
         ("0ms + 0ms", None, 0),
         ("0ms  +  0ms", None, 0),
         ("  0ms  +  0ms  ", None, 0),
+        ("1s", None, 1000),
+        ("+1s", None, 1000),
+        ("+1 s", 1, 1001),
+        ("+1.5 s", None, 1500),
+        ("2m", None, 120_000),
+        ("2 m", None, 120_000),
+        ("2.5 m", None, 150_000),
+        ("2m3s", None, 123_000),
+        ("2 m 3 s", None, 123_000),
+        ("2.5 m 3.5 s", None, 153_500),
     ],
 )
 def test_basic_arithmetic(
