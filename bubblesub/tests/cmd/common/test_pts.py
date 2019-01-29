@@ -84,6 +84,16 @@ def _assert_pts_value(
         ("2m3s", None, 123_000),
         ("2 m 3 s", None, 123_000),
         ("2.5 m 3.5 s", None, 153_500),
+        ("1", None, CommandError),
+        ("01", None, CommandError),
+        (":01", None, CommandError),
+        ("1:23", None, 83000),
+        ("12:34", None, 754_000),
+        ("1:23:45", None, 5_025_000),
+        ("12:34:56", None, 45_296_000),
+        ("12:34:56.1", None, 45_296_100),
+        ("12:34:56.1234", None, 45_296_123),
+        ("000:01", None, CommandError),
     ],
 )
 def test_basic_arithmetic(

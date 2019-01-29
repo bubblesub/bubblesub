@@ -52,10 +52,11 @@ operand =
     dialog /
     default_duration
 
-time             = milliseconds / seconds / minutes
+time             = milliseconds / seconds / minutes / colon_time
 milliseconds     = integer _ 'ms'
 seconds          = decimal _ 's'
 minutes          = decimal _ 'm' (_ decimal _ 's')?
+colon_time       = ~'((?P<h>\\d?\\d):)?(?P<m>\\d?\\d):(?P<s>\\d\\d)(\\.(?P<ms>\\d+))?'
 frame            = integer _ 'f'
 keyframe         = integer _ 'kf'
 subtitle         = 's' integer (start / end)
@@ -302,10 +303,14 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
 
     # --- basic tokens ---
 
-    async def visit_integer(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_integer(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
         return int(node.text)
 
-    async def visit_decimal(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_decimal(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
         return float(node.text)
 
     async def visit_rel(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
@@ -344,6 +349,15 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         seconds = visited[2] if len(visited) >= 3 and visited[2] else 0
         seconds += minutes * 60
         return _Time(int(seconds * 1000))
+
+    async def visit_colon_time(
+        self, node: T.Any, visited: T.List[T.Any]
+    ) -> T.Any:
+        value = float("0." + (node.match.group("ms") or "0"))
+        value += int(node.match.group("s") or "0")
+        value += int(node.match.group("m") or "0") * 60
+        value += int(node.match.group("h") or "0") * 3600
+        return _Time(int(value * 1000))
 
     async def visit_subtitle(
         self, node: T.Any, visited: T.List[T.Any]
