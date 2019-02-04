@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import locale
 import typing as T
 
 from PyQt5 import QtCore, QtGui, QtOpenGL, QtWidgets
@@ -40,6 +41,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._opengl.set_update_callback(self.maybe_update)
         self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
         self._schedule_update.connect(self.update)
+        locale.setlocale(locale.LC_NUMERIC, "C")
 
     def shutdown(self) -> None:
         self.makeCurrent()
