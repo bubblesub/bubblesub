@@ -101,7 +101,7 @@ class MediaApi(QtCore.QObject):
             "ytdl": False,
             "sub-auto": False,
             "audio-file-auto": False,
-            "vo": "null" if args.no_video else "opengl-cb",
+            "vo": "null" if args.no_video else "libmpv",
             "pause": True,
             "idle": True,
             "video-sync": "display-vdrop",
