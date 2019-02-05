@@ -52,11 +52,15 @@ class BaseAudioWidget(QtWidgets.QWidget):
             self._scrolled(event.angleDelta().y())
 
     def _zoomed(self, delta: int, mouse_x: int) -> None:
+        if not self._audio.size:
+            return
         cur_factor = self._audio.view_size / self._audio.size
         new_factor = cur_factor * (1.1 if delta < 0 else 0.9)
         self._audio.zoom_view(new_factor, mouse_x)
 
     def _scrolled(self, delta: int) -> None:
+        if not self._audio.size:
+            return
         distance = self._audio.view_size * 0.05
         distance *= 1 if delta < 0 else -1
         self._audio.move_view(int(distance))
