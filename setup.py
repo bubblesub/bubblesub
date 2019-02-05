@@ -329,6 +329,7 @@ setup(
         "pyyaml",
         "parsimonious",
         "pluginbase",
+        "lazy_import",
     ],
     extras_require={
         "develop": [

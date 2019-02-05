@@ -227,7 +227,6 @@ class CommandApi(QtCore.QObject):
         self._plugin_base = PluginBase(package="bubblesub.api.cmd.plugins")
         self._plugin_sources: T.Dict[str, T.Any] = {}
         self._plugin_modules: T.List[T.Any] = []
-        self.reload_commands()
 
     def run_cmdline(self, cmdline: T.Union[str, T.List[T.List[str]]]) -> None:
         """

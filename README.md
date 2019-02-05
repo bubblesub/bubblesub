@@ -1,4 +1,4 @@
-![](https://cdn.rawgit.com/rr-/bubblesub/master/docs/logo.svg)
+![](https://cdn.rawgit.com/rr-/bubblesub/master/bubblesub/data/bubblesub.png)
 
 Simple extensible ASS subtitle editor for Linux
 

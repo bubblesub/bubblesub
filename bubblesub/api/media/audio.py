@@ -23,7 +23,6 @@ from pathlib import Path
 
 import ffms
 import numpy as np
-import scipy.io.wavfile
 from PyQt5 import QtCore
 
 import bubblesub.api.media.media  # pylint: disable=unused-import
@@ -408,6 +407,7 @@ class AudioApi(QtCore.QObject):
             samples = (samples * (1 << 31)).astype(np.int32)
 
         # pylint: disable=no-member
+        import scipy.io.wavfile
         scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
 
     def _create_empty_sample_buffer(self) -> np.array:

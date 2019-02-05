@@ -15,3 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """Main package."""
+
+import lazy_import
+
+lazy_import.lazy_module("numpy")
+lazy_import.lazy_module("ffms")

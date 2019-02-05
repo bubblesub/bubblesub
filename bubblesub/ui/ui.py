@@ -17,45 +17,105 @@
 import argparse
 import asyncio
 import sys
+import typing as T
 
 import quamash
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
-import bubblesub.ui.console
-import bubblesub.ui.main_window
-from bubblesub.api import Api
-from bubblesub.cfg import ConfigError
+from bubblesub.data import ROOT_DIR
+
+if T.TYPE_CHECKING:
+    from bubblesub.api import Api
+    from bubblesub.api.log import LogLevel
 
 
-def run(api: Api, args: argparse.Namespace) -> None:
-    QtCore.pyqtRemoveInputHook()
-    app = QtWidgets.QApplication(sys.argv + ["--name", "bubblesub"])
-    app.setApplicationName("bubblesub")
-    loop = quamash.QEventLoop(app)
-    asyncio.set_event_loop(loop)
+class MySplashScreen(QtWidgets.QSplashScreen):
+    def __init__(self, *args: T.Any, **kwargs: T.Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._painted = False
 
-    console = bubblesub.ui.console.Console(api, None)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setWindowFlags(
+            QtCore.Qt.SplashScreen
+            | QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.WindowStaysOnTopHint
+        )
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
-    app.aboutToQuit.connect(api.media.stop)
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+        super().paintEvent(event)
+        self._painted = True
 
-    try:
-        if not args.no_config:
-            api.cfg.load(api.cfg.DEFAULT_PATH)
-            api.cmd.reload_commands()
-    except ConfigError as ex:
-        api.log.error(str(ex))
-    if args.file:
-        api.cmd.run_cmdline([["open", "--path", args.file]])
+    def showMessage(self, text: str) -> None:
+        self._painted = False
+        super().showMessage(text, QtCore.Qt.AlignBottom, QtCore.Qt.white)
+        self._ensure_painted()
 
-    main_window = bubblesub.ui.main_window.MainWindow(api, console)
-    api.gui.set_main_window(main_window)
+    def _ensure_painted(self) -> None:
+        while not self._painted:
+            QtCore.QThread.usleep(1e3)
+            QtWidgets.QApplication.processEvents()
 
-    api.media.start()
-    main_window.show()
 
-    with loop:
-        loop.run_forever()
+class Application:
+    def __init__(self, args: argparse.Namespace):
+        self._args = args
+        self._splash: T.Optional[QtWidgets.QSplashScreen] = None
 
-    if not args.no_config:
-        assert api.cfg.root_dir is not None
-        api.cfg.save(api.cfg.root_dir)
+        QtCore.pyqtRemoveInputHook()
+
+        self._app = QtWidgets.QApplication(sys.argv + ["--name", "bubblesub"])
+        self._app.setApplicationName("bubblesub")
+        self._loop = quamash.QEventLoop(self._app)
+        asyncio.set_event_loop(self._loop)
+
+    def splash_screen(self) -> None:
+        pixmap = QtGui.QPixmap(str(ROOT_DIR / "bubblesub.png"))
+        pixmap = pixmap.scaledToWidth(640)
+        self._splash = MySplashScreen(pixmap)
+        self._splash.show()
+        self._splash.showMessage("Loading API...")
+
+    def run(self, api: "Api") -> None:
+        from bubblesub.ui.console import Console
+        from bubblesub.ui.main_window import MainWindow
+        from bubblesub.cfg import ConfigError
+
+        console = Console(api, None)
+        self._app.aboutToQuit.connect(api.media.stop)
+
+        try:
+            if self._splash:
+                self._splash.showMessage("Loading config...")
+            if not self._args.no_config:
+                api.cfg.load(api.cfg.DEFAULT_PATH)
+        except ConfigError as ex:
+            api.log.error(str(ex))
+
+        if self._splash:
+            self._splash.showMessage("Loading commands...")
+        api.cmd.reload_commands()
+
+        if self._splash:
+            self._splash.showMessage("Starting media threads...")
+        api.media.start()
+
+        if self._splash:
+            self._splash.showMessage("Loading UI...")
+        main_window = MainWindow(api, console)
+        api.gui.set_main_window(main_window)
+
+        main_window.show()
+
+        if self._args.file:
+            api.cmd.run_cmdline([["open", "--path", self._args.file]])
+
+        if self._splash:
+            self._splash.finish(main_window)
+
+        with self._loop:
+            self._loop.run_forever()
+
+        if not self._args.no_config:
+            assert api.cfg.root_dir is not None
+            api.cfg.save(api.cfg.root_dir)

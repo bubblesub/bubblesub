@@ -20,8 +20,8 @@
 
 import argparse
 
-import bubblesub.ui.ui
 from bubblesub.cache import wipe_cache
+from bubblesub.ui import ui
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,10 +45,13 @@ def main() -> None:
     if args.wipe_cache:
         wipe_cache()
 
+    app = ui.Application(args)
+    app.splash_screen()
+
     from bubblesub.api import Api
 
     api = Api(args)
-    bubblesub.ui.ui.run(api, args)
+    app.run(api)
 
 
 if __name__ == "__main__":
