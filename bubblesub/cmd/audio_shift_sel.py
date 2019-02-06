@@ -30,6 +30,10 @@ class AudioShiftSelectionCommand(BaseCommand):
     ]
     help_text = "Shfits the spectrogram selection."
 
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.media.is_loaded
+
     async def run(self) -> None:
         with self.api.undo.capture():
             start = self.api.media.audio.selection_start

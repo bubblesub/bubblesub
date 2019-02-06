@@ -25,6 +25,10 @@ class SetPlaybackSpeedCommand(BaseCommand):
     names = ["set-playback-speed"]
     help_text = "Adjusts the video playback speed."
 
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.media.is_loaded
+
     async def run(self) -> None:
         new_value = eval_expr(
             self.args.expression.format(self.api.media.playback_speed)

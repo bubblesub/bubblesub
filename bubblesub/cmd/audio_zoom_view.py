@@ -24,6 +24,10 @@ class AudioZoomViewCommand(BaseCommand):
     names = ["audio-zoom-view", "spectrogram-zoom-view"]
     help_text = "Zooms the spectrogram in or out by the specified factor."
 
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.media.is_loaded
+
     async def run(self) -> None:
         mouse_x = 0.5
         cur_factor = self.api.media.audio.view_size / self.api.media.audio.size

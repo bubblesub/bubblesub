@@ -25,6 +25,10 @@ class SetVolumeCommand(BaseCommand):
     names = ["set-volume"]
     help_text = "Adjusts the video volume."
 
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.media.is_loaded
+
     async def run(self) -> None:
         new_value = eval_expr(
             self.args.expression.format(self.api.media.volume)

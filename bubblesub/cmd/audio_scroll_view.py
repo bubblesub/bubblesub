@@ -26,6 +26,10 @@ class AudioScrollViewCommand(BaseCommand):
         "Scrolls the spectrogram horizontally by its width's percentage."
     )
 
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.media.is_loaded
+
     async def run(self) -> None:
         distance = int(self.args.delta * self.api.media.audio.view_size)
         self.api.media.audio.move_view(distance)
