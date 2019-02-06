@@ -82,10 +82,10 @@ class SubtitlesSelection:
 
     @property
     def makes_sense(self) -> bool:
-        if self.target in {"all", "none"}:
-            return True
 
         if self.target in {
+            "all",
+            "none",
             "one-below",
             "one-above",
             "first",
