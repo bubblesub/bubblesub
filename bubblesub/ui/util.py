@@ -231,7 +231,7 @@ async def save_dialog(
         directory=real_directory,
         filter=file_filter or "Any File (*)",
     )
-    dialog.setFileMode(dialog.ExistingFile)
+    dialog.setFileMode(dialog.AnyFile)
     dialog.setAcceptMode(dialog.AcceptSave)
     future = asyncio.Future()
 
