@@ -64,7 +64,7 @@ class MediaApi(QtCore.QObject):
         :param args: CLI arguments
         """
         super().__init__()
-        self.state = MediaState.Unloaded
+        self._state = MediaState.Unloaded
 
         self._log_api = log_api
         self._subs_api = subs_api
@@ -210,6 +210,15 @@ class MediaApi(QtCore.QObject):
         :param end: end PTS
         """
         self._play(start, end)
+
+    @property
+    def state(self) -> MediaState:
+        return self._state
+
+    @state.setter
+    def state(self, value: MediaState) -> None:
+        self._log_api.debug(f"video: changed state to {value}")
+        self._state = value
 
     @property
     def playback_speed(self) -> fractions.Fraction:
