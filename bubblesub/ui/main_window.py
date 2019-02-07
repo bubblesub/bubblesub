@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import asyncio
+import enum
 import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -29,6 +31,12 @@ from bubblesub.ui.menu import setup_cmd_menu
 from bubblesub.ui.statusbar import StatusBar
 from bubblesub.ui.subs_grid import SubtitlesGrid
 from bubblesub.ui.video import Video
+
+
+class ClosingState(enum.IntEnum):
+    Ready = 1
+    WaitingForConfirmation = 2
+    Confirmed = 3
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -99,16 +107,33 @@ class MainWindow(QtWidgets.QMainWindow):
             },
         )
 
+        self._closing_state = ClosingState.Ready
+
     def changeEvent(self, _event: QtCore.QEvent) -> None:
         self._api.gui.get_color.cache_clear()
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
-        if self._api.gui.confirm_unsaved_changes():
+        if self._closing_state == ClosingState.Confirmed:
             self._api.gui.quit_confirmed.emit()
             self.audio.shutdown()
             self.video.shutdown()
             event.accept()
-        else:
+        elif self._closing_state == ClosingState.WaitingForConfirmation:
+            event.ignore()
+        elif self._closing_state == ClosingState.Ready:
+
+            def on_close(result):
+                if result:
+                    self._closing_state = ClosingState.Confirmed
+                    self.close()
+                else:
+                    self._closing_state = ClosingState.Ready
+
+            self._closing_state = ClosingState.WaitingForConfirmation
+            task = asyncio.ensure_future(
+                self._api.gui.confirm_unsaved_changes()
+            )
+            task.add_done_callback(on_close)
             event.ignore()
 
     def apply_palette(self, palette_name: str) -> None:

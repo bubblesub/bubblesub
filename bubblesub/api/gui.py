@@ -70,7 +70,7 @@ class GuiApi(QtCore.QObject):
         """Exit the application."""
         self.quit_requested.emit()
 
-    def confirm_unsaved_changes(self) -> bool:
+    async def confirm_unsaved_changes(self) -> bool:
         if not self._api.undo.needs_save:
             return True
 
@@ -88,7 +88,7 @@ class GuiApi(QtCore.QObject):
         response = T.cast(int, box.exec_())
         if response == box.Save:
             if not doc_path:
-                doc_path = save_dialog(
+                doc_path = await save_dialog(
                     self._main_window,
                     file_filter=SUBS_FILE_FILTER,
                     directory=self.get_dialog_dir(),

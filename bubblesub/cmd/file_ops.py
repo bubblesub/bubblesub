@@ -32,7 +32,7 @@ class NewCommand(BaseCommand):
     )
 
     async def run(self) -> None:
-        if self.api.gui.confirm_unsaved_changes():
+        if await self.api.gui.confirm_unsaved_changes():
             self.api.subs.unload()
 
 
@@ -46,7 +46,7 @@ class OpenCommand(BaseCommand):
     )
 
     async def run(self) -> None:
-        if not self.api.gui.confirm_unsaved_changes():
+        if not await self.api.gui.confirm_unsaved_changes():
             return
 
         path = await self.args.path.get_load_path(
