@@ -77,6 +77,8 @@ class VideoBandWorker(QtCore.QObject):
 
     def _on_media_state_change(self, state: MediaState) -> None:
         if state == MediaState.Unloaded:
+            self.cache = {}
+            self.cache_updated.emit()
             self._clear_queue()
             if self._anything_to_save:
                 self._save_to_cache()
@@ -84,6 +86,7 @@ class VideoBandWorker(QtCore.QObject):
             self._clear_queue()
             self._anything_to_save = False
             self.cache = self._load_from_cache()
+            self.cache_updated.emit()
 
     def _on_video_parse(self) -> None:
         for frame_idx in range(len(self._api.media.video.timecodes)):
