@@ -101,7 +101,9 @@ class VideoBandWorker(QtCore.QObject):
         self._clearing = False
 
     @property
-    def _cache_name(self) -> str:
+    def _cache_name(self) -> T.Optional[str]:
+        if not self._api.media.path:
+            return None
         return sanitize_file_name(self._api.media.path) + "-video-band"
 
     def _load_from_cache(self) -> T.Dict[int, np.array]:
@@ -109,7 +111,8 @@ class VideoBandWorker(QtCore.QObject):
         return cache or {}
 
     def _save_to_cache(self) -> None:
-        save_cache(self._cache_name, self.cache)
+        if self._cache_name is not None:
+            save_cache(self._cache_name, self.cache)
 
 
 class VideoPreview(BaseAudioWidget):
