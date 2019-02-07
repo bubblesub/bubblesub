@@ -21,21 +21,27 @@ import enum
 
 from PyQt5 import QtCore
 
+from bubblesub.cfg import Config
+
 
 class LogLevel(enum.Enum):
     """Message log level."""
 
-    Error = 1
-    Warning = 2
-    Info = 3
-    Debug = 4
-    CommandEcho = 5
+    Error = "error"
+    Warning = "warning"
+    Info = "info"
+    Debug = "debug"
+    CommandEcho = "cmd-echo"
 
 
 class LogApi(QtCore.QObject):
     """The logging API."""
 
     logged = QtCore.pyqtSignal(LogLevel, str)
+
+    def __init__(self, cfg: Config) -> None:
+        super().__init__()
+        self._cfg = cfg
 
     def debug(self, text: str) -> None:
         """
@@ -85,7 +91,10 @@ class LogApi(QtCore.QObject):
         :param text: text to log
         """
         for line in text.split("\n"):
-            print(
-                f"{datetime.datetime.now()} [{level.name.lower()[0]}] {line}"
-            )
+            if level.value in self._cfg.opt["basic"]["log_levels"]:
+                print(
+                    f"{datetime.datetime.now()} "
+                    f"[{level.name.lower()[0]}] "
+                    f"{line}"
+                )
             self.logged.emit(level, line)
