@@ -28,6 +28,7 @@ from PyQt5 import QtCore
 import bubblesub.api.media.media  # pylint: disable=unused-import
 from bubblesub.api.log import LogApi
 from bubblesub.api.media.state import MediaState
+from bubblesub.api.subs import SubtitlesApi
 from bubblesub.cache import get_cache_file_path
 from bubblesub.util import sanitize_file_name
 from bubblesub.worker import Worker
@@ -99,7 +100,10 @@ class AudioApi(QtCore.QObject):
     parsed = QtCore.pyqtSignal()
 
     def __init__(
-        self, media_api: "bubblesub.api.media.media.MediaApi", log_api: LogApi
+        self,
+        media_api: "bubblesub.api.media.media.MediaApi",
+        log_api: LogApi,
+        subs_api: SubtitlesApi,
     ) -> None:
         """
         Initialize self.
@@ -108,20 +112,29 @@ class AudioApi(QtCore.QObject):
         :param log_api: logging API
         """
         super().__init__()
+        self._log_api = log_api
+        self._media_api = media_api
+        self._subs_api = subs_api
+
         self._min = 0
         self._max = 0
         self._view_start = 0
         self._view_end = 0
         self._selection_start = 0
         self._selection_end = 0
-
-        self._log_api = log_api
-        self._media_api = media_api
-        self._media_api.state_changed.connect(self._on_media_state_change)
-        self._media_api.max_pts_changed.connect(self._on_max_pts_change)
         self._audio_source: T.Union[None, ffms.AudioSource] = None
         self._audio_source_worker = AudioSourceWorker(log_api)
+
+        self._media_api.state_changed.connect(self._on_media_state_change)
+        self._media_api.max_pts_changed.connect(self._on_max_pts_change)
+        self._subs_api.events.items_inserted.connect(self._extend_view)
+        self._subs_api.events.items_removed.connect(self._extend_view)
+        self._subs_api.events.items_moved.connect(self._extend_view)
+        self._subs_api.events.item_changed.connect(self._extend_view)
+        self._subs_api.loaded.connect(self._reset_view)
         self._audio_source_worker.task_finished.connect(self._got_audio_source)
+
+        self._reset_view()
 
     def start(self) -> None:
         """Start internal worker threads."""
@@ -408,6 +421,7 @@ class AudioApi(QtCore.QObject):
 
         # pylint: disable=no-member
         import scipy.io.wavfile
+
         scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
 
     def _create_empty_sample_buffer(self) -> np.array:
@@ -426,9 +440,7 @@ class AudioApi(QtCore.QObject):
         if state == MediaState.Unloaded:
             self._audio_source = None
         elif state == MediaState.Loading:
-            self._min = 0
-            self._max = 0
-            self.zoom_view(1, 0.5)  # emits view_changed
+            self._reset_view()
             self._audio_source = _LOADING
             if self._media_api.path:
                 self._audio_source_worker.schedule_task(self._media_api.path)
@@ -436,9 +448,21 @@ class AudioApi(QtCore.QObject):
             assert state == MediaState.Loaded
 
     def _on_max_pts_change(self) -> None:
+        self._reset_view()
+
+    def _reset_view(self) -> None:
         self._min = 0
-        self._max = self._media_api.max_pts
+        self._max = 0
+        self._extend_view()
         self.zoom_view(1, 0.5)  # emits view_changed
+
+    def _extend_view(self) -> None:
+        self._min = 0
+        self._max = max(
+            [self._max, self._media_api.max_pts]
+            + [sub.start for sub in self._subs_api.events]
+            + [sub.end for sub in self._subs_api.events]
+        )
 
     def _got_audio_source(
         self, result: T.Optional[T.Tuple[Path, ffms.AudioSource]]

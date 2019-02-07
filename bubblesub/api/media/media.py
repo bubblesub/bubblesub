@@ -119,7 +119,7 @@ class MediaApi(QtCore.QObject):
         self._mpv.initialize()
 
         self.video = VideoApi(self, log_api, self._mpv)
-        self.audio = AudioApi(self, log_api)
+        self.audio = AudioApi(self, log_api, subs_api)
 
         self._timer = QtCore.QTimer(parent=None)
         self._timer.setInterval(cfg.opt["video"]["subs_sync_interval"])
