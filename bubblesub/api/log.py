@@ -90,7 +90,7 @@ class LogApi(QtCore.QObject):
         :param level: level to log the message with
         :param text: text to log
         """
-        for line in text.split("\n"):
+        for line in text.rstrip("\n").split("\n"):
             if level.value in self._cfg.opt["basic"]["log_levels"]:
                 print(
                     f"{datetime.datetime.now()} "

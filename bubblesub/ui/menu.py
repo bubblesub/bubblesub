@@ -21,6 +21,7 @@ import typing as T
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
+from bubblesub.api.log import LogApi
 from bubblesub.api.cmd import CommandError
 from bubblesub.cfg.hotkeys import HotkeyContext
 from bubblesub.cfg.menu import MenuCommand, MenuItem, MenuSeparator, SubMenu
@@ -35,7 +36,7 @@ def _window_from_menu(menu: QtWidgets.QMenu) -> QtWidgets.QWidget:
     return window
 
 
-def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
+def _on_menu_about_to_show(log_api: LogApi, menu: QtWidgets.QMenu) -> None:
     window = _window_from_menu(menu)
     window.setProperty("focused-widget", window.focusWidget())
     for action in menu.actions():
@@ -45,7 +46,7 @@ def _on_menu_about_to_show(menu: QtWidgets.QMenu) -> None:
                     all(cmd.is_enabled for cmd in action.commands)
                 )
             except Exception:  # pylint: disable=broad-except
-                traceback.print_exc()
+                log_api.error(traceback.format_exc())
                 action.setEnabled(False)
 
 
@@ -95,7 +96,7 @@ def setup_cmd_menu(
 
         if hasattr(parent, "aboutToShow"):
             parent.aboutToShow.connect(
-                functools.partial(_on_menu_about_to_show, parent)
+                functools.partial(_on_menu_about_to_show, api.log, parent)
             )
             parent.aboutToHide.connect(
                 functools.partial(_on_menu_about_to_hide, parent)

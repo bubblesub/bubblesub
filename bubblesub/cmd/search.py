@@ -401,7 +401,7 @@ class _SearchDialog(QtWidgets.QDialog):
                 self._count()
         except Exception as ex:  # pylint: disable=broad-except
             self._api.log.error(str(ex))
-            traceback.print_exc()
+            self._api.log.error(traceback.format_exc())
 
     def _replace_selection(self) -> None:
         _replace_selection(self._handler, self._target_text)

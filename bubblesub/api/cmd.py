@@ -294,10 +294,9 @@ class CommandApi(QtCore.QObject):
                 self._api.log.warn(str(ex))
             return False
         except Exception as ex:  # pylint: disable=broad-except
-            if not cmd.silent:
-                self._api.log.error(f"problem running {cmd.invocation}:")
-                self._api.log.error(f"{ex}")
-                traceback.print_exc()
+            self._api.log.error(f"problem running {cmd.invocation}:")
+            self._api.log.error(f"{ex}")
+            self._api.log.error(traceback.format_exc())
             return False
 
         end_time = time.time()
@@ -420,4 +419,4 @@ class CommandApi(QtCore.QObject):
             yield
         except Exception as ex:  # pylint: disable=broad-except
             self._api.log.error(str(ex))
-            traceback.print_exc()
+            self._api.log.error(traceback.format_exc())

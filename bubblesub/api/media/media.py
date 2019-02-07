@@ -270,7 +270,7 @@ class MediaApi(QtCore.QObject):
         try:
             return self._mpv.get_property("mute")
         except mpv.MPVError:
-            traceback.print_exc()
+            self._log_api.error(traceback.format_exc())
             return False
 
     @mute.setter
@@ -284,7 +284,7 @@ class MediaApi(QtCore.QObject):
             self._mpv.set_property("mute", value)
             self.mute_changed.emit()
         except mpv.MPVError:
-            traceback.print_exc()
+            self._log_api.error(traceback.format_exc())
 
     @property
     def current_pts(self) -> int:
@@ -316,7 +316,7 @@ class MediaApi(QtCore.QObject):
         try:
             return bool(self._mpv.get_property("pause"))
         except mpv.MPVError:
-            traceback.print_exc()
+            self._log_api.error(traceback.format_exc())
             return False
 
     @is_paused.setter
@@ -333,7 +333,7 @@ class MediaApi(QtCore.QObject):
             self._mpv.set_property("pause", value)
             self.pause_changed.emit()
         except mpv.MPVError:
-            traceback.print_exc()
+            self._log_api.error(traceback.format_exc())
 
     @property
     def path(self) -> T.Optional[Path]:
@@ -434,4 +434,4 @@ class MediaApi(QtCore.QObject):
                     elif event_prop.name == "pause":
                         self.pause_changed.emit()
             except Exception:  # pylint: disable=broad-except
-                traceback.print_exc()
+                self._log_api.error(traceback.format_exc())
