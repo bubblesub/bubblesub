@@ -17,6 +17,7 @@
 import argparse
 import asyncio
 import sys
+import traceback
 import typing as T
 
 import quamash
@@ -80,6 +81,14 @@ class Application:
         from bubblesub.ui.console import Console
         from bubblesub.ui.main_window import MainWindow
         from bubblesub.cfg import ConfigError
+
+        def on_error(ex_type, ex_obj, ex_tb) -> None:
+            api.log.error("An unhandled error occurred: ")
+            api.log.error(
+                "".join(traceback.format_exception(ex_type, ex_obj, ex_tb))
+            )
+
+        sys.excepthook = on_error
 
         console = Console(api, None)
         self._app.aboutToQuit.connect(api.media.stop)
