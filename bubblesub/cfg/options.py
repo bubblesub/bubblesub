@@ -18,11 +18,10 @@
 
 import collections
 import typing as T
-from pathlib import Path
 
 import yaml
 
-from bubblesub.cfg.base import ConfigError, SubConfig
+from bubblesub.cfg.base import SubConfig
 
 
 class OptionsConfig(SubConfig):

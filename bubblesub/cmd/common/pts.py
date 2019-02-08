@@ -22,11 +22,9 @@ import typing as T
 from dataclasses import dataclass
 
 import parsimonious
-from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandError, CommandUnavailable
-from bubblesub.ass.event import Event
 from bubblesub.ui.util import time_jump_dialog
 
 GRAMMAR = """
