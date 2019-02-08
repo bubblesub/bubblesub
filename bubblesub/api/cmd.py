@@ -415,3 +415,6 @@ class CommandApi(QtCore.QObject):
             pass
 
         self._plugin_modules.append(mod)
+
+    def unload(self) -> None:
+        self._unload_commands()
