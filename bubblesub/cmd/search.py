@@ -18,7 +18,6 @@ import abc
 import argparse
 import enum
 import re
-import traceback
 import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -387,21 +386,17 @@ class _SearchDialog(QtWidgets.QDialog):
         return super().reject()
 
     def action(self, sender: QtWidgets.QAbstractButton) -> None:
-        try:
-            self._save_opt()
-            if sender == self.replace_sel_btn:
-                self._replace_selection()
-            elif sender == self.replace_all_btn:
-                self._replace_all()
-            elif sender == self.find_prev_btn:
-                self._search(reverse=True)
-            elif sender == self.find_next_btn:
-                self._search(reverse=False)
-            elif sender == self.count_btn:
-                self._count()
-        except Exception as ex:  # pylint: disable=broad-except
-            self._api.log.error(str(ex))
-            self._api.log.error(traceback.format_exc())
+        self._save_opt()
+        if sender == self.replace_sel_btn:
+            self._replace_selection()
+        elif sender == self.replace_all_btn:
+            self._replace_all()
+        elif sender == self.find_prev_btn:
+            self._search(reverse=True)
+        elif sender == self.find_next_btn:
+            self._search(reverse=False)
+        elif sender == self.count_btn:
+            self._count()
 
     def _replace_selection(self) -> None:
         _replace_selection(self._handler, self._target_text)

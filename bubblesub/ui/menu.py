@@ -15,14 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import functools
-import traceback
 import typing as T
 
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.log import LogApi
 from bubblesub.api.cmd import CommandError
+from bubblesub.api.log import LogApi
 from bubblesub.cfg.hotkeys import HotkeyContext
 from bubblesub.cfg.menu import MenuCommand, MenuItem, MenuSeparator, SubMenu
 
@@ -41,13 +40,10 @@ def _on_menu_about_to_show(log_api: LogApi, menu: QtWidgets.QMenu) -> None:
     window.setProperty("focused-widget", window.focusWidget())
     for action in menu.actions():
         if getattr(action, "commands", None):
-            try:
-                action.setEnabled(
-                    all(cmd.is_enabled for cmd in action.commands)
-                )
-            except Exception:  # pylint: disable=broad-except
-                log_api.error(traceback.format_exc())
-                action.setEnabled(False)
+            enabled = False
+            with log_api.exception_guard():
+                enabled = all(cmd.is_enabled for cmd in action.commands)
+            action.setEnabled(enabled)
 
 
 def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:

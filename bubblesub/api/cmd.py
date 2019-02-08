@@ -24,7 +24,6 @@ interesting, complex ways.
 import abc
 import argparse
 import asyncio
-import contextlib
 import importlib
 import io
 import time
@@ -354,7 +353,7 @@ class CommandApi(QtCore.QObject):
     def _unload_commands(self) -> None:
         """Unloads registered commands.."""
         for module in self._plugin_modules:
-            with self._guard():
+            with self._api.log.exception_guard():
                 try:
                     module.on_unload(self._api)
                 except AttributeError:
@@ -384,7 +383,7 @@ class CommandApi(QtCore.QObject):
             searchpath=[str(path)], identifier=identifier
         )
         for plugin in plugin_source.list_plugins():
-            with self._guard():
+            with self._api.log.exception_guard():
                 mod = plugin_source.load_plugin(plugin)
                 self._load_module(mod)
         self._plugin_sources[identifier] = plugin_source
@@ -416,11 +415,3 @@ class CommandApi(QtCore.QObject):
             pass
 
         self._plugin_modules.append(mod)
-
-    @contextlib.contextmanager
-    def _guard(self) -> T.Generator:
-        try:
-            yield
-        except Exception as ex:  # pylint: disable=broad-except
-            self._api.log.error(str(ex))
-            self._api.log.error(traceback.format_exc())

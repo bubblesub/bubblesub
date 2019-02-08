@@ -20,7 +20,6 @@ import argparse
 import fractions
 import io
 import locale
-import traceback
 import typing as T
 from pathlib import Path
 
@@ -267,11 +266,9 @@ class MediaApi(QtCore.QObject):
 
         :return: whether the video is muted
         """
-        try:
+        with self._log_api.exception_guard():
             return self._mpv.get_property("mute")
-        except mpv.MPVError:
-            self._log_api.error(traceback.format_exc())
-            return False
+        return False
 
     @mute.setter
     def mute(self, value: bool) -> None:
@@ -280,11 +277,9 @@ class MediaApi(QtCore.QObject):
 
         :param value: whether to mute the video
         """
-        try:
+        with self._log_api.exception_guard():
             self._mpv.set_property("mute", value)
             self.mute_changed.emit()
-        except mpv.MPVError:
-            self._log_api.error(traceback.format_exc())
 
     @property
     def current_pts(self) -> int:
@@ -313,11 +308,9 @@ class MediaApi(QtCore.QObject):
         """
         if not self._mpv_ready:
             return True
-        try:
+        with self._log_api.exception_guard():
             return bool(self._mpv.get_property("pause"))
-        except mpv.MPVError:
-            self._log_api.error(traceback.format_exc())
-            return False
+        return False
 
     @is_paused.setter
     def is_paused(self, value: bool) -> None:
@@ -328,12 +321,10 @@ class MediaApi(QtCore.QObject):
         """
         if not self._mpv_ready:
             return
-        try:
+        with self._log_api.exception_guard():
             self._set_end(None)
             self._mpv.set_property("pause", value)
             self.pause_changed.emit()
-        except mpv.MPVError:
-            self._log_api.error(traceback.format_exc())
 
     @property
     def path(self) -> T.Optional[Path]:
@@ -406,7 +397,7 @@ class MediaApi(QtCore.QObject):
 
     def _mpv_event_handler(self) -> None:
         while self._mpv:
-            try:
+            with self._log_api.exception_guard():
                 event = self._mpv.wait_event(0.01)
                 if event.id in {mpv.Events.none, mpv.Events.shutdown}:
                     break
@@ -433,5 +424,3 @@ class MediaApi(QtCore.QObject):
                         self.mute_changed.emit()
                     elif event_prop.name == "pause":
                         self.pause_changed.emit()
-            except Exception:  # pylint: disable=broad-except
-                self._log_api.error(traceback.format_exc())

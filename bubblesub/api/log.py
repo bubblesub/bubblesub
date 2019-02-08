@@ -16,8 +16,11 @@
 
 """Logging API."""
 
+import contextlib
 import datetime
 import enum
+import traceback
+import typing as T
 
 from PyQt5 import QtCore
 
@@ -98,3 +101,11 @@ class LogApi(QtCore.QObject):
                     f"{line}"
                 )
             self.logged.emit(level, line)
+
+    @contextlib.contextmanager
+    def exception_guard(self) -> T.Generator:
+        try:
+            yield
+        except Exception as ex:  # pylint: disable=broad-except
+            self.error(str(ex))
+            self.error(traceback.format_exc())
