@@ -110,6 +110,7 @@ class AudioApi(QtCore.QObject):
 
         :param media_api: media API
         :param log_api: logging API
+        :param subs_api: subtitles API
         """
         super().__init__()
         self._log_api = log_api
