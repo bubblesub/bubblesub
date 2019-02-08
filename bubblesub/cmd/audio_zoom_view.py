@@ -26,7 +26,9 @@ class AudioZoomViewCommand(BaseCommand):
 
     async def run(self) -> None:
         mouse_x = 0.5
-        cur_factor = self.api.media.audio.view_size / self.api.media.audio.size
+        cur_factor = self.api.media.audio.view_size / max(
+            1, self.api.media.audio.size
+        )
         new_factor = cur_factor * self.args.delta
         self.api.media.audio.zoom_view(new_factor, mouse_x)
 
