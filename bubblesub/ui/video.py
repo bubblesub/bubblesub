@@ -30,7 +30,7 @@ from bubblesub.ui.mpv import MpvWidget
 
 class _VideoPreview(MpvWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
-        super().__init__(api.media.video.get_opengl_context(), parent)
+        super().__init__(api, parent)
 
     def sizeHint(self) -> QtCore.QSize:
         return QtCore.QSize(400, 300)

@@ -23,7 +23,6 @@ import typing as T
 from pathlib import Path
 
 import ffms
-import mpv  # pylint: disable=wrong-import-order
 import numpy as np
 from PyQt5 import QtCore
 
@@ -72,25 +71,21 @@ class VideoApi(QtCore.QObject):
     """The video API."""
 
     parsed = QtCore.pyqtSignal()
+    request_screenshot = QtCore.pyqtSignal(str, bool)
 
     def __init__(
-        self,
-        media_api: "bubblesub.api.media.media.MediaApi",
-        log_api: LogApi,
-        mpv_: mpv.Context,
+        self, media_api: "bubblesub.api.media.media.MediaApi", log_api: LogApi
     ) -> None:
         """
         Initialize self.
 
         :param media_api: media API
         :param log_api: logging API
-        :param mpv_: mpv context
         """
         super().__init__()
 
         self._media_api = media_api
         self._media_api.state_changed.connect(self._on_media_state_change)
-        self._mpv = mpv_
 
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
@@ -107,14 +102,6 @@ class VideoApi(QtCore.QObject):
         """Stop internal worker threads."""
         self._video_source_worker.stop()
 
-    def get_opengl_context(self) -> T.Any:
-        """
-        Return internal player's OpenGL context usable by the GUI.
-
-        :return: OpenGL context
-        """
-        return self._mpv.opengl_cb_api()
-
     def screenshot(self, path: Path, include_subtitles: bool) -> None:
         """
         Save a screenshot into specified destination.
@@ -122,11 +109,7 @@ class VideoApi(QtCore.QObject):
         :param path: path to save the screenshot to
         :param include_subtitles: whether to 'burn in' the subtitles
         """
-        self._mpv.command(
-            "screenshot-to-file",
-            str(path),
-            "subtitles" if include_subtitles else "video",
-        )
+        self.request_screenshot.emit(str(path), include_subtitles)
 
     def align_pts_to_near_frame(self, pts: int) -> int:
         """

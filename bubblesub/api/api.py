@@ -41,10 +41,12 @@ class Api:
 
         :param args: CLI arguments
         """
+        self.args = args
+
         self.cfg = Config()
         self.log = LogApi(self.cfg)
         self.subs = SubtitlesApi()
-        self.media = MediaApi(self.subs, self.log, self.cfg, args)
+        self.media = MediaApi(self.subs, self.log)
         self.undo = UndoApi(self.cfg, self.subs)
 
         self.gui = GuiApi(self)
