@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import queue
+import threading
 import typing as T
 
 import numpy as np
@@ -26,8 +27,9 @@ from bubblesub.cache import load_cache, save_cache
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
 from bubblesub.util import sanitize_file_name
 
-NOT_CACHED = object()
-BAND_Y_RESOLUTION = 30
+_CACHE_LOCK = threading.Lock()
+_NOT_CACHED = object()
+_BAND_Y_RESOLUTION = 30
 
 
 class VideoBandWorker(QtCore.QObject):
@@ -56,13 +58,14 @@ class VideoBandWorker(QtCore.QObject):
 
             frame = (
                 self._api.media.video.get_frame(
-                    frame_idx, 1, BAND_Y_RESOLUTION
+                    frame_idx, 1, _BAND_Y_RESOLUTION
                 )
-                .reshape(BAND_Y_RESOLUTION, 3)
+                .reshape(_BAND_Y_RESOLUTION, 3)
                 .copy()
             )
 
-            self.cache[frame_idx] = frame
+            with _CACHE_LOCK:
+                self.cache[frame_idx] = frame
             self.cache_updated.emit()
             self._anything_to_save = True
 
@@ -76,21 +79,24 @@ class VideoBandWorker(QtCore.QObject):
 
     def _on_media_state_change(self, state: MediaState) -> None:
         if state == MediaState.Unloaded:
-            self.cache = {}
-            self.cache_updated.emit()
-            self._clear_queue()
             if self._anything_to_save:
                 self._save_to_cache()
+            with _CACHE_LOCK:
+                self.cache = {}
+            self.cache_updated.emit()
+            self._clear_queue()
         elif state == MediaState.Loading:
             self._clear_queue()
             self._anything_to_save = False
-            self.cache = self._load_from_cache()
+            with _CACHE_LOCK:
+                self.cache = self._load_from_cache()
             self.cache_updated.emit()
 
     def _on_video_parse(self) -> None:
         for frame_idx in range(len(self._api.media.video.timecodes)):
-            if frame_idx not in self.cache:
-                self._queue.put(frame_idx)
+            with _CACHE_LOCK:
+                if frame_idx not in self.cache:
+                    self._queue.put(frame_idx)
 
     def _clear_queue(self) -> None:
         self._clearing = True
@@ -109,12 +115,13 @@ class VideoBandWorker(QtCore.QObject):
         return sanitize_file_name(self._api.media.path) + "-video-band"
 
     def _load_from_cache(self) -> T.Dict[int, np.array]:
-        cache = load_cache(self._cache_name)
-        return cache or {}
+        cache = load_cache(self._cache_name) or {}
+        return cache
 
     def _save_to_cache(self) -> None:
         if self._cache_name is not None:
-            save_cache(self._cache_name, self.cache)
+            with _CACHE_LOCK:
+                save_cache(self._cache_name, self.cache)
 
 
 class VideoPreview(BaseLocalAudioWidget):
@@ -149,7 +156,7 @@ class VideoPreview(BaseLocalAudioWidget):
 
     def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
         self._pixels = np.zeros(
-            [BAND_Y_RESOLUTION, self.width(), 3], dtype=np.uint8
+            [_BAND_Y_RESOLUTION, self.width(), 3], dtype=np.uint8
         )
 
     def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
@@ -180,8 +187,8 @@ class VideoPreview(BaseLocalAudioWidget):
         prev_column = np.zeros([pixels.shape[1], 3], dtype=np.uint8)
         for x in range(pixels.shape[0]):
             frame_idx = self.frame_idx_from_x(x)
-            column = self._worker.cache.get(frame_idx, NOT_CACHED)
-            if column is NOT_CACHED:
+            column = self._worker.cache.get(frame_idx, _NOT_CACHED)
+            if column is _NOT_CACHED:
                 column = prev_column
             else:
                 prev_column = column
@@ -195,6 +202,8 @@ class VideoPreview(BaseLocalAudioWidget):
             QtGui.QImage.Format_RGB888,
         )
         painter.save()
-        painter.scale(1, painter.viewport().height() / (BAND_Y_RESOLUTION - 1))
+        painter.scale(
+            1, painter.viewport().height() / (_BAND_Y_RESOLUTION - 1)
+        )
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
