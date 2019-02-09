@@ -113,6 +113,11 @@ class VideoBandWorker(QtCore.QObject):
 
     def _load_from_cache(self) -> T.Dict[int, np.array]:
         cache = load_cache(self._cache_name) or {}
+        cache = {
+            key: value
+            for key, value in cache.items()
+            if np.count_nonzero(value)
+        }
         return cache
 
     def _save_to_cache(self) -> None:
