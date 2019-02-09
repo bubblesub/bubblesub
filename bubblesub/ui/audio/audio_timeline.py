@@ -15,13 +15,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
-import math
 import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
 
 
 class DragMode(enum.Enum):
@@ -29,7 +28,7 @@ class DragMode(enum.Enum):
     VideoPosition = 3
 
 
-class AudioTimeline(BaseAudioWidget):
+class AudioTimeline(BaseLocalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
@@ -61,7 +60,7 @@ class AudioTimeline(BaseAudioWidget):
         self.setCursor(QtCore.Qt.ArrowCursor)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        pts = self._pts_from_x(event.x())
+        pts = self.pts_from_x(event.x())
         if self._drag_mode == DragMode.VideoPosition:
             self._api.media.seek(pts)
 
@@ -91,7 +90,7 @@ class AudioTimeline(BaseAudioWidget):
         text_height = painter.fontMetrics().capHeight()
 
         for pts in range(start_pts, end_pts, one_second):
-            x = self._pts_to_x(pts)
+            x = self.pts_to_x(pts)
             if x < 0 or x >= self.width():
                 continue
 
@@ -108,7 +107,7 @@ class AudioTimeline(BaseAudioWidget):
                     pts // one_minute, (pts % one_minute) // one_second
                 )
                 long_text_width = painter.fontMetrics().width(long_text)
-                next_label_x = self._pts_to_x(pts + 10 * one_second)
+                next_label_x = self.pts_to_x(pts + 10 * one_second)
                 if long_text_width < next_label_x - x:
                     text = long_text
                 else:
@@ -123,13 +122,13 @@ class AudioTimeline(BaseAudioWidget):
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         for keyframe in self._api.media.video.keyframes:
             timecode = self._api.media.video.timecodes[keyframe]
-            x = self._pts_to_x(timecode)
+            x = self.pts_to_x(timecode)
             painter.drawLine(x, 0, x, h)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
         if not self._api.media.current_pts:
             return
-        x = self._pts_to_x(self._api.media.current_pts)
+        x = self.pts_to_x(self._api.media.current_pts)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
 
@@ -144,11 +143,3 @@ class AudioTimeline(BaseAudioWidget):
             polygon.append(QtCore.QPointF(x, y))
 
         painter.drawPolygon(polygon)
-
-    def _pts_to_x(self, pts: int) -> float:
-        scale = self.width() / max(1, self._audio.view_size)
-        return math.floor((pts - self._audio.view_start) * scale)
-
-    def _pts_from_x(self, x: float) -> int:
-        scale = self._audio.view_size / self.width()
-        return int(x * scale + self._audio.view_start)

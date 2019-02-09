@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
-import math
 import typing as T
 
 import ffms
@@ -24,7 +23,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.media.state import MediaState
-from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
 from bubblesub.ui.util import blend_colors
 from bubblesub.util import chunks
 from bubblesub.worker import Worker
@@ -116,7 +115,7 @@ class DragMode(enum.Enum):
     VideoPosition = 3
 
 
-class AudioPreview(BaseAudioWidget):
+class AudioPreview(BaseLocalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 1.5))
@@ -181,7 +180,7 @@ class AudioPreview(BaseAudioWidget):
         self.setCursor(QtCore.Qt.ArrowCursor)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        pts = self._pts_from_x(event.x())
+        pts = self.pts_from_x(event.x())
         if self._drag_mode == DragMode.SelectionStart:
             if self._audio.has_selection:
                 self._audio.select(
@@ -233,7 +232,7 @@ class AudioPreview(BaseAudioWidget):
 
         pts_to_update = set()
         for x in range(self.width() * 2):
-            pts = self._pts_from_x(x)
+            pts = self.pts_from_x(x)
             pts = (pts // horizontal_res) * horizontal_res
             if pts < 0 or (max_pts and pts >= max_pts):
                 continue
@@ -294,7 +293,7 @@ class AudioPreview(BaseAudioWidget):
         pixels = self._pixels.transpose()
         prev_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
         for x in range(pixels.shape[0]):
-            pts = self._pts_from_x(x)
+            pts = self.pts_from_x(x)
             pts = (pts // horizontal_res) * horizontal_res
             column = self._spectrum_cache.get(pts, NOT_CACHED)
             if column is NOT_CACHED or column is CACHING:
@@ -320,7 +319,7 @@ class AudioPreview(BaseAudioWidget):
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         for keyframe in self._api.media.video.keyframes:
             timecode = self._api.media.video.timecodes[keyframe]
-            x = self._pts_to_x(timecode)
+            x = self.pts_to_x(timecode)
             painter.drawLine(x, 0, x, h)
 
     def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
@@ -330,8 +329,8 @@ class AudioPreview(BaseAudioWidget):
         painter.setFont(QtGui.QFont(self.font().family(), 10))
 
         for i, line in enumerate(self._api.subs.events):
-            x1 = self._pts_to_x(line.start)
-            x2 = self._pts_to_x(line.end)
+            x1 = self.pts_to_x(line.start)
+            x2 = self.pts_to_x(line.end)
             if x2 < 0 or x1 >= self.width():
                 continue
 
@@ -413,14 +412,14 @@ class AudioPreview(BaseAudioWidget):
         painter.setBrush(
             QtGui.QBrush(self._api.gui.get_color(f"{color_key}-fill"))
         )
-        x1 = self._pts_to_x(self._audio.selection_start)
-        x2 = self._pts_to_x(self._audio.selection_end)
+        x1 = self.pts_to_x(self._audio.selection_start)
+        x2 = self.pts_to_x(self._audio.selection_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
         if not self._api.media.current_pts:
             return
-        x = self._pts_to_x(self._api.media.current_pts)
+        x = self.pts_to_x(self._api.media.current_pts)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
 
@@ -438,11 +437,3 @@ class AudioPreview(BaseAudioWidget):
             polygon.append(QtCore.QPointF(x, y))
 
         painter.drawPolygon(polygon)
-
-    def _pts_to_x(self, pts: int) -> float:
-        scale = self.width() / max(1, self._audio.view_size)
-        return math.floor((pts - self._audio.view_start) * scale)
-
-    def _pts_from_x(self, x: float) -> int:
-        scale = self._audio.view_size / self.width()
-        return int(x * scale + self._audio.view_start)

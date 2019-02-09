@@ -17,9 +17,9 @@
 from PyQt5 import QtCore, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.ui.audio.audio_timeline import AudioTimeline
 from bubblesub.ui.audio.audio_preview import AudioPreview
 from bubblesub.ui.audio.audio_slider import AudioSlider
+from bubblesub.ui.audio.audio_timeline import AudioTimeline
 from bubblesub.ui.audio.video_preview import VideoPreview
 
 

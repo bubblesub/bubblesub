@@ -14,15 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseGlobalAudioWidget
 
 
-class AudioSlider(BaseAudioWidget):
+class AudioSlider(BaseGlobalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
@@ -51,14 +49,14 @@ class AudioSlider(BaseAudioWidget):
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         old_center = self._audio.view_start + self._audio.view_size / 2
-        new_center = self._pts_from_x(event.x())
+        new_center = self.pts_from_x(event.x())
         distance = new_center - old_center
         self._audio.move_view(int(distance))
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
         if not self._api.media.current_pts:
             return
-        x = self._pts_to_x(self._api.media.current_pts)
+        x = self.pts_to_x(self._api.media.current_pts)
         painter.setPen(
             QtGui.QPen(
                 self._api.gui.get_color("spectrogram/video-marker"),
@@ -76,16 +74,16 @@ class AudioSlider(BaseAudioWidget):
         color.setAlpha(40)
         painter.setBrush(QtGui.QBrush(color))
         for line in self._api.subs.events:
-            x1 = self._pts_to_x(line.start)
-            x2 = self._pts_to_x(line.end)
+            x1 = self.pts_to_x(line.start)
+            x2 = self.pts_to_x(line.end)
             painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_slider(self, painter: QtGui.QPainter) -> None:
         h = self.height()
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(self.palette().highlight()))
-        x1 = self._pts_to_x(self._audio.view_start)
-        x2 = self._pts_to_x(self._audio.view_end)
+        x1 = self.pts_to_x(self._audio.view_start)
+        x2 = self.pts_to_x(self._audio.view_end)
         painter.drawRect(x1, 0, x2 - x1, h / 4)
         painter.drawRect(x1, h - 1 - h / 4, x2 - x1, h / 4)
 
@@ -97,11 +95,3 @@ class AudioSlider(BaseAudioWidget):
         painter.drawLine(0, 0, 0, h - 1)
         painter.drawLine(w - 1, 0, w - 1, h - 1)
         painter.drawLine(0, h - 1, w - 1, h - 1)
-
-    def _pts_to_x(self, pts: int) -> float:
-        scale = T.cast(int, self.width()) / max(1, self._audio.size)
-        return (pts - self._audio.min) * scale
-
-    def _pts_from_x(self, x: float) -> int:
-        scale = self._audio.size / self.width()
-        return int(x * scale + self._audio.min)

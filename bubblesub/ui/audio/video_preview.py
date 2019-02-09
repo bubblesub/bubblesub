@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import bisect
 import queue
 import typing as T
 
@@ -24,7 +23,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.media.state import MediaState
 from bubblesub.cache import load_cache, save_cache
-from bubblesub.ui.audio.base import SLIDER_SIZE, BaseAudioWidget
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
 from bubblesub.util import sanitize_file_name
 
 NOT_CACHED = object()
@@ -118,7 +117,7 @@ class VideoBandWorker(QtCore.QObject):
             save_cache(self._cache_name, self.cache)
 
 
-class VideoPreview(BaseAudioWidget):
+class VideoPreview(BaseLocalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(SLIDER_SIZE * 3)
@@ -192,7 +191,7 @@ class VideoPreview(BaseAudioWidget):
         pixels = self._pixels.transpose(1, 0, 2)
         prev_column = np.zeros([pixels.shape[1], 3], dtype=np.uint8)
         for x in range(pixels.shape[0]):
-            frame_idx = self._frame_idx_from_x(x)
+            frame_idx = self.frame_idx_from_x(x)
             column = self._worker.cache.get(frame_idx, NOT_CACHED)
             if column is NOT_CACHED:
                 column = prev_column
@@ -211,13 +210,3 @@ class VideoPreview(BaseAudioWidget):
         painter.scale(1, painter.viewport().height() / (BAND_Y_RESOLUTION - 1))
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
-
-    def _frame_idx_from_pts(self, pts: int) -> int:
-        return bisect.bisect_left(self._api.media.video.timecodes, pts)
-
-    def _frame_idx_from_x(self, x: int) -> int:
-        scale = self._audio.view_size / self.width()
-        pts = int(x * scale + self._audio.view_start)
-        return max(
-            0, bisect.bisect_left(self._api.media.video.timecodes, pts) - 1
-        )

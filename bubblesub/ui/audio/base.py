@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import bisect
+import math
 import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -64,3 +66,29 @@ class BaseAudioWidget(QtWidgets.QWidget):
         distance = self._audio.view_size * 0.05
         distance *= 1 if delta < 0 else -1
         self._audio.move_view(int(distance))
+
+
+class BaseLocalAudioWidget(BaseAudioWidget):
+    def pts_to_x(self, pts: int) -> float:
+        scale = self.width() / max(1, self._audio.view_size)
+        return math.floor((pts - self._audio.view_start) * scale)
+
+    def pts_from_x(self, x: float) -> int:
+        scale = self._audio.view_size / self.width()
+        return int(x * scale + self._audio.view_start)
+
+    def frame_idx_from_x(self, x: int) -> int:
+        pts = self.pts_from_x(x)
+        return max(
+            0, bisect.bisect_left(self._api.media.video.timecodes, pts) - 1
+        )
+
+
+class BaseGlobalAudioWidget(BaseAudioWidget):
+    def pts_to_x(self, pts: int) -> float:
+        scale = T.cast(int, self.width()) / max(1, self._audio.size)
+        return (pts - self._audio.min) * scale
+
+    def pts_from_x(self, x: float) -> int:
+        scale = self._audio.size / self.width()
+        return int(x * scale + self._audio.min)
