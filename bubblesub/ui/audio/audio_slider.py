@@ -17,7 +17,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.ui.audio.base import SLIDER_SIZE, BaseGlobalAudioWidget
+from bubblesub.ui.audio.base import (
+    SLIDER_SIZE,
+    BaseGlobalAudioWidget,
+    DragMode,
+)
 
 
 class AudioSlider(BaseGlobalAudioWidget):
@@ -41,17 +45,7 @@ class AudioSlider(BaseGlobalAudioWidget):
         painter.end()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        self.setCursor(QtCore.Qt.SizeHorCursor)
-        self.mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, _event: QtGui.QMouseEvent) -> None:
-        self.setCursor(QtCore.Qt.ArrowCursor)
-
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        old_center = self._audio.view_start + self._audio.view_size / 2
-        new_center = self.pts_from_x(event.x())
-        distance = new_center - old_center
-        self._audio.move_view(int(distance))
+        self.begin_drag_mode(DragMode.AudioView, event)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
         if not self._api.media.current_pts:

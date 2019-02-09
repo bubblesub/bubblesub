@@ -20,12 +20,7 @@ import typing as T
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
-
-
-class DragMode(enum.Enum):
-    Off = 0
-    VideoPosition = 3
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 
 
 class AudioTimeline(BaseLocalAudioWidget):
@@ -34,7 +29,6 @@ class AudioTimeline(BaseLocalAudioWidget):
         self.setFixedHeight(SLIDER_SIZE)
 
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
-        self._drag_mode = DragMode.Off
 
         api.media.state_changed.connect(self.update)
         api.media.current_pts_changed.connect(self.update)
@@ -51,18 +45,7 @@ class AudioTimeline(BaseLocalAudioWidget):
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() in {QtCore.Qt.LeftButton, QtCore.Qt.MiddleButton}:
-            self._drag_mode = DragMode.VideoPosition
-            self.setCursor(QtCore.Qt.SizeHorCursor)
-            self.mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, _event: QtGui.QMouseEvent) -> None:
-        self._drag_mode = DragMode.Off
-        self.setCursor(QtCore.Qt.ArrowCursor)
-
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        pts = self.pts_from_x(event.x())
-        if self._drag_mode == DragMode.VideoPosition:
-            self._api.media.seek(pts)
+            self.begin_drag_mode(DragMode.VideoPosition, event)
 
     def _draw_frame(self, painter: QtGui.QPainter) -> None:
         painter.setPen(

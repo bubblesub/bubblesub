@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import enum
 import typing as T
 
 import ffms
@@ -23,7 +22,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.media.state import MediaState
-from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
+from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.util import blend_colors
 from bubblesub.util import chunks
 from bubblesub.worker import Worker
@@ -108,13 +107,6 @@ class SpectrumWorker(Worker):
         return out
 
 
-class DragMode(enum.Enum):
-    Off = 0
-    SelectionStart = 1
-    SelectionEnd = 2
-    VideoPosition = 3
-
-
 class AudioPreview(BaseLocalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
@@ -123,7 +115,6 @@ class AudioPreview(BaseLocalAudioWidget):
 
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
         self._need_repaint = False
-        self._drag_mode = DragMode.Off
         self._color_table: T.List[int] = []
         self._pixels: np.array = np.zeros([0, 0], dtype=np.uint8)
 
@@ -163,38 +154,11 @@ class AudioPreview(BaseLocalAudioWidget):
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() == QtCore.Qt.LeftButton:
-            self._drag_mode = DragMode.SelectionStart
-            self.setCursor(QtCore.Qt.SizeHorCursor)
-            self.mouseMoveEvent(event)
+            self.begin_drag_mode(DragMode.SelectionStart, event)
         elif event.button() == QtCore.Qt.RightButton:
-            self._drag_mode = DragMode.SelectionEnd
-            self.setCursor(QtCore.Qt.SizeHorCursor)
-            self.mouseMoveEvent(event)
+            self.begin_drag_mode(DragMode.SelectionEnd, event)
         elif event.button() == QtCore.Qt.MiddleButton:
-            self._drag_mode = DragMode.VideoPosition
-            self.setCursor(QtCore.Qt.SizeHorCursor)
-            self.mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, _event: QtGui.QMouseEvent) -> None:
-        self._drag_mode = DragMode.Off
-        self.setCursor(QtCore.Qt.ArrowCursor)
-
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        pts = self.pts_from_x(event.x())
-        if self._drag_mode == DragMode.SelectionStart:
-            if self._audio.has_selection:
-                self._audio.select(
-                    min(self._audio.selection_end, pts),
-                    self._audio.selection_end,
-                )
-        elif self._drag_mode == DragMode.SelectionEnd:
-            if self._audio.has_selection:
-                self._audio.select(
-                    self._audio.selection_start,
-                    max(self._audio.selection_start, pts),
-                )
-        elif self._drag_mode == DragMode.VideoPosition:
-            self._api.media.seek(pts)
+            self.begin_drag_mode(DragMode.VideoPosition, event)
 
     def _generate_color_table(self) -> None:
         self._color_table = [
