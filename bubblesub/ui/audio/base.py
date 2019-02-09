@@ -78,8 +78,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
             self._audio.move_view(int(distance))
 
     def mouseReleaseEvent(self, _event: QtGui.QMouseEvent) -> None:
-        self._drag_mode = DragMode.Off
-        self.setCursor(QtCore.Qt.ArrowCursor)
+        self.end_drag_mode()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.modifiers() & QtCore.Qt.ControlModifier:
@@ -95,6 +94,10 @@ class BaseAudioWidget(QtWidgets.QWidget):
         self._drag_mode = drag_mode
         self.setCursor(QtCore.Qt.SizeHorCursor)
         self.mouseMoveEvent(event)
+
+    def end_drag_mode(self) -> None:
+        self._drag_mode = DragMode.Off
+        self.setCursor(QtCore.Qt.ArrowCursor)
 
     def _zoomed(self, delta: int, mouse_x: int) -> None:
         if not self._audio.size:

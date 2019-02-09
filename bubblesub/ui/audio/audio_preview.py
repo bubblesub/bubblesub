@@ -159,6 +159,7 @@ class AudioPreview(BaseLocalAudioWidget):
             self.begin_drag_mode(DragMode.SelectionEnd, event)
         elif event.button() == QtCore.Qt.MiddleButton:
             self.begin_drag_mode(DragMode.VideoPosition, event)
+            self.end_drag_mode()
 
     def _generate_color_table(self) -> None:
         self._color_table = [

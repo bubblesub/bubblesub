@@ -44,8 +44,11 @@ class AudioTimeline(BaseLocalAudioWidget):
         painter.end()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        if event.button() in {QtCore.Qt.LeftButton, QtCore.Qt.MiddleButton}:
+        if event.button() == QtCore.Qt.LeftButton:
             self.begin_drag_mode(DragMode.VideoPosition, event)
+        elif event.button() == QtCore.Qt.MiddleButton:
+            self.begin_drag_mode(DragMode.VideoPosition, event)
+            self.end_drag_mode()
 
     def _draw_frame(self, painter: QtGui.QPainter) -> None:
         painter.setPen(
