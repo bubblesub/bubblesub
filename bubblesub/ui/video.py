@@ -14,12 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fractions
 from math import floor
 
 from PyQt5 import QtCore, QtWidgets
 
 from bubblesub.api import Api
+from bubblesub.api.media.media import (
+    MAX_PLAYBACK_SPEED,
+    MAX_VOLUME,
+    MIN_PLAYBACK_SPEED,
+    MIN_VOLUME,
+)
 from bubblesub.ui.mpv import MpvWidget
 
 
@@ -56,8 +61,8 @@ class _VideoButtons(QtWidgets.QWidget):
         )
 
         self._playback_speed_spinbox = QtWidgets.QDoubleSpinBox()
-        self._playback_speed_spinbox.setMinimum(0.1)
-        self._playback_speed_spinbox.setMaximum(10.0)
+        self._playback_speed_spinbox.setMinimum(float(MIN_PLAYBACK_SPEED))
+        self._playback_speed_spinbox.setMaximum(float(MAX_PLAYBACK_SPEED))
         self._playback_speed_spinbox.setSingleStep(0.1)
 
         layout = QtWidgets.QHBoxLayout(self)
@@ -112,9 +117,7 @@ class _VideoButtons(QtWidgets.QWidget):
         self._on_video_pause_change()
 
     def _on_playback_speed_spinbox_change(self) -> None:
-        self._api.media.playback_speed = fractions.Fraction(
-            self._playback_speed_spinbox.value()
-        )
+        self._api.media.playback_speed = self._playback_speed_spinbox.value()
         self._on_video_playback_speed_change()
 
     def _on_video_pause_change(self) -> None:
@@ -140,8 +143,8 @@ class _VideoVolumeControl(QtWidgets.QWidget):
         self._api = api
 
         self._volume_slider = QtWidgets.QSlider(self)
-        self._volume_slider.setMinimum(0)
-        self._volume_slider.setMaximum(200)
+        self._volume_slider.setMinimum(float(MIN_VOLUME))
+        self._volume_slider.setMaximum(float(MAX_VOLUME))
         self._volume_slider.setToolTip("Volume")
 
         self._mute_btn = QtWidgets.QPushButton(self)
@@ -179,9 +182,7 @@ class _VideoVolumeControl(QtWidgets.QWidget):
         self._mute_btn.clicked.disconnect(self._on_mute_checkbox_click)
 
     def _on_volume_slider_value_change(self) -> None:
-        self._api.media.volume = fractions.Fraction(
-            self._volume_slider.value()
-        )
+        self._api.media.volume = self._volume_slider.value()
 
     def _on_mute_checkbox_click(self) -> None:
         self._api.media.mute = self._mute_btn.isChecked()

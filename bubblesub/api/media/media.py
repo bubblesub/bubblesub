@@ -35,6 +35,11 @@ from bubblesub.ass.writer import write_ass
 from bubblesub.cfg import Config
 from bubblesub.util import ms_to_str
 
+MIN_PLAYBACK_SPEED = fractions.Fraction(0.1)
+MAX_PLAYBACK_SPEED = fractions.Fraction(10)
+MIN_VOLUME = fractions.Fraction(0)
+MAX_VOLUME = fractions.Fraction(200)
+
 
 class MediaApi(QtCore.QObject):
     """The media API."""
@@ -229,13 +234,20 @@ class MediaApi(QtCore.QObject):
         return self._playback_speed
 
     @playback_speed.setter
-    def playback_speed(self, value: fractions.Fraction) -> None:
+    def playback_speed(
+        self, value: T.Union[fractions.Fraction, int, float]
+    ) -> None:
         """
         Set new playback rate for the currently loaded video.
 
         :param value: new playback rate
         """
-        assert isinstance(value, fractions.Fraction)
+        if not isinstance(value, fractions.Fraction):
+            value = fractions.Fraction(value)
+        if value < MIN_PLAYBACK_SPEED:
+            value = MIN_PLAYBACK_SPEED
+        if value > MAX_PLAYBACK_SPEED:
+            value = MAX_PLAYBACK_SPEED
         self._playback_speed = value
         self._mpv.set_property("speed", float(self._playback_speed))
         self.playback_speed_changed.emit()
@@ -250,13 +262,18 @@ class MediaApi(QtCore.QObject):
         return self._volume
 
     @volume.setter
-    def volume(self, value: fractions.Fraction) -> None:
+    def volume(self, value: T.Union[fractions.Fraction, int, float]) -> None:
         """
         Set new volume for the currently loaded video.
 
         :param value: new volume
         """
-        assert isinstance(value, fractions.Fraction)
+        if not isinstance(value, fractions.Fraction):
+            value = fractions.Fraction(value)
+        if value < MIN_VOLUME:
+            value = MIN_VOLUME
+        if value > MAX_VOLUME:
+            value = MAX_VOLUME
         self._volume = value
         self._mpv.set_property("volume", float(self._volume))
         self.volume_changed.emit()
