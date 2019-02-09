@@ -123,8 +123,8 @@ class MainWindow(QtWidgets.QMainWindow):
             event.ignore()
         elif self._closing_state == ClosingState.Ready:
 
-            def on_close(result):
-                if result:
+            def on_close(task):
+                if task.result():
                     self._closing_state = ClosingState.Confirmed
                     self.close()
                 else:
