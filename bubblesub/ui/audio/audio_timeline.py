@@ -51,15 +51,7 @@ class AudioTimeline(BaseAudioWidget):
         painter.end()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        if event.button() == QtCore.Qt.LeftButton:
-            self._drag_mode = DragMode.SelectionStart
-            self.setCursor(QtCore.Qt.SizeHorCursor)
-            self.mouseMoveEvent(event)
-        elif event.button() == QtCore.Qt.RightButton:
-            self._drag_mode = DragMode.SelectionEnd
-            self.setCursor(QtCore.Qt.SizeHorCursor)
-            self.mouseMoveEvent(event)
-        elif event.button() == QtCore.Qt.MiddleButton:
+        if event.button() in {QtCore.Qt.LeftButton, QtCore.Qt.MiddleButton}:
             self._drag_mode = DragMode.VideoPosition
             self.setCursor(QtCore.Qt.SizeHorCursor)
             self.mouseMoveEvent(event)
@@ -70,19 +62,7 @@ class AudioTimeline(BaseAudioWidget):
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         pts = self._pts_from_x(event.x())
-        if self._drag_mode == DragMode.SelectionStart:
-            if self._audio.has_selection:
-                self._audio.select(
-                    min(self._audio.selection_end, pts),
-                    self._audio.selection_end,
-                )
-        elif self._drag_mode == DragMode.SelectionEnd:
-            if self._audio.has_selection:
-                self._audio.select(
-                    self._audio.selection_start,
-                    max(self._audio.selection_start, pts),
-                )
-        elif self._drag_mode == DragMode.VideoPosition:
+        if self._drag_mode == DragMode.VideoPosition:
             self._api.media.seek(pts)
 
     def _draw_frame(self, painter: QtGui.QPainter) -> None:
