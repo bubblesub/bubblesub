@@ -42,6 +42,7 @@ class VideoBandWorker(QtCore.QObject):
         self._running = False
         self._clearing = False
         self._anything_to_save = False
+        self._cache_name: T.Optional[str] = None
         self.cache: T.Dict[int, np.array] = {}
 
         api.media.state_changed.connect(self._on_media_state_change)
@@ -82,7 +83,11 @@ class VideoBandWorker(QtCore.QObject):
                 self.cache = {}
             self.cache_updated.emit()
             self._clear_queue()
+            self._cache_name = None
         elif state == MediaState.Loading:
+            self._cache_name = (
+                sanitize_file_name(self._api.media.path) + "-video-band"
+            )
             self._clear_queue()
             self._anything_to_save = False
             with _CACHE_LOCK:
@@ -105,13 +110,9 @@ class VideoBandWorker(QtCore.QObject):
             self._queue.task_done()
         self._clearing = False
 
-    @property
-    def _cache_name(self) -> T.Optional[str]:
-        if not self._api.media.path:
-            return None
-        return sanitize_file_name(self._api.media.path) + "-video-band"
-
     def _load_from_cache(self) -> T.Dict[int, np.array]:
+        if self._cache_name is None:
+            return {}
         cache = load_cache(self._cache_name) or {}
         cache = {
             key: value
