@@ -91,7 +91,7 @@ class Application:
         sys.excepthook = on_error
 
         console = Console(api, None)
-        self._app.aboutToQuit.connect(api.media.stop)
+        self._app.aboutToQuit.connect(api.media.shutdown)
 
         try:
             if self._splash:
@@ -104,10 +104,6 @@ class Application:
         if self._splash:
             self._splash.showMessage("Loading commands...")
         api.cmd.reload_commands()
-
-        if self._splash:
-            self._splash.showMessage("Starting media threads...")
-        api.media.start()
 
         if self._splash:
             self._splash.showMessage("Loading UI...")

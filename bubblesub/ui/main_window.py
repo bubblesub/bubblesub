@@ -46,14 +46,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self._api = api
         self._update_title()
 
-        api.gui.quit_requested.connect(self.close)
-        api.gui.quit_confirmed.connect(self._store_splitters)
-        api.gui.begin_update_requested.connect(
+        api.gui.request_quit.connect(self.close)
+        api.gui.request_begin_update.connect(
             lambda: self.setUpdatesEnabled(False)
         )
-        api.gui.end_update_requested.connect(
+        api.gui.request_end_update.connect(
             lambda: self.setUpdatesEnabled(True)
         )
+
+        api.gui.terminated.connect(self._store_splitters)
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._setup_menu)
 
@@ -114,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
         if self._closing_state == ClosingState.Confirmed:
-            self._api.gui.quit_confirmed.emit()
+            self._api.gui.terminated.emit()
             self.audio.shutdown()
             self.video.shutdown()
             event.accept()

@@ -50,5 +50,5 @@ class Api:
         self.gui = GuiApi(self)
         self.cmd = bubblesub.api.cmd.CommandApi(self)
 
-        self.gui.quit_confirmed.connect(self.media.unload)
-        self.gui.quit_confirmed.connect(self.cmd.unload)
+        self.gui.terminated.connect(self.media.unload)
+        self.gui.terminated.connect(self.cmd.unload)

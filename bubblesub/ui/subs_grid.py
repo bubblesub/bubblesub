@@ -145,7 +145,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self._subs_menu = QtWidgets.QMenu(self)
 
         api.cmd.commands_loaded.connect(self._rebuild_subs_menu)
-        api.gui.quit_confirmed.connect(self._store_grid_columns)
+        api.gui.terminated.connect(self._store_grid_columns)
         api.subs.loaded.connect(self._on_subs_load)
         api.subs.selection_changed.connect(self._sync_api_selection_to_video)
         api.subs.selection_changed.connect(self._sync_api_selection_to_grid)

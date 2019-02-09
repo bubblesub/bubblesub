@@ -129,16 +129,12 @@ class MediaApi(QtCore.QObject):
         self._timer.setInterval(cfg.opt["video"]["subs_sync_interval"])
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
-    def start(self) -> None:
-        """Start internal worker threads."""
-        self.audio.start()
-        self.video.start()
         self._timer.start()
 
-    def stop(self) -> None:
+    def shutdown(self) -> None:
         """Stop internal worker threads."""
-        self.audio.stop()
-        self.video.stop()
+        self.audio.shutdown()
+        self.video.shutdown()
         self._timer.stop()
 
     def unload(self) -> None:

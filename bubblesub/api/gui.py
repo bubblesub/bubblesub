@@ -31,10 +31,10 @@ from bubblesub.ui.util import SUBS_FILE_FILTER, save_dialog
 class GuiApi(QtCore.QObject):
     """The GUI API."""
 
-    quit_requested = QtCore.pyqtSignal()
-    quit_confirmed = QtCore.pyqtSignal()
-    begin_update_requested = QtCore.pyqtSignal()
-    end_update_requested = QtCore.pyqtSignal()
+    terminated = QtCore.pyqtSignal()
+    request_quit = QtCore.pyqtSignal()
+    request_begin_update = QtCore.pyqtSignal()
+    request_end_update = QtCore.pyqtSignal()
 
     def __init__(self, api: "bubblesub.api.Api") -> None:
         """
@@ -68,7 +68,7 @@ class GuiApi(QtCore.QObject):
 
     def quit(self) -> None:
         """Exit the application."""
-        self.quit_requested.emit()
+        self.request_quit.emit()
 
     async def confirm_unsaved_changes(self) -> bool:
         if not self._api.undo.needs_save:
@@ -126,8 +126,8 @@ class GuiApi(QtCore.QObject):
     @contextlib.contextmanager
     def throttle_updates(self) -> T.Any:
         """Throttle updates to GUI."""
-        self.begin_update_requested.emit()
+        self.request_begin_update.emit()
         try:
             yield
         finally:
-            self.end_update_requested.emit()
+            self.request_end_update.emit()

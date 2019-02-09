@@ -137,11 +137,9 @@ class AudioApi(QtCore.QObject):
 
         self._reset_view()
 
-    def start(self) -> None:
-        """Start internal worker threads."""
         self._audio_source_worker.start()
 
-    def stop(self) -> None:
+    def shutdown(self) -> None:
         """Stop internal worker threads."""
         self._audio_source_worker.stop()
 
