@@ -24,7 +24,7 @@ from bubblesub.api import Api
 from bubblesub.cfg.hotkeys import HotkeyContext
 from bubblesub.cfg.menu import MenuContext
 from bubblesub.ui.menu import setup_cmd_menu
-from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
+from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
 
 MAGIC_MARGIN = 2  # ????
 HIGHLIGHTABLE_CHUNKS = {"\N{FULLWIDTH ASTERISK}", "\\N", "\\h", "\\n"}
@@ -118,7 +118,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         super().__init__(parent)
         self._api = api
         self.setObjectName("subtitles-grid")
-        self.setModel(SubtitlesModel(self, api))
+        self.setModel(AssEventsModel(self, api))
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
         self.horizontalHeader().setSectionsMovable(True)
@@ -127,18 +127,18 @@ class SubtitlesGrid(QtWidgets.QTableView):
         )
 
         self._subs_grid_delegate = SubtitlesGridDelegate(self._api, self)
-        for col_idx in {SubtitlesModelColumn.Text, SubtitlesModelColumn.Note}:
+        for col_idx in {AssEventsModelColumn.Text, AssEventsModelColumn.Note}:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
                 col_idx, QtWidgets.QHeaderView.Stretch
             )
         for col_idx in {
-            SubtitlesModelColumn.LongDuration,
-            SubtitlesModelColumn.Layer,
-            SubtitlesModelColumn.MarginVertical,
-            SubtitlesModelColumn.MarginLeft,
-            SubtitlesModelColumn.MarginRight,
-            SubtitlesModelColumn.IsComment,
+            AssEventsModelColumn.LongDuration,
+            AssEventsModelColumn.Layer,
+            AssEventsModelColumn.MarginVertical,
+            AssEventsModelColumn.MarginLeft,
+            AssEventsModelColumn.MarginRight,
+            AssEventsModelColumn.IsComment,
         }:
             self.setColumnHidden(col_idx, True)
 
@@ -179,7 +179,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
     def _setup_header_menu(self) -> None:
         header = self.horizontalHeader()
         header.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        for column in SubtitlesModelColumn:
+        for column in AssEventsModelColumn:
             action = QtWidgets.QAction(
                 self,
                 text=self.model().headerData(column, QtCore.Qt.Horizontal),
@@ -193,7 +193,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
             header.addAction(action)
 
     def toggle_column(self, action: QtWidgets.QAction) -> None:
-        column: SubtitlesModelColumn = action.data()
+        column: AssEventsModelColumn = action.data()
         self.horizontalHeader().setSectionHidden(
             column.value, not action.isChecked()
         )
@@ -204,7 +204,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         if data:
             header.restoreState(data)
         for action in header.actions():
-            column: SubtitlesModelColumn = action.data()
+            column: AssEventsModelColumn = action.data()
             action.setChecked(not header.isSectionHidden(column.value))
 
     def keyboardSearch(self, _text: str) -> None:

@@ -33,7 +33,7 @@ def _deserialize_color(color: QtGui.QColor) -> AssColor:
     )
 
 
-class StylesModelColumn(enum.IntEnum):
+class AssStylesModelColumn(enum.IntEnum):
     Name = 0
     FontName = 1
     FontSize = 2
@@ -76,73 +76,77 @@ def _setattr_proxy(
 
 
 _READER_MAP = {
-    StylesModelColumn.Name: _getattr_proxy("name", str),
-    StylesModelColumn.FontName: _getattr_proxy("font_name", str),
-    StylesModelColumn.FontSize: _getattr_proxy("font_size", int),
-    StylesModelColumn.Bold: _getattr_proxy("bold", bool),
-    StylesModelColumn.Italic: _getattr_proxy("italic", bool),
-    StylesModelColumn.Underline: _getattr_proxy("underline", bool),
-    StylesModelColumn.StrikeOut: _getattr_proxy("strike_out", bool),
-    StylesModelColumn.ShadowWidth: _getattr_proxy("shadow", float),
-    StylesModelColumn.OutlineWidth: _getattr_proxy("outline", float),
-    StylesModelColumn.ScaleX: _getattr_proxy("scale_x", float),
-    StylesModelColumn.ScaleY: _getattr_proxy("scale_y", float),
-    StylesModelColumn.Angle: _getattr_proxy("angle", float),
-    StylesModelColumn.Spacing: _getattr_proxy("spacing", float),
-    StylesModelColumn.Alignment: _getattr_proxy("alignment", int),
-    StylesModelColumn.MarginLeft: _getattr_proxy("margin_left", int),
-    StylesModelColumn.MarginRight: _getattr_proxy("margin_right", int),
-    StylesModelColumn.MarginVertical: _getattr_proxy("margin_vertical", int),
-    StylesModelColumn.PrimaryColor: _getattr_proxy(
+    AssStylesModelColumn.Name: _getattr_proxy("name", str),
+    AssStylesModelColumn.FontName: _getattr_proxy("font_name", str),
+    AssStylesModelColumn.FontSize: _getattr_proxy("font_size", int),
+    AssStylesModelColumn.Bold: _getattr_proxy("bold", bool),
+    AssStylesModelColumn.Italic: _getattr_proxy("italic", bool),
+    AssStylesModelColumn.Underline: _getattr_proxy("underline", bool),
+    AssStylesModelColumn.StrikeOut: _getattr_proxy("strike_out", bool),
+    AssStylesModelColumn.ShadowWidth: _getattr_proxy("shadow", float),
+    AssStylesModelColumn.OutlineWidth: _getattr_proxy("outline", float),
+    AssStylesModelColumn.ScaleX: _getattr_proxy("scale_x", float),
+    AssStylesModelColumn.ScaleY: _getattr_proxy("scale_y", float),
+    AssStylesModelColumn.Angle: _getattr_proxy("angle", float),
+    AssStylesModelColumn.Spacing: _getattr_proxy("spacing", float),
+    AssStylesModelColumn.Alignment: _getattr_proxy("alignment", int),
+    AssStylesModelColumn.MarginLeft: _getattr_proxy("margin_left", int),
+    AssStylesModelColumn.MarginRight: _getattr_proxy("margin_right", int),
+    AssStylesModelColumn.MarginVertical: _getattr_proxy(
+        "margin_vertical", int
+    ),
+    AssStylesModelColumn.PrimaryColor: _getattr_proxy(
         "primary_color", _serialize_color
     ),
-    StylesModelColumn.SecondaryColor: _getattr_proxy(
+    AssStylesModelColumn.SecondaryColor: _getattr_proxy(
         "secondary_color", _serialize_color
     ),
-    StylesModelColumn.BackColor: _getattr_proxy(
+    AssStylesModelColumn.BackColor: _getattr_proxy(
         "back_color", _serialize_color
     ),
-    StylesModelColumn.OutlineColor: _getattr_proxy(
+    AssStylesModelColumn.OutlineColor: _getattr_proxy(
         "outline_color", _serialize_color
     ),
 }
 
 _WRITER_MAP = {
-    StylesModelColumn.Name: _setattr_proxy("name", str),
-    StylesModelColumn.FontName: _setattr_proxy("font_name", str),
-    StylesModelColumn.FontSize: _setattr_proxy("font_size", int),
-    StylesModelColumn.Bold: _setattr_proxy("bold", bool),
-    StylesModelColumn.Italic: _setattr_proxy("italic", bool),
-    StylesModelColumn.Underline: _setattr_proxy("underline", bool),
-    StylesModelColumn.StrikeOut: _setattr_proxy("strike_out", bool),
-    StylesModelColumn.ShadowWidth: _setattr_proxy("shadow", float),
-    StylesModelColumn.OutlineWidth: _setattr_proxy("outline", float),
-    StylesModelColumn.ScaleX: _setattr_proxy("scale_x", float),
-    StylesModelColumn.ScaleY: _setattr_proxy("scale_y", float),
-    StylesModelColumn.Angle: _setattr_proxy("angle", float),
-    StylesModelColumn.Spacing: _setattr_proxy("spacing", float),
-    StylesModelColumn.Alignment: _setattr_proxy("alignment", int),
-    StylesModelColumn.MarginLeft: _setattr_proxy("margin_left", int),
-    StylesModelColumn.MarginRight: _setattr_proxy("margin_right", int),
-    StylesModelColumn.MarginVertical: _setattr_proxy("margin_vertical", int),
-    StylesModelColumn.PrimaryColor: _setattr_proxy(
+    AssStylesModelColumn.Name: _setattr_proxy("name", str),
+    AssStylesModelColumn.FontName: _setattr_proxy("font_name", str),
+    AssStylesModelColumn.FontSize: _setattr_proxy("font_size", int),
+    AssStylesModelColumn.Bold: _setattr_proxy("bold", bool),
+    AssStylesModelColumn.Italic: _setattr_proxy("italic", bool),
+    AssStylesModelColumn.Underline: _setattr_proxy("underline", bool),
+    AssStylesModelColumn.StrikeOut: _setattr_proxy("strike_out", bool),
+    AssStylesModelColumn.ShadowWidth: _setattr_proxy("shadow", float),
+    AssStylesModelColumn.OutlineWidth: _setattr_proxy("outline", float),
+    AssStylesModelColumn.ScaleX: _setattr_proxy("scale_x", float),
+    AssStylesModelColumn.ScaleY: _setattr_proxy("scale_y", float),
+    AssStylesModelColumn.Angle: _setattr_proxy("angle", float),
+    AssStylesModelColumn.Spacing: _setattr_proxy("spacing", float),
+    AssStylesModelColumn.Alignment: _setattr_proxy("alignment", int),
+    AssStylesModelColumn.MarginLeft: _setattr_proxy("margin_left", int),
+    AssStylesModelColumn.MarginRight: _setattr_proxy("margin_right", int),
+    AssStylesModelColumn.MarginVertical: _setattr_proxy(
+        "margin_vertical", int
+    ),
+    AssStylesModelColumn.PrimaryColor: _setattr_proxy(
         "primary_color", _deserialize_color
     ),
-    StylesModelColumn.SecondaryColor: _setattr_proxy(
+    AssStylesModelColumn.SecondaryColor: _setattr_proxy(
         "secondary_color", _deserialize_color
     ),
-    StylesModelColumn.BackColor: _setattr_proxy(
+    AssStylesModelColumn.BackColor: _setattr_proxy(
         "back_color", _deserialize_color
     ),
-    StylesModelColumn.OutlineColor: _setattr_proxy(
+    AssStylesModelColumn.OutlineColor: _setattr_proxy(
         "outline_color", _deserialize_color
     ),
 }
 
 
-class StylesModel(ObservableListTableAdapter):
+class AssStylesModel(ObservableListTableAdapter):
     def flags(self, index: QtCore.QModelIndex) -> int:
-        if index.column() == StylesModelColumn.Name:
+        if index.column() == AssStylesModelColumn.Name:
             return T.cast(
                 int, QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
             )
@@ -155,12 +159,12 @@ class StylesModel(ObservableListTableAdapter):
 
     @property
     def _column_count(self) -> int:
-        return len(StylesModelColumn)
+        return len(AssStylesModelColumn)
 
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
         if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
             style = self._list[row_idx]
-            return _READER_MAP[StylesModelColumn(col_idx)](style)
+            return _READER_MAP[AssStylesModelColumn(col_idx)](style)
         return QtCore.QVariant()
 
     def _set_data(
@@ -168,7 +172,7 @@ class StylesModel(ObservableListTableAdapter):
     ) -> bool:
         style = self._list[row_idx]
         try:
-            writer = _WRITER_MAP[StylesModelColumn(col_idx)]
+            writer = _WRITER_MAP[AssStylesModelColumn(col_idx)]
         except KeyError:
             return False
         writer(style, new_value)

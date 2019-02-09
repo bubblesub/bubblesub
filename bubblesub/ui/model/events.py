@@ -28,7 +28,7 @@ from bubblesub.ui.util import blend_colors
 from bubblesub.util import ms_to_str, str_to_ms
 
 
-class SubtitlesModelColumn(enum.IntEnum):
+class AssEventsModelColumn(enum.IntEnum):
     """Column indices in subtitles grid."""
 
     Start = 0
@@ -48,15 +48,15 @@ class SubtitlesModelColumn(enum.IntEnum):
 
 
 @dataclass
-class SubtitlesModelOptions:
+class AssEventsModelOptions:
     convert_newlines: bool = False
     editable: bool = False
 
 
 def _getattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[AssEvent, SubtitlesModelOptions], T.Any]:
-    def func(subtitle: AssEvent, _options: SubtitlesModelOptions) -> T.Any:
+) -> T.Callable[[AssEvent, AssEventsModelOptions], T.Any]:
+    def func(subtitle: AssEvent, _options: AssEventsModelOptions) -> T.Any:
         return wrapper(getattr(subtitle, prop_name))
 
     return func
@@ -64,9 +64,9 @@ def _getattr_proxy(
 
 def _setattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[AssEvent, SubtitlesModelOptions, T.Any], None]:
+) -> T.Callable[[AssEvent, AssEventsModelOptions, T.Any], None]:
     def func(
-        subtitle: AssEvent, _options: SubtitlesModelOptions, value: T.Any
+        subtitle: AssEvent, _options: AssEventsModelOptions, value: T.Any
     ) -> None:
         setattr(subtitle, prop_name, wrapper(value))
 
@@ -74,7 +74,7 @@ def _setattr_proxy(
 
 
 def _serialize_text(
-    subtitle: AssEvent, options: SubtitlesModelOptions
+    subtitle: AssEvent, options: AssEventsModelOptions
 ) -> T.Any:
     if options.convert_newlines:
         return subtitle.text.replace("\\N", "\n")
@@ -82,7 +82,7 @@ def _serialize_text(
 
 
 def _serialize_note(
-    subtitle: AssEvent, options: SubtitlesModelOptions
+    subtitle: AssEvent, options: AssEventsModelOptions
 ) -> T.Any:
     if options.convert_newlines:
         return subtitle.note.replace("\\N", "\n")
@@ -90,7 +90,7 @@ def _serialize_note(
 
 
 def _serialize_cps(
-    subtitle: AssEvent, _options: SubtitlesModelOptions
+    subtitle: AssEvent, _options: AssEventsModelOptions
 ) -> T.Any:
     return (
         "{:.1f}".format(
@@ -102,77 +102,77 @@ def _serialize_cps(
 
 
 def _serialize_short_duration(
-    subtitle: AssEvent, _options: SubtitlesModelOptions
+    subtitle: AssEvent, _options: AssEventsModelOptions
 ) -> T.Any:
     return f"{subtitle.duration / 1000.0:.1f}"
 
 
 def _deserialize_long_duration(
-    subtitle: AssEvent, _options: SubtitlesModelOptions, value: str
+    subtitle: AssEvent, _options: AssEventsModelOptions, value: str
 ) -> T.Any:
     subtitle.end = subtitle.start + str_to_ms(value)
 
 
 _HEADERS = {
-    SubtitlesModelColumn.Start: "Start",
-    SubtitlesModelColumn.End: "End",
-    SubtitlesModelColumn.AssStyle: "Style",
-    SubtitlesModelColumn.Actor: "Actor",
-    SubtitlesModelColumn.Text: "Text",
-    SubtitlesModelColumn.Note: "Note",
-    SubtitlesModelColumn.ShortDuration: "Duration",
-    SubtitlesModelColumn.LongDuration: "Duration (long)",
-    SubtitlesModelColumn.CharsPerSec: "CPS",
-    SubtitlesModelColumn.Layer: "Layer",
-    SubtitlesModelColumn.MarginVertical: "Vertical margin",
-    SubtitlesModelColumn.MarginLeft: "Left margin",
-    SubtitlesModelColumn.MarginRight: "Right margin",
-    SubtitlesModelColumn.IsComment: "Is comment?",
+    AssEventsModelColumn.Start: "Start",
+    AssEventsModelColumn.End: "End",
+    AssEventsModelColumn.AssStyle: "Style",
+    AssEventsModelColumn.Actor: "Actor",
+    AssEventsModelColumn.Text: "Text",
+    AssEventsModelColumn.Note: "Note",
+    AssEventsModelColumn.ShortDuration: "Duration",
+    AssEventsModelColumn.LongDuration: "Duration (long)",
+    AssEventsModelColumn.CharsPerSec: "CPS",
+    AssEventsModelColumn.Layer: "Layer",
+    AssEventsModelColumn.MarginVertical: "Vertical margin",
+    AssEventsModelColumn.MarginLeft: "Left margin",
+    AssEventsModelColumn.MarginRight: "Right margin",
+    AssEventsModelColumn.IsComment: "Is comment?",
 }
 
 _READER_MAP = {
-    SubtitlesModelColumn.Start: _getattr_proxy("start", ms_to_str),
-    SubtitlesModelColumn.End: _getattr_proxy("end", ms_to_str),
-    SubtitlesModelColumn.AssStyle: _getattr_proxy("style", str),
-    SubtitlesModelColumn.Actor: _getattr_proxy("actor", str),
-    SubtitlesModelColumn.Text: _serialize_text,
-    SubtitlesModelColumn.Note: _serialize_note,
-    SubtitlesModelColumn.ShortDuration: _serialize_short_duration,
-    SubtitlesModelColumn.LongDuration: _getattr_proxy("duration", ms_to_str),
-    SubtitlesModelColumn.CharsPerSec: _serialize_cps,
-    SubtitlesModelColumn.Layer: _getattr_proxy("layer", int),
-    SubtitlesModelColumn.MarginLeft: _getattr_proxy("margin_left", int),
-    SubtitlesModelColumn.MarginRight: _getattr_proxy("margin_right", int),
-    SubtitlesModelColumn.MarginVertical: _getattr_proxy(
+    AssEventsModelColumn.Start: _getattr_proxy("start", ms_to_str),
+    AssEventsModelColumn.End: _getattr_proxy("end", ms_to_str),
+    AssEventsModelColumn.AssStyle: _getattr_proxy("style", str),
+    AssEventsModelColumn.Actor: _getattr_proxy("actor", str),
+    AssEventsModelColumn.Text: _serialize_text,
+    AssEventsModelColumn.Note: _serialize_note,
+    AssEventsModelColumn.ShortDuration: _serialize_short_duration,
+    AssEventsModelColumn.LongDuration: _getattr_proxy("duration", ms_to_str),
+    AssEventsModelColumn.CharsPerSec: _serialize_cps,
+    AssEventsModelColumn.Layer: _getattr_proxy("layer", int),
+    AssEventsModelColumn.MarginLeft: _getattr_proxy("margin_left", int),
+    AssEventsModelColumn.MarginRight: _getattr_proxy("margin_right", int),
+    AssEventsModelColumn.MarginVertical: _getattr_proxy(
         "margin_vertical", int
     ),
-    SubtitlesModelColumn.IsComment: _getattr_proxy("is_comment", bool),
+    AssEventsModelColumn.IsComment: _getattr_proxy("is_comment", bool),
 }
 
 _WRITER_MAP = {
-    SubtitlesModelColumn.Start: _setattr_proxy("start", str_to_ms),
-    SubtitlesModelColumn.End: _setattr_proxy("end", str_to_ms),
-    SubtitlesModelColumn.AssStyle: _setattr_proxy("style", str),
-    SubtitlesModelColumn.Actor: _setattr_proxy("actor", str),
-    SubtitlesModelColumn.Text: _setattr_proxy("text", str),
-    SubtitlesModelColumn.Note: _setattr_proxy("note", str),
-    SubtitlesModelColumn.LongDuration: _deserialize_long_duration,
-    SubtitlesModelColumn.Layer: _setattr_proxy("layer", int),
-    SubtitlesModelColumn.MarginLeft: _setattr_proxy("margin_left", int),
-    SubtitlesModelColumn.MarginRight: _setattr_proxy("margin_right", int),
-    SubtitlesModelColumn.MarginVertical: _setattr_proxy(
+    AssEventsModelColumn.Start: _setattr_proxy("start", str_to_ms),
+    AssEventsModelColumn.End: _setattr_proxy("end", str_to_ms),
+    AssEventsModelColumn.AssStyle: _setattr_proxy("style", str),
+    AssEventsModelColumn.Actor: _setattr_proxy("actor", str),
+    AssEventsModelColumn.Text: _setattr_proxy("text", str),
+    AssEventsModelColumn.Note: _setattr_proxy("note", str),
+    AssEventsModelColumn.LongDuration: _deserialize_long_duration,
+    AssEventsModelColumn.Layer: _setattr_proxy("layer", int),
+    AssEventsModelColumn.MarginLeft: _setattr_proxy("margin_left", int),
+    AssEventsModelColumn.MarginRight: _setattr_proxy("margin_right", int),
+    AssEventsModelColumn.MarginVertical: _setattr_proxy(
         "margin_vertical", int
     ),
-    SubtitlesModelColumn.IsComment: _setattr_proxy("is_comment", bool),
+    AssEventsModelColumn.IsComment: _setattr_proxy("is_comment", bool),
 }
 
 
-class SubtitlesModel(ObservableListTableAdapter):
+class AssEventsModel(ObservableListTableAdapter):
     def __init__(
         self, parent: QtCore.QObject, api: Api, **kwargs: T.Any
     ) -> None:
         super().__init__(parent, api.subs.events)
-        self._options = SubtitlesModelOptions(**kwargs)
+        self._options = AssEventsModelOptions(**kwargs)
         self._api = api
 
     def headerData(
@@ -186,11 +186,11 @@ class SubtitlesModel(ObservableListTableAdapter):
 
         if orientation == QtCore.Qt.Horizontal:
             if role == QtCore.Qt.DisplayRole:
-                return _HEADERS[SubtitlesModelColumn(idx)]
+                return _HEADERS[AssEventsModelColumn(idx)]
             if role == QtCore.Qt.TextAlignmentRole:
                 if idx in {
-                    SubtitlesModelColumn.Text,
-                    SubtitlesModelColumn.Note,
+                    AssEventsModelColumn.Text,
+                    AssEventsModelColumn.Note,
                 }:
                     return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
                 return QtCore.Qt.AlignCenter
@@ -206,7 +206,7 @@ class SubtitlesModel(ObservableListTableAdapter):
 
     @property
     def _column_count(self) -> int:
-        return len(SubtitlesModelColumn)
+        return len(AssEventsModelColumn)
 
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
         subtitle = self._list[row_idx]
@@ -214,19 +214,19 @@ class SubtitlesModel(ObservableListTableAdapter):
         if role == QtCore.Qt.BackgroundRole:
             if subtitle.is_comment:
                 return self._api.gui.get_color("grid/comment")
-            if col_idx == SubtitlesModelColumn.CharsPerSec:
+            if col_idx == AssEventsModelColumn.CharsPerSec:
                 return self._get_background_cps(subtitle)
 
         if role == QtCore.Qt.TextAlignmentRole:
             if col_idx in {
-                SubtitlesModelColumn.Text,
-                SubtitlesModelColumn.Note,
+                AssEventsModelColumn.Text,
+                AssEventsModelColumn.Note,
             }:
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
 
         if role in {QtCore.Qt.DisplayRole, QtCore.Qt.EditRole}:
-            reader = _READER_MAP[SubtitlesModelColumn(col_idx)]
+            reader = _READER_MAP[AssEventsModelColumn(col_idx)]
             return reader(subtitle, self._options)
 
         return QtCore.QVariant()
@@ -236,7 +236,7 @@ class SubtitlesModel(ObservableListTableAdapter):
     ) -> bool:
         subtitle = self._list[row_idx]
         try:
-            writer = _WRITER_MAP[SubtitlesModelColumn(col_idx)]
+            writer = _WRITER_MAP[AssEventsModelColumn(col_idx)]
         except KeyError:
             return False
         writer(subtitle, self._options, new_value)

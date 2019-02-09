@@ -22,7 +22,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.ass.util import spell_check_ass_line
-from bubblesub.ui.model.subs import SubtitlesModel, SubtitlesModelColumn
+from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
 from bubblesub.ui.util import (
     ImmediateDataWidgetMapper,
     TimeEdit,
@@ -185,7 +185,7 @@ class Editor(QtWidgets.QWidget):
         self.setEnabled(False)
 
         self._data_widget_mapper = ImmediateDataWidgetMapper(
-            model=SubtitlesModel(
+            model=AssEventsModel(
                 self,
                 api,
                 convert_newlines=self._api.cfg.opt["gui"]["convert_newlines"],
@@ -194,18 +194,18 @@ class Editor(QtWidgets.QWidget):
             submit_wrapper=self._submit_wrapper,
         )
         for column, widget in {
-            (SubtitlesModelColumn.Start, self.start_time_edit),
-            (SubtitlesModelColumn.End, self.end_time_edit),
-            (SubtitlesModelColumn.LongDuration, self.duration_edit),
-            (SubtitlesModelColumn.Layer, self.layer_edit),
-            (SubtitlesModelColumn.Actor, self.actor_edit),
-            (SubtitlesModelColumn.AssStyle, self.style_edit),
-            (SubtitlesModelColumn.MarginVertical, self.margin_v_edit),
-            (SubtitlesModelColumn.MarginLeft, self.margin_l_edit),
-            (SubtitlesModelColumn.MarginRight, self.margin_r_edit),
-            (SubtitlesModelColumn.IsComment, self.comment_checkbox),
-            (SubtitlesModelColumn.Text, self.text_edit),
-            (SubtitlesModelColumn.Note, self.note_edit),
+            (AssEventsModelColumn.Start, self.start_time_edit),
+            (AssEventsModelColumn.End, self.end_time_edit),
+            (AssEventsModelColumn.LongDuration, self.duration_edit),
+            (AssEventsModelColumn.Layer, self.layer_edit),
+            (AssEventsModelColumn.Actor, self.actor_edit),
+            (AssEventsModelColumn.AssStyle, self.style_edit),
+            (AssEventsModelColumn.MarginVertical, self.margin_v_edit),
+            (AssEventsModelColumn.MarginLeft, self.margin_l_edit),
+            (AssEventsModelColumn.MarginRight, self.margin_r_edit),
+            (AssEventsModelColumn.IsComment, self.comment_checkbox),
+            (AssEventsModelColumn.Text, self.text_edit),
+            (AssEventsModelColumn.Note, self.note_edit),
         }:
             self._data_widget_mapper.add_mapping(widget, column)
 
