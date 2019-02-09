@@ -157,7 +157,7 @@ class VideoPreview(BaseLocalAudioWidget):
 
         painter.begin(self)
         self._draw_video_band(painter)
-        self._draw_frame(painter)
+        self._draw_frame(painter, bottom_line=False)
         painter.end()
 
         self._need_repaint = False
@@ -174,18 +174,6 @@ class VideoPreview(BaseLocalAudioWidget):
 
     def _on_video_band_update(self) -> None:
         self._need_repaint = True
-
-    def _draw_frame(self, painter: QtGui.QPainter) -> None:
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        )
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.drawRect(
-            0,
-            0,
-            painter.viewport().width() - 1,
-            painter.viewport().height() - 1,
-        )
 
     def _draw_video_band(self, painter: QtGui.QPainter) -> None:
         pixels = self._pixels.transpose(1, 0, 2)

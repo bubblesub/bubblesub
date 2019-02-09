@@ -144,7 +144,7 @@ class AudioPreview(BaseLocalAudioWidget):
         self._draw_spectrogram(painter)
         self._draw_subtitle_rects(painter)
         self._draw_selection(painter)
-        self._draw_frame(painter)
+        self._draw_frame(painter, bottom_line=False)
         self._draw_keyframes(painter)
         self._draw_video_pos(painter)
 
@@ -239,18 +239,6 @@ class AudioPreview(BaseLocalAudioWidget):
         for pts, column in response:
             self._spectrum_cache[pts] = column
         self._need_repaint = True
-
-    def _draw_frame(self, painter: QtGui.QPainter) -> None:
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        )
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.drawRect(
-            0,
-            0,
-            painter.viewport().width() - 1,
-            painter.viewport().height() - 1,
-        )
 
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
         horizontal_res = self._api.cfg.opt["audio"]["spectrogram_resolution"]

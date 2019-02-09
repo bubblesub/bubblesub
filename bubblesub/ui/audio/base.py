@@ -116,6 +116,18 @@ class BaseAudioWidget(QtWidgets.QWidget):
         distance *= 1 if delta < 0 else -1
         self._audio.move_view(int(distance))
 
+    def _draw_frame(self, painter: QtGui.QPainter, bottom_line: bool) -> None:
+        painter.setPen(
+            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
+        )
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.drawRect(
+            0,
+            0,
+            painter.viewport().width() - 1,
+            painter.viewport().height() - (1 if bottom_line else 0),
+        )
+
     def pts_to_x(self, pts: int) -> float:
         raise NotImplementedError("not implemented")
 

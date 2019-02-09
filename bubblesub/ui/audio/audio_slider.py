@@ -41,7 +41,7 @@ class AudioSlider(BaseGlobalAudioWidget):
         self._draw_subtitle_rects(painter)
         self._draw_slider(painter)
         self._draw_video_pos(painter)
-        self._draw_frame(painter)
+        self._draw_frame(painter, bottom_line=True)
         painter.end()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
@@ -84,12 +84,3 @@ class AudioSlider(BaseGlobalAudioWidget):
         x2 = self.pts_to_x(self._audio.view_end)
         painter.drawRect(x1, 0, x2 - x1, h / 4)
         painter.drawRect(x1, h - 1 - h / 4, x2 - x1, h / 4)
-
-    def _draw_frame(self, painter: QtGui.QPainter) -> None:
-        w, h = self.width(), self.height()
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        )
-        painter.drawLine(0, 0, 0, h - 1)
-        painter.drawLine(w - 1, 0, w - 1, h - 1)
-        painter.drawLine(0, h - 1, w - 1, h - 1)

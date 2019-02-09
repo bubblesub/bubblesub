@@ -38,7 +38,7 @@ class AudioTimeline(BaseLocalAudioWidget):
         painter = QtGui.QPainter()
         painter.begin(self)
         self._draw_scale(painter)
-        self._draw_frame(painter)
+        self._draw_frame(painter, bottom_line=False)
         self._draw_keyframes(painter)
         self._draw_video_pos(painter)
         painter.end()
@@ -49,15 +49,6 @@ class AudioTimeline(BaseLocalAudioWidget):
         elif event.button() == QtCore.Qt.MiddleButton:
             self.begin_drag_mode(DragMode.VideoPosition, event)
             self.end_drag_mode()
-
-    def _draw_frame(self, painter: QtGui.QPainter) -> None:
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        )
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.drawRect(
-            0, 0, painter.viewport().width(), painter.viewport().height()
-        )
 
     def _draw_scale(self, painter: QtGui.QPainter) -> None:
         h = painter.viewport().height()
