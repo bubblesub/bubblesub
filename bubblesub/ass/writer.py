@@ -19,9 +19,9 @@
 import typing as T
 from collections import OrderedDict
 
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.ass.file import AssFile
-from bubblesub.ass.style import Color, Style
+from bubblesub.ass.style import AssColor, AssStyle
 from bubblesub.ass.util import escape_ass_tag
 from bubblesub.util import ms_to_times
 
@@ -32,7 +32,7 @@ def _escape(text: str) -> str:
     return text.replace(",", ";")
 
 
-def _serialize_color(col: Color) -> str:
+def _serialize_color(col: AssColor) -> str:
     return f"&H{col.alpha:02X}{col.blue:02X}{col.green:02X}{col.red:02X}"
 
 
@@ -41,12 +41,12 @@ def _ms_to_timestamp(milliseconds: int) -> str:
     return f"{hours:01d}:{minutes:02d}:{seconds:02d}.{milliseconds // 10:02d}"
 
 
-def _write_info(ass_file: AssFile, handle: T.IO[str]) -> None:
-    info: T.Dict[str, str] = OrderedDict()
-    info["ScriptType"] = "sentinel"  # make sure script type is the first entry
-    info.update(ass_file.info.items())
-    info["ScriptType"] = "v4.00+"
-    for key, value in info.items():
+def _write_meta(ass_file: AssFile, handle: T.IO[str]) -> None:
+    meta: T.Dict[str, str] = OrderedDict()
+    meta["ScriptType"] = "sentinel"  # make sure script type is the first entry
+    meta.update(ass_file.meta.items())
+    meta["ScriptType"] = "v4.00+"
+    for key, value in meta.items():
         print(key, value, sep=": ", file=handle)
 
 
@@ -64,7 +64,7 @@ def _write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
         _write_style(style, handle)
 
 
-def _write_style(style: Style, handle: T.IO[str]) -> None:
+def _write_style(style: AssStyle, handle: T.IO[str]) -> None:
     print(
         "Style: "
         + ",".join(
@@ -109,7 +109,7 @@ def _write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
         _write_event(event, handle)
 
 
-def _write_event(event: Event, handle: T.IO[str]) -> None:
+def _write_event(event: AssEvent, handle: T.IO[str]) -> None:
     text = event.text
 
     if event.start is not None and event.end is not None:
@@ -151,6 +151,6 @@ def write_ass(ass_file: AssFile, handle: T.IO[str]) -> None:
     for line in NOTICE.splitlines(False):
         print(";", line, file=handle)
 
-    _write_info(ass_file, handle)
+    _write_meta(ass_file, handle)
     _write_styles(ass_file, handle)
     _write_events(ass_file, handle)

@@ -22,7 +22,7 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
 from bubblesub.util import make_ranges
 
@@ -53,7 +53,7 @@ class SubtitlesMoveCommand(BaseCommand):
 
             self.api.subs.selected_indexes = [sub.index for sub in sub_copies]
 
-    def _move_above(self, indexes: T.List[int]) -> T.Iterable[Event]:
+    def _move_above(self, indexes: T.List[int]) -> T.Iterable[AssEvent]:
         if indexes[0] == 0:
             raise CommandUnavailable("cannot move further up")
         for idx, count in make_ranges(indexes):
@@ -62,7 +62,7 @@ class SubtitlesMoveCommand(BaseCommand):
             self.api.subs.events.remove(idx + count, count)
             yield from chunk
 
-    def _move_below(self, indexes: T.List[int]) -> T.Iterable[Event]:
+    def _move_below(self, indexes: T.List[int]) -> T.Iterable[AssEvent]:
         if indexes[-1] + 1 == len(self.api.subs.events):
             raise CommandUnavailable("cannot move further down")
         for idx, count in make_ranges(indexes, reverse=True):
@@ -73,8 +73,8 @@ class SubtitlesMoveCommand(BaseCommand):
 
     def _move_to(
         self, indexes: T.List[int], base_idx: int
-    ) -> T.Iterable[Event]:
-        sub_copies: T.List[Event] = []
+    ) -> T.Iterable[AssEvent]:
+        sub_copies: T.List[AssEvent] = []
 
         for idx, count in make_ranges(indexes, reverse=True):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]

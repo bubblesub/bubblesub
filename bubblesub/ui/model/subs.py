@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from PyQt5 import QtCore, QtGui
 
 from bubblesub.api import Api
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.ass.util import character_count
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 from bubblesub.ui.util import blend_colors
@@ -33,7 +33,7 @@ class SubtitlesModelColumn(enum.IntEnum):
 
     Start = 0
     End = 1
-    Style = 2
+    AssStyle = 2
     Actor = 3
     Text = 4
     Note = 5
@@ -55,8 +55,8 @@ class SubtitlesModelOptions:
 
 def _getattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[Event, SubtitlesModelOptions], T.Any]:
-    def func(subtitle: Event, _options: SubtitlesModelOptions) -> T.Any:
+) -> T.Callable[[AssEvent, SubtitlesModelOptions], T.Any]:
+    def func(subtitle: AssEvent, _options: SubtitlesModelOptions) -> T.Any:
         return wrapper(getattr(subtitle, prop_name))
 
     return func
@@ -64,28 +64,34 @@ def _getattr_proxy(
 
 def _setattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[Event, SubtitlesModelOptions, T.Any], None]:
+) -> T.Callable[[AssEvent, SubtitlesModelOptions, T.Any], None]:
     def func(
-        subtitle: Event, _options: SubtitlesModelOptions, value: T.Any
+        subtitle: AssEvent, _options: SubtitlesModelOptions, value: T.Any
     ) -> None:
         setattr(subtitle, prop_name, wrapper(value))
 
     return func
 
 
-def _serialize_text(subtitle: Event, options: SubtitlesModelOptions) -> T.Any:
+def _serialize_text(
+    subtitle: AssEvent, options: SubtitlesModelOptions
+) -> T.Any:
     if options.convert_newlines:
         return subtitle.text.replace("\\N", "\n")
     return subtitle.text
 
 
-def _serialize_note(subtitle: Event, options: SubtitlesModelOptions) -> T.Any:
+def _serialize_note(
+    subtitle: AssEvent, options: SubtitlesModelOptions
+) -> T.Any:
     if options.convert_newlines:
         return subtitle.note.replace("\\N", "\n")
     return subtitle.note
 
 
-def _serialize_cps(subtitle: Event, _options: SubtitlesModelOptions) -> T.Any:
+def _serialize_cps(
+    subtitle: AssEvent, _options: SubtitlesModelOptions
+) -> T.Any:
     return (
         "{:.1f}".format(
             character_count(subtitle.text) / max(1, subtitle.duration / 1000.0)
@@ -96,13 +102,13 @@ def _serialize_cps(subtitle: Event, _options: SubtitlesModelOptions) -> T.Any:
 
 
 def _serialize_short_duration(
-    subtitle: Event, _options: SubtitlesModelOptions
+    subtitle: AssEvent, _options: SubtitlesModelOptions
 ) -> T.Any:
     return f"{subtitle.duration / 1000.0:.1f}"
 
 
 def _deserialize_long_duration(
-    subtitle: Event, _options: SubtitlesModelOptions, value: str
+    subtitle: AssEvent, _options: SubtitlesModelOptions, value: str
 ) -> T.Any:
     subtitle.end = subtitle.start + str_to_ms(value)
 
@@ -110,7 +116,7 @@ def _deserialize_long_duration(
 _HEADERS = {
     SubtitlesModelColumn.Start: "Start",
     SubtitlesModelColumn.End: "End",
-    SubtitlesModelColumn.Style: "Style",
+    SubtitlesModelColumn.AssStyle: "AssStyle",
     SubtitlesModelColumn.Actor: "Actor",
     SubtitlesModelColumn.Text: "Text",
     SubtitlesModelColumn.Note: "Note",
@@ -127,7 +133,7 @@ _HEADERS = {
 _READER_MAP = {
     SubtitlesModelColumn.Start: _getattr_proxy("start", ms_to_str),
     SubtitlesModelColumn.End: _getattr_proxy("end", ms_to_str),
-    SubtitlesModelColumn.Style: _getattr_proxy("style", str),
+    SubtitlesModelColumn.AssStyle: _getattr_proxy("style", str),
     SubtitlesModelColumn.Actor: _getattr_proxy("actor", str),
     SubtitlesModelColumn.Text: _serialize_text,
     SubtitlesModelColumn.Note: _serialize_note,
@@ -146,7 +152,7 @@ _READER_MAP = {
 _WRITER_MAP = {
     SubtitlesModelColumn.Start: _setattr_proxy("start", str_to_ms),
     SubtitlesModelColumn.End: _setattr_proxy("end", str_to_ms),
-    SubtitlesModelColumn.Style: _setattr_proxy("style", str),
+    SubtitlesModelColumn.AssStyle: _setattr_proxy("style", str),
     SubtitlesModelColumn.Actor: _setattr_proxy("actor", str),
     SubtitlesModelColumn.Text: _setattr_proxy("text", str),
     SubtitlesModelColumn.Note: _setattr_proxy("note", str),
@@ -236,7 +242,7 @@ class SubtitlesModel(ObservableListTableAdapter):
         writer(subtitle, self._options, new_value)
         return True
 
-    def _get_background_cps(self, subtitle: Event) -> T.Any:
+    def _get_background_cps(self, subtitle: AssEvent) -> T.Any:
         if subtitle.duration == 0:
             return QtCore.QVariant()
 

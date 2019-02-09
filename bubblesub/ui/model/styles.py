@@ -19,16 +19,18 @@ import typing as T
 
 from PyQt5 import QtCore, QtGui
 
-from bubblesub.ass.style import Color, Style
+from bubblesub.ass.style import AssColor, AssStyle
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 
 
-def _serialize_color(color: Color) -> QtGui.QColor:
+def _serialize_color(color: AssColor) -> QtGui.QColor:
     return QtGui.QColor(color.red, color.green, color.blue, 255 - color.alpha)
 
 
-def _deserialize_color(color: QtGui.QColor) -> Color:
-    return Color(color.red(), color.green(), color.blue(), 255 - color.alpha())
+def _deserialize_color(color: QtGui.QColor) -> AssColor:
+    return AssColor(
+        color.red(), color.green(), color.blue(), 255 - color.alpha()
+    )
 
 
 class StylesModelColumn(enum.IntEnum):
@@ -57,8 +59,8 @@ class StylesModelColumn(enum.IntEnum):
 
 def _getattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[Style], T.Any]:
-    def func(style: Style) -> T.Any:
+) -> T.Callable[[AssStyle], T.Any]:
+    def func(style: AssStyle) -> T.Any:
         return wrapper(getattr(style, prop_name))
 
     return func
@@ -66,8 +68,8 @@ def _getattr_proxy(
 
 def _setattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[Style, T.Any], None]:
-    def func(style: Style, value: T.Any) -> None:
+) -> T.Callable[[AssStyle, T.Any], None]:
+    def func(style: AssStyle, value: T.Any) -> None:
         setattr(style, prop_name, wrapper(value))
 
     return func

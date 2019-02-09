@@ -24,7 +24,7 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
 from bubblesub.util import ms_to_str, str_to_ms
 
@@ -109,7 +109,7 @@ class SubtitlesPasteCommand(BaseCommand):
         if not text:
             raise CommandUnavailable("clipboard is empty, aborting")
 
-        items = T.cast(T.List[Event], _unpickle(text))
+        items = T.cast(T.List[AssEvent], _unpickle(text))
         with self.api.undo.capture():
             self.api.subs.events.insert(idx, *items)
             self.api.subs.selected_indexes = list(range(idx, idx + len(items)))

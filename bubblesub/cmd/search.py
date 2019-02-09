@@ -24,7 +24,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.ui.util import show_notice
 
 MAX_HISTORY_ENTRIES = 25
@@ -36,7 +36,7 @@ class SearchMode(enum.IntEnum):
     Text = 1
     Note = 2
     Actor = 3
-    Style = 4
+    AssStyle = 4
 
 
 def _create_search_regex(
@@ -53,11 +53,11 @@ class _SearchModeHandler(abc.ABC):
         self.main_window = main_window
 
     @abc.abstractmethod
-    def get_subject_text(self, sub: Event) -> str:
+    def get_subject_text(self, sub: AssEvent) -> str:
         raise NotImplementedError("not implemented")
 
     @abc.abstractmethod
-    def set_subject_text(self, sub: Event, value: str) -> None:
+    def set_subject_text(self, sub: AssEvent, value: str) -> None:
         raise NotImplementedError("not implemented")
 
     @abc.abstractmethod
@@ -122,10 +122,10 @@ class _SearchModeHandler(abc.ABC):
 
 
 class _TextSearchModeHandler(_SearchModeHandler):
-    def get_subject_text(self, sub: Event) -> str:
+    def get_subject_text(self, sub: AssEvent) -> str:
         return sub.text.replace("\\N", "\n")
 
-    def set_subject_text(self, sub: Event, value: str) -> None:
+    def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.text = value.replace("\n", "\\N")
 
     def get_subject_widget_name(self) -> QtWidgets.QWidget:
@@ -133,10 +133,10 @@ class _TextSearchModeHandler(_SearchModeHandler):
 
 
 class _NoteSearchModeHandler(_SearchModeHandler):
-    def get_subject_text(self, sub: Event) -> str:
+    def get_subject_text(self, sub: AssEvent) -> str:
         return sub.note.replace("\\N", "\n")
 
-    def set_subject_text(self, sub: Event, value: str) -> None:
+    def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.note = value.replace("\n", "\\N")
 
     def get_subject_widget_name(self) -> QtWidgets.QWidget:
@@ -144,10 +144,10 @@ class _NoteSearchModeHandler(_SearchModeHandler):
 
 
 class _ActorSearchModeHandler(_SearchModeHandler):
-    def get_subject_text(self, sub: Event) -> str:
+    def get_subject_text(self, sub: AssEvent) -> str:
         return sub.actor
 
-    def set_subject_text(self, sub: Event, value: str) -> None:
+    def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.actor = value
 
     def get_subject_widget_name(self) -> QtWidgets.QWidget:
@@ -155,10 +155,10 @@ class _ActorSearchModeHandler(_SearchModeHandler):
 
 
 class _StyleSearchModeHandler(_SearchModeHandler):
-    def get_subject_text(self, sub: Event) -> str:
+    def get_subject_text(self, sub: AssEvent) -> str:
         return sub.style
 
-    def set_subject_text(self, sub: Event, value: str) -> None:
+    def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.style = value
 
     def get_subject_widget_name(self) -> QtWidgets.QWidget:
@@ -169,7 +169,7 @@ _HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
     SearchMode.Text: _TextSearchModeHandler,
     SearchMode.Note: _NoteSearchModeHandler,
     SearchMode.Actor: _ActorSearchModeHandler,
-    SearchMode.Style: _StyleSearchModeHandler,
+    SearchMode.AssStyle: _StyleSearchModeHandler,
 }
 
 
@@ -278,7 +278,7 @@ class _SearchModeGroupBox(QtWidgets.QGroupBox):
             SearchMode.Text: QtWidgets.QRadioButton("Text", self),
             SearchMode.Note: QtWidgets.QRadioButton("Note", self),
             SearchMode.Actor: QtWidgets.QRadioButton("Actor", self),
-            SearchMode.Style: QtWidgets.QRadioButton("Style", self),
+            SearchMode.AssStyle: QtWidgets.QRadioButton("AssStyle", self),
         }
         layout = QtWidgets.QVBoxLayout(self)
         for radio_button in self._radio_buttons.values():

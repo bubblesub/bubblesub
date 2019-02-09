@@ -22,7 +22,7 @@ import ass_tag_parser
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
 
 
@@ -45,7 +45,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
         if not subs:
             raise CommandUnavailable("nothing to split")
 
-        new_selection: T.List[Event] = []
+        new_selection: T.List[AssEvent] = []
         with self.api.undo.capture(), self.api.gui.throttle_updates():
             for sub in subs:
                 if "\\k" not in sub.text:
@@ -61,7 +61,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 idx = sub.index
                 self.api.subs.events.remove(idx, 1)
 
-                new_subs: T.List[Event] = []
+                new_subs: T.List[AssEvent] = []
                 for i, syllable in enumerate(syllables):
                     sub_copy = copy(sub)
                     sub_copy.start = start

@@ -22,9 +22,9 @@ import typing as T
 import zlib
 
 from bubblesub.api.subs import SubtitlesApi
-from bubblesub.ass.event import EventList
-from bubblesub.ass.info import Metadata
-from bubblesub.ass.style import StyleList
+from bubblesub.ass.event import AssEventList
+from bubblesub.ass.meta import AssMeta
+from bubblesub.ass.style import AssStyleList
 from bubblesub.cfg import Config
 
 
@@ -33,9 +33,9 @@ class UndoState:
 
     def __init__(
         self,
-        events: EventList,
-        styles: StyleList,
-        info: Metadata,
+        events: AssEventList,
+        styles: AssStyleList,
+        meta: AssMeta,
         selected_indexes: T.List[int],
     ) -> None:
         """
@@ -43,40 +43,40 @@ class UndoState:
 
         :param events: list of events for the currently loaded ASS file
         :param styles: list of styles for the currently loaded ASS file
-        :param info: info dict for the currently loaded ASS file
+        :param meta: meta dict for the currently loaded ASS file
         :param selected_indexes: current selection on the subtitle grid
         """
         self._events = _pickle(events)
         self._styles = _pickle(styles)
-        self._info = _pickle(dict(info.items()))
+        self._meta = _pickle(dict(meta.items()))
         self.selected_indexes = selected_indexes
 
     @property
-    def events(self) -> EventList:
+    def events(self) -> AssEventList:
         """
         Return list of remembered events.
 
         :return: list of remembered events
         """
-        return T.cast(EventList, _unpickle(self._events))
+        return T.cast(AssEventList, _unpickle(self._events))
 
     @property
-    def styles(self) -> StyleList:
+    def styles(self) -> AssStyleList:
         """
         Return list of remembered styles.
 
         :return: list of remembered styles
         """
-        return T.cast(StyleList, _unpickle(self._styles))
+        return T.cast(AssStyleList, _unpickle(self._styles))
 
     @property
-    def info(self) -> T.Dict[str, str]:
+    def meta(self) -> T.Dict[str, str]:
         """
-        Return remembered info dict.
+        Return remembered meta dict.
 
-        :return: info dict
+        :return: meta dict
         """
-        return T.cast(T.Dict[str, str], _unpickle(self._info))
+        return T.cast(T.Dict[str, str], _unpickle(self._meta))
 
     def __eq__(self, other: T.Any) -> T.Any:
         """
@@ -93,7 +93,7 @@ class UndoState:
             return (
                 self._events == other._events
                 and self._styles == other._styles
-                and self._info == other._info
+                and self._meta == other._meta
             )
         return NotImplemented
 
@@ -278,13 +278,13 @@ class UndoApi:
         return UndoState(
             events=self._subs_api.events,
             styles=self._subs_api.styles,
-            info=self._subs_api.info,
+            meta=self._subs_api.meta,
             selected_indexes=self._subs_api.selected_indexes,
         )
 
     def _apply_state(self, state: UndoState) -> None:
         self._subs_api.events.replace(list(state.events))
         self._subs_api.styles.replace(list(state.styles))
-        self._subs_api.info.clear()
-        self._subs_api.info.update(state.info)
+        self._subs_api.meta.clear()
+        self._subs_api.meta.update(state.meta)
         self._subs_api.selected_indexes = state.selected_indexes

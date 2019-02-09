@@ -240,29 +240,29 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
     def _load(self) -> None:
         self._options_group_box.res_x_edit.setValue(
-            int(T.cast(str, self._api.subs.info.get("PlayResX", "0")))
+            int(T.cast(str, self._api.subs.meta.get("PlayResX", "0")))
         )
         self._options_group_box.res_y_edit.setValue(
-            int(T.cast(str, self._api.subs.info.get("PlayResY", "0")))
+            int(T.cast(str, self._api.subs.meta.get("PlayResY", "0")))
         )
 
         self._options_group_box.ycbcr_matrix_combo_box.setCurrentIndex(
             self._options_group_box.ycbcr_matrix_combo_box.findData(
-                self._api.subs.info.get("YCbCr Matrix")
+                self._api.subs.meta.get("YCbCr Matrix")
             )
         )
 
         self._options_group_box.wrap_mode_combo_box.setCurrentIndex(
             self._options_group_box.wrap_mode_combo_box.findData(
-                self._api.subs.info.get("WrapStyle")
+                self._api.subs.meta.get("WrapStyle")
             )
         )
 
         self._options_group_box.scale_check_box.setChecked(
-            self._api.subs.info.get("ScaledBorderAndShadow", "yes") == "yes"
+            self._api.subs.meta.get("ScaledBorderAndShadow", "yes") == "yes"
         )
 
-        for key, value in self._api.subs.info.items():
+        for key, value in self._api.subs.meta.items():
             if key not in [
                 "PlayResX",
                 "PlayResY",
@@ -277,13 +277,13 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
 
     def _commit(self) -> None:
         old_res = (
-            int(T.cast(str, self._api.subs.info.get("PlayResX", "0"))),
-            int(T.cast(str, self._api.subs.info.get("PlayResY", "0"))),
+            int(T.cast(str, self._api.subs.meta.get("PlayResX", "0"))),
+            int(T.cast(str, self._api.subs.meta.get("PlayResY", "0"))),
         )
 
-        self._api.subs.info.clear()
+        self._api.subs.meta.clear()
 
-        self._api.subs.info.update(
+        self._api.subs.meta.update(
             {
                 "ScriptType": "v4.00+",
                 "PlayResX": str(self._options_group_box.res_x_edit.value()),
@@ -302,11 +302,11 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
             }
         )
 
-        self._api.subs.info.update(self._metadata_group_box.get_data())
+        self._api.subs.meta.update(self._metadata_group_box.get_data())
 
         new_res = (
-            int(T.cast(str, self._api.subs.info.get("PlayResX", "0"))),
-            int(T.cast(str, self._api.subs.info.get("PlayResY", "0"))),
+            int(T.cast(str, self._api.subs.meta.get("PlayResX", "0"))),
+            int(T.cast(str, self._api.subs.meta.get("PlayResY", "0"))),
         )
         if (
             old_res != new_res

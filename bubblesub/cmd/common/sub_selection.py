@@ -25,7 +25,7 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.ui.util import time_jump_dialog
 from bubblesub.util import first
 
@@ -186,7 +186,7 @@ class SubtitlesSelection:
             if idx in range(0, len(self.api.subs.events))
         ]
 
-    async def get_subtitles(self) -> T.List[Event]:
+    async def get_subtitles(self) -> T.List[AssEvent]:
         return [self.api.subs.events[idx] for idx in await self.get_indexes()]
 
     async def _show_number_dialog(

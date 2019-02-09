@@ -20,7 +20,7 @@ from copy import copy
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandUnavailable
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
 
 
@@ -41,7 +41,7 @@ class SubtitlesCloneCommand(BaseCommand):
             if not indexes:
                 raise CommandUnavailable("nothing to clone")
 
-            sub_copies: T.List[Event] = []
+            sub_copies: T.List[AssEvent] = []
             for idx in reversed(indexes):
                 sub_copy = copy(self.api.subs.events[idx])
                 self.api.subs.events.insert(idx + 1, sub_copy)

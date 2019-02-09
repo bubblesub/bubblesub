@@ -21,11 +21,11 @@ from pathlib import Path
 
 from PyQt5 import QtCore
 
-from bubblesub.ass.event import Event, EventList
+from bubblesub.ass.event import AssEvent, AssEventList
 from bubblesub.ass.file import AssFile
-from bubblesub.ass.info import Metadata
+from bubblesub.ass.meta import AssMeta
 from bubblesub.ass.reader import load_ass
-from bubblesub.ass.style import Style, StyleList
+from bubblesub.ass.style import AssStyle, AssStyleList
 from bubblesub.ass.writer import write_ass
 
 
@@ -46,13 +46,16 @@ class SubtitlesApi(QtCore.QObject):
         self._loaded_video_path: T.Optional[Path] = None
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
+
         self.ass_file = AssFile()
-        self.ass_file.styles.append(Style(name="Default"))
-        self.info_changed = self.ass_file.info.changed
+        self.ass_file.styles.append(AssStyle(name="Default"))
+
+        self.meta_changed = self.ass_file.meta.changed
+
         self.events.items_removed.connect(self._on_items_removed)
 
     @property
-    def events(self) -> EventList:
+    def events(self) -> AssEventList:
         """
         Return list of ASS events.
 
@@ -61,7 +64,7 @@ class SubtitlesApi(QtCore.QObject):
         return self.ass_file.events
 
     @property
-    def styles(self) -> StyleList:
+    def styles(self) -> AssStyleList:
         """
         Return list of ASS styles.
 
@@ -70,7 +73,7 @@ class SubtitlesApi(QtCore.QObject):
         return self.ass_file.styles
 
     @property
-    def info(self) -> Metadata:
+    def meta(self) -> AssMeta:
         """
         Return additional information associated with the ASS file.
 
@@ -78,7 +81,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: additional information
         """
-        return self.ass_file.info
+        return self.ass_file.meta
 
     @property
     def remembered_video_path(self) -> T.Optional[Path]:
@@ -87,7 +90,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: path of the associated video file or None if no video
         """
-        path: str = T.cast(str, self.info.get("Video File", ""))
+        path: str = T.cast(str, self.meta.get("Video File", ""))
         if not path:
             return None
         if not self._path:
@@ -97,11 +100,11 @@ class SubtitlesApi(QtCore.QObject):
     @remembered_video_path.setter
     def remembered_video_path(self, path: Path) -> None:
         """
-        Set path of the associated video file, updating info dict.
+        Set path of the associated video file, updating meta dict.
 
         :param path: path to the video file
         """
-        self.info.update({"Video File": str(path), "Audio File": str(path)})
+        self.meta.update({"Video File": str(path), "Audio File": str(path)})
 
     @property
     def path(self) -> T.Optional[Path]:
@@ -143,7 +146,7 @@ class SubtitlesApi(QtCore.QObject):
         self.selection_changed.emit(new_selection, changed)
 
     @property
-    def selected_events(self) -> T.List[Event]:
+    def selected_events(self) -> T.List[AssEvent]:
         """
         Return list of selected events.
 
@@ -155,10 +158,10 @@ class SubtitlesApi(QtCore.QObject):
         """Load empty ASS file."""
         self._path = None
         self.selected_indexes = []
-        self.ass_file.info.clear()
+        self.ass_file.meta.clear()
         self.ass_file.events.clear()
         self.ass_file.styles.clear()
-        self.ass_file.styles.append(Style(name="Default"))
+        self.ass_file.styles.append(AssStyle(name="Default"))
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:

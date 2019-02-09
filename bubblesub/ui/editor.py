@@ -157,7 +157,7 @@ class Editor(QtWidgets.QWidget):
         bar_layout = QtWidgets.QGridLayout(spacing=4)
         bar_layout.setContentsMargins(0, 0, 0, 0)
         for row, column, label, widget in {
-            (0, 0, "Style:", self.style_edit),
+            (0, 0, "AssStyle:", self.style_edit),
             (1, 0, "Actor:", self.actor_edit),
             (2, 0, "Layer:", self.layer_edit),
             (3, 0, "Margin:", margins_layout),
@@ -199,7 +199,7 @@ class Editor(QtWidgets.QWidget):
             (SubtitlesModelColumn.LongDuration, self.duration_edit),
             (SubtitlesModelColumn.Layer, self.layer_edit),
             (SubtitlesModelColumn.Actor, self.actor_edit),
-            (SubtitlesModelColumn.Style, self.style_edit),
+            (SubtitlesModelColumn.AssStyle, self.style_edit),
             (SubtitlesModelColumn.MarginVertical, self.margin_v_edit),
             (SubtitlesModelColumn.MarginLeft, self.margin_l_edit),
             (SubtitlesModelColumn.MarginRight, self.margin_r_edit),

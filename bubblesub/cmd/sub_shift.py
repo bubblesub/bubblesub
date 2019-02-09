@@ -21,7 +21,7 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import Pts, SubtitlesSelection
 from bubblesub.ui.util import time_jump_dialog
 
@@ -60,7 +60,7 @@ class SubtitlesShiftCommand(BaseCommand):
                 sub.end_update()
 
     async def _get_delta(
-        self, subs: T.List[Event], main_window: QtWidgets.QMainWindow
+        self, subs: T.List[AssEvent], main_window: QtWidgets.QMainWindow
     ) -> T.Optional[Pts]:
         ret = await time_jump_dialog(
             main_window,

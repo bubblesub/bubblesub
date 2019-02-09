@@ -16,9 +16,9 @@
 
 """ASS file."""
 
-from bubblesub.ass.event import EventList
-from bubblesub.ass.info import Metadata
-from bubblesub.ass.style import StyleList
+from bubblesub.ass.event import AssEventList
+from bubblesub.ass.meta import AssMeta
+from bubblesub.ass.style import AssStyleList
 
 
 class AssFile:
@@ -26,6 +26,6 @@ class AssFile:
 
     def __init__(self) -> None:
         """Initialize self."""
-        self.styles = StyleList()
-        self.events = EventList()
-        self.info = Metadata()
+        self.styles = AssStyleList()
+        self.events = AssEventList()
+        self.meta = AssMeta()

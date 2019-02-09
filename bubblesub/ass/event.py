@@ -21,7 +21,7 @@ import typing as T
 from bubblesub.model import ObservableList, ObservableObject
 
 
-class Event(ObservableObject):
+class AssEvent(ObservableObject):
     """ASS event."""
 
     def __init__(
@@ -57,7 +57,7 @@ class Event(ObservableObject):
         """
         super().__init__()
 
-        self.event_list: T.Optional["EventList"] = None
+        self.event_list: T.Optional["AssEventList"] = None
 
         self.start = start
         self.end = end
@@ -144,7 +144,7 @@ class Event(ObservableObject):
         return index + 1
 
     @property
-    def prev(self) -> T.Optional["Event"]:
+    def prev(self) -> T.Optional["AssEvent"]:
         """
         Return previous subtitle from the parent subtitle list.
 
@@ -157,7 +157,7 @@ class Event(ObservableObject):
         return self.event_list.get(index - 1, None)
 
     @property
-    def next(self) -> T.Optional["Event"]:
+    def next(self) -> T.Optional["AssEvent"]:
         """
         Return next subtitle from the parent subtitle list.
 
@@ -196,7 +196,7 @@ class Event(ObservableObject):
         self.__dict__.update(state)
         self.event_list = None
 
-    def __copy__(self) -> "Event":
+    def __copy__(self) -> "AssEvent":
         """
         Duplicate self.
 
@@ -212,10 +212,10 @@ class Event(ObservableObject):
         return ret
 
 
-class EventList(ObservableList[Event]):
+class AssEventList(ObservableList[AssEvent]):
     """ASS event list."""
 
-    def insert(self, idx: int, *items: Event) -> None:
+    def insert(self, idx: int, *items: AssEvent) -> None:
         """
         Insert events at the specified position.
 
@@ -223,7 +223,7 @@ class EventList(ObservableList[Event]):
         :param items: events to add
         """
         for item in items:
-            assert item.event_list is None, "Event belongs to another list"
+            assert item.event_list is None, "AssEvent belongs to another list"
             item.event_list = self
         super().insert(idx, *items)
 

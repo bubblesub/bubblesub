@@ -26,9 +26,9 @@ import typing as T
 import numpy as np
 import PIL.Image
 
-from bubblesub.ass.event import Event, EventList
-from bubblesub.ass.info import Metadata
-from bubblesub.ass.style import Style, StyleList
+from bubblesub.ass.event import AssEvent, AssEventList
+from bubblesub.ass.meta import AssMeta
+from bubblesub.ass.style import AssStyle, AssStyleList
 
 _libass = ctypes.cdll.LoadLibrary(ctypes.util.find_library("ass"))
 _libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
@@ -275,7 +275,7 @@ class _AssStyle(ctypes.Structure):
     def _after_init(self, track: "_AssTrack") -> None:
         self._track = track
 
-    def populate(self, style: Style) -> None:
+    def populate(self, style: AssStyle) -> None:
         self.name = _encode_str(style.name)
         self.fontname = _encode_str(style.font_name)
         self.fontsize = style.font_size
@@ -326,7 +326,7 @@ class _AssEvent(ctypes.Structure):
                 return i
         return -1
 
-    def populate(self, event: Event) -> None:
+    def populate(self, event: AssEvent) -> None:
         self.start_ms = int(event.start)
         self.duration_ms = int(event.end - event.start)
         self.layer = event.layer
@@ -404,7 +404,9 @@ class _AssTrack(ctypes.Structure):
         _libc.free(self.events_arr)
         _libc.free(ctypes.byref(self))
 
-    def populate(self, style_list: StyleList, event_list: EventList) -> None:
+    def populate(
+        self, style_list: AssStyleList, event_list: AssEventList
+    ) -> None:
         self.type = _AssTrack.TYPE_ASS
 
         self.style_format = _encode_str(
@@ -416,7 +418,7 @@ class _AssTrack(ctypes.Structure):
         )
 
         self.event_format = _encode_str(
-            "Layer, Start, End, Style, Name, "
+            "Layer, Start, End, AssStyle, Name, "
             "MarginL, MarginR, MarginV, Effect, Text"
         )
 
@@ -480,31 +482,31 @@ class AssRenderer:
         self._renderer = self._ctx.make_renderer()
         self._renderer.set_fonts()
         self._track: T.Optional["_AssTrack"] = None
-        self.style_list: T.Optional[StyleList] = None
-        self.event_list: T.Optional[EventList] = None
-        self.info: T.Optional[Metadata] = None
+        self.style_list: T.Optional[AssStyleList] = None
+        self.event_list: T.Optional[AssEventList] = None
+        self.meta: T.Optional[AssMeta] = None
         self.video_resolution: T.Optional[T.Tuple[int, int]] = None
 
     def set_source(
         self,
-        style_list: StyleList,
-        event_list: EventList,
-        info: Metadata,
+        style_list: AssStyleList,
+        event_list: AssEventList,
+        meta: AssMeta,
         video_resolution: T.Tuple[int, int],
     ) -> None:
         self.style_list = style_list
         self.event_list = event_list
-        self.info = info
+        self.meta = meta
         self.video_resolution = video_resolution
 
         self._track = self._ctx.make_track()
         self._track.populate(style_list, event_list)
 
-        self._track.play_res_x = int(info.get("PlayResX", video_resolution[0]))
-        self._track.play_res_y = int(info.get("PlayResY", video_resolution[1]))
-        self._track.wrap_style = int(info.get("WrapStyle", 1))
+        self._track.play_res_x = int(meta.get("PlayResX", video_resolution[0]))
+        self._track.play_res_y = int(meta.get("PlayResY", video_resolution[1]))
+        self._track.wrap_style = int(meta.get("WrapStyle", 1))
         self._track.scaled_border_and_shadow = (
-            info.get("ScaledBorderAndShadow", "yes") == "yes"
+            meta.get("ScaledBorderAndShadow", "yes") == "yes"
         )
 
         self._renderer.frame_size = (

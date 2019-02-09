@@ -20,22 +20,22 @@ import re
 import typing as T
 from pathlib import Path
 
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.ass.file import AssFile
-from bubblesub.ass.style import Color, Style
+from bubblesub.ass.style import AssColor, AssStyle
 from bubblesub.ass.util import unescape_ass_tag
 
 TIMESTAMP_RE = re.compile(r"(\d{1,2}):(\d{2}):(\d{2})[.,](\d{2,3})")
 SECTION_HEADING_RE = re.compile(r"^\[([^\]]+)\]$")
 
 
-def _deserialize_color(text: str) -> Color:
+def _deserialize_color(text: str) -> AssColor:
     val = int(text[2:], base=16)
     red = val & 0xFF
     green = (val >> 8) & 0xFF
     blue = (val >> 16) & 0xFF
     alpha = (val >> 24) & 0xFF
-    return Color(red, green, blue, alpha)
+    return AssColor(red, green, blue, alpha)
 
 
 def _timestamp_to_ms(text: str) -> int:
@@ -64,7 +64,7 @@ def _info_section_handler(
     if line.startswith(";"):
         return
     key, value = line.split(": ", 1)
-    ass_file.info.set(key, value)
+    ass_file.meta.set(key, value)
 
 
 def _styles_section_handler(
@@ -79,7 +79,7 @@ def _styles_section_handler(
     field_values = rest.strip().split(",")
     field_dict = dict(zip(ctx.field_names, field_values))
     ass_file.styles.append(
-        Style(
+        AssStyle(
             name=field_dict["Name"],
             font_name=field_dict["Fontname"],
             font_size=int(float(field_dict["Fontsize"])),
@@ -138,7 +138,7 @@ def _events_section_handler(
         end = int(match.group("end"))
 
     ass_file.events.append(
-        Event(
+        AssEvent(
             layer=int(field_dict["Layer"]),
             start=(start or _timestamp_to_ms(field_dict["Start"])),
             end=(end or _timestamp_to_ms(field_dict["End"])),
@@ -172,7 +172,7 @@ def load_ass(handle: T.IO[str], ass_file: AssFile) -> None:
 
     ass_file.events.clear()
     ass_file.styles.clear()
-    ass_file.info.clear()
+    ass_file.meta.clear()
 
     handler: T.Optional[T.Callable[[str, AssFile, _ReadContext], None]] = None
 

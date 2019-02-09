@@ -82,7 +82,7 @@ class MediaApi(QtCore.QObject):
         self._need_subs_refresh = False
 
         self._subs_api.loaded.connect(self._on_subs_load)
-        self._subs_api.info_changed.connect(self._on_subs_change)
+        self._subs_api.meta_changed.connect(self._on_subs_change)
 
         for list_ in (self._subs_api.events, self._subs_api.styles):
             list_.item_changed.connect(self._on_subs_change)

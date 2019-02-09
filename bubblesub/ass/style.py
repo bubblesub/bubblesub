@@ -21,10 +21,10 @@ from collections import namedtuple
 
 from bubblesub.model import ObservableList, ObservableObject
 
-Color = namedtuple("Color", ["red", "green", "blue", "alpha"])
+AssColor = namedtuple("AssColor", ["red", "green", "blue", "alpha"])
 
 
-class Style(ObservableObject):
+class AssStyle(ObservableObject):
     """ASS style."""
 
     def __init__(
@@ -32,10 +32,10 @@ class Style(ObservableObject):
         name: str,
         font_name: str = "Arial",
         font_size: int = 20,
-        primary_color: Color = Color(255, 255, 255, 0),
-        secondary_color: Color = Color(255, 0, 0, 0),
-        outline_color: Color = Color(32, 32, 32, 0),
-        back_color: Color = Color(32, 32, 32, 127),
+        primary_color: AssColor = AssColor(255, 255, 255, 0),
+        secondary_color: AssColor = AssColor(255, 0, 0, 0),
+        outline_color: AssColor = AssColor(32, 32, 32, 0),
+        back_color: AssColor = AssColor(32, 32, 32, 127),
         bold: bool = True,
         italic: bool = False,
         underline: bool = False,
@@ -83,7 +83,7 @@ class Style(ObservableObject):
         super().__init__()
 
         self._old_name: T.Optional[str] = None
-        self.style_list: T.Optional["StyleList"] = None
+        self.style_list: T.Optional["AssStyleList"] = None
 
         self._name = name
         self.font_name = font_name
@@ -183,7 +183,7 @@ class Style(ObservableObject):
         self.__dict__.update(state)
         self.style_list = None
 
-    def __copy__(self) -> "Style":
+    def __copy__(self) -> "AssStyle":
         """
         Duplicate self.
 
@@ -199,10 +199,10 @@ class Style(ObservableObject):
         return ret
 
 
-class StyleList(ObservableList[Style]):
+class AssStyleList(ObservableList[AssStyle]):
     """ASS style list."""
 
-    def insert(self, idx: int, *items: Style) -> None:
+    def insert(self, idx: int, *items: AssStyle) -> None:
         """
         Insert styles at the specified position.
 
@@ -210,7 +210,7 @@ class StyleList(ObservableList[Style]):
         :param items: styles to add
         """
         for item in items:
-            assert item.style_list is None, "Style belongs to another list"
+            assert item.style_list is None, "AssStyle belongs to another list"
             item.style_list = self
         super().insert(idx, *items)
 
@@ -225,7 +225,7 @@ class StyleList(ObservableList[Style]):
             item.style_list = None
         super().remove(idx, count)
 
-    def get_by_name(self, name: str) -> T.Optional[Style]:
+    def get_by_name(self, name: str) -> T.Optional[AssStyle]:
         """
         Retrieve style by its name.
 

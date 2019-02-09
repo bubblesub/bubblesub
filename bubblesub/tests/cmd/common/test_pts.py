@@ -21,7 +21,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from bubblesub.api.cmd import CommandError, CommandUnavailable
-from bubblesub.ass.event import Event, EventList
+from bubblesub.ass.event import AssEvent, AssEventList
 from bubblesub.cmd.common import Pts
 
 
@@ -141,9 +141,9 @@ def test_subtitles(
     expected_value: int,
 ) -> None:
     api = MagicMock()
-    api.subs.events = EventList()
+    api.subs.events = AssEventList()
     for start, end in sub_times:
-        api.subs.events.append(Event(start=start, end=end))
+        api.subs.events.append(AssEvent(start=start, end=end))
     for i, event in enumerate(api.subs.events):
         event.prev = api.subs.events[i - 1] if i > 0 else None
         try:

@@ -9,7 +9,7 @@ import speech_recognition as sr
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.cfg.menu import MenuCommand, SubMenu
 from bubblesub.cmd.common import SubtitlesSelection
 
@@ -35,7 +35,7 @@ class SpeechRecognitionCommand(BaseCommand):
             await self.args.target.get_subtitles(),
         )
 
-    def run_in_background(self, subs: T.List[Event]) -> None:
+    def run_in_background(self, subs: T.List[AssEvent]) -> None:
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             future_to_sub = {
                 executor.submit(self.recognize, sub): sub for sub in subs
@@ -65,7 +65,7 @@ class SpeechRecognitionCommand(BaseCommand):
             if future in non_completed:
                 self.api.log.info(f"line #{sub.number}: timeout")
 
-    def recognize(self, sub: Event) -> str:
+    def recognize(self, sub: AssEvent) -> str:
         self.api.log.info(f"line #{sub.number} - analyzing")
         recognizer = sr.Recognizer()
         with io.BytesIO() as handle:

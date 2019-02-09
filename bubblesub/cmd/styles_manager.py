@@ -23,9 +23,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ass.event import Event, EventList
-from bubblesub.ass.info import Metadata
-from bubblesub.ass.style import Style, StyleList
+from bubblesub.ass.event import AssEvent, AssEventList
+from bubblesub.ass.meta import AssMeta
+from bubblesub.ass.style import AssStyle, AssStyleList
 from bubblesub.ui.ass_renderer import AssRenderer
 from bubblesub.ui.font_combo_box import FontComboBox, refresh_font_db
 from bubblesub.ui.model.styles import StylesModel, StylesModelColumn
@@ -105,7 +105,7 @@ class _StylePreview(QtWidgets.QGroupBox):
         return self._editor.toPlainText()
 
     @property
-    def _selected_style(self) -> T.Optional[Style]:
+    def _selected_style(self) -> T.Optional[AssStyle]:
         try:
             idx = self._selection_model.selectedIndexes()[0].row()
         except IndexError:
@@ -128,19 +128,19 @@ class _StylePreview(QtWidgets.QGroupBox):
         fake_style.name = "Default"
         if self._api.media.is_loaded:
             fake_style.scale(resolution[1] / self._api.media.video.height)
-        fake_style_list = StyleList()
+        fake_style_list = AssStyleList()
         fake_style_list.append(fake_style)
 
-        fake_event = Event(
+        fake_event = AssEvent(
             start=0,
             end=1000,
             text=self.preview_text.replace("\n", "\\N"),
             style=fake_style.name,
         )
-        fake_event_list = EventList()
+        fake_event_list = AssEventList()
         fake_event_list.append(fake_event)
 
-        fake_info = Metadata()
+        fake_meta = AssMeta()
 
         image = PIL.Image.new(mode="RGBA", size=resolution)
 
@@ -152,7 +152,7 @@ class _StylePreview(QtWidgets.QGroupBox):
                     image.paste(background, (x, y))
 
         self._renderer.set_source(
-            fake_style_list, fake_event_list, fake_info, resolution
+            fake_style_list, fake_event_list, fake_meta, resolution
         )
         red, green, blue, alpha = self._renderer.render(time=0).split()
         top = PIL.Image.merge("RGB", (red, green, blue))
@@ -215,7 +215,7 @@ class _StyleList(QtWidgets.QWidget):
         layout.addWidget(strip)
 
     @property
-    def _selected_style(self) -> T.Optional[Style]:
+    def _selected_style(self) -> T.Optional[AssStyle]:
         selected_row = self._selected_row
         if selected_row is None:
             return None
@@ -250,7 +250,7 @@ class _StyleList(QtWidgets.QWidget):
         if not style_name:
             return
 
-        style = Style(name=style_name)
+        style = AssStyle(name=style_name)
         self._api.subs.styles.append(style)
         idx = style.index
         assert idx is not None
@@ -398,7 +398,7 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.font_name_edit, 0, 1, 1, 2)
         layout.addWidget(QtWidgets.QLabel("Size:", self), 1, 0)
         layout.addWidget(self.font_size_edit, 1, 1, 1, 2)
-        layout.addWidget(QtWidgets.QLabel("Style:", self), 2, 0)
+        layout.addWidget(QtWidgets.QLabel("AssStyle:", self), 2, 0)
         layout.addWidget(self.bold_checkbox, 2, 1)
         layout.addWidget(self.italic_checkbox, 3, 1)
         layout.addWidget(self.underline_checkbox, 2, 2)

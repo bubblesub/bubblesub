@@ -22,7 +22,7 @@ from collections import OrderedDict
 from PyQt5 import QtCore
 
 
-class Metadata(QtCore.QObject):
+class AssMeta(QtCore.QObject):
     """ASS file metadata."""
 
     changed = QtCore.pyqtSignal()

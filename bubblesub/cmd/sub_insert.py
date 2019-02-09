@@ -19,7 +19,7 @@ import typing as T
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ass.event import Event
+from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
 
 
@@ -42,7 +42,7 @@ class SubtitleInsertCommand(BaseCommand):
 
         with self.api.undo.capture():
             self.api.subs.events.insert(
-                idx, Event(start=start, end=end, style="Default")
+                idx, AssEvent(start=start, end=end, style="Default")
             )
             self.api.subs.selected_indexes = [idx]
 
