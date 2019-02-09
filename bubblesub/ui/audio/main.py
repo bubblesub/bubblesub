@@ -17,6 +17,7 @@
 from PyQt5 import QtCore, QtWidgets
 
 from bubblesub.api import Api
+from bubblesub.ui.audio.audio_timeline import AudioTimeline
 from bubblesub.ui.audio.audio_preview import AudioPreview
 from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.video_preview import VideoPreview
@@ -26,6 +27,7 @@ class Audio(QtWidgets.QWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
+        self._audio_timeline = AudioTimeline(self._api, self)
         self._audio_preview = AudioPreview(self._api, self)
         self._video_preview = VideoPreview(self._api, self)
         self._slider = AudioSlider(self._api, self)
@@ -36,6 +38,7 @@ class Audio(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self._audio_timeline)
         layout.addWidget(self._audio_preview)
         layout.addWidget(self._video_preview)
         layout.addWidget(self._slider)
