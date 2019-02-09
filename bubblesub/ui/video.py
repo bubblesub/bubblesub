@@ -58,6 +58,7 @@ class _VideoButtons(QtWidgets.QWidget):
         self._playback_speed_spinbox = QtWidgets.QDoubleSpinBox()
         self._playback_speed_spinbox.setMinimum(0.1)
         self._playback_speed_spinbox.setMaximum(10.0)
+        self._playback_speed_spinbox.setSingleStep(0.1)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
