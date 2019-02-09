@@ -56,18 +56,15 @@ class VideoBandWorker(QtCore.QObject):
             if frame_idx is None:
                 break
 
-            frame = (
-                self._api.media.video.get_frame(
-                    frame_idx, 1, _BAND_Y_RESOLUTION
-                )
-                .reshape(_BAND_Y_RESOLUTION, 3)
-                .copy()
+            frame = self._api.media.video.get_frame(
+                frame_idx, 1, _BAND_Y_RESOLUTION
             )
-
-            with _CACHE_LOCK:
-                self.cache[frame_idx] = frame
-            self.cache_updated.emit()
-            self._anything_to_save = True
+            if frame is not None:
+                frame = frame.reshape(_BAND_Y_RESOLUTION, 3)
+                with _CACHE_LOCK:
+                    self.cache[frame_idx] = frame.copy()
+                self.cache_updated.emit()
+                self._anything_to_save = True
 
             self._queue.task_done()
             if self._queue.empty():

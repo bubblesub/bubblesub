@@ -245,7 +245,9 @@ class VideoApi(QtCore.QObject):
             return []
         return self._keyframes
 
-    def get_frame(self, frame_idx: int, width: int, height: int) -> np.array:
+    def get_frame(
+        self, frame_idx: int, width: int, height: int
+    ) -> T.Optional[np.array]:
         """
         Get raw video data from the currently loaded video source.
 
@@ -261,7 +263,7 @@ class VideoApi(QtCore.QObject):
                 or frame_idx < 0
                 or frame_idx >= len(self.timecodes)
             ):
-                return np.zeros(width * height * 3).reshape((width, height, 3))
+                return None
             assert self._video_source
 
             new_output_fmt = (_PIX_FMT, width, height, ffms.FFMS_RESIZER_AREA)
