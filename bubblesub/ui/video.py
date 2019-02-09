@@ -178,7 +178,9 @@ class _VideoVolumeControl(QtWidgets.QWidget):
         self._mute_btn.clicked.disconnect(self._on_mute_checkbox_click)
 
     def _on_volume_slider_value_change(self) -> None:
-        self._api.media.volume = self._volume_slider.value()
+        self._api.media.volume = fractions.Fraction(
+            self._volume_slider.value()
+        )
 
     def _on_mute_checkbox_click(self) -> None:
         self._api.media.mute = self._mute_btn.isChecked()

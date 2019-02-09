@@ -235,6 +235,7 @@ class MediaApi(QtCore.QObject):
 
         :param value: new playback rate
         """
+        assert isinstance(value, fractions.Fraction)
         self._playback_speed = value
         self._mpv.set_property("speed", float(self._playback_speed))
         self.playback_speed_changed.emit()
@@ -255,6 +256,7 @@ class MediaApi(QtCore.QObject):
 
         :param value: new volume
         """
+        assert isinstance(value, fractions.Fraction)
         self._volume = value
         self._mpv.set_property("volume", float(self._volume))
         self.volume_changed.emit()
