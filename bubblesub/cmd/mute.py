@@ -30,7 +30,9 @@ class MuteCommand(BaseCommand):
         return self.api.media.is_loaded
 
     async def run(self) -> None:
-        self.api.media.mute = self.args.operation.apply(self.api.media.mute)
+        self.api.media.is_muted = self.args.operation.apply(
+            self.api.media.is_muted
+        )
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
