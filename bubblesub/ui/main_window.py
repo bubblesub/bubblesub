@@ -159,7 +159,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 palette.setColor(target_group, target_role, color)
             elif target_role is not None:
                 palette.setColor(target_role, color)
-        self.setPalette(palette)
+        QtWidgets.QApplication.setPalette(palette)
 
         self.update()
 
