@@ -145,6 +145,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._api.cfg.opt["gui"]["current_palette"] = palette_name
 
+        self._api.gui.get_color.cache_clear()
         palette = QtGui.QPalette()
         for color_type in palette_def.keys():
             color = self._api.gui.get_color(color_type)
