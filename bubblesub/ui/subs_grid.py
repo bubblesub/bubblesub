@@ -207,10 +207,10 @@ class SubtitlesGrid(QtWidgets.QTableView):
             column: AssEventsModelColumn = action.data()
             action.setChecked(not header.isSectionHidden(column.value))
 
-    def keyboardSearch(self, _text: str) -> None:
+    def keyboardSearch(self, text: str) -> None:
         pass
 
-    def changeEvent(self, _event: QtCore.QEvent) -> None:
+    def changeEvent(self, event: QtCore.QEvent) -> None:
         self._subs_grid_delegate.on_palette_change()
 
     def _store_grid_columns(self) -> None:
@@ -242,7 +242,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         )
 
     def _sync_grid_selection_to_api(
-        self, _selected: T.List[int], _deselected: T.List[int]
+        self, selected: T.List[int], deselected: T.List[int]
     ) -> None:
         rows = self._collect_rows()
         if rows != self._api.subs.selected_indexes:
@@ -255,7 +255,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
             )
 
     def _sync_api_selection_to_grid(
-        self, _rows: T.List[int], _changed: bool
+        self, rows: T.List[int], changed: bool
     ) -> None:
         if self._collect_rows() == self._api.subs.selected_indexes:
             return

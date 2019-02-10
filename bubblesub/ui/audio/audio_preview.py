@@ -129,15 +129,15 @@ class AudioPreview(BaseLocalAudioWidget):
         api.media.state_changed.connect(self._on_media_state_change)
         api.media.audio.view_changed.connect(self._on_audio_view_change)
 
-    def changeEvent(self, _event: QtCore.QEvent) -> None:
+    def changeEvent(self, event: QtCore.QEvent) -> None:
         self._generate_color_table()
 
-    def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         height = (1 << DERIVATION_SIZE) + 1
         self._pixels = np.zeros([height, self.width()], dtype=np.uint8)
         self._schedule_current_audio_view()
 
-    def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
         painter.begin(self)
 

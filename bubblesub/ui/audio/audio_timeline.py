@@ -34,7 +34,7 @@ class AudioTimeline(BaseLocalAudioWidget):
         api.media.current_pts_changed.connect(self.update)
         api.media.audio.view_changed.connect(self.update)
 
-    def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
         painter.begin(self)
         self._draw_scale(painter)

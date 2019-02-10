@@ -106,7 +106,7 @@ class ColorPicker(QtWidgets.QWidget):
         self._preview.setMinimumHeight(self._button.height())
         self._color = QtGui.QColor(0, 0, 0, 0)
 
-    def _on_button_click(self, _event: QtGui.QMouseEvent) -> None:
+    def _on_button_click(self, event: QtGui.QMouseEvent) -> None:
         color = QColorDialog.getColor(self._color, self)
         if color.isValid():
             self.set_color(color)

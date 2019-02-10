@@ -245,7 +245,7 @@ class _StyleList(QtWidgets.QWidget):
             and selected.indexes()[0].row() < len(self._api.subs.styles) - 1
         )
 
-    def _on_add_button_click(self, _event: QtGui.QMouseEvent) -> None:
+    def _on_add_button_click(self, event: QtGui.QMouseEvent) -> None:
         style_name = self._prompt_for_unique_style_name()
         if not style_name:
             return
@@ -286,7 +286,7 @@ class _StyleList(QtWidgets.QWidget):
                 style_name
             )
 
-    def _on_remove_button_click(self, _event: QtGui.QMouseEvent) -> None:
+    def _on_remove_button_click(self, event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -302,7 +302,7 @@ class _StyleList(QtWidgets.QWidget):
         with self._api.undo.capture():
             self._api.subs.styles.remove(idx, 1)
 
-    def _on_duplicate_button_click(self, _event: QtGui.QMouseEvent) -> None:
+    def _on_duplicate_button_click(self, event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -319,7 +319,7 @@ class _StyleList(QtWidgets.QWidget):
             | QtCore.QItemSelectionModel.Select,
         )
 
-    def _on_move_up_button_click(self, _event: QtGui.QMouseEvent) -> None:
+    def _on_move_up_button_click(self, event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -334,7 +334,7 @@ class _StyleList(QtWidgets.QWidget):
             | QtCore.QItemSelectionModel.Select,
         )
 
-    def _on_move_down_button_click(self, _event: QtGui.QMouseEvent) -> None:
+    def _on_move_down_button_click(self, event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -349,7 +349,7 @@ class _StyleList(QtWidgets.QWidget):
             | QtCore.QItemSelectionModel.Select,
         )
 
-    def _on_rename_button_click(self, _event: QtGui.QMouseEvent) -> None:
+    def _on_rename_button_click(self, event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -682,7 +682,7 @@ class _StylesManagerDialog(QtWidgets.QDialog):
 
         self._sync_preview_text()
 
-    def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         self._preview_box.update_preview()
 
     def _sync_preview_text(self) -> None:

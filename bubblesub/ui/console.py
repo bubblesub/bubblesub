@@ -147,7 +147,7 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         )
         self._empty = False
 
-    def changeEvent(self, _event: QtCore.QEvent) -> None:
+    def changeEvent(self, event: QtCore.QEvent) -> None:
         self._syntax_highlight.update_style_map()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:

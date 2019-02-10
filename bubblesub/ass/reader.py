@@ -156,7 +156,7 @@ def _events_section_handler(
 
 
 def _dummy_handler(
-    _line: str, _ass_file: AssFile, _context: _ReadContext
+    line: str, ass_file: AssFile, context: _ReadContext
 ) -> None:
     pass
 

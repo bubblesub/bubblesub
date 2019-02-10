@@ -158,12 +158,12 @@ class VideoPreview(BaseLocalAudioWidget):
     def shutdown(self) -> None:
         self._worker.stop()
 
-    def resizeEvent(self, _event: QtGui.QResizeEvent) -> None:
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         self._pixels = np.zeros(
             [_BAND_Y_RESOLUTION, self.width(), 3], dtype=np.uint8
         )
 
-    def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
 
         painter.begin(self)
@@ -180,7 +180,7 @@ class VideoPreview(BaseLocalAudioWidget):
     def _on_audio_view_change(self) -> None:
         self._need_repaint = True
 
-    def _on_media_state_change(self, _state: MediaState) -> None:
+    def _on_media_state_change(self, state: MediaState) -> None:
         self.update()
 
     def _on_video_band_update(self) -> None:

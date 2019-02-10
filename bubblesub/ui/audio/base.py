@@ -59,7 +59,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
         self.setCursor(QtCore.Qt.SizeHorCursor)
         self._apply_drag(event)
 
-    def mouseReleaseEvent(self, _event: QtGui.QMouseEvent) -> None:
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         self.end_drag_mode()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:

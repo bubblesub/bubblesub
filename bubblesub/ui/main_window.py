@@ -110,7 +110,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._closing_state = ClosingState.Ready
 
-    def changeEvent(self, _event: QtCore.QEvent) -> None:
+    def changeEvent(self, event: QtCore.QEvent) -> None:
         self._api.gui.get_color.cache_clear()
 
     def closeEvent(self, event: QtCore.QEvent) -> None:

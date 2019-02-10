@@ -22,10 +22,8 @@ good-names=
     setData,
     initializeGL,
     paintGL,
-    sizeHint
-
-[variables]
-dummy-variables-rgx=^_
+    sizeHint,
+    showMessage
 
 [format]
 max-line-length=79
@@ -37,6 +35,7 @@ disable=
     missing-docstring,
 
     # I'm not a baby
+    unused-argument,
     duplicate-code,
     too-many-return-statements,
     too-many-arguments,

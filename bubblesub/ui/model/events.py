@@ -56,7 +56,7 @@ class AssEventsModelOptions:
 def _getattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
 ) -> T.Callable[[AssEvent, AssEventsModelOptions], T.Any]:
-    def func(subtitle: AssEvent, _options: AssEventsModelOptions) -> T.Any:
+    def func(subtitle: AssEvent, options: AssEventsModelOptions) -> T.Any:
         return wrapper(getattr(subtitle, prop_name))
 
     return func
@@ -66,7 +66,7 @@ def _setattr_proxy(
     prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
 ) -> T.Callable[[AssEvent, AssEventsModelOptions, T.Any], None]:
     def func(
-        subtitle: AssEvent, _options: AssEventsModelOptions, value: T.Any
+        subtitle: AssEvent, options: AssEventsModelOptions, value: T.Any
     ) -> None:
         setattr(subtitle, prop_name, wrapper(value))
 
@@ -90,7 +90,7 @@ def _serialize_note(
 
 
 def _serialize_cps(
-    subtitle: AssEvent, _options: AssEventsModelOptions
+    subtitle: AssEvent, options: AssEventsModelOptions
 ) -> T.Any:
     return (
         "{:.1f}".format(
@@ -102,13 +102,13 @@ def _serialize_cps(
 
 
 def _serialize_short_duration(
-    subtitle: AssEvent, _options: AssEventsModelOptions
+    subtitle: AssEvent, options: AssEventsModelOptions
 ) -> T.Any:
     return f"{subtitle.duration / 1000.0:.1f}"
 
 
 def _deserialize_long_duration(
-    subtitle: AssEvent, _options: AssEventsModelOptions, value: str
+    subtitle: AssEvent, options: AssEventsModelOptions, value: str
 ) -> T.Any:
     subtitle.end = subtitle.start + str_to_ms(value)
 
@@ -197,7 +197,7 @@ class AssEventsModel(ObservableListTableAdapter):
 
         return QtCore.QVariant()
 
-    def flags(self, _index: QtCore.QModelIndex) -> int:
+    def flags(self, index: QtCore.QModelIndex) -> int:
         ret = QtCore.Qt.ItemIsEnabled
         ret |= QtCore.Qt.ItemIsSelectable
         if self._options.editable:

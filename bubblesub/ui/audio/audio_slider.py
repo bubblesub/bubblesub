@@ -35,7 +35,7 @@ class AudioSlider(BaseGlobalAudioWidget):
     def _on_video_current_pts_change(self) -> None:
         self.update()
 
-    def paintEvent(self, _event: QtGui.QPaintEvent) -> None:
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
         painter.begin(self)
         self._draw_subtitle_rects(painter)
