@@ -195,7 +195,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._api,
             self.menuBar(),
             self._api.cfg.menu[MenuContext.MainMenu]
-            + [SubMenu("Pl&ugins", plugin_menu)],
+            + [SubMenu("Plugi&ns", plugin_menu)],
             HotkeyContext.Global,
         )
 
