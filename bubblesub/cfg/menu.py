@@ -112,7 +112,7 @@ class MenuConfig(SubConfig):
 
         def _recurse_tree(
             parent: T.MutableSequence[MenuItem],
-            depth: int,
+            parent_depth: int,
             source: T.List[str],
         ) -> None:
             while source:
@@ -120,26 +120,26 @@ class MenuConfig(SubConfig):
                 if not last_line:
                     break
 
-                tabs = last_line.count(" ")
-                if tabs < depth:
+                current_depth = len(re.search("^ *", last_line).group(0))
+                if current_depth <= parent_depth:
                     break
 
                 token = last_line.strip()
-                if tabs >= depth:
+                if current_depth > parent_depth:
                     source.pop(0)
                     if token == "-":
                         parent.append(MenuSeparator())
                     elif "|" not in token:
                         node = SubMenu(name=token, children=[])
                         parent.append(node)
-                        _recurse_tree(node.children, tabs + 1, source)
+                        _recurse_tree(node.children, current_depth, source)
                     else:
                         name, cmdline = token.split("|", 1)
                         parent.append(MenuCommand(name=name, cmdline=cmdline))
 
         for context, section_text in sections.items():
             source = section_text.split("\n")
-            _recurse_tree(self._menu[context], 0, source)
+            _recurse_tree(self._menu[context], -1, source)
 
     def create_example_file(self, root_dir: Path) -> None:
         """
