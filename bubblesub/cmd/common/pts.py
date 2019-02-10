@@ -68,7 +68,7 @@ default_duration = 'dsd' / 'default_duration'
 dialog           = 'ask'
 
 _                = ~'\\s*'
-decimal           = ~'\\d+(\.\\d+)?'
+decimal           = ~'\\d+(\\.\\d+)?'
 integer           = ~'\\d+'
 operator         = '+' / '-'
 rel              = 'c' / 'p' / 'n'
@@ -163,16 +163,23 @@ class _Time:
     unit: _TimeUnit = _TimeUnit.ms
 
     @staticmethod
-    def add(t1: "_Time", t2: "_Time", api: Api) -> "_Time":
-        return _Time.mod(t1, t2, api, lambda v1, v2: v1 + v2)
+    def add(time1: "_Time", time2: "_Time", api: Api) -> "_Time":
+        return _Time.mod(
+            time1, time2, api, lambda value1, value2: value1 + value2
+        )
 
     @staticmethod
-    def sub(t1: "_Time", t2: "_Time", api: Api) -> "_Time":
-        return _Time.mod(t1, t2, api, lambda v1, v2: v1 - v2)
+    def sub(time1: "_Time", time2: "_Time", api: Api) -> "_Time":
+        return _Time.mod(
+            time1, time2, api, lambda value1, value2: value1 - value2
+        )
 
     @staticmethod
     def mod(
-        t1: "_Time", t2: "_Time", api: Api, op: T.Callable[[int, int], int]
+        time1: "_Time",
+        time2: "_Time",
+        api: Api,
+        func: T.Callable[[int, int], int],
     ) -> "_Time":
         """
         Performs time arithmetic.
@@ -180,21 +187,25 @@ class _Time:
         Tries to preserve frame numbers between math operations if possible.
         Resolves basic frame arithmetic into actual frame times.
 
-        :param t1: lefthand time
-        :param t2: righthand time
+        :param time1: lefthand time
+        :param time2: righthand time
         :param api: core API
-        :param op: what to do with the time values
+        :param func: what to do with the time values
         :return: resulting time
         """
-        if t1.unit == t2.unit:
-            return _Time(op(t1.value, t2.value), t1.unit)
-        if t2.unit == _TimeUnit.ms:
-            return _Time(op(t1.unpack(api), t2.value))
-        if t2.unit == _TimeUnit.frame:
-            return _Time(_apply_frame(api, t1.unpack(api), op(0, t2.value)))
-        if t2.unit == _TimeUnit.keyframe:
-            return _Time(_apply_keyframe(api, t1.unpack(api), op(0, t2.value)))
-        raise NotImplementedError(f"unknown time unit: {t2.unit}")
+        if time1.unit == time2.unit:
+            return _Time(func(time1.value, time2.value), time1.unit)
+        if time2.unit == _TimeUnit.ms:
+            return _Time(func(time1.unpack(api), time2.value))
+        if time2.unit == _TimeUnit.frame:
+            return _Time(
+                _apply_frame(api, time1.unpack(api), func(0, time2.value))
+            )
+        if time2.unit == _TimeUnit.keyframe:
+            return _Time(
+                _apply_keyframe(api, time1.unpack(api), func(0, time2.value))
+            )
+        raise NotImplementedError(f"unknown time unit: {time2.unit}")
 
     def unpack(self, api: Api) -> int:
         """

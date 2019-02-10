@@ -27,6 +27,48 @@ from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogLevel
 
 
+@dataclass
+class Completion:
+    prefix: str
+    suffix: str
+    index: int
+    start_pos: int
+    suggestions: T.List[str]
+
+
+def collect_command_names(compl: Completion, api: Api) -> None:
+    match = re.match("^(?P<cmd>[^ ]+) ?$", compl.prefix)
+    if not match:
+        return
+
+    for cls in api.cmd.get_all():
+        for name in cls.names:
+            if name.startswith(match.group("cmd")):
+                compl.suggestions.append(name + " ")
+    compl.suggestions.sort()
+
+
+def collect_command_arguments(compl: Completion, api: Api) -> None:
+    match = re.match("^(?P<cmd>[^ ]+) (?:.*?)(?P<arg>-[^ =]*)$", compl.prefix)
+    if not match:
+        return
+
+    cls = api.cmd.get(match.group("cmd"))
+    if not cls:
+        return
+
+    parser = argparse.ArgumentParser(add_help=False)
+    cls.decorate_parser(api, parser)
+    for action in parser._actions:  # pylint: disable=W0212
+        if any(
+            opt.startswith(match.group("arg")) for opt in action.option_strings
+        ):
+            compl.start_pos = match.start("arg")
+            compl.suggestions.append(
+                list(sorted(action.option_strings, key=len))[-1] + " "
+            )
+
+
 class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
     def __init__(self, api: Api, parent: QtCore.QObject) -> None:
         super().__init__(parent)
@@ -177,15 +219,6 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         self.scroll_lock_changed.emit()
 
 
-@dataclass
-class Completion:
-    prefix: str
-    suffix: str
-    index: int
-    start_pos: int
-    suggestions: T.List[str]
-
-
 class ConsoleInput(QtWidgets.QLineEdit):
     def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
@@ -283,35 +316,8 @@ class ConsoleInput(QtWidgets.QLineEdit):
             start_pos=0,
         )
 
-        # command names
-        match = re.match("^(?P<cmd>[^ ]+) ?$", compl.prefix)
-        if match:
-            for cls in self._api.cmd.get_all():
-                for name in cls.names:
-                    if name.startswith(match.group("cmd")):
-                        compl.suggestions.append(name + " ")
-            compl.suggestions.sort()
-
-        # command arguments
-        match = re.match(
-            "^(?P<cmd>[^ ]+) (?:.*?)(?P<arg>-[^ =]*)$", compl.prefix
-        )
-        if match:
-            cls = self._api.cmd.get(match.group("cmd"))
-            if cls:
-                parser = argparse.ArgumentParser(add_help=False)
-                cls.decorate_parser(self._api, parser)
-                for action in parser._actions:  # pylint: disable=W0212
-                    if any(
-                        opt.startswith(match.group("arg"))
-                        for opt in action.option_strings
-                    ):
-                        compl.start_pos = match.start("arg")
-                        compl.suggestions.append(
-                            list(sorted(action.option_strings, key=len))[-1]
-                            + " "
-                        )
-
+        collect_command_names(compl, self._api)
+        collect_command_arguments(compl, self._api)
         return compl
 
 

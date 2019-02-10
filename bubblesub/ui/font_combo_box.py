@@ -35,14 +35,12 @@ def refresh_font_db() -> None:
 def _get_font_families() -> T.List[str]:
     return list(
         sorted(
-            set(
-                [
-                    family
-                    if " [" not in family
-                    else family[0 : family.index(" [")]
-                    for family in QtGui.QFontDatabase().families()
-                ]
-            )
+            {
+                family
+                if " [" not in family
+                else family[0 : family.index(" [")]
+                for family in QtGui.QFontDatabase().families()
+            }
         )
     )
 

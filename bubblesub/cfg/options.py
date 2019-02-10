@@ -41,11 +41,11 @@ class OptionsConfig(SubConfig):
         self._merge(self._storage, yaml.load(text))
 
     def _merge(self, target: T.Any, source: T.Any) -> T.Any:
-        for k, v in source.items():
-            if isinstance(v, collections.Mapping):
-                target[k] = self._merge(target.get(k, {}), v)
+        for key, value in source.items():
+            if isinstance(value, collections.Mapping):
+                target[key] = self._merge(target.get(key, {}), value)
             else:
-                target[k] = v
+                target[key] = value
         return target
 
     def _dumps(self) -> str:

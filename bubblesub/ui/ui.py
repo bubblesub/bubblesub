@@ -27,8 +27,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.data import ROOT_DIR
 
 if T.TYPE_CHECKING:
-    from bubblesub.api import Api
-    from bubblesub.api.log import LogLevel
+    from bubblesub.api import Api  # pylint: disable=unused-import
+    from bubblesub.api.log import LogLevel  # pylint: disable=unused-import
 
 
 class MySplashScreen(QtWidgets.QSplashScreen):

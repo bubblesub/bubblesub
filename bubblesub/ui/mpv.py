@@ -232,7 +232,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
     def _handle_event(self, event: mpv.Event) -> bool:
         if event.id in {mpv.Events.none, mpv.Events.shutdown}:
             return True
-        elif event.id == mpv.Events.end_file:
+
+        if event.id == mpv.Events.end_file:
             self._on_mpv_unload()
         elif event.id == mpv.Events.file_loaded:
             self._on_mpv_load()
