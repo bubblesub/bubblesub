@@ -351,7 +351,7 @@ class CommandApi(QtCore.QObject):
         )
 
     def _unload_commands(self) -> None:
-        """Unloads registered commands.."""
+        """Unloads registered commands."""
         for module in self._plugin_modules:
             with self._api.log.exception_guard():
                 try:
@@ -378,7 +378,6 @@ class CommandApi(QtCore.QObject):
         :param path: directory to load the commands from
         :param identifier: unique identifier for this collection of commands
         """
-
         plugin_source = self._plugin_base.make_plugin_source(
             searchpath=[str(path)], identifier=identifier
         )
@@ -417,4 +416,5 @@ class CommandApi(QtCore.QObject):
         self._plugin_modules.append(mod)
 
     def unload(self) -> None:
+        """Unloads registered commands."""
         self._unload_commands()

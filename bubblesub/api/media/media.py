@@ -134,10 +134,20 @@ class MediaApi(QtCore.QObject):
 
     @property
     def state(self) -> MediaState:
+        """
+        Return current media state.
+
+        :return: media state
+        """
         return self._state
 
     @state.setter
     def state(self, value: MediaState) -> None:
+        """
+        Set current media state.
+
+        :param value: new media state
+        """
         self._log_api.debug(f"video: changed state to {value}")
         self._state = value
 

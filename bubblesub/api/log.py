@@ -43,6 +43,11 @@ class LogApi(QtCore.QObject):
     logged = QtCore.pyqtSignal(LogLevel, str)
 
     def __init__(self, cfg: Config) -> None:
+        """
+        Initialize self.
+
+        :param cfg: program configuration
+        """
         super().__init__()
         self._cfg = cfg
 
@@ -104,6 +109,11 @@ class LogApi(QtCore.QObject):
 
     @contextlib.contextmanager
     def exception_guard(self) -> T.Generator:
+        """
+        Eats exceptions and logs then as an error.
+
+        :return: context manager
+        """
         try:
             yield
         except Exception as ex:  # pylint: disable=broad-except

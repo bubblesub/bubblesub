@@ -71,6 +71,11 @@ class GuiApi(QtCore.QObject):
         self.request_quit.emit()
 
     async def confirm_unsaved_changes(self) -> bool:
+        """
+        Ask user to continue if there are unsaved changes to the subtitles.
+
+        :return: true it's okay to proceed, false if user has chosen to cancel
+        """
         if not self._api.undo.needs_save:
             return True
 
@@ -104,6 +109,12 @@ class GuiApi(QtCore.QObject):
 
     @functools.lru_cache(maxsize=None)
     def get_color(self, color_name: str) -> QtGui.QColor:
+        """
+        Receive a color from the current color scheme.
+
+        :param color_name: color name to retrieve
+        :return: color
+        """
         current_palette = self._api.cfg.opt["gui"]["current_palette"]
         try:
             palette_def = self._api.cfg.opt["gui"]["palettes"][current_palette]
@@ -119,6 +130,11 @@ class GuiApi(QtCore.QObject):
         return QtGui.QColor(*color_value)
 
     def get_dialog_dir(self) -> T.Optional[Path]:
+        """
+        Retrieve default dialog path.
+
+        :return: default path
+        """
         if self._api.subs.path:
             return self._api.subs.path.parent
         return None
