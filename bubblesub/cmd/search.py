@@ -36,7 +36,7 @@ class SearchMode(enum.IntEnum):
     Text = 1
     Note = 2
     Actor = 3
-    AssStyle = 4
+    Style = 4
 
 
 def _create_search_regex(
@@ -169,7 +169,7 @@ _HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
     SearchMode.Text: _TextSearchModeHandler,
     SearchMode.Note: _NoteSearchModeHandler,
     SearchMode.Actor: _ActorSearchModeHandler,
-    SearchMode.AssStyle: _StyleSearchModeHandler,
+    SearchMode.Style: _StyleSearchModeHandler,
 }
 
 
@@ -278,7 +278,7 @@ class _SearchModeGroupBox(QtWidgets.QGroupBox):
             SearchMode.Text: QtWidgets.QRadioButton("Text", self),
             SearchMode.Note: QtWidgets.QRadioButton("Note", self),
             SearchMode.Actor: QtWidgets.QRadioButton("Actor", self),
-            SearchMode.AssStyle: QtWidgets.QRadioButton("AssStyle", self),
+            SearchMode.Style: QtWidgets.QRadioButton("Style", self),
         }
         layout = QtWidgets.QVBoxLayout(self)
         for radio_button in self._radio_buttons.values():

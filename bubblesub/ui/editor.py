@@ -157,7 +157,7 @@ class Editor(QtWidgets.QWidget):
         bar_layout = QtWidgets.QGridLayout(spacing=4)
         bar_layout.setContentsMargins(0, 0, 0, 0)
         for row, column, label, widget in {
-            (0, 0, "AssStyle:", self.style_edit),
+            (0, 0, "Style:", self.style_edit),
             (1, 0, "Actor:", self.actor_edit),
             (2, 0, "Layer:", self.layer_edit),
             (3, 0, "Margin:", margins_layout),

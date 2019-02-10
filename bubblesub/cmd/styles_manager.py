@@ -398,7 +398,7 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.font_name_edit, 0, 1, 1, 2)
         layout.addWidget(QtWidgets.QLabel("Size:", self), 1, 0)
         layout.addWidget(self.font_size_edit, 1, 1, 1, 2)
-        layout.addWidget(QtWidgets.QLabel("AssStyle:", self), 2, 0)
+        layout.addWidget(QtWidgets.QLabel("Style:", self), 2, 0)
         layout.addWidget(self.bold_checkbox, 2, 1)
         layout.addWidget(self.italic_checkbox, 3, 1)
         layout.addWidget(self.underline_checkbox, 2, 2)

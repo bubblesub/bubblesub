@@ -116,7 +116,7 @@ def _deserialize_long_duration(
 _HEADERS = {
     SubtitlesModelColumn.Start: "Start",
     SubtitlesModelColumn.End: "End",
-    SubtitlesModelColumn.AssStyle: "AssStyle",
+    SubtitlesModelColumn.AssStyle: "Style",
     SubtitlesModelColumn.Actor: "Actor",
     SubtitlesModelColumn.Text: "Text",
     SubtitlesModelColumn.Note: "Note",
