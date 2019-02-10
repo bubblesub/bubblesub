@@ -145,6 +145,9 @@ class HotkeysConfig(SubConfig):
                     self.changed.emit(hotkey)
                 return
 
+        if cmdline is None:
+            return
+
         hotkey = Hotkey(context=context, shortcut=shortcut, cmdline=cmdline)
         self._hotkeys.append(hotkey)
         self.added.emit(hotkey)
