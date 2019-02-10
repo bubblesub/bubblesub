@@ -77,7 +77,7 @@ class SubConfig(abc.ABC):
         raise NotImplementedError("not implemented")
 
     # doesn't have to be overridden
-    def _dumps(self) -> None:
+    def _dumps(self) -> str:
         """
         Save internals to a human readable representation.
 

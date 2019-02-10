@@ -34,7 +34,9 @@ IDX_REGEX = regex.compile(
 )
 
 
-def _split_by_delim(source: T.List, delim: str) -> T.Iterable[T.List]:
+def _split_by_delim(
+    source: T.List[T.Any], delim: str
+) -> T.Iterable[T.List[T.Any]]:
     return (
         list(chunk)
         for is_delim, chunk in itertools.groupby(

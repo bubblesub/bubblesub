@@ -111,7 +111,7 @@ class AudioPreview(BaseLocalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 1.5))
-        self._spectrum_worker = None
+        self._spectrum_worker: T.Optional[SpectrumWorker] = None
 
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
         self._need_repaint = False

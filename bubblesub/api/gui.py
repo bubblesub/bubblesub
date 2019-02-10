@@ -55,7 +55,7 @@ class GuiApi(QtCore.QObject):
         self._main_window = main_window
 
     async def exec(
-        self, func: T.Callable, *args: T.Any, **kwargs: T.Any
+        self, func: T.Callable[..., T.Any], *args: T.Any, **kwargs: T.Any
     ) -> T.Any:
         """
         Execute function in GUI thread.

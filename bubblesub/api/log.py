@@ -108,7 +108,7 @@ class LogApi(QtCore.QObject):
             self.logged.emit(level, line)
 
     @contextlib.contextmanager
-    def exception_guard(self) -> T.Generator:
+    def exception_guard(self) -> T.Iterator[None]:
         """
         Eats exceptions and logs then as an error.
 

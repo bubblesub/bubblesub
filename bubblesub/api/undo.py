@@ -179,7 +179,7 @@ class UndoApi:
         return self._stack_pos + 1 < len(self._stack)
 
     @contextlib.contextmanager
-    def capture(self) -> T.Generator:
+    def capture(self) -> T.Iterator[None]:
         """
         Record the application state before and after user operation.
 

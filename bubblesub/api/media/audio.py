@@ -394,7 +394,7 @@ class AudioApi(QtCore.QObject):
 
     def save_wav(
         self,
-        path_or_handle: T.Union[Path, T.IO],
+        path_or_handle: T.Union[Path, T.IO[str]],
         pts_ranges: T.List[T.Tuple[int, int]],
     ) -> None:
         """

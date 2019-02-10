@@ -197,12 +197,12 @@ async def load_dialog(
     )
     dialog.setFileMode(dialog.ExistingFile)
     dialog.setAcceptMode(dialog.AcceptOpen)
-    future = asyncio.Future()
+    future: "asyncio.Future[T.Optional[Path]]" = asyncio.Future()
 
-    def on_accept():
+    def on_accept() -> None:
         future.set_result(Path(dialog.selectedFiles()[0]))
 
-    def on_reject():
+    def on_reject() -> None:
         future.set_result(None)
 
     dialog.accepted.connect(on_accept)
@@ -233,12 +233,12 @@ async def save_dialog(
     )
     dialog.setFileMode(dialog.AnyFile)
     dialog.setAcceptMode(dialog.AcceptSave)
-    future = asyncio.Future()
+    future: "asyncio.Future[T.Optional[Path]]" = asyncio.Future()
 
-    def on_accept():
+    def on_accept() -> None:
         future.set_result(Path(dialog.selectedFiles()[0]))
 
-    def on_reject():
+    def on_reject() -> None:
         future.set_result(None)
 
     dialog.accepted.connect(on_accept)
@@ -302,13 +302,13 @@ async def time_jump_dialog(
         def value(self) -> T.Tuple[int, bool]:
             return (self._time_edit.get_value(), self._radio_rel.isChecked())
 
-    future = asyncio.Future()
+    future: "asyncio.Future[T.Optional[T.Tuple[int, bool]]]" = asyncio.Future()
     dialog = TimeJumpDialog(parent)
 
-    def on_accept():
+    def on_accept() -> None:
         future.set_result(dialog.value())
 
-    def on_reject():
+    def on_reject() -> None:
         future.set_result(None)
 
     dialog.accepted.connect(on_accept)
@@ -336,7 +336,9 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         self,
         model: QtCore.QAbstractItemModel,
         signal_map: T.Optional[T.Dict[QtWidgets.QWidget, str]] = None,
-        submit_wrapper: T.Optional[T.Callable[[], T.Iterator]] = None,
+        submit_wrapper: T.Optional[
+            T.Callable[[], T.ContextManager[None]]
+        ] = None,
     ) -> None:
         super().__init__()
         self._model = model
@@ -344,7 +346,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         self._row_idx: T.Optional[int] = None
         self._item_delegate = QtWidgets.QItemDelegate(self)
         self._submit_wrapper: T.Callable[
-            [], T.Iterator
+            [], T.ContextManager[None]
         ] = submit_wrapper or contextlib.nullcontext
 
         self._signal_map: T.Dict[QtWidgets.QWidget, str] = {

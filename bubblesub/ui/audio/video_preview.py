@@ -38,7 +38,7 @@ class VideoBandWorker(QtCore.QObject):
     def __init__(self, api: Api) -> None:
         super().__init__()
         self._api = api
-        self._queue: queue.Queue = queue.Queue()
+        self._queue: "queue.Queue[int]" = queue.Queue()
         self._running = False
         self._clearing = False
         self._anything_to_save = False
@@ -85,6 +85,7 @@ class VideoBandWorker(QtCore.QObject):
             self._clear_queue()
             self._cache_name = None
         elif state == MediaState.Loading:
+            assert self._api.media.path
             self._cache_name = (
                 sanitize_file_name(self._api.media.path) + "-video-band"
             )

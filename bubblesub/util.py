@@ -157,7 +157,7 @@ def sanitize_file_name(file_name: T.Union[Path, str]) -> str:
     return file_name
 
 
-def chunks(source: T.List, size: int) -> T.Iterable[T.List]:
+def chunks(source: T.List[T.Any], size: int) -> T.Iterable[T.List[T.Any]]:
     """
     Yield successive chunks of given size from source.
 
@@ -169,7 +169,7 @@ def chunks(source: T.List, size: int) -> T.Iterable[T.List]:
         yield source[i : i + size]
 
 
-def first(source: T.List, default: T.Any = None) -> T.Any:
+def first(source: T.Iterable[T.Any], default: T.Any = None) -> T.Any:
     """
     Return first element from a list or default value if the list is empty.
 

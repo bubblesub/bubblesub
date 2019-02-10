@@ -88,7 +88,7 @@ _AssImage._fields_ = [
 
 
 def _make_libass_setter(
-    name: str, types: T.List
+    name: str, types: T.List[T.Any]
 ) -> T.Callable[[T.Any], T.Any]:
     fun = _libass[name]
     fun.argtypes = [ctypes.c_void_p] + types
@@ -103,7 +103,7 @@ def _make_libass_setter(
     return setter
 
 
-def _make_libass_property(name: str, types: T.List) -> property:
+def _make_libass_property(name: str, types: T.List[T.Any]) -> property:
     def getter(self: T.Any) -> T.Any:
         return self._internal_fields.get(name)
 

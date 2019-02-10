@@ -17,7 +17,8 @@
 import argparse
 import asyncio
 import sys
-import traceback
+import traceback as tb
+import types
 import typing as T
 
 import quamash
@@ -82,10 +83,14 @@ class Application:
         from bubblesub.ui.main_window import MainWindow
         from bubblesub.cfg import ConfigError
 
-        def on_error(ex_type, ex_obj, ex_tb) -> None:
+        def on_error(
+            type_: T.Type[BaseException],
+            value: BaseException,
+            traceback: types.TracebackType,
+        ) -> None:
             api.log.error("An unhandled error occurred: ")
             api.log.error(
-                "".join(traceback.format_exception(ex_type, ex_obj, ex_tb))
+                "".join(tb.format_exception(type_, value, traceback))
             )
 
         sys.excepthook = on_error

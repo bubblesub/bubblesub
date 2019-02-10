@@ -25,6 +25,7 @@ import parsimonious
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandError, CommandUnavailable
+from bubblesub.ass.event import AssEvent
 from bubblesub.ui.util import time_jump_dialog
 
 GRAMMAR = """
@@ -379,6 +380,7 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
         direction, _, boundary = _flatten(visited)
+        sub: T.Optional[AssEvent]
         try:
             sub = self._api.subs.selected_events[0]
             sub = _Token.prev_next(sub, direction)

@@ -123,7 +123,7 @@ class MainWindow(QtWidgets.QMainWindow):
             event.ignore()
         elif self._closing_state == ClosingState.Ready:
 
-            def on_close(task):
+            def on_close(task: "asyncio.Future[bool]") -> None:
                 if task.result():
                     self._closing_state = ClosingState.Confirmed
                     self.close()

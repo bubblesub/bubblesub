@@ -212,7 +212,7 @@ class Editor(QtWidgets.QWidget):
         api.subs.selection_changed.connect(self._on_selection_change)
 
     @contextlib.contextmanager
-    def _submit_wrapper(self) -> T.Generator:
+    def _submit_wrapper(self) -> T.Iterator[None]:
         with self._api.undo.capture():
             yield
 
