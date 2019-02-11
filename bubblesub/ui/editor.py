@@ -185,11 +185,7 @@ class Editor(QtWidgets.QWidget):
         self.setEnabled(False)
 
         self._data_widget_mapper = ImmediateDataWidgetMapper(
-            model=AssEventsModel(
-                self,
-                api,
-                convert_newlines=self._api.cfg.opt["gui"]["convert_newlines"],
-            ),
+            model=AssEventsModel(self, api),
             signal_map={TextEdit: "textChanged"},
             submit_wrapper=self._submit_wrapper,
         )

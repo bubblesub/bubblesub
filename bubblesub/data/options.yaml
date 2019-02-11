@@ -22,7 +22,6 @@ styles:
 
 gui:
     spell_check: "en_US"
-    convert_newlines: true
     current_palette: "light"
     preview_fonts: true
     try_to_refresh_fonts: true
