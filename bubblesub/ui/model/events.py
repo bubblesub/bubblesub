@@ -53,117 +53,146 @@ class AssEventsModelOptions:
     editable: bool = False
 
 
-def _getattr_proxy(
-    prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[AssEvent, AssEventsModelOptions], T.Any]:
-    def func(subtitle: AssEvent, options: AssEventsModelOptions) -> T.Any:
-        return wrapper(getattr(subtitle, prop_name))
+class _Column:
+    def __init__(self, header: str) -> None:
+        self.header = header
 
-    return func
+    def display(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        raise NotImplementedError("not implemented")
 
+    def read(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        raise NotImplementedError("not implemented")
 
-def _setattr_proxy(
-    prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[AssEvent, AssEventsModelOptions, T.Any], None]:
-    def func(
-        subtitle: AssEvent, options: AssEventsModelOptions, value: T.Any
-    ) -> None:
-        setattr(subtitle, prop_name, wrapper(value))
-
-    return func
+    def write(
+        self, sub: AssEvent, options: AssEventsModelOptions, value: T.Any
+    ) -> T.Any:
+        raise NotImplementedError("not implemented")
 
 
-def _serialize_text(
-    subtitle: AssEvent, options: AssEventsModelOptions
-) -> T.Any:
-    if options.convert_newlines:
-        return subtitle.text.replace("\\N", "\n")
-    return subtitle.text
+class _PropertyColumn:
+    def __init__(self, header: str, property_name: str) -> None:
+        self.header = header
+        self._property_name = property_name
+
+    def display(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return getattr(sub, self._property_name)
+
+    def read(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return getattr(sub, self._property_name)
+
+    def write(
+        self, sub: AssEvent, options: AssEventsModelOptions, value: T.Any
+    ) -> T.Any:
+        setattr(sub, self._property_name, value)
 
 
-def _serialize_note(
-    subtitle: AssEvent, options: AssEventsModelOptions
-) -> T.Any:
-    if options.convert_newlines:
-        return subtitle.note.replace("\\N", "\n")
-    return subtitle.note
+class _BoolPropertyColumn(_PropertyColumn):
+    def write(
+        self, sub: AssEvent, options: AssEventsModelOptions, value: T.Any
+    ) -> T.Any:
+        setattr(sub, self._property_name, bool(value))
 
 
-def _serialize_cps(
-    subtitle: AssEvent, options: AssEventsModelOptions
-) -> T.Any:
-    return (
-        "{:.1f}".format(
-            character_count(subtitle.text) / max(1, subtitle.duration / 1000.0)
+class _IntPropertyColumn(_PropertyColumn):
+    def write(
+        self, sub: AssEvent, options: AssEventsModelOptions, value: T.Any
+    ) -> T.Any:
+        setattr(sub, self._property_name, int(value))
+
+
+class _TextPropertyColumn(_PropertyColumn):
+    def display(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        ret = getattr(sub, self._property_name)
+        if options.convert_newlines:
+            ret = ret.replace("\\N", "\n")
+        return ret
+
+    def read(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return self.display(sub, options)
+
+    def write(
+        self, sub: AssEvent, options: AssEventsModelOptions, value: T.Any
+    ) -> T.Any:
+        setattr(sub, self._property_name, value)
+
+
+class _TimePropertyColumn(_PropertyColumn):
+    def display(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return ms_to_str(getattr(sub, self._property_name))
+
+    def read(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return ms_to_str(getattr(sub, self._property_name))
+
+    def write(
+        self, sub: AssEvent, options: AssEventsModelOptions, value: T.Any
+    ) -> T.Any:
+        setattr(sub, self._property_name, str_to_ms(value))
+
+
+class _CpsColumn(_Column):
+    def __init__(self) -> None:
+        super().__init__("CPS")
+
+    def display(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return (
+            "{:.1f}".format(
+                character_count(sub.text) / max(1, sub.duration / 1000.0)
+            )
+            if sub.duration > 0
+            else "-"
         )
-        if subtitle.duration > 0
-        else "-"
-    )
 
 
-def _serialize_short_duration(
-    subtitle: AssEvent, options: AssEventsModelOptions
-) -> T.Any:
-    return f"{subtitle.duration / 1000.0:.1f}"
+class _ShortDurationColumn(_Column):
+    def __init__(self) -> None:
+        super().__init__("Duration")
+
+    def display(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return f"{sub.duration / 1000.0:.1f}"
+
+    def read(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return f"{sub.duration / 1000.0:.1f}"
 
 
-def _deserialize_long_duration(
-    subtitle: AssEvent, options: AssEventsModelOptions, value: str
-) -> T.Any:
-    subtitle.end = subtitle.start + str_to_ms(value)
+class _LongDurationColumn(_Column):
+    def __init__(self) -> None:
+        super().__init__("Duration (long)")
+
+    def display(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return ms_to_str(sub.duration)
+
+    def read(self, sub: AssEvent, options: AssEventsModelOptions) -> T.Any:
+        return ms_to_str(sub.duration)
+
+    def write(
+        self, sub: AssEvent, options: AssEventsModelOptions, value: T.Any
+    ) -> T.Any:
+        sub.end = sub.start + str_to_ms(value)
 
 
-_HEADERS = {
-    AssEventsModelColumn.Start: "Start",
-    AssEventsModelColumn.End: "End",
-    AssEventsModelColumn.AssStyle: "Style",
-    AssEventsModelColumn.Actor: "Actor",
-    AssEventsModelColumn.Text: "Text",
-    AssEventsModelColumn.Note: "Note",
-    AssEventsModelColumn.ShortDuration: "Duration",
-    AssEventsModelColumn.LongDuration: "Duration (long)",
-    AssEventsModelColumn.CharsPerSec: "CPS",
-    AssEventsModelColumn.Layer: "Layer",
-    AssEventsModelColumn.MarginVertical: "Vertical margin",
-    AssEventsModelColumn.MarginLeft: "Left margin",
-    AssEventsModelColumn.MarginRight: "Right margin",
-    AssEventsModelColumn.IsComment: "Is comment?",
-}
-
-_READER_MAP = {
-    AssEventsModelColumn.Start: _getattr_proxy("start", ms_to_str),
-    AssEventsModelColumn.End: _getattr_proxy("end", ms_to_str),
-    AssEventsModelColumn.AssStyle: _getattr_proxy("style", str),
-    AssEventsModelColumn.Actor: _getattr_proxy("actor", str),
-    AssEventsModelColumn.Text: _serialize_text,
-    AssEventsModelColumn.Note: _serialize_note,
-    AssEventsModelColumn.ShortDuration: _serialize_short_duration,
-    AssEventsModelColumn.LongDuration: _getattr_proxy("duration", ms_to_str),
-    AssEventsModelColumn.CharsPerSec: _serialize_cps,
-    AssEventsModelColumn.Layer: _getattr_proxy("layer", int),
-    AssEventsModelColumn.MarginLeft: _getattr_proxy("margin_left", int),
-    AssEventsModelColumn.MarginRight: _getattr_proxy("margin_right", int),
-    AssEventsModelColumn.MarginVertical: _getattr_proxy(
-        "margin_vertical", int
+_COLUMNS = {
+    AssEventsModelColumn.Start: _TimePropertyColumn("Start", "start"),
+    AssEventsModelColumn.End: _TimePropertyColumn("End", "end"),
+    AssEventsModelColumn.AssStyle: _TextPropertyColumn("Style", "style"),
+    AssEventsModelColumn.Actor: _TextPropertyColumn("Actor", "actor"),
+    AssEventsModelColumn.Text: _TextPropertyColumn("Text", "text"),
+    AssEventsModelColumn.Note: _TextPropertyColumn("Note", "note"),
+    AssEventsModelColumn.ShortDuration: _ShortDurationColumn(),
+    AssEventsModelColumn.LongDuration: _LongDurationColumn(),
+    AssEventsModelColumn.CharsPerSec: _CpsColumn(),
+    AssEventsModelColumn.Layer: _IntPropertyColumn("Layer", "layer"),
+    AssEventsModelColumn.MarginVertical: _IntPropertyColumn(
+        "Vertical margin", "margin_left"
     ),
-    AssEventsModelColumn.IsComment: _getattr_proxy("is_comment", bool),
-}
-
-_WRITER_MAP = {
-    AssEventsModelColumn.Start: _setattr_proxy("start", str_to_ms),
-    AssEventsModelColumn.End: _setattr_proxy("end", str_to_ms),
-    AssEventsModelColumn.AssStyle: _setattr_proxy("style", str),
-    AssEventsModelColumn.Actor: _setattr_proxy("actor", str),
-    AssEventsModelColumn.Text: _setattr_proxy("text", str),
-    AssEventsModelColumn.Note: _setattr_proxy("note", str),
-    AssEventsModelColumn.LongDuration: _deserialize_long_duration,
-    AssEventsModelColumn.Layer: _setattr_proxy("layer", int),
-    AssEventsModelColumn.MarginLeft: _setattr_proxy("margin_left", int),
-    AssEventsModelColumn.MarginRight: _setattr_proxy("margin_right", int),
-    AssEventsModelColumn.MarginVertical: _setattr_proxy(
-        "margin_vertical", int
+    AssEventsModelColumn.MarginLeft: _IntPropertyColumn(
+        "Left margin", "margin_vertical"
     ),
-    AssEventsModelColumn.IsComment: _setattr_proxy("is_comment", bool),
+    AssEventsModelColumn.MarginRight: _IntPropertyColumn(
+        "Right margin", "margin_right"
+    ),
+    AssEventsModelColumn.IsComment: _BoolPropertyColumn(
+        "Is comment?", "is_comment"
+    ),
 }
 
 
@@ -186,7 +215,7 @@ class AssEventsModel(ObservableListTableAdapter):
 
         if orientation == QtCore.Qt.Horizontal:
             if role == QtCore.Qt.DisplayRole:
-                return _HEADERS[AssEventsModelColumn(idx)]
+                return _COLUMNS[AssEventsModelColumn(idx)].header
             if role == QtCore.Qt.TextAlignmentRole:
                 if idx in {
                     AssEventsModelColumn.Text,
@@ -225,9 +254,13 @@ class AssEventsModel(ObservableListTableAdapter):
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter
 
-        if role in {QtCore.Qt.DisplayRole, QtCore.Qt.EditRole}:
-            reader = _READER_MAP[AssEventsModelColumn(col_idx)]
-            return reader(subtitle, self._options)
+        if role == QtCore.Qt.DisplayRole:
+            column = _COLUMNS[AssEventsModelColumn(col_idx)]
+            return column.display(subtitle, self._options)
+
+        if role == QtCore.Qt.EditRole:
+            column = _COLUMNS[AssEventsModelColumn(col_idx)]
+            return column.read(subtitle, self._options)
 
         return QtCore.QVariant()
 
@@ -235,11 +268,11 @@ class AssEventsModel(ObservableListTableAdapter):
         self, row_idx: int, col_idx: int, role: int, new_value: T.Any
     ) -> bool:
         subtitle = self._list[row_idx]
+        column = _COLUMNS[AssEventsModelColumn(col_idx)]
         try:
-            writer = _WRITER_MAP[AssEventsModelColumn(col_idx)]
-        except KeyError:
+            column.write(subtitle, self._options, new_value)
+        except NotImplementedError:
             return False
-        writer(subtitle, self._options, new_value)
         return True
 
     def _get_background_cps(self, subtitle: AssEvent) -> T.Any:
