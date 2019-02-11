@@ -23,9 +23,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.ass.util import spell_check_ass_line
 from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
+from bubblesub.ui.time_edit import TimeEdit
 from bubblesub.ui.util import (
     ImmediateDataWidgetMapper,
-    TimeEdit,
     get_text_edit_row_height,
 )
 

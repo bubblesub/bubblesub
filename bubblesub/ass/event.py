@@ -119,6 +119,15 @@ class AssEvent(ObservableObject):
         """
         return self.end - self.start
 
+    @duration.setter
+    def duration(self, value: int) -> None:
+        """
+        Set new duration.
+
+        :param value: new duration
+        """
+        self.end = self.start + value
+
     @property
     def index(self) -> T.Optional[int]:
         """

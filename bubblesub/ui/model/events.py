@@ -112,10 +112,10 @@ class _TimePropertyColumn(_PropertyColumn):
         return ms_to_str(getattr(sub, self._property_name))
 
     def read(self, sub: AssEvent) -> T.Any:
-        return ms_to_str(getattr(sub, self._property_name))
+        return getattr(sub, self._property_name)
 
     def write(self, sub: AssEvent, value: T.Any) -> T.Any:
-        setattr(sub, self._property_name, str_to_ms(value))
+        setattr(sub, self._property_name, int(value))
 
 
 class _CpsColumn(_Column):
@@ -132,29 +132,20 @@ class _CpsColumn(_Column):
         )
 
 
-class _ShortDurationColumn(_Column):
+class _ShortDurationColumn(_IntPropertyColumn):
     def __init__(self) -> None:
-        super().__init__("Duration")
+        super().__init__("Duration", "duration")
 
     def display(self, sub: AssEvent) -> T.Any:
         return f"{sub.duration / 1000.0:.1f}"
 
-    def read(self, sub: AssEvent) -> T.Any:
-        return f"{sub.duration / 1000.0:.1f}"
 
-
-class _LongDurationColumn(_Column):
+class _LongDurationColumn(_IntPropertyColumn):
     def __init__(self) -> None:
-        super().__init__("Duration (long)")
+        super().__init__("Duration (long)", "duration")
 
     def display(self, sub: AssEvent) -> T.Any:
         return ms_to_str(sub.duration)
-
-    def read(self, sub: AssEvent) -> T.Any:
-        return ms_to_str(sub.duration)
-
-    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
-        sub.end = sub.start + str_to_ms(value)
 
 
 _COLUMNS = {

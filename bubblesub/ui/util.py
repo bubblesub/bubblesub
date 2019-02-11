@@ -24,7 +24,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from pyqtcolordialog import QColorDialog
 
 from bubblesub.data import ROOT_DIR
-from bubblesub.util import ms_to_str, str_to_ms
+from bubblesub.ui.time_edit import TimeEdit
 
 SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
 VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
@@ -121,65 +121,6 @@ class ColorPicker(QtWidgets.QWidget):
             self.changed.emit()
 
     color = QtCore.pyqtProperty(QtGui.QColor, get_color, set_color, user=True)
-
-
-class TimeEdit(QtWidgets.QLineEdit):
-    def __init__(
-        self,
-        parent: QtWidgets.QWidget = None,
-        allow_negative: bool = False,
-        **kwargs: T.Any,
-    ) -> None:
-        super().__init__(parent, **kwargs)
-        self._allow_negative = False
-        self.set_allow_negative(allow_negative)
-
-    def set_allow_negative(self, allow: bool) -> None:
-        self._allow_negative = allow
-        if allow:
-            self.setInputMask("X99:99:99.999")
-            self.setValidator(
-                QtGui.QRegExpValidator(
-                    QtCore.QRegExp(r"[+-]\d\d:\d\d:\d\d\.\d\d\d"),
-                    self.parent(),
-                )
-            )
-        else:
-            self.setInputMask("99:99:99.999")
-        self.reset_text()
-
-    def reset_text(self) -> None:
-        if self._allow_negative:
-            self.setText("+00:00:00.000")
-        else:
-            self.setText("00:00:00.000")
-        self.setCursorPosition(0)
-
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        super().keyPressEvent(event)
-
-        if not event.key() in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Down):
-            return
-
-        value = self.get_value()
-        delta = 10
-        if event.key() == QtCore.Qt.Key_Up:
-            value += delta
-        elif event.key() == QtCore.Qt.Key_Down:
-            value -= delta
-
-        self.set_value(value)
-
-    def get_value(self) -> int:
-        return str_to_ms(self.text())
-
-    def set_value(self, time: int) -> None:
-        text = ms_to_str(time)
-        if self._allow_negative and time >= 0:
-            text = "+" + text
-        self.setText(text)
-        self.textEdited.emit(self.text())
-        self.setCursorPosition(0)
 
 
 async def load_dialog(
@@ -355,7 +296,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
             QtWidgets.QDoubleSpinBox: "valueChanged",
             QtWidgets.QComboBox: "currentTextChanged",
             ColorPicker: "changed",
-            TimeEdit: "textEdited",
+            TimeEdit: "value_changed",
         }
         if signal_map:
             self._signal_map.update(signal_map)
