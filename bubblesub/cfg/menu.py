@@ -56,6 +56,18 @@ class MenuSeparator(MenuItem):
     """Empty horizontal line."""
 
 
+class MenuPlaceholder(MenuItem):
+    """Menu text that does nothing (always disabled)."""
+
+    def __init__(self, text: str) -> None:
+        """
+        Initialize self.
+
+        :param text: text to display
+        """
+        self.text = text
+
+
 class SubMenu(MenuItem):
     """Menu item that opens up another sub menu."""
 

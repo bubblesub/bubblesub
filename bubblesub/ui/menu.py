@@ -23,7 +23,13 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogApi
 from bubblesub.cfg.hotkeys import HotkeyContext
-from bubblesub.cfg.menu import MenuCommand, MenuItem, MenuSeparator, SubMenu
+from bubblesub.cfg.menu import (
+    MenuCommand,
+    MenuItem,
+    MenuPlaceholder,
+    MenuSeparator,
+    SubMenu,
+)
 
 HotkeyMap = T.Dict[T.Tuple[HotkeyContext, str], str]
 
@@ -103,6 +109,11 @@ def setup_cmd_menu(
                 parent.addSeparator()
             elif isinstance(item, SubMenu):
                 stack.append((parent.addMenu(item.name), item.children))
+            elif isinstance(item, MenuPlaceholder):
+                action = QtWidgets.QAction(parent)
+                action.setText(item.text)
+                action.setEnabled(False)
+                parent.addAction(action)
             elif isinstance(item, MenuCommand):
                 try:
                     action = _CommandAction(api, item, parent)

@@ -22,7 +22,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.cfg.hotkeys import HotkeyContext
-from bubblesub.cfg.menu import MenuCommand, MenuContext, MenuSeparator, SubMenu
+from bubblesub.cfg.menu import (
+    MenuCommand,
+    MenuContext,
+    MenuPlaceholder,
+    MenuSeparator,
+    SubMenu,
+)
 from bubblesub.ui.audio import Audio
 from bubblesub.ui.console import Console
 from bubblesub.ui.editor import Editor
@@ -177,20 +183,19 @@ class MainWindow(QtWidgets.QMainWindow):
         return splitter
 
     def _setup_menu(self) -> None:
+        plugin_menu = self._api.cmd.get_plugin_menu_items()
+        if not plugin_menu:
+            plugin_menu = [MenuPlaceholder("(no plugins found)")]
+        plugin_menu = [
+            MenuCommand("Reload plugins", "reload-cmds"),
+            MenuSeparator(),
+        ] + plugin_menu
+
         setup_cmd_menu(
             self._api,
             self.menuBar(),
             self._api.cfg.menu[MenuContext.MainMenu]
-            + [
-                SubMenu(
-                    "Pl&ugins",
-                    [
-                        MenuCommand("Reload plugins", "reload-cmds"),
-                        MenuSeparator(),
-                    ]
-                    + self._api.cmd.get_plugin_menu_items(),
-                )
-            ],
+            + [SubMenu("Pl&ugins", plugin_menu)],
             HotkeyContext.Global,
         )
 
