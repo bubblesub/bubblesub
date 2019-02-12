@@ -78,7 +78,7 @@ class MediaApi(QtCore.QObject):
         self.receive_max_pts_change.connect(self._on_max_pts_change)
         self.receive_ready.connect(self._on_ready)
 
-        self.video = VideoApi(self, log_api)
+        self.video = VideoApi(self, log_api, subs_api)
         self.audio = AudioApi(self, log_api, subs_api)
 
     def shutdown(self) -> None:

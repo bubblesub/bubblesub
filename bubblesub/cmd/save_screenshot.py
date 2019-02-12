@@ -35,16 +35,17 @@ class SaveScreenshotCommand(BaseCommand):
         return self.api.media.is_loaded
 
     async def run(self) -> None:
-        self.api.media.is_paused = True
         assert self.api.media.path
+
+        pts = self.api.media.current_pts
         path = await self.args.path.get_save_path(
             file_filter="Portable Network Graphics (*.png)",
             default_file_name="shot-{}-{}.png".format(
-                self.api.media.path.name, ms_to_str(self.api.media.current_pts)
+                self.api.media.path.name, ms_to_str(pts)
             ),
         )
 
-        self.api.media.video.screenshot(path, self.args.include_subs)
+        self.api.media.video.screenshot(pts, path, self.args.include_subs)
         self.api.log.info(f"saved screenshot to {path}")
 
     @staticmethod

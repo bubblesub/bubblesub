@@ -98,7 +98,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         api.media.request_seek.connect(self._on_request_seek)
         api.media.request_playback.connect(self._on_request_playback)
-        api.media.video.request_screenshot.connect(self._on_request_screenshot)
         api.media.state_changed.connect(self._on_media_state_change)
         api.media.playback_speed_changed.connect(
             self._on_playback_speed_change
@@ -188,15 +187,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._mpv.command("seek", ms_to_str(start), "absolute")
         self._set_end(end)
         self._mpv.set_property("pause", False)
-
-    def _on_request_screenshot(
-        self, path: str, include_subtitles: bool
-    ) -> None:
-        self._mpv.command(
-            "screenshot-to-file",
-            str(path),
-            "subtitles" if include_subtitles else "video",
-        )
 
     def _on_playback_speed_change(self) -> None:
         self._mpv.set_property("speed", float(self._api.media.playback_speed))

@@ -24,11 +24,14 @@ from pathlib import Path
 
 import ffms
 import numpy as np
+import PIL.Image
 from PyQt5 import QtCore
 
 import bubblesub.api.media.media  # pylint: disable=unused-import
 from bubblesub.api.log import LogApi
 from bubblesub.api.media.state import MediaState
+from bubblesub.api.subs import SubtitlesApi
+from bubblesub.ui.ass_renderer import AssRenderer
 from bubblesub.worker import Worker
 
 _LOADING = object()
@@ -71,10 +74,12 @@ class VideoApi(QtCore.QObject):
     """The video API."""
 
     parsed = QtCore.pyqtSignal()
-    request_screenshot = QtCore.pyqtSignal(str, bool)
 
     def __init__(
-        self, media_api: "bubblesub.api.media.media.MediaApi", log_api: LogApi
+        self,
+        media_api: "bubblesub.api.media.media.MediaApi",
+        log_api: LogApi,
+        subs_api: SubtitlesApi,
     ) -> None:
         """
         Initialize self.
@@ -84,6 +89,7 @@ class VideoApi(QtCore.QObject):
         """
         super().__init__()
 
+        self._subs_api = subs_api
         self._media_api = media_api
         self._media_api.state_changed.connect(self._on_media_state_change)
 
@@ -92,6 +98,7 @@ class VideoApi(QtCore.QObject):
         self._width = 0
         self._height = 0
 
+        self._ass_renderer = AssRenderer()
         self._video_source: T.Union[None, ffms.VideoSource] = None
         self._video_source_worker = VideoSourceWorker(log_api)
         self._video_source_worker.task_finished.connect(self._got_video_source)
@@ -104,14 +111,35 @@ class VideoApi(QtCore.QObject):
         """Stop internal worker threads."""
         self._video_source_worker.stop()
 
-    def screenshot(self, path: Path, include_subtitles: bool) -> None:
+    def screenshot(
+        self, pts: int, path: Path, include_subtitles: bool
+    ) -> None:
         """
         Save a screenshot into specified destination.
 
+        :param pts: pts to make screenshot of
         :param path: path to save the screenshot to
         :param include_subtitles: whether to 'burn in' the subtitles
         """
-        self.request_screenshot.emit(str(path), include_subtitles)
+        pts = self.align_pts_to_prev_frame(pts)
+        idx = self.timecodes.index(pts)
+        frame = self.get_frame(idx, self.width, self.height)
+        image = PIL.Image.frombytes("RGB", (self.width, self.height), frame)
+        if include_subtitles:
+            self._ass_renderer.set_source(
+                self._subs_api.styles,
+                self._subs_api.events,
+                self._subs_api.meta,
+                (self.width, self.height),
+            )
+
+            red, green, blue, alpha = self._ass_renderer.render(
+                time=pts
+            ).split()
+            top = PIL.Image.merge("RGB", (red, green, blue))
+            mask = PIL.Image.merge("L", (alpha,))
+            image.paste(top, (0, 0), mask)
+        image.save(str(path))
 
     def align_pts_to_near_frame(self, pts: int) -> int:
         """
