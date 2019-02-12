@@ -54,9 +54,10 @@ class Audio(QtWidgets.QWidget):
         self._video_preview.shutdown()
 
     def _sync_selection(self) -> None:
-        if len(self._api.subs.selected_indexes) == 1:
-            sub = self._api.subs.selected_events[0]
-            self._api.media.audio.view(sub.start - 10000, sub.end + 10000)
-            self._api.media.audio.select(sub.start, sub.end)
+        if len(self._api.subs.selected_indexes) >= 1:
+            first_sub = self._api.subs.selected_events[0]
+            last_sub = self._api.subs.selected_events[-1]
+            self._api.media.audio.view(first_sub.start - 10000, last_sub.end + 10000)
+            self._api.media.audio.select(first_sub.start, last_sub.end)
         else:
             self._api.media.audio.unselect()
