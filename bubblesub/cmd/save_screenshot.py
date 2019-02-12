@@ -35,6 +35,7 @@ class SaveScreenshotCommand(BaseCommand):
         return self.api.media.is_loaded
 
     async def run(self) -> None:
+        self.api.media.is_paused = True
         assert self.api.media.path
 
         pts = await self.args.pts.get()
