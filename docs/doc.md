@@ -216,8 +216,9 @@ Usage: `save‑as [-p|--path=…]`
 ### <a name="cmd-save-audio-sample"></a>`save‑audio‑sample`
 Saves given subtitles to a WAV file. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
 
-Usage: `save‑audio‑sample [-t|--target=selected] [-p|--path=…]`
-* `-t`, `--target`: subtitles to save audio from
+Usage: `save‑audio‑sample [-s|--start=a.s] [-e|--end=a.e] [-p|--path=…]`
+* `-s`, `--start`: start of the audio sample
+* `-e`, `--end`: end of the audio sample
 * `-p`, `--path`: path to save the sample to
 
 ### <a name="cmd-save-screenshot"></a>`save‑screenshot`
