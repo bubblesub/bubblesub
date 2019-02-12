@@ -223,10 +223,12 @@ Usage: `save‑audio‑sample [-t|--target=selected] [-p|--path=…]`
 ### <a name="cmd-save-screenshot"></a>`save‑screenshot`
 Makes a screenshot of given video frame. Prompts user to choose where to save the file to if the path wasn't specified in the command arguments.
 
-Usage: `save‑screenshot [--pts=cf] [-p|--path=…] [-i|--include-subs]`
+Usage: `save‑screenshot [--pts=cf] [-p|--path=…] [-i|--include-subs] [--width=…] [--height=…]`
 * `--pts`: which frame to make screenshot of
 * `-p`, `--path`: path to save the screenshot to
 * `-i`, `--include-subs`: whether to "burn" the subtitles into the screenshot
+* `--width`: width of the screenshot (by default, original video width)
+* `--height`: height of the screenshot (by default, original video width)
 
 ### <a name="cmd-search"></a>`search`
 Opens up the search dialog.

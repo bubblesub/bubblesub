@@ -112,7 +112,12 @@ class VideoApi(QtCore.QObject):
         self._video_source_worker.stop()
 
     def screenshot(
-        self, pts: int, path: Path, include_subtitles: bool
+        self,
+        pts: int,
+        path: Path,
+        include_subtitles: bool,
+        width: T.Optional[int],
+        height: T.Optional[int],
     ) -> None:
         """
         Save a screenshot into specified destination.
@@ -121,16 +126,25 @@ class VideoApi(QtCore.QObject):
         :param path: path to save the screenshot to
         :param include_subtitles: whether to 'burn in' the subtitles
         """
+
+        if not width and not height:
+            width = self.width
+            height = self.height
+        if not width:
+            width = int(self.width * height / self.height)
+        if not height:
+            height = int(self.height * width / self.width)
+
         pts = self.align_pts_to_prev_frame(pts)
         idx = self.timecodes.index(pts)
-        frame = self.get_frame(idx, self.width, self.height)
-        image = PIL.Image.frombytes("RGB", (self.width, self.height), frame)
+        frame = self.get_frame(idx, width, height)
+        image = PIL.Image.frombytes("RGB", (width, height), frame)
         if include_subtitles:
             self._ass_renderer.set_source(
                 self._subs_api.styles,
                 self._subs_api.events,
                 self._subs_api.meta,
-                (self.width, self.height),
+                (width, height),
             )
 
             red, green, blue, alpha = self._ass_renderer.render(

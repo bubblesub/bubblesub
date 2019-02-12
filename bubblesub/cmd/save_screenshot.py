@@ -45,7 +45,13 @@ class SaveScreenshotCommand(BaseCommand):
             ),
         )
 
-        self.api.media.video.screenshot(pts, path, self.args.include_subs)
+        self.api.media.video.screenshot(
+            pts,
+            path,
+            self.args.include_subs,
+            self.args.width,
+            self.args.height,
+        )
         self.api.log.info(f"saved screenshot to {path}")
 
     @staticmethod
@@ -68,6 +74,20 @@ class SaveScreenshotCommand(BaseCommand):
             "--include-subs",
             help='whether to "burn" the subtitles into the screenshot',
             action="store_true",
+        )
+        parser.add_argument(
+            "--width",
+            help="width of the screenshot (by default, original video width)",
+            type=int,
+        )
+        parser.add_argument(
+            "--height",
+            help="height of the screenshot (by default, original video width)",
+            type=int,
+        )
+        parser.epilog = (
+            "If only either of width or height is given, "
+            "the command tries to maintain aspect ratio."
         )
 
 
