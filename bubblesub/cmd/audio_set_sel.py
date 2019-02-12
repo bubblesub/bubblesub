@@ -21,14 +21,14 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import Pts
 
 
-class AudioShiftSelectionCommand(BaseCommand):
+class AudioSetSelectionCommand(BaseCommand):
     names = [
-        "audio-shift-sel",
-        "audio-shift-selection",
-        "spectrogram-shift-sel",
-        "spectrogram-shift-selection",
+        "audio-set-sel",
+        "audio-set-selection",
+        "spectrogram-set-sel",
+        "spectrogram-set-selection",
     ]
-    help_text = "Shfits the spectrogram selection."
+    help_text = "Sets the spectrogram selection."
 
     async def run(self) -> None:
         with self.api.undo.capture():
@@ -52,13 +52,13 @@ class AudioShiftSelectionCommand(BaseCommand):
         parser.add_argument(
             "-s",
             "--start",
-            help="amount to shift the start of the selection by",
+            help="new start of the selection",
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
             "-e",
             "--end",
-            help="amount to shift the end of the selection by",
+            help="new end of the selection",
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
@@ -68,4 +68,4 @@ class AudioShiftSelectionCommand(BaseCommand):
         )
 
 
-COMMANDS = [AudioShiftSelectionCommand]
+COMMANDS = [AudioSetSelectionCommand]
