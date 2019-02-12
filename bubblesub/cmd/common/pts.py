@@ -71,7 +71,7 @@ _                = ~'\\s*'
 decimal           = ~'\\d+(\\.\\d+)?'
 integer           = ~'\\d+'
 operator         = '+' / '-'
-rel              = 'c' / 'p' / 'n'
+rel              = 'c' / 'p' / 'n' / 'l' / 'f'
 start            = '.start' / '.s'
 end              = '.end' / '.e'
 """
@@ -121,6 +121,9 @@ class _Token(enum.IntEnum):
     previous = enum.auto()
     next = enum.auto()
     current = enum.auto()
+    first = enum.auto()
+    last = enum.auto()
+
     start = enum.auto()
     end = enum.auto()
 
@@ -329,6 +332,8 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
                 "c": _Token.current,
                 "p": _Token.previous,
                 "n": _Token.next,
+                "f": _Token.first,
+                "l": _Token.last,
             }[node.text]
         except LookupError:
             raise NotImplementedError(f"unknown relation: {node.text}")
@@ -393,8 +398,13 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         direction, _, boundary = _flatten(visited)
         sub: T.Optional[AssEvent]
         try:
-            sub = self._api.subs.selected_events[0]
-            sub = _Token.prev_next(sub, direction)
+            if direction == _Token.first:
+                sub = self._api.subs.events[0]
+            elif direction == _Token.last:
+                sub = self._api.subs.events[-1]
+            else:
+                sub = self._api.subs.selected_events[0]
+                sub = _Token.prev_next(sub, direction)
         except LookupError:
             sub = None
         return _Time(_Token.start_end(sub, boundary) if sub else 0)
@@ -404,6 +414,10 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     ) -> T.Any:
         direction, _ = _flatten(visited)
         origin = self._api.media.current_pts
+        if direction == _Token.first:
+            return _Time(1, _TimeUnit.frame)
+        if direction == _Token.last:
+            return _Time(len(self._api.media.video.timecodes), _TimeUnit.frame)
         if direction == _Token.current:
             return _Time(origin)
         delta = _Token.delta_from_direction(direction)
@@ -414,6 +428,12 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     ) -> T.Any:
         direction, _ = _flatten(visited)
         origin = self._api.media.current_pts
+        if direction == _Token.first:
+            return _Time(1, _TimeUnit.keyframe)
+        if direction == _Token.last:
+            return _Time(
+                len(self._api.media.video.keyframes), _TimeUnit.keyframe
+            )
         delta = _Token.delta_from_direction(direction)
         return _Time(_apply_keyframe(self._api, origin, delta))
 
