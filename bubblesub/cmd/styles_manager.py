@@ -26,7 +26,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import AssEvent, AssEventList
 from bubblesub.ass.meta import AssMeta
 from bubblesub.ass.style import AssStyle, AssStyleList
-from bubblesub.ui.ass_renderer import AssRenderer
+from bubblesub.ass_renderer import AssRenderer
 from bubblesub.ui.font_combo_box import FontComboBox, refresh_font_db
 from bubblesub.ui.model.styles import AssStylesModel, AssStylesModelColumn
 from bubblesub.ui.util import (

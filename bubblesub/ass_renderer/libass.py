@@ -26,9 +26,7 @@ import typing as T
 import numpy as np
 import PIL.Image
 
-from bubblesub.ass.event import AssEvent, AssEventList
-from bubblesub.ass.meta import AssMeta
-from bubblesub.ass.style import AssStyle, AssStyleList
+import bubblesub.ass
 
 _libass = ctypes.cdll.LoadLibrary(ctypes.util.find_library("ass"))
 _libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
@@ -43,19 +41,19 @@ def _color_to_int(color: T.Tuple[int, int, int, int]) -> int:
     return alpha | (blue << 8) | (green << 16) | (red << 24)
 
 
-class _AssImageSequence:
-    def __init__(self, renderer: "_AssRenderer", head_ptr: T.Any) -> None:
+class AssImageSequence:
+    def __init__(self, renderer: "AssRenderer", head_ptr: T.Any) -> None:
         self.renderer = renderer
         self.head_ptr = head_ptr
 
-    def __iter__(self) -> T.Iterator["_AssImage"]:
+    def __iter__(self) -> T.Iterator["AssImage"]:
         cur = self.head_ptr
         while cur:
             yield cur.contents
             cur = cur.contents.next_ptr
 
 
-class _AssImage(ctypes.Structure):
+class AssImage(ctypes.Structure):
     TYPE_CHARACTER = 0
     TYPE_OUTLINE = 1
     TYPE_SHADOW = 2
@@ -74,7 +72,7 @@ class _AssImage(ctypes.Structure):
         return ord(self.bitmap[y * self.stride + x])
 
 
-_AssImage._fields_ = [
+AssImage._fields_ = [
     ("w", ctypes.c_int),
     ("h", ctypes.c_int),
     ("stride", ctypes.c_int),
@@ -82,7 +80,7 @@ _AssImage._fields_ = [
     ("color", ctypes.c_uint32),
     ("dst_x", ctypes.c_int),
     ("dst_y", ctypes.c_int),
-    ("next_ptr", ctypes.POINTER(_AssImage)),
+    ("next_ptr", ctypes.POINTER(AssImage)),
     ("type", ctypes.c_int),
 ]
 
@@ -110,7 +108,7 @@ def _make_libass_property(name: str, types: T.List[T.Any]) -> property:
     return property(getter, _make_libass_setter(name, types))
 
 
-class _AssContext(ctypes.Structure):
+class AssContext(ctypes.Structure):
     fonts_dir = _make_libass_property("ass_set_fonts_dir", [ctypes.c_char_p])
     extract_fonts = _make_libass_property(
         "ass_set_extract_fonts", [ctypes.c_int]
@@ -131,18 +129,18 @@ class _AssContext(ctypes.Structure):
     def __del__(self) -> None:
         _libass.ass_library_done(ctypes.byref(self))
 
-    def make_renderer(self) -> "_AssRenderer":
+    def make_renderer(self) -> "AssRenderer":
         renderer = _libass.ass_renderer_init(ctypes.byref(self)).contents
         renderer._after_init(self)
         return renderer
 
-    def make_track(self) -> "_AssTrack":
+    def make_track(self) -> "AssTrack":
         track = _libass.ass_new_track(ctypes.byref(self)).contents
         track._after_init(self)
         return track
 
 
-class _AssRenderer(ctypes.Structure):
+class AssRenderer(ctypes.Structure):
     SHAPING_SIMPLE = 0
     SHAPING_COMPLEX = 1
 
@@ -180,7 +178,7 @@ class _AssRenderer(ctypes.Structure):
         "ass_set_line_position", [ctypes.c_double]
     )
 
-    def _after_init(self, ctx: "_AssContext") -> None:
+    def _after_init(self, ctx: "AssContext") -> None:
         self._ctx = ctx
         self._fonts_set = False
         self._internal_fields: T.Any = {}
@@ -206,7 +204,7 @@ class _AssRenderer(ctypes.Structure):
             ctypes.byref(self),
             _encode_str(default_font),
             _encode_str(default_family),
-            _AssRenderer.FONTPROVIDER_AUTODETECT,
+            AssRenderer.FONTPROVIDER_AUTODETECT,
             _encode_str(fontconfig_config),
             True,  # update font config now?
         )
@@ -221,7 +219,7 @@ class _AssRenderer(ctypes.Structure):
         "ass_set_cache_limits", [ctypes.c_int, ctypes.c_int]
     )
 
-    def render_frame(self, track: "_AssTrack", now: int) -> _AssImageSequence:
+    def render_frame(self, track: "AssTrack", now: int) -> AssImageSequence:
         if not self._fonts_set:
             raise RuntimeError("set_fonts before rendering")
         head = _libass.ass_render_frame(
@@ -230,10 +228,10 @@ class _AssRenderer(ctypes.Structure):
             now,
             ctypes.POINTER(ctypes.c_int)(),
         )
-        return _AssImageSequence(self, head)
+        return AssImageSequence(self, head)
 
 
-class _AssStyle(ctypes.Structure):
+class AssStyle(ctypes.Structure):
     _fields_ = [
         ("name", ctypes.c_char_p),
         ("fontname", ctypes.c_char_p),
@@ -272,10 +270,10 @@ class _AssStyle(ctypes.Structure):
         res += v * 4
         return res
 
-    def _after_init(self, track: "_AssTrack") -> None:
+    def _after_init(self, track: "AssTrack") -> None:
         self._track = track
 
-    def populate(self, style: AssStyle) -> None:
+    def populate(self, style: bubblesub.ass.style.AssStyle) -> None:
         self.name = _encode_str(style.name)
         self.fontname = _encode_str(style.font_name)
         self.fontsize = style.font_size
@@ -294,14 +292,14 @@ class _AssStyle(ctypes.Structure):
         self.border_style = style.border_style
         self.outline = style.outline
         self.shadow = style.shadow
-        self.alignment = _AssStyle._numpad_align(style.alignment)
+        self.alignment = AssStyle._numpad_align(style.alignment)
         self.margin_l = style.margin_left
         self.margin_r = style.margin_right
         self.margin_v = style.margin_vertical
         self.encoding = style.encoding
 
 
-class _AssEvent(ctypes.Structure):
+class AssEvent(ctypes.Structure):
     _fields_ = [
         ("start_ms", ctypes.c_longlong),
         ("duration_ms", ctypes.c_longlong),
@@ -317,7 +315,7 @@ class _AssEvent(ctypes.Structure):
         ("render_priv", ctypes.c_void_p),
     ]
 
-    def _after_init(self, track: "_AssTrack") -> None:
+    def _after_init(self, track: "AssTrack") -> None:
         self._track = track
 
     def _style_name_to_style_id(self, name: str) -> int:
@@ -326,7 +324,7 @@ class _AssEvent(ctypes.Structure):
                 return i
         return -1
 
-    def populate(self, event: AssEvent) -> None:
+    def populate(self, event: bubblesub.ass.event.AssEvent) -> None:
         self.start_ms = int(event.start)
         self.duration_ms = int(event.end - event.start)
         self.layer = event.layer
@@ -339,7 +337,7 @@ class _AssEvent(ctypes.Structure):
         self.text = _encode_str(event.text)
 
 
-class _AssTrack(ctypes.Structure):
+class AssTrack(ctypes.Structure):
     TYPE_UNKNOWN = 0
     TYPE_ASS = 1
     TYPE_SSA = 2
@@ -349,8 +347,8 @@ class _AssTrack(ctypes.Structure):
         ("max_styles", ctypes.c_int),
         ("n_events", ctypes.c_int),
         ("max_events", ctypes.c_int),
-        ("styles_arr", ctypes.POINTER(_AssStyle)),
-        ("events_arr", ctypes.POINTER(_AssEvent)),
+        ("styles_arr", ctypes.POINTER(AssStyle)),
+        ("events_arr", ctypes.POINTER(AssEvent)),
         ("style_format", ctypes.c_char_p),
         ("event_format", ctypes.c_char_p),
         ("track_type", ctypes.c_int),
@@ -364,35 +362,35 @@ class _AssTrack(ctypes.Structure):
         ("ycbcr_matrix", ctypes.c_int),
         ("default_style", ctypes.c_int),
         ("name", ctypes.c_char_p),
-        ("library", ctypes.POINTER(_AssContext)),
+        ("library", ctypes.POINTER(AssContext)),
         ("parser_priv", ctypes.c_void_p),
     ]
 
-    def _after_init(self, ctx: _AssContext) -> None:
+    def _after_init(self, ctx: AssContext) -> None:
         self._ctx = ctx
 
     @property
-    def styles(self) -> T.List[_AssStyle]:
+    def styles(self) -> T.List[AssStyle]:
         if self.n_styles == 0:
             return []
         return ctypes.cast(
-            self.styles_arr, ctypes.POINTER(_AssStyle * self.n_styles)
+            self.styles_arr, ctypes.POINTER(AssStyle * self.n_styles)
         ).contents
 
     @property
-    def events(self) -> T.List[_AssEvent]:
+    def events(self) -> T.List[AssEvent]:
         if self.n_events == 0:
             return []
         return ctypes.cast(
-            self.events_arr, ctypes.POINTER(_AssEvent * self.n_events)
+            self.events_arr, ctypes.POINTER(AssEvent * self.n_events)
         ).contents
 
-    def make_style(self) -> _AssStyle:
+    def make_style(self) -> AssStyle:
         style = self.styles_arr[_libass.ass_alloc_style(ctypes.byref(self))]
         style._after_init(self)
         return style
 
-    def make_event(self) -> _AssEvent:
+    def make_event(self) -> AssEvent:
         event = self.events_arr[_libass.ass_alloc_event(ctypes.byref(self))]
         event._after_init(self)
         return event
@@ -405,9 +403,11 @@ class _AssTrack(ctypes.Structure):
         _libc.free(ctypes.byref(self))
 
     def populate(
-        self, style_list: AssStyleList, event_list: AssEventList
+        self,
+        style_list: bubblesub.ass.style.AssStyleList,
+        event_list: bubblesub.ass.event.AssEventList,
     ) -> None:
-        self.type = _AssTrack.TYPE_ASS
+        self.type = AssTrack.TYPE_ASS
 
         self.style_format = _encode_str(
             "Name, Fontname, Fontsize, "
@@ -434,146 +434,41 @@ class _AssTrack(ctypes.Structure):
 
 
 _libc.free.argtypes = [ctypes.c_void_p]
-_libass.ass_library_init.restype = ctypes.POINTER(_AssContext)
-_libass.ass_library_done.argtypes = [ctypes.POINTER(_AssContext)]
-_libass.ass_renderer_init.argtypes = [ctypes.POINTER(_AssContext)]
-_libass.ass_renderer_init.restype = ctypes.POINTER(_AssRenderer)
-_libass.ass_renderer_done.argtypes = [ctypes.POINTER(_AssRenderer)]
-_libass.ass_new_track.argtypes = [ctypes.POINTER(_AssContext)]
-_libass.ass_new_track.restype = ctypes.POINTER(_AssTrack)
+_libass.ass_library_init.restype = ctypes.POINTER(AssContext)
+_libass.ass_library_done.argtypes = [ctypes.POINTER(AssContext)]
+_libass.ass_renderer_init.argtypes = [ctypes.POINTER(AssContext)]
+_libass.ass_renderer_init.restype = ctypes.POINTER(AssRenderer)
+_libass.ass_renderer_done.argtypes = [ctypes.POINTER(AssRenderer)]
+_libass.ass_new_track.argtypes = [ctypes.POINTER(AssContext)]
+_libass.ass_new_track.restype = ctypes.POINTER(AssTrack)
 _libass.ass_set_style_overrides.argtypes = [
-    ctypes.POINTER(_AssContext),
+    ctypes.POINTER(AssContext),
     ctypes.POINTER(ctypes.c_char_p),
 ]
 _libass.ass_set_fonts.argtypes = [
-    ctypes.POINTER(_AssRenderer),
+    ctypes.POINTER(AssRenderer),
     ctypes.c_char_p,
     ctypes.c_char_p,
     ctypes.c_int,
     ctypes.c_char_p,
     ctypes.c_int,
 ]
-_libass.ass_fonts_update.argtypes = [ctypes.POINTER(_AssRenderer)]
+_libass.ass_fonts_update.argtypes = [ctypes.POINTER(AssRenderer)]
 _libass.ass_render_frame.argtypes = [
-    ctypes.POINTER(_AssRenderer),
-    ctypes.POINTER(_AssTrack),
+    ctypes.POINTER(AssRenderer),
+    ctypes.POINTER(AssTrack),
     ctypes.c_longlong,
     ctypes.POINTER(ctypes.c_int),
 ]
-_libass.ass_render_frame.restype = ctypes.POINTER(_AssImage)
+_libass.ass_render_frame.restype = ctypes.POINTER(AssImage)
 _libass.ass_read_memory.argtypes = [
-    ctypes.POINTER(_AssContext),
+    ctypes.POINTER(AssContext),
     ctypes.c_char_p,
     ctypes.c_size_t,
     ctypes.c_char_p,
 ]
-_libass.ass_read_memory.restype = ctypes.POINTER(_AssTrack)
-_libass.ass_alloc_style.argtypes = [ctypes.POINTER(_AssTrack)]
+_libass.ass_read_memory.restype = ctypes.POINTER(AssTrack)
+_libass.ass_alloc_style.argtypes = [ctypes.POINTER(AssTrack)]
 _libass.ass_alloc_style.restype = ctypes.c_int
-_libass.ass_alloc_event.argtypes = [ctypes.POINTER(_AssTrack)]
+_libass.ass_alloc_event.argtypes = [ctypes.POINTER(AssTrack)]
 _libass.ass_alloc_event.restype = ctypes.c_int
-
-
-class AssRenderer:
-    """Public renderer facade"""
-
-    def __init__(self) -> None:
-        self._ctx = _AssContext()
-        self._renderer = self._ctx.make_renderer()
-        self._renderer.set_fonts()
-        self._track: T.Optional["_AssTrack"] = None
-        self.style_list: T.Optional[AssStyleList] = None
-        self.event_list: T.Optional[AssEventList] = None
-        self.meta: T.Optional[AssMeta] = None
-        self.video_resolution: T.Optional[T.Tuple[int, int]] = None
-
-    def set_source(
-        self,
-        style_list: AssStyleList,
-        event_list: AssEventList,
-        meta: AssMeta,
-        video_resolution: T.Tuple[int, int],
-    ) -> None:
-        self.style_list = style_list
-        self.event_list = event_list
-        self.meta = meta
-        self.video_resolution = video_resolution
-
-        self._track = self._ctx.make_track()
-        self._track.populate(style_list, event_list)
-
-        self._track.play_res_x = int(meta.get("PlayResX", video_resolution[0]))
-        self._track.play_res_y = int(meta.get("PlayResY", video_resolution[1]))
-        self._track.wrap_style = int(meta.get("WrapStyle", 1))
-        self._track.scaled_border_and_shadow = (
-            meta.get("ScaledBorderAndShadow", "yes") == "yes"
-        )
-
-        self._renderer.storage_size = (
-            self._track.play_res_x,
-            self._track.play_res_y,
-        )
-        self._renderer.frame_size = video_resolution
-        self._renderer.pixel_aspect = 1.0
-
-    def render(self, time: int) -> PIL.Image:
-        if self._track is None:
-            raise ValueError("need source to render")
-
-        if any(dim <= 0 for dim in self._renderer.frame_size):
-            raise ValueError("resolution needs to be a positive integer")
-
-        image_data = np.zeros(
-            (self._renderer.frame_size[1], self._renderer.frame_size[0], 4),
-            dtype=np.uint8,
-        )
-
-        for layer in self.render_raw(time):
-            red, green, blue, alpha = layer.rgba
-
-            mask_data = np.lib.stride_tricks.as_strided(
-                np.frombuffer(
-                    (ctypes.c_uint8 * (layer.stride * layer.h)).from_address(
-                        ctypes.addressof(layer.bitmap.contents)
-                    ),
-                    dtype=np.uint8,
-                ),
-                (layer.h, layer.w),
-                (layer.stride, 1),
-            )
-
-            overlay = np.zeros((layer.h, layer.w, 4), dtype=np.uint8)
-            overlay[..., :3] = (red, green, blue)
-            overlay[..., 3] = mask_data
-            overlay[..., 3] = (overlay[..., 3] * (1.0 - alpha / 255.0)).astype(
-                np.uint8
-            )
-
-            fragment = image_data[
-                layer.dst_y : layer.dst_y + layer.h,
-                layer.dst_x : layer.dst_x + layer.w,
-            ]
-
-            src_color = overlay[..., :3].astype(np.float32) / 255.0
-            src_alpha = overlay[..., 3].astype(np.float32) / 255.0
-            dst_color = fragment[..., :3].astype(np.float32) / 255.0
-            dst_alpha = fragment[..., 3].astype(np.float32) / 255.0
-
-            out_alpha = src_alpha + dst_alpha * (1.0 - src_alpha)
-            out_color = (
-                src_color * src_alpha[..., None]
-                + dst_color
-                * dst_alpha[..., None]
-                * (1.0 - src_alpha[..., None])
-            ) / out_alpha[..., None]
-
-            fragment[..., :3] = out_color * 255
-            fragment[..., 3] = out_alpha * 255
-
-        return PIL.Image.fromarray(image_data)
-
-    def render_raw(self, time: int) -> _AssImageSequence:
-        if self._track is None:
-            raise ValueError("need source to render")
-
-        return self._renderer.render_frame(self._track, now=time)

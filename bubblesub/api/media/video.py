@@ -31,7 +31,7 @@ import bubblesub.api.media.media  # pylint: disable=unused-import
 from bubblesub.api.log import LogApi
 from bubblesub.api.media.state import MediaState
 from bubblesub.api.subs import SubtitlesApi
-from bubblesub.ui.ass_renderer import AssRenderer
+from bubblesub.ass_renderer import AssRenderer
 from bubblesub.worker import Worker
 
 _LOADING = object()

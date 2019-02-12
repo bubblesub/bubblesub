@@ -1,0 +1,132 @@
+# bubblesub - ASS subtitle editor
+# Copyright (C) 2018 Marcin Kurczewski
+# Copyright (c) 2014 Tony Young
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import ctypes
+import typing as T
+
+import numpy as np
+import PIL.Image
+
+from bubblesub.ass.event import AssEventList
+from bubblesub.ass.meta import AssMeta
+from bubblesub.ass.style import AssStyleList
+from bubblesub.ass_renderer import libass
+
+
+class AssRenderer:
+    """Public renderer facade"""
+
+    def __init__(self) -> None:
+        self._ctx = libass.AssContext()
+        self._renderer = self._ctx.make_renderer()
+        self._renderer.set_fonts()
+        self._track: T.Optional[libass.AssTrack] = None
+        self.style_list: T.Optional[AssStyleList] = None
+        self.event_list: T.Optional[AssEventList] = None
+        self.meta: T.Optional[AssMeta] = None
+        self.video_resolution: T.Optional[T.Tuple[int, int]] = None
+
+    def set_source(
+        self,
+        style_list: AssStyleList,
+        event_list: AssEventList,
+        meta: AssMeta,
+        video_resolution: T.Tuple[int, int],
+    ) -> None:
+        self.style_list = style_list
+        self.event_list = event_list
+        self.meta = meta
+        self.video_resolution = video_resolution
+
+        self._track = self._ctx.make_track()
+        self._track.populate(style_list, event_list)
+
+        self._track.play_res_x = int(meta.get("PlayResX", video_resolution[0]))
+        self._track.play_res_y = int(meta.get("PlayResY", video_resolution[1]))
+        self._track.wrap_style = int(meta.get("WrapStyle", 1))
+        self._track.scaled_border_and_shadow = (
+            meta.get("ScaledBorderAndShadow", "yes") == "yes"
+        )
+
+        self._renderer.storage_size = (
+            self._track.play_res_x,
+            self._track.play_res_y,
+        )
+        self._renderer.frame_size = video_resolution
+        self._renderer.pixel_aspect = 1.0
+
+    def render(self, time: int) -> PIL.Image:
+        if self._track is None:
+            raise ValueError("need source to render")
+
+        if any(dim <= 0 for dim in self._renderer.frame_size):
+            raise ValueError("resolution needs to be a positive integer")
+
+        image_data = np.zeros(
+            (self._renderer.frame_size[1], self._renderer.frame_size[0], 4),
+            dtype=np.uint8,
+        )
+
+        for layer in self.render_raw(time):
+            red, green, blue, alpha = layer.rgba
+
+            mask_data = np.lib.stride_tricks.as_strided(
+                np.frombuffer(
+                    (ctypes.c_uint8 * (layer.stride * layer.h)).from_address(
+                        ctypes.addressof(layer.bitmap.contents)
+                    ),
+                    dtype=np.uint8,
+                ),
+                (layer.h, layer.w),
+                (layer.stride, 1),
+            )
+
+            overlay = np.zeros((layer.h, layer.w, 4), dtype=np.uint8)
+            overlay[..., :3] = (red, green, blue)
+            overlay[..., 3] = mask_data
+            overlay[..., 3] = (overlay[..., 3] * (1.0 - alpha / 255.0)).astype(
+                np.uint8
+            )
+
+            fragment = image_data[
+                layer.dst_y : layer.dst_y + layer.h,
+                layer.dst_x : layer.dst_x + layer.w,
+            ]
+
+            src_color = overlay[..., :3].astype(np.float32) / 255.0
+            src_alpha = overlay[..., 3].astype(np.float32) / 255.0
+            dst_color = fragment[..., :3].astype(np.float32) / 255.0
+            dst_alpha = fragment[..., 3].astype(np.float32) / 255.0
+
+            out_alpha = src_alpha + dst_alpha * (1.0 - src_alpha)
+            out_color = (
+                src_color * src_alpha[..., None]
+                + dst_color
+                * dst_alpha[..., None]
+                * (1.0 - src_alpha[..., None])
+            ) / out_alpha[..., None]
+
+            fragment[..., :3] = out_color * 255
+            fragment[..., 3] = out_alpha * 255
+
+        return PIL.Image.fromarray(image_data)
+
+    def render_raw(self, time: int) -> libass.AssImageSequence:
+        if self._track is None:
+            raise ValueError("need source to render")
+
+        return self._renderer.render_frame(self._track, now=time)
