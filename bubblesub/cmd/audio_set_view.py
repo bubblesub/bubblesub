@@ -21,9 +21,9 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import Pts
 
 
-class AudioShiftViewCommand(BaseCommand):
-    names = ["audio-shift-view", "spectrogram-shift-view"]
-    help_text = "Shfits the spectrogram."
+class AudioSetViewCommand(BaseCommand):
+    names = ["audio-set-view", "spectrogram-set-view"]
+    help_text = "Sets the spectrogram viewport."
 
     async def run(self) -> None:
         with self.api.undo.capture():
@@ -47,13 +47,13 @@ class AudioShiftViewCommand(BaseCommand):
         parser.add_argument(
             "-s",
             "--start",
-            help="amount to shift the start of the viewport by",
+            help="new start of the viewport",
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
             "-e",
             "--end",
-            help="amount to shift the end of the viewport by",
+            help="new end of the viewport",
             type=lambda value: Pts(api, value),
         )
         parser.add_argument(
@@ -63,4 +63,4 @@ class AudioShiftViewCommand(BaseCommand):
         )
 
 
-COMMANDS = [AudioShiftViewCommand]
+COMMANDS = [AudioSetViewCommand]

@@ -125,14 +125,14 @@ Usage: `audio‑set‑sel [-s|--start=…] [-e|--end=…] [--no-align]`
 * `-e`, `--end`: new end of the selection
 * `--no-align`: don't realign selection to video frames
 
-### <a name="cmd-audio-shift-view"></a>`audio‑shift‑view`
-Aliases: `spectrogram-shift-view`
+### <a name="cmd-audio-set-view"></a>`audio‑set‑view`
+Aliases: `spectrogram-set-view`
 
-Shfits the spectrogram.
+Sets the spectrogram viewport.
 
-Usage: `audio‑shift‑view [-s|--start=…] [-e|--end=…] [--no-align]`
-* `-s`, `--start`: amount to shift the start of the viewport by
-* `-e`, `--end`: amount to shift the end of the viewport by
+Usage: `audio‑set‑view [-s|--start=…] [-e|--end=…] [--no-align]`
+* `-s`, `--start`: new start of the viewport
+* `-e`, `--end`: new end of the viewport
 * `--no-align`: don't realign viewport to video frames
 
 ### <a name="cmd-audio-zoom-view"></a>`audio‑zoom‑view`
