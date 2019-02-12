@@ -29,6 +29,7 @@ def _test_align_pts_to_frame(
 ) -> None:
     media_api = mock.MagicMock()
     log_api = mock.MagicMock()
+    subs_api = mock.MagicMock()
 
     with mock.patch(
         VideoApi.__module__ + "." + VideoApi.__name__ + ".timecodes",
@@ -36,7 +37,7 @@ def _test_align_pts_to_frame(
     ) as video_api_mock:
         video_api_mock.return_value = [0, 10, 20]
 
-        video_api = VideoApi(media_api, log_api)
+        video_api = VideoApi(media_api, log_api, subs_api)
         actual = align_func(video_api)(origin)
         assert actual == expected
 

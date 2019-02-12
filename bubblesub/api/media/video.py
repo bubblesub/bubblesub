@@ -86,6 +86,7 @@ class VideoApi(QtCore.QObject):
 
         :param media_api: media API
         :param log_api: logging API
+        :param subs_api: subtitles API
         """
         super().__init__()
 
@@ -125,6 +126,8 @@ class VideoApi(QtCore.QObject):
         :param pts: pts to make screenshot of
         :param path: path to save the screenshot to
         :param include_subtitles: whether to 'burn in' the subtitles
+        :param width: optional width to render to
+        :param height: optional height to render to
         """
 
         if not width and not height:
