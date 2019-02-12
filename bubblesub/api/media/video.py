@@ -89,6 +89,8 @@ class VideoApi(QtCore.QObject):
 
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
+        self._width = 0
+        self._height = 0
 
         self._video_source: T.Union[None, ffms.VideoSource] = None
         self._video_source_worker = VideoSourceWorker(log_api)
@@ -171,11 +173,7 @@ class VideoApi(QtCore.QObject):
 
         :return: video width in pixels
         """
-        if self.has_video_source:
-            assert self._video_source
-            with _SAMPLER_LOCK:
-                return self._video_source.get_frame(0).EncodedWidth
-        return 0
+        return self._width
 
     @property
     def height(self) -> int:
@@ -184,11 +182,7 @@ class VideoApi(QtCore.QObject):
 
         :return: video height in pixels
         """
-        if self.has_video_source:
-            assert self._video_source
-            with _SAMPLER_LOCK:
-                return self._video_source.get_frame(0).EncodedHeight
-        return 0
+        return self._height
 
     @property
     def has_video_source(self) -> bool:
@@ -273,11 +267,15 @@ class VideoApi(QtCore.QObject):
             self._video_source = None
             self._timecodes.clear()
             self._keyframes.clear()
+            self._width = 0
+            self._height = 0
         elif state == MediaState.Loading:
             self._last_output_fmt = None
             self._video_source = _LOADING
             self._timecodes.clear()
             self._keyframes.clear()
+            self._width = 0
+            self._height = 0
             self._video_source_worker.schedule_task(self._media_api.path)
         else:
             assert state == MediaState.Loaded
@@ -295,6 +293,10 @@ class VideoApi(QtCore.QObject):
             int(round(pts)) for pts in video_source.track.timecodes
         ]
         self._keyframes = [idx for idx in video_source.track.keyframes]
+        with _SAMPLER_LOCK:
+            frame = video_source.get_frame(0)
+            self._width = frame.EncodedWidth
+            self._height = frame.EncodedHeight
         self._timecodes.sort()
         self._keyframes.sort()
         self.parsed.emit()
