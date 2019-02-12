@@ -290,3 +290,14 @@ def test_default_subtitle_duration() -> None:
     pts = Pts(api, "dsd")
 
     _assert_pts_value(pts, 123)
+
+
+def test_min_max() -> None:
+    api = MagicMock()
+    api.media.max_pts = 999
+
+    min_pts = Pts(api, "min")
+    max_pts = Pts(api, "max")
+
+    _assert_pts_value(min_pts, 0)
+    _assert_pts_value(max_pts, 999)

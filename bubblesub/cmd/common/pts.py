@@ -48,6 +48,7 @@ operand =
     rel_frame /
     rel_keyframe /
     rel_subtitle /
+    min / max /
     dialog /
     default_duration
 
@@ -65,6 +66,8 @@ rel_frame        = rel 'f'
 rel_keyframe     = rel 'kf'
 rel_subtitle     = rel 's' (start / end)
 default_duration = 'dsd' / 'default_duration'
+min              = 'min'
+max              = 'max'
 dialog           = 'ask'
 
 _                = ~'\\s*'
@@ -463,6 +466,12 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
         return _Time(self._api.cfg.opt["subs"]["default_duration"])
+
+    async def visit_min(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        return _Time(0)
+
+    async def visit_max(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+        return _Time(self._api.media.max_pts)
 
     async def visit_dialog(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
         ret = await self._api.gui.exec(
