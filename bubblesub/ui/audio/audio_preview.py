@@ -21,7 +21,7 @@ import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.playback import PlaybackFrontendState
+from bubblesub.api.audio import AudioState
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.util import blend_colors
 from bubblesub.util import chunks
@@ -126,7 +126,7 @@ class AudioPreview(BaseLocalAudioWidget):
         timer.start()
 
         api.playback.current_pts_changed.connect(self.update)
-        api.playback.state_changed.connect(self._on_playback_state_change)
+        api.audio.state_changed.connect(self._on_audio_state_change)
         api.audio.view.view_changed.connect(self._on_audio_view_change)
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
@@ -213,8 +213,8 @@ class AudioPreview(BaseLocalAudioWidget):
             for pts in chunk:
                 self._spectrum_cache[pts] = CACHING
 
-    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
-        if state == PlaybackFrontendState.Unloaded:
+    def _on_audio_state_change(self, state: AudioState) -> None:
+        if state == AudioState.NotLoaded:
             self._spectrum_cache.clear()
             if self._spectrum_worker:
                 self._spectrum_worker.task_finished.disconnect(
@@ -224,7 +224,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 self._spectrum_worker.stop()
                 self._spectrum_worker = None
 
-        elif state == PlaybackFrontendState.Loading and pyfftw:
+        elif state == AudioState.Loading and pyfftw:
             self._spectrum_worker = SpectrumWorker(self._api)
             self._spectrum_worker.task_finished.connect(
                 self._on_spectrum_update

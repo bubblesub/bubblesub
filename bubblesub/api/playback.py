@@ -19,12 +19,13 @@
 import enum
 import fractions
 import typing as T
-from pathlib import Path
 
 from PyQt5 import QtCore
 
+from bubblesub.api.audio import AudioApi
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.api.video import VideoApi
 
 MIN_PLAYBACK_SPEED = fractions.Fraction(0.1)
 MAX_PLAYBACK_SPEED = fractions.Fraction(10)
@@ -32,12 +33,12 @@ MIN_VOLUME = fractions.Fraction(0)
 MAX_VOLUME = fractions.Fraction(200)
 
 
-class PlaybackFrontendState(enum.IntEnum):
+class PlaybackFrontendState(enum.Enum):
     """State of media player."""
 
-    Unloaded = 0
-    Loading = 1
-    Loaded = 2
+    NotReady = enum.auto()
+    Loading = enum.auto()
+    Ready = enum.auto()
 
 
 class PlaybackApi(QtCore.QObject):
@@ -56,22 +57,29 @@ class PlaybackApi(QtCore.QObject):
     request_playback = QtCore.pyqtSignal(object, object)
     receive_current_pts_change = QtCore.pyqtSignal(int)
     receive_max_pts_change = QtCore.pyqtSignal(int)
-    receive_ready = QtCore.pyqtSignal()
 
-    def __init__(self, log_api: LogApi, subs_api: SubtitlesApi) -> None:
+    def __init__(
+        self,
+        log_api: LogApi,
+        subs_api: SubtitlesApi,
+        video_api: VideoApi,
+        audio_api: AudioApi,
+    ) -> None:
         """
         Initialize self.
 
         :param log_api: logging API
         :param subs_api: subtitles API
+        :param video_api: video API
+        :param audio_api: audio API
         """
         super().__init__()
-        self._state = PlaybackFrontendState.Unloaded
-
         self._log_api = log_api
         self._subs_api = subs_api
+        self._video_api = video_api
+        self._audio_api = audio_api
 
-        self._path: T.Optional[Path] = None
+        self._state = PlaybackFrontendState.NotReady
         self._playback_speed = fractions.Fraction(1.0)
         self._volume = fractions.Fraction(100.0)
         self._is_muted = False
@@ -79,35 +87,8 @@ class PlaybackApi(QtCore.QObject):
         self._current_pts = 0
         self._max_pts = 0
 
-        self._subs_api.loaded.connect(self._on_subs_load)
         self.receive_current_pts_change.connect(self._on_current_pts_change)
         self.receive_max_pts_change.connect(self._on_max_pts_change)
-        self.receive_ready.connect(self._on_ready)
-
-    def unload(self) -> None:
-        """Unload currently loaded video."""
-        self.state = PlaybackFrontendState.Unloaded
-        self.state_changed.emit(self.state)
-        self._current_pts = 0
-        self._max_pts = 0
-        self._path = None
-
-    def load(self, path: T.Union[str, Path]) -> None:
-        """
-        Load video.
-
-        :param path: path where to load the video from
-        """
-        assert path is not None
-
-        self.unload()
-
-        self.state = PlaybackFrontendState.Loading
-        self._path = Path(path)
-        if str(self._subs_api.remembered_video_path) != str(self._path):
-            self._subs_api.remembered_video_path = self._path
-
-        self.state_changed.emit(self.state)
 
     def seek(self, pts: int, precise: bool = True) -> None:
         """
@@ -145,8 +126,10 @@ class PlaybackApi(QtCore.QObject):
 
         :param value: new playback state
         """
-        self._log_api.debug(f"playback: changed state to {value}")
-        self._state = value
+        if value != self._state:
+            self._state = value
+            self._log_api.debug(f"playback: changed state to {value}")
+            self.state_changed.emit(self.state)
 
     @property
     def playback_speed(self) -> fractions.Fraction:
@@ -261,28 +244,13 @@ class PlaybackApi(QtCore.QObject):
             self.pause_changed.emit()
 
     @property
-    def path(self) -> T.Optional[Path]:
+    def is_ready(self) -> bool:
         """
-        Return path to the currently loaded video.
+        Return whether the playback frontend is ready.
 
-        :return: path to the currently loaded video, None if no video
+        :return: whether the playback frontend is ready
         """
-        return self._path
-
-    @property
-    def is_loaded(self) -> bool:
-        """
-        Return whether there's video loaded.
-
-        :return: whether there's video loaded
-        """
-        return self.state == PlaybackFrontendState.Loaded
-
-    def _on_subs_load(self) -> None:
-        if self._subs_api.remembered_video_path:
-            self.load(self._subs_api.remembered_video_path)
-        else:
-            self.unload()
+        return self._state == PlaybackFrontendState.Ready
 
     def _on_current_pts_change(self, new_pts: int) -> None:
         if new_pts != self._current_pts:
@@ -293,7 +261,3 @@ class PlaybackApi(QtCore.QObject):
         if new_pts != self._max_pts:
             self._max_pts = new_pts
             self.max_pts_changed.emit()
-
-    def _on_ready(self) -> None:
-        self.state = PlaybackFrontendState.Loaded
-        self.state_changed.emit(self.state)

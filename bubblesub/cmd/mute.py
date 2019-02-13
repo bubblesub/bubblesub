@@ -25,10 +25,6 @@ class MuteCommand(BaseCommand):
     names = ["mute"]
     help_text = "Mutes or unmutes the video audio."
 
-    @property
-    def is_enabled(self) -> bool:
-        return self.api.playback.is_loaded
-
     async def run(self) -> None:
         self.api.playback.is_muted = self.args.operation.apply(
             self.api.playback.is_muted

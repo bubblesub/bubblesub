@@ -32,16 +32,16 @@ class SaveScreenshotCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.playback.is_loaded
+        return self.api.video.is_ready
 
     async def run(self) -> None:
-        assert self.api.playback.path
+        assert self.api.video.path
 
         pts = await self.args.pts.get()
         path = await self.args.path.get_save_path(
             file_filter="Portable Network Graphics (*.png)",
             default_file_name="shot-{}-{}.png".format(
-                self.api.playback.path.name, ms_to_str(pts)
+                self.api.video.path.name, ms_to_str(pts)
             ),
         )
 

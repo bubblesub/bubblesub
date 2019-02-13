@@ -126,7 +126,7 @@ class _StylePreview(QtWidgets.QGroupBox):
 
         fake_style = copy(selected_style)
         fake_style.name = "Default"
-        if self._api.playback.is_loaded:
+        if self._api.video.is_ready:
             fake_style.scale(resolution[1] / self._api.video.height)
         fake_style_list = AssStyleList()
         fake_style_list.append(fake_style)

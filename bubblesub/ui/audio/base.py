@@ -22,7 +22,7 @@ import typing as T
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.audio import AudioViewApi
+from bubblesub.api.audio_view import AudioViewApi
 
 SLIDER_SIZE = 20
 

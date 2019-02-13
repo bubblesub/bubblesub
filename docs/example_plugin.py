@@ -23,7 +23,7 @@ class SpeechRecognitionCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.args.target.makes_sense and self.api.audio.has_audio_source
+        return self.args.target.makes_sense and self.api.audio.is_ready
 
     async def run(self) -> None:
         await asyncio.get_event_loop().run_in_executor(

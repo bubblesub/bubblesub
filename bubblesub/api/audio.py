@@ -14,8 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# TODO: test loading garbage files
 """Audio API."""
 
+import enum
 import threading
 import time
 import typing as T
@@ -25,9 +27,7 @@ import ffms
 import numpy as np
 from PyQt5 import QtCore
 
-from bubblesub.api.audio_view import AudioViewApi
 from bubblesub.api.log import LogApi
-from bubblesub.api.playback import PlaybackApi, PlaybackFrontendState
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.cache import get_cache_file_path
 from bubblesub.util import sanitize_file_name
@@ -35,6 +35,12 @@ from bubblesub.worker import Worker
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
+
+
+class AudioState(enum.Enum):
+    NotLoaded = enum.auto()
+    Loading = enum.auto()
+    Loaded = enum.auto()
 
 
 class AudioSourceWorker(Worker):
@@ -87,59 +93,89 @@ class AudioSourceWorker(Worker):
         track_number = index.get_first_indexed_track_of_type(
             ffms.FFMS_TYPE_AUDIO
         )
-        audio_source = ffms.AudioSource(str(path), track_number, index)
+        source = ffms.AudioSource(str(path), track_number, index)
         self._log_api.info("audio finished loading")
-        return (path, audio_source)
+        return (path, source)
 
 
 class AudioApi(QtCore.QObject):
     """The audio API."""
 
-    parsed = QtCore.pyqtSignal()
+    state_changed = QtCore.pyqtSignal(AudioState)
 
-    def __init__(
-        self,
-        log_api: LogApi,
-        subs_api: SubtitlesApi,
-        playback_api: PlaybackApi,
-    ) -> None:
+    def __init__(self, log_api: LogApi, subs_api: SubtitlesApi) -> None:
         """
         Initialize self.
 
         :param log_api: logging API
         :param subs_api: subtitles API
-        :param playback_api: playback API
         """
         super().__init__()
         self._log_api = log_api
-        self._playback_api = playback_api
+        self._subs_api = subs_api
 
-        self.view = AudioViewApi(subs_api, playback_api)
+        self._state = AudioState.NotLoaded
+        self._path: T.Optional[Path] = None
 
-        self._audio_source: T.Union[None, ffms.AudioSource] = None
-        self._audio_source_worker = AudioSourceWorker(log_api)
+        self._source: T.Union[None, ffms.AudioSource] = None
+        self._source_worker = AudioSourceWorker(log_api)
+        self._source_worker.task_finished.connect(self._got_source)
+        self._source_worker.start()
 
-        self._playback_api.state_changed.connect(
-            self._on_playback_state_change
-        )
-        self._audio_source_worker.task_finished.connect(self._got_audio_source)
-        self._audio_source_worker.start()
+    def unload(self) -> None:
+        self._source = None
+        self._path = None
+        self.state = AudioState.NotLoaded
+
+    def load(self, path: T.Union[str, Path]) -> None:
+        """
+        Load audio from specified file.
+
+        :param path: path to load the audio from
+        """
+        self.unload()
+        self._path = Path(path)
+
+        self.state = AudioState.Loading
+        self._source_worker.schedule_task(self._path)
 
     def shutdown(self) -> None:
         """Stop internal worker threads."""
-        self._audio_source_worker.stop()
+        self._source_worker.stop()
 
     @property
-    def has_audio_source(self) -> bool:
-        """
-        Return whether audio source is available.
+    def path(self) -> T.Optional[Path]:
+        return self._path
 
-        :return: whether audio source is available
+    @property
+    def state(self) -> AudioState:
         """
-        return (
-            self._audio_source is not None
-            and self._audio_source is not _LOADING
-        )
+        Return current audio state.
+
+        :return: audio state
+        """
+        return self._state
+
+    @state.setter
+    def state(self, value: AudioState) -> None:
+        """
+        Set current audio state.
+
+        :param value: new audio state
+        """
+        if value != self._state:
+            self._log_api.debug(f"audio: changed state to {value}")
+            self._state = value
+            self.state_changed.emit(self._state)
+
+    @property
+    def is_ready(self) -> bool:
+        """
+        Return whether if the audio is loaded.
+
+        :return: whether if the audio is loaded
+        """
+        return self._state == AudioState.Loaded
 
     @property
     def channel_count(self) -> int:
@@ -148,10 +184,10 @@ class AudioApi(QtCore.QObject):
 
         :return: channel count or 0 if no audio source
         """
-        if not self._wait_for_audio_source():
+        if not self._wait_for_source():
             return 0
-        assert self._audio_source
-        return T.cast(int, self._audio_source.properties.Channels)
+        assert self._source
+        return T.cast(int, self._source.properties.Channels)
 
     @property
     def bits_per_sample(self) -> int:
@@ -160,10 +196,10 @@ class AudioApi(QtCore.QObject):
 
         :return: bits per sample or 0 if no audio source
         """
-        if not self._wait_for_audio_source():
+        if not self._wait_for_source():
             return 0
-        assert self._audio_source
-        return T.cast(int, self._audio_source.properties.BitsPerSample)
+        assert self._source
+        return T.cast(int, self._source.properties.BitsPerSample)
 
     @property
     def sample_rate(self) -> int:
@@ -172,13 +208,13 @@ class AudioApi(QtCore.QObject):
 
         :return: sample rate or 0 if no audio source
         """
-        if not self._wait_for_audio_source():
+        if not self._wait_for_source():
             return 0
         # other properties:
         # - ChannelLayout
         # - SampleFormat
-        assert self._audio_source
-        return T.cast(int, self._audio_source.properties.SampleRate)
+        assert self._source
+        return T.cast(int, self._source.properties.SampleRate)
 
     @property
     def sample_format(self) -> T.Optional[int]:
@@ -187,12 +223,10 @@ class AudioApi(QtCore.QObject):
 
         :return: sample format or None if no audio source
         """
-        if not self._wait_for_audio_source():
+        if not self._wait_for_source():
             return None
-        assert self._audio_source
-        return T.cast(
-            T.Optional[int], self._audio_source.properties.SampleFormat
-        )
+        assert self._source
+        return T.cast(T.Optional[int], self._source.properties.SampleFormat)
 
     @property
     def sample_count(self) -> int:
@@ -201,10 +235,10 @@ class AudioApi(QtCore.QObject):
 
         :return: sample count or 0 if no audio source
         """
-        if not self._wait_for_audio_source():
+        if not self._wait_for_source():
             return 0
-        assert self._audio_source
-        return T.cast(int, self._audio_source.properties.NumSamples)
+        assert self._source
+        return T.cast(int, self._source.properties.NumSamples)
 
     @property
     def min_time(self) -> int:
@@ -237,8 +271,8 @@ class AudioApi(QtCore.QObject):
         :return: numpy array of samples
         """
         with _SAMPLER_LOCK:
-            self._wait_for_audio_source()
-            if not self._audio_source:
+            self._wait_for_source()
+            if not self._source:
                 return np.zeros(count).reshape(
                     (count, max(1, self.channel_count))
                 )
@@ -246,8 +280,8 @@ class AudioApi(QtCore.QObject):
                 count = max(0, self.sample_count - start_frame)
             if not count:
                 return self._create_empty_sample_buffer()
-            self._audio_source.init_buffer(count)
-            return self._audio_source.get_audio(start_frame)
+            self._source.init_buffer(count)
+            return self._source.get_audio(start_frame)
 
     def save_wav(
         self,
@@ -292,32 +326,20 @@ class AudioApi(QtCore.QObject):
             }[self.sample_format],
         ).reshape(0, max(1, self.channel_count))
 
-    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
-        if state == PlaybackFrontendState.Unloaded:
-            self._audio_source = None
-        elif state == PlaybackFrontendState.Loading:
-            self._audio_source = _LOADING
-            if self._playback_api.path:
-                self._audio_source_worker.schedule_task(
-                    self._playback_api.path
-                )
-        else:
-            assert state == PlaybackFrontendState.Loaded
-
-    def _got_audio_source(
+    def _got_source(
         self, result: T.Optional[T.Tuple[Path, ffms.AudioSource]]
     ) -> None:
         if result is not None:
-            path, audio_source = result
-            if path == self._playback_api.path:
-                self._audio_source = audio_source
-                self.parsed.emit()
+            path, source = result
+            if path == self._path:
+                self._source = source
+                self.state = AudioState.Loaded
 
-    def _wait_for_audio_source(self) -> bool:
-        if self._audio_source is None:
+    def _wait_for_source(self) -> bool:
+        if self._source is None:
             return False
-        while self._audio_source is _LOADING:
+        while self._source is _LOADING:
             time.sleep(0.01)
-        if self._audio_source is None:
+        if self._source is None:
             return False
         return True

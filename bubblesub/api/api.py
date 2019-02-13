@@ -25,6 +25,7 @@ import argparse
 
 import bubblesub.api.cmd
 from bubblesub.api.audio import AudioApi
+from bubblesub.api.audio_view import AudioViewApi
 from bubblesub.api.gui import GuiApi
 from bubblesub.api.log import LogApi
 from bubblesub.api.playback import PlaybackApi
@@ -50,15 +51,29 @@ class Api:
         self.subs = SubtitlesApi()
         self.undo = UndoApi(self.cfg, self.subs)
 
-        self.playback = PlaybackApi(self.log, self.subs)
-        self.video = VideoApi(self.log, self.subs, self.playback)
-        self.audio = AudioApi(self.log, self.subs, self.playback)
+        self.video = VideoApi(self.log, self.subs)
+        self.audio = AudioApi(self.log, self.subs)
+        self.playback = PlaybackApi(
+            self.log, self.subs, self.video, self.audio
+        )
+
+        self.audio.view = AudioViewApi(self.subs, self.audio, self.video)
 
         self.gui = GuiApi(self)
         self.cmd = bubblesub.api.cmd.CommandApi(self)
 
-        self.gui.terminated.connect(self.playback.unload)
+        self.gui.terminated.connect(self.audio.unload)
+        self.gui.terminated.connect(self.video.unload)
         self.gui.terminated.connect(self.cmd.unload)
+        self.subs.loaded.connect(self._on_subs_load)
+
+    def _on_subs_load(self) -> None:
+        if self.subs.remembered_video_path:
+            self.audio.load(self.subs.remembered_video_path)
+            self.video.load(self.subs.remembered_video_path)
+        else:
+            self.audio.unload()
+            self.video.unload()
 
     def shutdown(self) -> None:
         """Stop internal worker threads."""

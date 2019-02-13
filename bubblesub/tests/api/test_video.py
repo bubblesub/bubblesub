@@ -28,7 +28,6 @@ def _test_align_pts_to_frame(
     align_func: T.Callable[[VideoApi], T.Callable[[int], int]],
 ) -> None:
     log_api = mock.MagicMock()
-    playback_api = mock.MagicMock()
     subs_api = mock.MagicMock()
 
     with mock.patch(
@@ -37,7 +36,7 @@ def _test_align_pts_to_frame(
     ) as video_api_mock:
         video_api_mock.return_value = [0, 10, 20]
 
-        video_api = VideoApi(log_api, playback_api, subs_api)
+        video_api = VideoApi(log_api, subs_api)
         actual = align_func(video_api)(origin)
         assert actual == expected
 

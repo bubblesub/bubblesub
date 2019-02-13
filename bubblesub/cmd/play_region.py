@@ -27,7 +27,7 @@ class PlayRegionCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.playback.is_loaded
+        return self.api.playback.is_ready
 
     async def run(self) -> None:
         start = await self.args.start.get()

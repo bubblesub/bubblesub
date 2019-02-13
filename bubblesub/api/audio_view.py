@@ -20,8 +20,9 @@ import typing as T
 
 from PyQt5 import QtCore
 
-from bubblesub.api.playback import PlaybackApi, PlaybackFrontendState
+from bubblesub.api.audio import AudioApi
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.api.video import VideoApi
 
 
 class AudioViewApi(QtCore.QObject):
@@ -29,18 +30,19 @@ class AudioViewApi(QtCore.QObject):
     selection_changed = QtCore.pyqtSignal()
 
     def __init__(
-        self, subs_api: SubtitlesApi, playback_api: PlaybackApi
+        self, subs_api: SubtitlesApi, audio_api: AudioApi, video_api: VideoApi
     ) -> None:
         """
         Initialize self.
 
         :param subs_api: subtitles API
-        :param playback_api: playback API
+        :param audio_api: audio API
+        :param video_api: video API
         """
         super().__init__()
-
-        self._playback_api = playback_api
         self._subs_api = subs_api
+        self._audio_api = audio_api
+        self._video_api = video_api
 
         self._min = 0
         self._max = 0
@@ -49,15 +51,13 @@ class AudioViewApi(QtCore.QObject):
         self._selection_start = 0
         self._selection_end = 0
 
-        self._playback_api.state_changed.connect(
-            self._on_playback_state_change
-        )
-        self._playback_api.max_pts_changed.connect(self.reset_view)
-        self._subs_api.events.items_inserted.connect(self.extend_view)
-        self._subs_api.events.items_removed.connect(self.extend_view)
-        self._subs_api.events.items_moved.connect(self.extend_view)
-        self._subs_api.events.item_changed.connect(self.extend_view)
-        self._subs_api.loaded.connect(self.reset_view)
+        audio_api.state_changed.connect(self.reset_view)
+        video_api.state_changed.connect(self._extend_view)
+        subs_api.loaded.connect(self._extend_view)
+        subs_api.events.items_inserted.connect(self._extend_view)
+        subs_api.events.items_removed.connect(self._extend_view)
+        subs_api.events.items_moved.connect(self._extend_view)
+        subs_api.events.item_changed.connect(self._extend_view)
 
         self.reset_view()
 
@@ -210,22 +210,21 @@ class AudioViewApi(QtCore.QObject):
             self.view(self._view_start + distance, self._view_end + distance)
 
     def reset_view(self) -> None:
+        """
+        Resets the view to show the entire spectrogram.
+        """
         self._min = 0
         self._max = 0
-        self.extend_view()
+        self._extend_view()
         self.zoom_view(1, 0.5)  # emits view_changed
 
-    def extend_view(self) -> None:
+    def _extend_view(self) -> None:
         self._min = 0
         self._max = max(
-            [self._max, self._playback_api.max_pts]
+            [self._max, self._audio_api.max_time, self._video_api.max_pts]
             + [sub.start for sub in self._subs_api.events]
             + [sub.end for sub in self._subs_api.events]
         )
-
-    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
-        if state == PlaybackFrontendState.Loading:
-            self.reset_view()
 
     def _clip(self, value: T.Union[int, float]) -> int:
         return max(min(self._max, int(value)), self._min)

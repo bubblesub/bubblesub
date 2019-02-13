@@ -22,7 +22,7 @@ import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.playback import PlaybackFrontendState
+from bubblesub.api.video import VideoState
 from bubblesub.cache import load_cache, save_cache
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
 from bubblesub.util import sanitize_file_name
@@ -45,8 +45,7 @@ class VideoBandWorker(QtCore.QObject):
         self._cache_name: T.Optional[str] = None
         self.cache: T.Dict[int, np.array] = {}
 
-        api.playback.state_changed.connect(self._on_playback_state_change)
-        api.video.parsed.connect(self._on_video_parse)
+        api.video.state_changed.connect(self._on_video_state_change)
 
     def run(self) -> None:
         self._running = True
@@ -73,31 +72,30 @@ class VideoBandWorker(QtCore.QObject):
         self._clear_queue()
         self._running = False
 
-    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
-        if state == PlaybackFrontendState.Unloaded:
+    def _on_video_state_change(self, state: VideoState) -> None:
+        if state == VideoState.NotLoaded:
             if self._anything_to_save:
                 self._save_to_cache()
+            self._clear_queue()
+            self._cache_name = None
             with _CACHE_LOCK:
                 self.cache = {}
             self.cache_updated.emit()
-            self._clear_queue()
-            self._cache_name = None
-        elif state == PlaybackFrontendState.Loading:
-            assert self._api.playback.path
+        elif state == VideoState.Loading:
+            assert self._api.video.path
             self._cache_name = (
-                sanitize_file_name(self._api.playback.path) + "-video-band"
+                sanitize_file_name(self._api.video.path) + "-video-band"
             )
             self._clear_queue()
             self._anything_to_save = False
             with _CACHE_LOCK:
                 self.cache = self._load_from_cache()
             self.cache_updated.emit()
-
-    def _on_video_parse(self) -> None:
-        for frame_idx in range(len(self._api.video.timecodes)):
-            with _CACHE_LOCK:
-                if frame_idx not in self.cache:
-                    self._queue.put(frame_idx)
+        elif state == VideoState.Loaded:
+            for frame_idx in range(len(self._api.video.timecodes)):
+                with _CACHE_LOCK:
+                    if frame_idx not in self.cache:
+                        self._queue.put(frame_idx)
 
     def _clear_queue(self) -> None:
         self._clearing = True
@@ -149,9 +147,8 @@ class VideoPreview(BaseLocalAudioWidget):
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
-        api.playback.state_changed.connect(self._on_playback_state_change)
         api.audio.view.view_changed.connect(self._on_audio_view_change)
-        api.video.parsed.connect(self._on_audio_view_change)
+        api.video.state_changed.connect(self.update)
 
     def shutdown(self) -> None:
         self._worker.stop()
@@ -177,9 +174,6 @@ class VideoPreview(BaseLocalAudioWidget):
 
     def _on_audio_view_change(self) -> None:
         self._need_repaint = True
-
-    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
-        self.update()
 
     def _on_video_band_update(self) -> None:
         self._need_repaint = True

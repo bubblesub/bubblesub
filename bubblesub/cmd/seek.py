@@ -27,7 +27,7 @@ class SeekCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.playback.is_loaded
+        return self.api.playback.is_ready
 
     async def run(self) -> None:
         pts = await self.args.pos.get(

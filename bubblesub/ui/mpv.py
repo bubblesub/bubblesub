@@ -22,7 +22,9 @@ import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore, QtOpenGL, QtWidgets
 
 from bubblesub.api import Api
+from bubblesub.api.audio import AudioState
 from bubblesub.api.playback import PlaybackFrontendState
+from bubblesub.api.video import VideoState
 from bubblesub.ass.writer import write_ass
 from bubblesub.util import ms_to_str
 
@@ -47,7 +49,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         locale.setlocale(locale.LC_NUMERIC, "C")
 
         self._need_subs_refresh = False
-        self._mpv_ready = False
         self._mpv = mpv.Context()
         self._mpv.set_log_level("error")
         for key, value in {
@@ -96,9 +97,10 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         api.subs.styles.items_removed.connect(self._on_subs_change)
         api.subs.styles.items_moved.connect(self._on_subs_change)
 
+        api.video.state_changed.connect(self._on_video_state_change)
+        api.audio.state_changed.connect(self._on_audio_state_change)
         api.playback.request_seek.connect(self._on_request_seek)
         api.playback.request_playback.connect(self._on_request_playback)
-        api.playback.state_changed.connect(self._on_playback_state_change)
         api.playback.playback_speed_changed.connect(
             self._on_playback_speed_change
         )
@@ -110,15 +112,19 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         self._timer.start()
 
-    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
-        if state == PlaybackFrontendState.Unloaded:
-            if self._mpv_ready:
+    def _on_video_state_change(self, state: VideoState) -> None:
+        if state == VideoState.NotLoaded:
+            if self._api.playback.is_ready:
                 self._mpv.command("playlist-remove", "current")
-            self._mpv_ready = False
             self._mpv.set_property("pause", True)
-        elif state == PlaybackFrontendState.Loading:
-            self._mpv.command("loadfile", str(self._api.playback.path))
+            self._api.playback.state = PlaybackFrontendState.NotReady
+        elif state == VideoState.Loading:
+            self._mpv.command("loadfile", str(self._api.video.path))
+            self._api.playback.state = PlaybackFrontendState.Loading
         self._need_subs_refresh = True
+
+    def _on_audio_state_change(self, state: AudioState) -> None:
+        pass  # not implemented
 
     def shutdown(self) -> None:
         self.makeCurrent()
@@ -153,7 +159,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._refresh_subs()
 
     def _refresh_subs(self) -> None:
-        if not self._mpv_ready:
+        if not self._api.playback.is_ready:
             return
         if self._mpv.get_property("sub"):
             self._mpv.command("sub_remove")
@@ -163,7 +169,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._need_subs_refresh = False
 
     def _set_end(self, end: T.Optional[int]) -> None:
-        if not self._mpv_ready:
+        if not self._api.playback.is_ready:
             return
         if end is None:
             # XXX: mpv doesn't accept None nor "" so we use max pts
@@ -207,12 +213,11 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._need_subs_refresh = True
 
     def _on_mpv_unload(self) -> None:
-        self._mpv_ready = False
+        self._api.playback.state = PlaybackFrontendState.NotReady
 
     def _on_mpv_load(self) -> None:
-        self._mpv_ready = True
+        self._api.playback.state = PlaybackFrontendState.Ready
         self._refresh_subs()
-        self._api.playback.receive_ready.emit()
 
     def _mpv_event_handler(self) -> None:
         while self._mpv:

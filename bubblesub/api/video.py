@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# TODO: test loading garbage files
 """Video API."""
 
 import bisect
+import enum
 import threading
 import time
 import typing as T
@@ -28,7 +30,6 @@ import PIL.Image
 from PyQt5 import QtCore
 
 from bubblesub.api.log import LogApi
-from bubblesub.api.playback import PlaybackApi, PlaybackFrontendState
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.ass_renderer import AssRenderer
 from bubblesub.worker import Worker
@@ -36,6 +37,12 @@ from bubblesub.worker import Worker
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
 _PIX_FMT = [ffms.get_pix_fmt("rgb24")]
+
+
+class VideoState(enum.Enum):
+    NotLoaded = enum.auto()
+    Loading = enum.auto()
+    Loaded = enum.auto()
 
 
 class VideoSourceWorker(Worker):
@@ -64,54 +71,104 @@ class VideoSourceWorker(Worker):
             self._log_api.error(f"video file {path} not found")
             return None
 
-        video_source = ffms.VideoSource(str(path))
+        source = ffms.VideoSource(str(path))
         self._log_api.info("video finished loading")
-        return (path, video_source)
+        return (path, source)
 
 
 class VideoApi(QtCore.QObject):
     """The video API."""
 
-    parsed = QtCore.pyqtSignal()
+    state_changed = QtCore.pyqtSignal(VideoState)
 
-    def __init__(
-        self,
-        log_api: LogApi,
-        subs_api: SubtitlesApi,
-        playback_api: PlaybackApi,
-    ) -> None:
+    def __init__(self, log_api: LogApi, subs_api: SubtitlesApi) -> None:
         """
         Initialize self.
 
         :param log_api: logging API
         :param subs_api: subtitles API
-        :param playback_api: playback API
         """
         super().__init__()
-
+        self._log_api = log_api
         self._subs_api = subs_api
-        self._playback_api = playback_api
-        self._playback_api.state_changed.connect(
-            self._on_playback_state_change
-        )
 
+        self._state = VideoState.NotLoaded
+        self._path: T.Optional[Path] = None
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
         self._width = 0
         self._height = 0
 
         self._ass_renderer = AssRenderer()
-        self._video_source: T.Union[None, ffms.VideoSource] = None
-        self._video_source_worker = VideoSourceWorker(log_api)
-        self._video_source_worker.task_finished.connect(self._got_video_source)
+        self._source: T.Union[None, ffms.VideoSource] = None
+        self._source_worker = VideoSourceWorker(log_api)
+        self._source_worker.task_finished.connect(self._got_source)
 
         self._last_output_fmt: T.Any = None
 
-        self._video_source_worker.start()
+        self._source_worker.start()
+
+    def unload(self) -> None:
+        """Unload current video source."""
+        self._path = None
+        self._source = None
+        self._timecodes.clear()
+        self._keyframes.clear()
+        self._width = 0
+        self._height = 0
+        self.state = VideoState.NotLoaded
+
+    def load(self, path: T.Union[str, Path]) -> None:
+        """
+        Load video from specified file.
+
+        :param path: path to load the video from
+        """
+        self.unload()
+
+        self._path = Path(path)
+        self.state = VideoState.Loading
+        if str(self._subs_api.remembered_video_path) != str(self._path):
+            self._subs_api.remembered_video_path = self._path
+        self._source_worker.schedule_task(self._path)
 
     def shutdown(self) -> None:
         """Stop internal worker threads."""
-        self._video_source_worker.stop()
+        self._source_worker.stop()
+
+    @property
+    def path(self) -> T.Optional[Path]:
+        return self._path
+
+    @property
+    def state(self) -> VideoState:
+        """
+        Return current video state.
+
+        :return: video state
+        """
+        return self._state
+
+    @state.setter
+    def state(self, value: VideoState) -> None:
+        """
+        Set current video state.
+
+        :param value: new video state
+        """
+        if value != self._state:
+            self._log_api.debug(f"video: changed state to {value}")
+            self._state = value
+            self.state_changed.emit(self._state)
+
+    @property
+    def is_ready(self) -> bool:
+        """
+        Return whether if the video is loaded.
+
+        :return: whether if the video is loaded
+        """
+        return self._state == VideoState.Loaded
 
     def screenshot(
         self,
@@ -231,27 +288,13 @@ class VideoApi(QtCore.QObject):
         return self._height
 
     @property
-    def has_video_source(self) -> bool:
-        """
-        Return whether video source is available.
-
-        :return: whether video source is available
-        """
-        return (
-            self._video_source is not None
-            and self._video_source is not _LOADING
-        )
-
-    @property
     def timecodes(self) -> T.List[int]:
         """
         Return video frames' PTS.
 
         :return: video frames' PTS
         """
-        if not self.has_video_source:
-            return []
-        if not self._wait_for_video_source():
+        if not self._wait_for_source():
             return []
         return self._timecodes
 
@@ -262,9 +305,7 @@ class VideoApi(QtCore.QObject):
 
         :return: video keyframes' indexes
         """
-        if not self.has_video_source:
-            return []
-        if not self._wait_for_video_source():
+        if not self._wait_for_source():
             return []
         return self._keyframes
 
@@ -303,68 +344,51 @@ class VideoApi(QtCore.QObject):
         """
         with _SAMPLER_LOCK:
             if (
-                not self.has_video_source
-                or not self._wait_for_video_source()
+                not self._wait_for_source()
                 or frame_idx < 0
                 or frame_idx >= len(self.timecodes)
             ):
                 return None
-            assert self._video_source
+            assert self._source
 
             new_output_fmt = (_PIX_FMT, width, height, ffms.FFMS_RESIZER_AREA)
             if self._last_output_fmt != new_output_fmt:
-                self._video_source.set_output_format(*new_output_fmt)
+                self._source.set_output_format(*new_output_fmt)
                 self._last_output_fmt = new_output_fmt
 
-            frame = self._video_source.get_frame(frame_idx)
+            frame = self._source.get_frame(frame_idx)
             return (
                 frame.planes[0]
                 .reshape((height, frame.Linesize[0]))[:, 0 : width * 3]
                 .reshape(height, width, 3)
             )
 
-    def _wait_for_video_source(self) -> bool:
-        if self._video_source is None:
-            return False
-        while self._video_source is _LOADING:
-            time.sleep(0.01)
-        return True
-
-    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
-        if state == PlaybackFrontendState.Unloaded:
-            self._video_source = None
-            self._timecodes.clear()
-            self._keyframes.clear()
-            self._width = 0
-            self._height = 0
-        elif state == PlaybackFrontendState.Loading:
-            self._last_output_fmt = None
-            self._video_source = _LOADING
-            self._timecodes.clear()
-            self._keyframes.clear()
-            self._width = 0
-            self._height = 0
-            self._video_source_worker.schedule_task(self._playback_api.path)
-        else:
-            assert state == PlaybackFrontendState.Loaded
-
-    def _got_video_source(self, result: T.Optional[ffms.VideoSource]) -> None:
+    def _got_source(self, result: T.Optional[ffms.VideoSource]) -> None:
         if result is None:
             return
 
-        path, video_source = result
-        if path != self._playback_api.path:
+        path, source = result
+        if path != self._path:
             return
 
-        self._video_source = video_source
-        self._timecodes = [
-            int(round(pts)) for pts in video_source.track.timecodes
-        ]
-        self._keyframes = [idx for idx in video_source.track.keyframes]
         with _SAMPLER_LOCK:
-            frame = video_source.get_frame(0)
+            self._source = source
+            self._timecodes = [
+                int(round(pts)) for pts in source.track.timecodes
+            ]
+            self._keyframes = [idx for idx in source.track.keyframes]
+            frame = source.get_frame(0)
             self._width = frame.EncodedWidth
             self._height = frame.EncodedHeight
-        self._timecodes.sort()
-        self._keyframes.sort()
-        self.parsed.emit()
+            self._timecodes.sort()
+            self._keyframes.sort()
+            self.state = VideoState.Loaded
+
+    def _wait_for_source(self) -> bool:
+        if self._source is None:
+            return False
+        while self._source is _LOADING:
+            time.sleep(0.01)
+        if self._source is None:
+            return False
+        return True
