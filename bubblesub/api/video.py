@@ -132,8 +132,9 @@ class VideoApi(QtCore.QObject):
         :param path: path to load the video from
         """
         self.unload()
-
         self._path = Path(path)
+
+        self._log_api.info(f"video: loading {path}")
         self.state = VideoState.Loading
         if str(self._subs_api.remembered_video_path) != str(self._path):
             self._subs_api.remembered_video_path = self._path

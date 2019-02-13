@@ -147,6 +147,7 @@ class AudioApi(QtCore.QObject):
         self.unload()
         self._path = Path(path)
 
+        self._log_api.info(f"audio: loading {path}")
         self.state = AudioState.Loading
         self._source_worker.schedule_task(self._path)
 
