@@ -78,7 +78,7 @@ class SpectrumWorker(Worker):
         samples = np.mean(samples, axis=1)
         sample_fmt = self._api.audio.sample_format
         if sample_fmt is None:
-            return np.zeros((1 << DERIVATION_SIZE) + 1)
+            return None
 
         if sample_fmt == ffms.FFMS_FMT_S16:
             samples /= 32768.0
@@ -234,10 +234,11 @@ class AudioPreview(BaseLocalAudioWidget):
         self._schedule_current_audio_view()
 
     def _on_spectrum_update(
-        self, response: T.List[T.Tuple[int, T.List[int]]]
+        self, response: T.List[T.Tuple[int, T.Optional[T.List[int]]]]
     ) -> None:
         for pts, column in response:
-            self._spectrum_cache[pts] = column
+            if column is not None:
+                self._spectrum_cache[pts] = column
         self._need_repaint = True
 
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
