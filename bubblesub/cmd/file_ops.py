@@ -21,7 +21,12 @@ from PyQt5 import QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled
 from bubblesub.cmd.common import FancyPath
-from bubblesub.ui.util import SUBS_FILE_FILTER, VIDEO_FILE_FILTER, save_dialog
+from bubblesub.ui.util import (
+    SUBS_FILE_FILTER,
+    VIDEO_FILE_FILTER,
+    save_dialog,
+    show_prompt,
+)
 
 
 class NewCommand(BaseCommand):
@@ -63,35 +68,6 @@ class OpenCommand(BaseCommand):
             "-p",
             "--path",
             help="path to load the subtitles from",
-            type=lambda value: FancyPath(api, value),
-            default="",
-        )
-
-
-class LoadVideoCommand(BaseCommand):
-    names = ["load-video"]
-    help_text = (
-        "Loads a video file for audio/video playback. "
-        "Prompts user to choose where to load the file from if the path "
-        "wasn't specified in the command arguments."
-    )
-
-    async def run(self) -> None:
-        path = await self.args.path.get_load_path(
-            file_filter=VIDEO_FILE_FILTER,
-            directory=self.api.gui.get_dialog_dir(),
-        )
-
-        self.api.video.load(path)
-        self.api.audio.load(path)
-        self.api.log.info(f"loading {path}")
-
-    @staticmethod
-    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument(
-            "-p",
-            "--path",
-            help="path to load the video from",
             type=lambda value: FancyPath(api, value),
             default="",
         )
@@ -154,10 +130,91 @@ class SaveAsCommand(BaseCommand):
         )
 
 
+class LoadVideoCommand(BaseCommand):
+    names = ["load-video"]
+    help_text = (
+        "Loads a video file for video playback. "
+        "Prompts user to choose where to load the file from if the path "
+        "wasn't specified in the command arguments."
+    )
+
+    async def run(self) -> None:
+        path = await self.args.path.get_load_path(
+            file_filter=VIDEO_FILE_FILTER,
+            directory=self.api.gui.get_dialog_dir(),
+        )
+
+        # show the prompt earlier before loading anything
+        # to avoid distracting the user with loading video in the background
+        load_audio = show_prompt(
+            f"Do you want to use this video file as the audio source?"
+        )
+
+        self.api.video.load(path)
+        if load_audio:
+            self.api.audio.load(path)
+
+    @staticmethod
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "-p",
+            "--path",
+            help="path to load the video from",
+            type=lambda value: FancyPath(api, value),
+            default="",
+        )
+
+
+class LoadAudioCommand(BaseCommand):
+    names = ["load-audio"]
+    help_text = (
+        "Loads an audio file for audio playback. "
+        "Prompts user to choose where to load the file from if the path "
+        "wasn't specified in the command arguments."
+    )
+
+    async def run(self) -> None:
+        path = await self.args.path.get_load_path(
+            file_filter=AUDIO_FILE_FILTER,
+            directory=self.api.gui.get_dialog_dir(),
+        )
+
+        self.api.audio.load(path)
+
+    @staticmethod
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "-p",
+            "--path",
+            help="path to load the audio from",
+            type=lambda value: FancyPath(api, value),
+            default="",
+        )
+
+
+class UnloadVideoCommand(BaseCommand):
+    names = ["unload-video"]
+    help_text = "Unloads currently loaded video file."
+
+    async def run(self) -> None:
+        self.api.video.unload()
+
+
+class UnloadAudioCommand(BaseCommand):
+    names = ["unload-audio"]
+    help_text = "Unloads currently loaded audio file."
+
+    async def run(self) -> None:
+        self.api.audio.unload()
+
+
 COMMANDS = [
     NewCommand,
     OpenCommand,
-    LoadVideoCommand,
     SaveCommand,
     SaveAsCommand,
+    LoadVideoCommand,
+    LoadAudioCommand,
+    UnloadVideoCommand,
+    UnloadAudioCommand,
 ]

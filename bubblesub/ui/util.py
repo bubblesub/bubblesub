@@ -28,6 +28,7 @@ from bubblesub.ui.time_edit import TimeEdit
 
 SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
 VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
+AUDIO_FILE_FILTER = "Audio filters (*.wav *.mp3 *.flac *.avi *.mkv *.webm *.mp4);;All files (*.*)"
 
 
 def show_error(msg: str) -> None:

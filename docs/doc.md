@@ -153,8 +153,14 @@ Usage: `focus‑widget target [-s|--select]`
 * `target`: which widget to focus (can be `text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
 * `-s`, `--select`: whether to select the text
 
+### <a name="cmd-load-audio"></a>`load‑audio`
+Loads an audio file for audio playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
+
+Usage: `load‑audio [-p|--path=…]`
+* `-p`, `--path`: path to load the audio from
+
 ### <a name="cmd-load-video"></a>`load‑video`
-Loads a video file for audio/video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
+Loads a video file for video playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
 
 Usage: `load‑video [-p|--path=…]`
 * `-p`, `--path`: path to load the video from
@@ -390,3 +396,9 @@ Usage: `sub‑split‑karaoke [-t|--target=selected]`
 
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.
+
+### <a name="cmd-unload-audio"></a>`unload‑audio`
+Unloads currently loaded audio file.
+
+### <a name="cmd-unload-video"></a>`unload‑video`
+Unloads currently loaded video file.
