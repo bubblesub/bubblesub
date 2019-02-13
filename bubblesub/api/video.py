@@ -116,6 +116,7 @@ class VideoApi(QtCore.QObject):
         self._keyframes.clear()
         self._width = 0
         self._height = 0
+        self._last_output_fmt = None
         self.state = VideoState.NotLoaded
 
     def load(self, path: T.Union[str, Path]) -> None:
