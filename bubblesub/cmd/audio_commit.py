@@ -46,8 +46,8 @@ class AudioCommitSelectionCommand(BaseCommand):
 
             for sub in subs:
                 sub.begin_update()
-                sub.start = self.api.media.audio.selection_start
-                sub.end = self.api.media.audio.selection_end
+                sub.start = self.api.media.audio.view.selection_start
+                sub.end = self.api.media.audio.view.selection_end
                 sub.end_update()
 
     @staticmethod

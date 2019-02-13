@@ -27,8 +27,8 @@ class AudioScrollViewCommand(BaseCommand):
     )
 
     async def run(self) -> None:
-        distance = int(self.args.delta * self.api.media.audio.view_size)
-        self.api.media.audio.move_view(distance)
+        distance = int(self.args.delta * self.api.media.audio.view.view_size)
+        self.api.media.audio.view.move_view(distance)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

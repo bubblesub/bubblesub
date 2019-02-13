@@ -27,6 +27,7 @@ from PyQt5 import QtCore
 
 import bubblesub.api.media.media  # pylint: disable=unused-import
 from bubblesub.api.log import LogApi
+from bubblesub.api.media.audio_view import AudioViewApi
 from bubblesub.api.media.state import MediaState
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.cache import get_cache_file_path
@@ -95,143 +96,38 @@ class AudioSourceWorker(Worker):
 class AudioApi(QtCore.QObject):
     """The audio API."""
 
-    view_changed = QtCore.pyqtSignal()
-    selection_changed = QtCore.pyqtSignal()
     parsed = QtCore.pyqtSignal()
 
     def __init__(
         self,
-        media_api: "bubblesub.api.media.media.MediaApi",
         log_api: LogApi,
+        media_api: "bubblesub.api.media.media.MediaApi",
         subs_api: SubtitlesApi,
     ) -> None:
         """
         Initialize self.
 
-        :param media_api: media API
         :param log_api: logging API
+        :param media_api: media API
         :param subs_api: subtitles API
         """
         super().__init__()
         self._log_api = log_api
         self._media_api = media_api
-        self._subs_api = subs_api
 
-        self._min = 0
-        self._max = 0
-        self._view_start = 0
-        self._view_end = 0
-        self._selection_start = 0
-        self._selection_end = 0
         self._audio_source: T.Union[None, ffms.AudioSource] = None
         self._audio_source_worker = AudioSourceWorker(log_api)
 
         self._media_api.state_changed.connect(self._on_media_state_change)
-        self._media_api.max_pts_changed.connect(self._on_max_pts_change)
-        self._subs_api.events.items_inserted.connect(self._extend_view)
-        self._subs_api.events.items_removed.connect(self._extend_view)
-        self._subs_api.events.items_moved.connect(self._extend_view)
-        self._subs_api.events.item_changed.connect(self._extend_view)
-        self._subs_api.loaded.connect(self._reset_view)
         self._audio_source_worker.task_finished.connect(self._got_audio_source)
 
-        self._reset_view()
+        self.view = AudioViewApi(self._media_api, subs_api)
 
         self._audio_source_worker.start()
 
     def shutdown(self) -> None:
         """Stop internal worker threads."""
         self._audio_source_worker.stop()
-
-    @property
-    def min(self) -> int:
-        """
-        Return minimum PTS.
-
-        :return: minimum PTS
-        """
-        return self._min
-
-    @property
-    def max(self) -> int:
-        """
-        Return maximum PTS.
-
-        :return: maximum PTS
-        """
-        return self._max
-
-    @property
-    def size(self) -> int:
-        """
-        Return how many PTS frames audio has.
-
-        :return: how many PTS frames audio has
-        """
-        return self._max - self._min
-
-    @property
-    def view_start(self) -> int:
-        """
-        Return shown start PTS.
-
-        :return: shown start PTS
-        """
-        return self._view_start
-
-    @property
-    def view_end(self) -> int:
-        """
-        Return shown end PTS.
-
-        :return: shown end PTS
-        """
-        return self._view_end
-
-    @property
-    def view_size(self) -> int:
-        """
-        Return shown window size.
-
-        :return: shown window size
-        """
-        return self._view_end - self._view_start
-
-    @property
-    def selection_start(self) -> int:
-        """
-        Return selection start PTS.
-
-        :return: selection start PTS
-        """
-        return self._selection_start
-
-    @property
-    def selection_end(self) -> int:
-        """
-        Return selection end PTS.
-
-        :return: selection end PTS
-        """
-        return self._selection_end
-
-    @property
-    def selection_size(self) -> int:
-        """
-        Return selection size.
-
-        :return: selection size
-        """
-        return self._selection_end - self._selection_start
-
-    @property
-    def has_selection(self) -> bool:
-        """
-        Return whether has selection.
-
-        :return: whether has selection
-        """
-        return self._selection_start != 0 or self._selection_end != 0
 
     @property
     def has_audio_source(self) -> bool:
@@ -313,64 +209,6 @@ class AudioApi(QtCore.QObject):
         assert self._audio_source
         return T.cast(int, self._audio_source.properties.NumSamples)
 
-    def unselect(self) -> None:
-        """Clear selection."""
-        self._selection_start = 0
-        self._selection_end = 0
-        self.selection_changed.emit()
-
-    def select(self, start_pts: int, end_pts: int) -> None:
-        """
-        Set new selection.
-
-        :param start_pts: start PTS
-        :param end_pts: end PTS
-        """
-        self._selection_start = self._clip(start_pts)
-        self._selection_end = self._clip(end_pts)
-        self.selection_changed.emit()
-
-    def view(self, start_pts: int, end_pts: int) -> None:
-        """
-        Set new view window.
-
-        :param start_pts: start PTS
-        :param end_pts: end PTS
-        """
-        self._view_start = self._clip(start_pts)
-        self._view_end = self._clip(end_pts)
-        self.view_changed.emit()
-
-    def zoom_view(self, factor: float, origin: float) -> None:
-        """
-        Zoom the view window.
-
-        :param factor: zoom factor (>1 = zoom in, <1 = zoom out)
-        :param origin: 0…1 relative to the view window
-        """
-        factor = max(0.001, min(1, factor))
-        old_origin = self.view_start - self._min
-        old_view_size = self.view_size * origin
-        self._view_start = self.min
-        self._view_end = self._clip(self.min + self.size * factor)
-        new_view_size = self.view_size * origin
-        distance = int(old_origin - new_view_size + old_view_size)
-        self.move_view(distance)  # emits view_changed
-
-    def move_view(self, distance: int) -> None:
-        """
-        Move the view window.
-
-        :param distance: distance in PTS
-        """
-        view_size = self.view_size
-        if self._view_start + distance < self.min:
-            self.view(self.min, self.min + view_size)
-        elif self._view_end + distance > self.max:
-            self.view(self.max - view_size, self.max)
-        else:
-            self.view(self._view_start + distance, self._view_end + distance)
-
     def get_samples(self, start_frame: int, count: int) -> np.array:
         """
         Get raw audio samples from the currently loaded audio source.
@@ -439,29 +277,11 @@ class AudioApi(QtCore.QObject):
         if state == MediaState.Unloaded:
             self._audio_source = None
         elif state == MediaState.Loading:
-            self._reset_view()
             self._audio_source = _LOADING
             if self._media_api.path:
                 self._audio_source_worker.schedule_task(self._media_api.path)
         else:
             assert state == MediaState.Loaded
-
-    def _on_max_pts_change(self) -> None:
-        self._reset_view()
-
-    def _reset_view(self) -> None:
-        self._min = 0
-        self._max = 0
-        self._extend_view()
-        self.zoom_view(1, 0.5)  # emits view_changed
-
-    def _extend_view(self) -> None:
-        self._min = 0
-        self._max = max(
-            [self._max, self._media_api.max_pts]
-            + [sub.start for sub in self._subs_api.events]
-            + [sub.end for sub in self._subs_api.events]
-        )
 
     def _got_audio_source(
         self, result: T.Optional[T.Tuple[Path, ffms.AudioSource]]
@@ -480,6 +300,3 @@ class AudioApi(QtCore.QObject):
         if self._audio_source is None:
             return False
         return True
-
-    def _clip(self, value: T.Union[int, float]) -> int:
-        return max(min(self._max, int(value)), self._min)

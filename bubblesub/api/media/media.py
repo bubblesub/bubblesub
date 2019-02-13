@@ -78,8 +78,8 @@ class MediaApi(QtCore.QObject):
         self.receive_max_pts_change.connect(self._on_max_pts_change)
         self.receive_ready.connect(self._on_ready)
 
-        self.video = VideoApi(self, log_api, subs_api)
-        self.audio = AudioApi(self, log_api, subs_api)
+        self.video = VideoApi(log_api, self, subs_api)
+        self.audio = AudioApi(log_api, self, subs_api)
 
     def shutdown(self) -> None:
         """Stop internal worker threads."""

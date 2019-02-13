@@ -49,7 +49,7 @@ class StatusBar(QtWidgets.QStatusBar):
 
         api.subs.selection_changed.connect(self._on_subs_selection_change)
         api.media.current_pts_changed.connect(self._on_current_pts_change)
-        api.media.audio.selection_changed.connect(
+        api.media.audio.view.selection_changed.connect(
             self._on_audio_selection_change
         )
 
@@ -104,13 +104,13 @@ class StatusBar(QtWidgets.QStatusBar):
         if len(self._api.subs.selected_events) != 1:
             return
         sub = self._api.subs.selected_events[0]
-        start_delta = self._api.media.audio.selection_start - sub.start
-        end_delta = self._api.media.audio.selection_end - sub.end
+        start_delta = self._api.media.audio.view.selection_start - sub.start
+        end_delta = self._api.media.audio.view.selection_end - sub.end
 
         self._audio_selection_label.setText(
             "Audio selection: {} / {} (duration: {})".format(
                 format_ms_delta(start_delta),
                 format_ms_delta(end_delta),
-                bubblesub.util.ms_to_str(self._api.media.audio.selection_size),
+                bubblesub.util.ms_to_str(self._api.media.audio.view.selection_size),
             )
         )

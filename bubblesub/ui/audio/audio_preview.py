@@ -127,7 +127,7 @@ class AudioPreview(BaseLocalAudioWidget):
 
         api.media.current_pts_changed.connect(self.update)
         api.media.state_changed.connect(self._on_media_state_change)
-        api.media.audio.view_changed.connect(self._on_audio_view_change)
+        api.media.audio.view.view_changed.connect(self._on_audio_view_change)
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
         self._generate_color_table()
@@ -347,7 +347,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 )
 
     def _draw_selection(self, painter: QtGui.QPainter) -> None:
-        if not self._audio.has_selection:
+        if not self._view.has_selection:
             return
         h = self.height()
         color_key = (
@@ -365,8 +365,8 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.setBrush(
             QtGui.QBrush(self._api.gui.get_color(f"{color_key}-fill"))
         )
-        x1 = self.pts_to_x(self._audio.selection_start)
-        x2 = self.pts_to_x(self._audio.selection_end)
+        x1 = self.pts_to_x(self._view.selection_start)
+        x2 = self.pts_to_x(self._view.selection_end)
         painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:

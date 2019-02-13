@@ -77,15 +77,15 @@ class VideoApi(QtCore.QObject):
 
     def __init__(
         self,
-        media_api: "bubblesub.api.media.media.MediaApi",
         log_api: LogApi,
+        media_api: "bubblesub.api.media.media.MediaApi",
         subs_api: SubtitlesApi,
     ) -> None:
         """
         Initialize self.
 
-        :param media_api: media API
         :param log_api: logging API
+        :param media_api: media API
         :param subs_api: subtitles API
         """
         super().__init__()

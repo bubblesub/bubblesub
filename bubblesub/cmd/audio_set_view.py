@@ -27,8 +27,8 @@ class AudioSetViewCommand(BaseCommand):
 
     async def run(self) -> None:
         with self.api.undo.capture():
-            start = self.api.media.audio.view_start
-            end = self.api.media.audio.view_end
+            start = self.api.media.audio.view.view_start
+            end = self.api.media.audio.view.view_end
 
             if self.args.start is not None:
                 start = await self.args.start.get(

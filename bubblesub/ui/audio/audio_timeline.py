@@ -31,7 +31,7 @@ class AudioTimeline(BaseLocalAudioWidget):
 
         api.media.state_changed.connect(self.update)
         api.media.current_pts_changed.connect(self.update)
-        api.media.audio.view_changed.connect(self.update)
+        api.media.audio.view.view_changed.connect(self.update)
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
@@ -54,9 +54,9 @@ class AudioTimeline(BaseLocalAudioWidget):
         one_second = 1000
         one_minute = 60 * one_second
 
-        start_pts = int(self._audio.view_start // one_minute) * one_minute
+        start_pts = int(self._view.view_start // one_minute) * one_minute
         end_pts = (
-            int(self._audio.view_end + one_minute) // one_minute
+            int(self._view.view_end + one_minute) // one_minute
         ) * one_minute
 
         painter.setPen(

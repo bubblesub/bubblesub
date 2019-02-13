@@ -443,13 +443,13 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     async def visit_audio_selection(
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
-        if not self._api.media.audio.has_selection:
+        if not self._api.media.audio.view.has_selection:
             raise CommandUnavailable("audio selection is not available")
         _, boundary = _flatten(visited)
         if boundary == _Token.start:
-            return _Time(self._api.media.audio.selection_start)
+            return _Time(self._api.media.audio.view.selection_start)
         if boundary == _Token.end:
-            return _Time(self._api.media.audio.selection_end)
+            return _Time(self._api.media.audio.view.selection_end)
         raise NotImplementedError(f'unknown boundary: "{boundary}"')
 
     async def visit_audio_view(
@@ -457,9 +457,9 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     ) -> T.Any:
         _, boundary = _flatten(visited)
         if boundary == _Token.start:
-            return _Time(self._api.media.audio.view_start)
+            return _Time(self._api.media.audio.view.view_start)
         if boundary == _Token.end:
-            return _Time(self._api.media.audio.view_end)
+            return _Time(self._api.media.audio.view.view_end)
         raise NotImplementedError(f'unknown boundary: "{boundary}"')
 
     async def visit_default_duration(

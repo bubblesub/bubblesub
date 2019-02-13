@@ -260,13 +260,13 @@ def test_audio_selection(
 ) -> None:
     api = MagicMock()
     if selection:
-        api.media.audio.has_selection = True
-        api.media.audio.selection_start = selection[0]
-        api.media.audio.selection_end = selection[1]
+        api.media.audio.view.has_selection = True
+        api.media.audio.view.selection_start = selection[0]
+        api.media.audio.view.selection_end = selection[1]
     else:
-        api.media.audio.has_selection = False
-        api.media.audio.selection_start = None
-        api.media.audio.selection_end = None
+        api.media.audio.view.has_selection = False
+        api.media.audio.view.selection_start = None
+        api.media.audio.view.selection_end = None
     pts = Pts(api, expr)
     _assert_pts_value(pts, expected_value)
 
@@ -278,8 +278,8 @@ def test_audio_view(
     expr: str, view: T.Optional[T.Tuple[int, int]], expected_value: int
 ) -> None:
     api = MagicMock()
-    api.media.audio.view_start = view[0]
-    api.media.audio.view_end = view[1]
+    api.media.audio.view.view_start = view[0]
+    api.media.audio.view.view_end = view[1]
     pts = Pts(api, expr)
     _assert_pts_value(pts, expected_value)
 

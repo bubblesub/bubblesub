@@ -152,7 +152,7 @@ class VideoPreview(BaseLocalAudioWidget):
         timer.start()
 
         api.media.state_changed.connect(self._on_media_state_change)
-        api.media.audio.view_changed.connect(self._on_audio_view_change)
+        api.media.audio.view.view_changed.connect(self._on_audio_view_change)
         api.media.video.parsed.connect(self._on_audio_view_change)
 
     def shutdown(self) -> None:
