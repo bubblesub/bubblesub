@@ -27,14 +27,14 @@ class SeekCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.media.is_loaded
+        return self.api.playback.is_loaded
 
     async def run(self) -> None:
         pts = await self.args.pos.get(
-            origin=self.api.media.current_pts, align_to_near_frame=True
+            origin=self.api.playback.current_pts, align_to_near_frame=True
         )
-        self.api.media.seek(pts, self.args.precise)
-        self.api.media.is_paused = True
+        self.api.playback.seek(pts, self.args.precise)
+        self.api.playback.is_paused = True
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

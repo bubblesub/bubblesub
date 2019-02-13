@@ -24,11 +24,13 @@ to manipulate it.
 import argparse
 
 import bubblesub.api.cmd
+from bubblesub.api.audio import AudioApi
 from bubblesub.api.gui import GuiApi
 from bubblesub.api.log import LogApi
-from bubblesub.api.media import MediaApi
+from bubblesub.api.playback import PlaybackApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.undo import UndoApi
+from bubblesub.api.video import VideoApi
 from bubblesub.cfg import Config
 
 
@@ -46,11 +48,19 @@ class Api:
         self.cfg = Config()
         self.log = LogApi(self.cfg)
         self.subs = SubtitlesApi()
-        self.media = MediaApi(self.subs, self.log)
         self.undo = UndoApi(self.cfg, self.subs)
+
+        self.playback = PlaybackApi(self.log, self.subs)
+        self.video = VideoApi(self.log, self.subs, self.playback)
+        self.audio = AudioApi(self.log, self.subs, self.playback)
 
         self.gui = GuiApi(self)
         self.cmd = bubblesub.api.cmd.CommandApi(self)
 
-        self.gui.terminated.connect(self.media.unload)
+        self.gui.terminated.connect(self.playback.unload)
         self.gui.terminated.connect(self.cmd.unload)
+
+    def shutdown(self) -> None:
+        """Stop internal worker threads."""
+        self.audio.shutdown()
+        self.video.shutdown()

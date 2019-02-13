@@ -27,9 +27,8 @@ import numpy as np
 import PIL.Image
 from PyQt5 import QtCore
 
-import bubblesub.api.media.media  # pylint: disable=unused-import
 from bubblesub.api.log import LogApi
-from bubblesub.api.media.state import MediaState
+from bubblesub.api.playback import PlaybackApi, PlaybackFrontendState
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.ass_renderer import AssRenderer
 from bubblesub.worker import Worker
@@ -78,21 +77,23 @@ class VideoApi(QtCore.QObject):
     def __init__(
         self,
         log_api: LogApi,
-        media_api: "bubblesub.api.media.media.MediaApi",
         subs_api: SubtitlesApi,
+        playback_api: PlaybackApi,
     ) -> None:
         """
         Initialize self.
 
         :param log_api: logging API
-        :param media_api: media API
         :param subs_api: subtitles API
+        :param playback_api: playback API
         """
         super().__init__()
 
         self._subs_api = subs_api
-        self._media_api = media_api
-        self._media_api.state_changed.connect(self._on_media_state_change)
+        self._playback_api = playback_api
+        self._playback_api.state_changed.connect(
+            self._on_playback_state_change
+        )
 
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
@@ -307,30 +308,30 @@ class VideoApi(QtCore.QObject):
             time.sleep(0.01)
         return True
 
-    def _on_media_state_change(self, state: MediaState) -> None:
-        if state == MediaState.Unloaded:
+    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
+        if state == PlaybackFrontendState.Unloaded:
             self._video_source = None
             self._timecodes.clear()
             self._keyframes.clear()
             self._width = 0
             self._height = 0
-        elif state == MediaState.Loading:
+        elif state == PlaybackFrontendState.Loading:
             self._last_output_fmt = None
             self._video_source = _LOADING
             self._timecodes.clear()
             self._keyframes.clear()
             self._width = 0
             self._height = 0
-            self._video_source_worker.schedule_task(self._media_api.path)
+            self._video_source_worker.schedule_task(self._playback_api.path)
         else:
-            assert state == MediaState.Loaded
+            assert state == PlaybackFrontendState.Loaded
 
     def _got_video_source(self, result: T.Optional[ffms.VideoSource]) -> None:
         if result is None:
             return
 
         path, video_source = result
-        if path != self._media_api.path:
+        if path != self._playback_api.path:
             return
 
         self._video_source = video_source

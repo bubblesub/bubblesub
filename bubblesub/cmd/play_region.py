@@ -27,7 +27,7 @@ class PlayRegionCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.media.is_loaded
+        return self.api.playback.is_loaded
 
     async def run(self) -> None:
         start = await self.args.start.get()
@@ -36,7 +36,7 @@ class PlayRegionCommand(BaseCommand):
         else:
             end = None
 
-        self.api.media.play(start, end)
+        self.api.playback.play(start, end)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

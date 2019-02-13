@@ -221,15 +221,15 @@ class _Time:
         :return: resolved pts
         """
         if self.unit == _TimeUnit.frame:
-            if not api.media.video.timecodes:
+            if not api.video.timecodes:
                 raise CommandError("timecode information is not available")
-            idx = max(1, min(self.value, len(api.media.video.timecodes))) - 1
-            return api.media.video.timecodes[idx]
+            idx = max(1, min(self.value, len(api.video.timecodes))) - 1
+            return api.video.timecodes[idx]
         if self.unit == _TimeUnit.keyframe:
-            if not api.media.video.timecodes:
+            if not api.video.timecodes:
                 raise CommandError("keyframe information is not available")
-            idx = max(1, min(self.value, len(api.media.video.keyframes))) - 1
-            return api.media.video.timecodes[api.media.video.keyframes[idx]]
+            idx = max(1, min(self.value, len(api.video.keyframes))) - 1
+            return api.video.timecodes[api.video.keyframes[idx]]
         if self.unit == _TimeUnit.ms:
             return self.value
         raise NotImplementedError(f"unknown unit: {self.unit}")
@@ -261,17 +261,15 @@ def _bisect(source: T.List[int], origin: int, delta: int) -> int:
 
 
 def _apply_frame(api: Api, origin: int, delta: int) -> int:
-    if not api.media.video.timecodes:
+    if not api.video.timecodes:
         raise CommandError("timecode information is not available")
-    return _bisect(api.media.video.timecodes, origin, delta)
+    return _bisect(api.video.timecodes, origin, delta)
 
 
 def _apply_keyframe(api: Api, origin: int, delta: int) -> int:
-    if not api.media.video.keyframes:
+    if not api.video.keyframes:
         raise CommandError("keyframe information is not available")
-    possible_pts = [
-        api.media.video.timecodes[i] for i in api.media.video.keyframes
-    ]
+    possible_pts = [api.video.timecodes[i] for i in api.video.keyframes]
     return _bisect(possible_pts, origin, delta)
 
 
@@ -416,11 +414,11 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
         direction, _ = _flatten(visited)
-        origin = self._api.media.current_pts
+        origin = self._api.playback.current_pts
         if direction == _Token.first:
             return _Time(1, _TimeUnit.frame)
         if direction == _Token.last:
-            return _Time(len(self._api.media.video.timecodes), _TimeUnit.frame)
+            return _Time(len(self._api.video.timecodes), _TimeUnit.frame)
         if direction == _Token.current:
             return _Time(origin)
         delta = _Token.delta_from_direction(direction)
@@ -430,26 +428,24 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
         direction, _ = _flatten(visited)
-        origin = self._api.media.current_pts
+        origin = self._api.playback.current_pts
         if direction == _Token.first:
             return _Time(1, _TimeUnit.keyframe)
         if direction == _Token.last:
-            return _Time(
-                len(self._api.media.video.keyframes), _TimeUnit.keyframe
-            )
+            return _Time(len(self._api.video.keyframes), _TimeUnit.keyframe)
         delta = _Token.delta_from_direction(direction)
         return _Time(_apply_keyframe(self._api, origin, delta))
 
     async def visit_audio_selection(
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
-        if not self._api.media.audio.view.has_selection:
+        if not self._api.audio.view.has_selection:
             raise CommandUnavailable("audio selection is not available")
         _, boundary = _flatten(visited)
         if boundary == _Token.start:
-            return _Time(self._api.media.audio.view.selection_start)
+            return _Time(self._api.audio.view.selection_start)
         if boundary == _Token.end:
-            return _Time(self._api.media.audio.view.selection_end)
+            return _Time(self._api.audio.view.selection_end)
         raise NotImplementedError(f'unknown boundary: "{boundary}"')
 
     async def visit_audio_view(
@@ -457,9 +453,9 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     ) -> T.Any:
         _, boundary = _flatten(visited)
         if boundary == _Token.start:
-            return _Time(self._api.media.audio.view.view_start)
+            return _Time(self._api.audio.view.view_start)
         if boundary == _Token.end:
-            return _Time(self._api.media.audio.view.view_end)
+            return _Time(self._api.audio.view.view_end)
         raise NotImplementedError(f'unknown boundary: "{boundary}"')
 
     async def visit_default_duration(
@@ -471,14 +467,14 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         return _Time(0)
 
     async def visit_max(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
-        return _Time(self._api.media.max_pts)
+        return _Time(self._api.playback.max_pts)
 
     async def visit_dialog(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
         ret = await self._api.gui.exec(
             time_jump_dialog,
             relative_checked=False,
             show_radio=self._origin is not None,
-            value=self._api.media.current_pts,
+            value=self._api.playback.current_pts,
         )
         if ret is None:
             raise CommandCanceled
@@ -500,7 +496,7 @@ class Pts:
     ) -> int:
         ret = await self._get(origin)
         if align_to_near_frame:
-            ret = self._api.media.video.align_pts_to_near_frame(ret)
+            ret = self._api.video.align_pts_to_near_frame(ret)
         return ret
 
     async def _get(self, origin: T.Optional[int]) -> int:

@@ -57,9 +57,9 @@ class Audio(QtWidgets.QWidget):
         if len(self._api.subs.selected_indexes) >= 1:
             first_sub = self._api.subs.selected_events[0]
             last_sub = self._api.subs.selected_events[-1]
-            self._api.media.audio.view.view(
+            self._api.audio.view.view(
                 first_sub.start - 10000, last_sub.end + 10000
             )
-            self._api.media.audio.view.select(first_sub.start, last_sub.end)
+            self._api.audio.view.select(first_sub.start, last_sub.end)
         else:
-            self._api.media.audio.view.unselect()
+            self._api.audio.view.unselect()

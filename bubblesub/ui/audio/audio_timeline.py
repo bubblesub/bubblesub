@@ -29,9 +29,9 @@ class AudioTimeline(BaseLocalAudioWidget):
 
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
 
-        api.media.state_changed.connect(self.update)
-        api.media.current_pts_changed.connect(self.update)
-        api.media.audio.view.view_changed.connect(self.update)
+        api.playback.state_changed.connect(self.update)
+        api.playback.current_pts_changed.connect(self.update)
+        api.audio.view.view_changed.connect(self.update)
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
@@ -96,15 +96,15 @@ class AudioTimeline(BaseLocalAudioWidget):
         h = painter.viewport().height()
         color = self._api.gui.get_color("spectrogram/keyframe")
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
-        for keyframe in self._api.media.video.keyframes:
-            timecode = self._api.media.video.timecodes[keyframe]
+        for keyframe in self._api.video.keyframes:
+            timecode = self._api.video.timecodes[keyframe]
             x = self.pts_to_x(timecode)
             painter.drawLine(x, 0, x, h)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
-        if not self._api.media.current_pts:
+        if not self._api.playback.current_pts:
             return
-        x = self.pts_to_x(self._api.media.current_pts)
+        x = self.pts_to_x(self._api.playback.current_pts)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
 

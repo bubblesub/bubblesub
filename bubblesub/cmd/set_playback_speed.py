@@ -27,10 +27,10 @@ class SetPlaybackSpeedCommand(BaseCommand):
 
     async def run(self) -> None:
         new_value = eval_expr(
-            self.args.expression.format(self.api.media.playback_speed)
+            self.args.expression.format(self.api.playback.playback_speed)
         )
-        assert isinstance(new_value, type(self.api.media.playback_speed))
-        self.api.media.playback_speed = new_value
+        assert isinstance(new_value, type(self.api.playback.playback_speed))
+        self.api.playback.playback_speed = new_value
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

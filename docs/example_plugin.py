@@ -23,10 +23,7 @@ class SpeechRecognitionCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return (
-            self.args.target.makes_sense
-            and self.api.media.audio.has_audio_source
-        )
+        return self.args.target.makes_sense and self.api.audio.has_audio_source
 
     async def run(self) -> None:
         await asyncio.get_event_loop().run_in_executor(
@@ -69,7 +66,7 @@ class SpeechRecognitionCommand(BaseCommand):
         self.api.log.info(f"line #{sub.number} - analyzing")
         recognizer = sr.Recognizer()
         with io.BytesIO() as handle:
-            self.api.media.audio.save_wav(handle, [(sub.start, sub.end)])
+            self.api.audio.save_wav(handle, [(sub.start, sub.end)])
             handle.seek(0, io.SEEK_SET)
             with sr.AudioFile(handle) as source:
                 audio = recognizer.record(source)

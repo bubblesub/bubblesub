@@ -27,10 +27,10 @@ class SetVolumeCommand(BaseCommand):
 
     async def run(self) -> None:
         new_value = eval_expr(
-            self.args.expression.format(self.api.media.volume)
+            self.args.expression.format(self.api.playback.volume)
         )
-        assert isinstance(new_value, type(self.api.media.volume))
-        self.api.media.volume = new_value
+        assert isinstance(new_value, type(self.api.playback.volume))
+        self.api.playback.volume = new_value
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

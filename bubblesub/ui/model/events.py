@@ -25,7 +25,7 @@ from bubblesub.ass.event import AssEvent
 from bubblesub.ass.util import character_count
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 from bubblesub.ui.util import blend_colors
-from bubblesub.util import ms_to_str, str_to_ms
+from bubblesub.util import ms_to_str
 
 
 class AssEventsModelColumn(enum.IntEnum):

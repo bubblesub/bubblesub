@@ -222,10 +222,10 @@ class SubtitlesGrid(QtWidgets.QTableView):
         if (
             self._seek_to is not None
             and self._api.cfg.opt["video"]["sync_pos_to_selection"]
-            and self._api.media.is_loaded
+            and self._api.playback.is_loaded
         ):
-            self._api.media.is_paused = True
-            self._api.media.seek(self._seek_to)
+            self._api.playback.is_paused = True
+            self._api.playback.seek(self._seek_to)
             self._seek_to = None
 
     def _open_subs_menu(self, position: QtCore.QPoint) -> None:

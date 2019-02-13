@@ -21,7 +21,7 @@ import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.media.state import MediaState
+from bubblesub.api.playback import PlaybackFrontendState
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.util import blend_colors
 from bubblesub.util import chunks
@@ -68,15 +68,15 @@ class SpectrumWorker(Worker):
         return response
 
     def _get_spectrogram_for_pts(self, pts: int) -> np.array:
-        audio_frame = int(pts * self._api.media.audio.sample_rate / 1000.0)
+        audio_frame = int(pts * self._api.audio.sample_rate / 1000.0)
         first_sample = (
             audio_frame >> DERIVATION_DISTANCE
         ) << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
-        samples = self._api.media.audio.get_samples(first_sample, sample_count)
+        samples = self._api.audio.get_samples(first_sample, sample_count)
         samples = np.mean(samples, axis=1)
-        sample_fmt = self._api.media.audio.sample_format
+        sample_fmt = self._api.audio.sample_format
         if sample_fmt is None:
             return np.zeros((1 << DERIVATION_SIZE) + 1)
 
@@ -125,9 +125,9 @@ class AudioPreview(BaseLocalAudioWidget):
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
-        api.media.current_pts_changed.connect(self.update)
-        api.media.state_changed.connect(self._on_media_state_change)
-        api.media.audio.view.view_changed.connect(self._on_audio_view_change)
+        api.playback.current_pts_changed.connect(self.update)
+        api.playback.state_changed.connect(self._on_playback_state_change)
+        api.audio.view.view_changed.connect(self._on_audio_view_change)
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
         self._generate_color_table()
@@ -193,7 +193,7 @@ class AudioPreview(BaseLocalAudioWidget):
         self._spectrum_worker.clear_tasks()
 
         horizontal_res = self._api.cfg.opt["audio"]["spectrogram_resolution"]
-        max_pts = self._api.media.max_pts
+        max_pts = self._api.playback.max_pts
 
         pts_to_update = set()
         for x in range(self.width() * 2):
@@ -213,8 +213,8 @@ class AudioPreview(BaseLocalAudioWidget):
             for pts in chunk:
                 self._spectrum_cache[pts] = CACHING
 
-    def _on_media_state_change(self, state: MediaState) -> None:
-        if state == MediaState.Unloaded:
+    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
+        if state == PlaybackFrontendState.Unloaded:
             self._spectrum_cache.clear()
             if self._spectrum_worker:
                 self._spectrum_worker.task_finished.disconnect(
@@ -224,7 +224,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 self._spectrum_worker.stop()
                 self._spectrum_worker = None
 
-        elif state == MediaState.Loading and pyfftw:
+        elif state == PlaybackFrontendState.Loading and pyfftw:
             self._spectrum_worker = SpectrumWorker(self._api)
             self._spectrum_worker.task_finished.connect(
                 self._on_spectrum_update
@@ -270,8 +270,8 @@ class AudioPreview(BaseLocalAudioWidget):
         h = painter.viewport().height()
         color = self._api.gui.get_color("spectrogram/keyframe")
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
-        for keyframe in self._api.media.video.keyframes:
-            timecode = self._api.media.video.timecodes[keyframe]
+        for keyframe in self._api.video.keyframes:
+            timecode = self._api.video.timecodes[keyframe]
             x = self.pts_to_x(timecode)
             painter.drawLine(x, 0, x, h)
 
@@ -370,9 +370,9 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
-        if not self._api.media.current_pts:
+        if not self._api.playback.current_pts:
             return
-        x = self.pts_to_x(self._api.media.current_pts)
+        x = self.pts_to_x(self._api.playback.current_pts)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
 

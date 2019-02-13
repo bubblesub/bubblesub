@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Media API. Exposes audio/video player."""
+"""Playback API. Exposes functions to interact with audio/video player."""
 
+import enum
 import fractions
 import typing as T
 from pathlib import Path
@@ -23,9 +24,6 @@ from pathlib import Path
 from PyQt5 import QtCore
 
 from bubblesub.api.log import LogApi
-from bubblesub.api.media.audio import AudioApi
-from bubblesub.api.media.state import MediaState
-from bubblesub.api.media.video import VideoApi
 from bubblesub.api.subs import SubtitlesApi
 
 MIN_PLAYBACK_SPEED = fractions.Fraction(0.1)
@@ -34,10 +32,18 @@ MIN_VOLUME = fractions.Fraction(0)
 MAX_VOLUME = fractions.Fraction(200)
 
 
-class MediaApi(QtCore.QObject):
-    """The media API."""
+class PlaybackFrontendState(enum.IntEnum):
+    """State of media player."""
 
-    state_changed = QtCore.pyqtSignal(MediaState)
+    Unloaded = 0
+    Loading = 1
+    Loaded = 2
+
+
+class PlaybackApi(QtCore.QObject):
+    """The playback API."""
+
+    state_changed = QtCore.pyqtSignal(PlaybackFrontendState)
     current_pts_changed = QtCore.pyqtSignal()
     max_pts_changed = QtCore.pyqtSignal()
     volume_changed = QtCore.pyqtSignal()
@@ -52,15 +58,15 @@ class MediaApi(QtCore.QObject):
     receive_max_pts_change = QtCore.pyqtSignal(int)
     receive_ready = QtCore.pyqtSignal()
 
-    def __init__(self, subs_api: SubtitlesApi, log_api: LogApi) -> None:
+    def __init__(self, log_api: LogApi, subs_api: SubtitlesApi) -> None:
         """
         Initialize self.
 
-        :param subs_api: subtitles API
         :param log_api: logging API
+        :param subs_api: subtitles API
         """
         super().__init__()
-        self._state = MediaState.Unloaded
+        self._state = PlaybackFrontendState.Unloaded
 
         self._log_api = log_api
         self._subs_api = subs_api
@@ -78,17 +84,9 @@ class MediaApi(QtCore.QObject):
         self.receive_max_pts_change.connect(self._on_max_pts_change)
         self.receive_ready.connect(self._on_ready)
 
-        self.video = VideoApi(log_api, self, subs_api)
-        self.audio = AudioApi(log_api, self, subs_api)
-
-    def shutdown(self) -> None:
-        """Stop internal worker threads."""
-        self.audio.shutdown()
-        self.video.shutdown()
-
     def unload(self) -> None:
         """Unload currently loaded video."""
-        self.state = MediaState.Unloaded
+        self.state = PlaybackFrontendState.Unloaded
         self.state_changed.emit(self.state)
         self._current_pts = 0
         self._max_pts = 0
@@ -104,7 +102,7 @@ class MediaApi(QtCore.QObject):
 
         self.unload()
 
-        self.state = MediaState.Loading
+        self.state = PlaybackFrontendState.Loading
         self._path = Path(path)
         if str(self._subs_api.remembered_video_path) != str(self._path):
             self._subs_api.remembered_video_path = self._path
@@ -119,7 +117,6 @@ class MediaApi(QtCore.QObject):
         :param precise: whether to be preciser at the expense of performance
         """
         pts = max(0, pts)
-        pts = self.video.align_pts_to_near_frame(pts)
         if pts != self.current_pts:
             self.request_seek.emit(pts, precise)
 
@@ -133,22 +130,22 @@ class MediaApi(QtCore.QObject):
         self.request_playback.emit(start, end)
 
     @property
-    def state(self) -> MediaState:
+    def state(self) -> PlaybackFrontendState:
         """
-        Return current media state.
+        Return current playback state.
 
-        :return: media state
+        :return: playback state
         """
         return self._state
 
     @state.setter
-    def state(self, value: MediaState) -> None:
+    def state(self, value: PlaybackFrontendState) -> None:
         """
-        Set current media state.
+        Set current playback state.
 
-        :param value: new media state
+        :param value: new playback state
         """
-        self._log_api.debug(f"video: changed state to {value}")
+        self._log_api.debug(f"playback: changed state to {value}")
         self._state = value
 
     @property
@@ -279,7 +276,7 @@ class MediaApi(QtCore.QObject):
 
         :return: whether there's video loaded
         """
-        return self.state == MediaState.Loaded
+        return self.state == PlaybackFrontendState.Loaded
 
     def _on_subs_load(self) -> None:
         if self._subs_api.remembered_video_path:
@@ -298,5 +295,5 @@ class MediaApi(QtCore.QObject):
             self.max_pts_changed.emit()
 
     def _on_ready(self) -> None:
-        self.state = MediaState.Loaded
+        self.state = PlaybackFrontendState.Loaded
         self.state_changed.emit(self.state)

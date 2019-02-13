@@ -27,11 +27,11 @@ class PauseCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.media.is_loaded
+        return self.api.playback.is_loaded
 
     async def run(self) -> None:
-        self.api.media.is_paused = self.args.operation.apply(
-            self.api.media.is_paused
+        self.api.playback.is_paused = self.args.operation.apply(
+            self.api.playback.is_paused
         )
 
     @staticmethod

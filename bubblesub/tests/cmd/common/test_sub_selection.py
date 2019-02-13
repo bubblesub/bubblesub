@@ -72,7 +72,7 @@ def test_get_all_indexes(
     expected_indexes: T.Union[T.List[int], T.Type[CommandError]],
 ) -> None:
     api = MagicMock()
-    api.media.current_pts = current_pts
+    api.playback.current_pts = current_pts
     api.subs.events = [MagicMock() for _ in range(sub_count)]
     for i, event in enumerate(api.subs.events):
         event.index = i

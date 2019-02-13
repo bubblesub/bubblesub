@@ -96,7 +96,7 @@ class Application:
         sys.excepthook = on_error
 
         console = Console(api, None)
-        self._app.aboutToQuit.connect(api.media.shutdown)
+        self._app.aboutToQuit.connect(api.shutdown)
 
         try:
             if self._splash:

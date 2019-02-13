@@ -48,8 +48,8 @@ class StatusBar(QtWidgets.QStatusBar):
         self.addPermanentWidget(self._audio_selection_label)
 
         api.subs.selection_changed.connect(self._on_subs_selection_change)
-        api.media.current_pts_changed.connect(self._on_current_pts_change)
-        api.media.audio.view.selection_changed.connect(
+        api.playback.current_pts_changed.connect(self._on_current_pts_change)
+        api.audio.view.selection_changed.connect(
             self._on_audio_selection_change
         )
 
@@ -90,8 +90,9 @@ class StatusBar(QtWidgets.QStatusBar):
     def _on_current_pts_change(self) -> None:
         self._video_frame_label.setText(
             "Video frame: {} ({:.1%})".format(
-                bubblesub.util.ms_to_str(self._api.media.current_pts),
-                self._api.media.current_pts / max(1, self._api.media.max_pts),
+                bubblesub.util.ms_to_str(self._api.playback.current_pts),
+                self._api.playback.current_pts
+                / max(1, self._api.playback.max_pts),
             )
         )
 
@@ -104,13 +105,13 @@ class StatusBar(QtWidgets.QStatusBar):
         if len(self._api.subs.selected_events) != 1:
             return
         sub = self._api.subs.selected_events[0]
-        start_delta = self._api.media.audio.view.selection_start - sub.start
-        end_delta = self._api.media.audio.view.selection_end - sub.end
+        start_delta = self._api.audio.view.selection_start - sub.start
+        end_delta = self._api.audio.view.selection_end - sub.end
 
         self._audio_selection_label.setText(
             "Audio selection: {} / {} (duration: {})".format(
                 format_ms_delta(start_delta),
                 format_ms_delta(end_delta),
-                bubblesub.util.ms_to_str(self._api.media.audio.view.selection_size),
+                bubblesub.util.ms_to_str(self._api.audio.view.selection_size),
             )
         )

@@ -123,7 +123,7 @@ class SubtitlesSelection:
                         key=lambda sub: sub.start,
                         reverse=True,
                     )
-                    if sub.start <= self.api.media.current_pts
+                    if sub.start <= self.api.playback.current_pts
                 )
                 return [
                     target_sub.index
@@ -139,7 +139,7 @@ class SubtitlesSelection:
                     for sub in sorted(
                         self.api.subs.events, key=lambda sub: sub.start
                     )
-                    if sub.start >= self.api.media.current_pts
+                    if sub.start >= self.api.playback.current_pts
                 )
                 return [target_sub.index if target_sub else 0]
             return [

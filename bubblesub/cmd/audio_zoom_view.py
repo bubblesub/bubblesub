@@ -26,11 +26,11 @@ class AudioZoomViewCommand(BaseCommand):
 
     async def run(self) -> None:
         mouse_x = 0.5
-        cur_factor = self.api.media.audio.view.view_size / max(
-            1, self.api.media.audio.view.size
+        cur_factor = self.api.audio.view.view_size / max(
+            1, self.api.audio.view.size
         )
         new_factor = cur_factor * self.args.delta
-        self.api.media.audio.view.zoom_view(new_factor, mouse_x)
+        self.api.audio.view.zoom_view(new_factor, mouse_x)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

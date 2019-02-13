@@ -22,7 +22,7 @@ import typing as T
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.media.audio import AudioViewApi
+from bubblesub.api.audio import AudioViewApi
 
 SLIDER_SIZE = 20
 
@@ -44,8 +44,8 @@ class BaseAudioWidget(QtWidgets.QWidget):
         def update(*_: T.Any) -> None:
             self.update()
 
-        api.media.audio.view.selection_changed.connect(update)
-        api.media.audio.view.view_changed.connect(update)
+        api.audio.view.selection_changed.connect(update)
+        api.audio.view.view_changed.connect(update)
         api.subs.events.item_changed.connect(update)
         api.subs.events.items_inserted.connect(update)
         api.subs.events.items_removed.connect(update)
@@ -53,7 +53,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
 
     @property
     def _view(self) -> AudioViewApi:
-        return self._api.media.audio.view
+        return self._api.audio.view
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         self.setCursor(QtCore.Qt.SizeHorCursor)
@@ -95,7 +95,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
                     max(self._view.selection_start, pts),
                 )
         elif self._drag_mode == DragMode.VideoPosition:
-            self._api.media.seek(pts)
+            self._api.playback.seek(pts)
         elif self._drag_mode == DragMode.AudioView:
             old_center = self._view.view_start + self._view.view_size / 2
             new_center = pts
@@ -146,9 +146,7 @@ class BaseLocalAudioWidget(BaseAudioWidget):
 
     def frame_idx_from_x(self, x: int) -> int:
         pts = self.pts_from_x(x)
-        return max(
-            0, bisect.bisect_left(self._api.media.video.timecodes, pts) - 1
-        )
+        return max(0, bisect.bisect_left(self._api.video.timecodes, pts) - 1)
 
 
 class BaseGlobalAudioWidget(BaseAudioWidget):

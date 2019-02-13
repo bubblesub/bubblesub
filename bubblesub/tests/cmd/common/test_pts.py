@@ -233,12 +233,12 @@ def test_frames(
     expected_value: T.Union[int, T.Type[CommandError]],
 ) -> None:
     api = MagicMock()
-    api.media.video.timecodes = frame_times
-    api.media.video.keyframes = keyframe_indexes
+    api.video.timecodes = frame_times
+    api.video.keyframes = keyframe_indexes
     if cur_frame_idx is Ellipsis:
-        api.media.current_pts = 0
+        api.playback.current_pts = 0
     else:
-        api.media.current_pts = frame_times[cur_frame_idx]
+        api.playback.current_pts = frame_times[cur_frame_idx]
     pts = Pts(api, expr)
 
     _assert_pts_value(pts, expected_value)
@@ -260,13 +260,13 @@ def test_audio_selection(
 ) -> None:
     api = MagicMock()
     if selection:
-        api.media.audio.view.has_selection = True
-        api.media.audio.view.selection_start = selection[0]
-        api.media.audio.view.selection_end = selection[1]
+        api.audio.view.has_selection = True
+        api.audio.view.selection_start = selection[0]
+        api.audio.view.selection_end = selection[1]
     else:
-        api.media.audio.view.has_selection = False
-        api.media.audio.view.selection_start = None
-        api.media.audio.view.selection_end = None
+        api.audio.view.has_selection = False
+        api.audio.view.selection_start = None
+        api.audio.view.selection_end = None
     pts = Pts(api, expr)
     _assert_pts_value(pts, expected_value)
 
@@ -278,8 +278,8 @@ def test_audio_view(
     expr: str, view: T.Optional[T.Tuple[int, int]], expected_value: int
 ) -> None:
     api = MagicMock()
-    api.media.audio.view.view_start = view[0]
-    api.media.audio.view.view_end = view[1]
+    api.audio.view.view_start = view[0]
+    api.audio.view.view_end = view[1]
     pts = Pts(api, expr)
     _assert_pts_value(pts, expected_value)
 
@@ -294,7 +294,7 @@ def test_default_subtitle_duration() -> None:
 
 def test_min_max() -> None:
     api = MagicMock()
-    api.media.max_pts = 999
+    api.playback.max_pts = 999
 
     min_pts = Pts(api, "min")
     max_pts = Pts(api, "max")

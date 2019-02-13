@@ -22,7 +22,7 @@ import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore, QtOpenGL, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.media.state import MediaState
+from bubblesub.api.playback import PlaybackFrontendState
 from bubblesub.ass.writer import write_ass
 from bubblesub.util import ms_to_str
 
@@ -96,28 +96,28 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         api.subs.styles.items_removed.connect(self._on_subs_change)
         api.subs.styles.items_moved.connect(self._on_subs_change)
 
-        api.media.request_seek.connect(self._on_request_seek)
-        api.media.request_playback.connect(self._on_request_playback)
-        api.media.state_changed.connect(self._on_media_state_change)
-        api.media.playback_speed_changed.connect(
+        api.playback.request_seek.connect(self._on_request_seek)
+        api.playback.request_playback.connect(self._on_request_playback)
+        api.playback.state_changed.connect(self._on_playback_state_change)
+        api.playback.playback_speed_changed.connect(
             self._on_playback_speed_change
         )
-        api.media.volume_changed.connect(self._on_volume_change)
-        api.media.mute_changed.connect(self._on_mute_change)
-        api.media.pause_changed.connect(self._on_pause_change)
+        api.playback.volume_changed.connect(self._on_volume_change)
+        api.playback.mute_changed.connect(self._on_mute_change)
+        api.playback.pause_changed.connect(self._on_pause_change)
         self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
         self._schedule_update.connect(self.update)
 
         self._timer.start()
 
-    def _on_media_state_change(self, state: MediaState) -> None:
-        if state == MediaState.Unloaded:
+    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
+        if state == PlaybackFrontendState.Unloaded:
             if self._mpv_ready:
                 self._mpv.command("playlist-remove", "current")
             self._mpv_ready = False
             self._mpv.set_property("pause", True)
-        elif state == MediaState.Loading:
-            self._mpv.command("loadfile", str(self._api.media.path))
+        elif state == PlaybackFrontendState.Loading:
+            self._mpv.command("loadfile", str(self._api.playback.path))
         self._need_subs_refresh = True
 
     def shutdown(self) -> None:
@@ -189,17 +189,19 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._mpv.set_property("pause", False)
 
     def _on_playback_speed_change(self) -> None:
-        self._mpv.set_property("speed", float(self._api.media.playback_speed))
+        self._mpv.set_property(
+            "speed", float(self._api.playback.playback_speed)
+        )
 
     def _on_volume_change(self) -> None:
-        self._mpv.set_property("volume", float(self._api.media.volume))
+        self._mpv.set_property("volume", float(self._api.playback.volume))
 
     def _on_mute_change(self) -> None:
-        self._mpv.set_property("mute", self._api.media.is_muted)
+        self._mpv.set_property("mute", self._api.playback.is_muted)
 
     def _on_pause_change(self) -> None:
         self._set_end(None)
-        self._mpv.set_property("pause", self._api.media.is_paused)
+        self._mpv.set_property("pause", self._api.playback.is_paused)
 
     def _on_subs_change(self) -> None:
         self._need_subs_refresh = True
@@ -210,7 +212,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
     def _on_mpv_load(self) -> None:
         self._mpv_ready = True
         self._refresh_subs()
-        self._api.media.receive_ready.emit()
+        self._api.playback.receive_ready.emit()
 
     def _mpv_event_handler(self) -> None:
         while self._mpv:
@@ -236,12 +238,14 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             event_prop = event.data
             if event_prop.name == "time-pos":
                 pts = round((event_prop.data or 0) * 1000)
-                self._api.media.receive_current_pts_change.emit(pts)
+                self._api.playback.receive_current_pts_change.emit(pts)
             elif event_prop.name == "duration":
                 pts = round((event_prop.data or 0) * 1000)
-                self._api.media.receive_max_pts_change.emit(pts)
+                self._api.playback.receive_max_pts_change.emit(pts)
             elif event_prop.name == "pause":
-                self._api.media.pause_changed.disconnect(self._on_pause_change)
-                self._api.media.is_paused = event_prop.data
-                self._api.media.pause_changed.connect(self._on_pause_change)
+                self._api.playback.pause_changed.disconnect(
+                    self._on_pause_change
+                )
+                self._api.playback.is_paused = event_prop.data
+                self._api.playback.pause_changed.connect(self._on_pause_change)
         return False

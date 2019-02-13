@@ -17,7 +17,7 @@
 import argparse
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand, CommandUnavailable
+from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import FancyPath, Pts
 from bubblesub.util import ms_to_str
 
@@ -32,22 +32,22 @@ class SaveAudioSampleCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.media.audio.has_audio_source
+        return self.api.audio.has_audio_source
 
     async def run(self) -> None:
         start = await self.args.start.get(align_to_near_frame=False)
         end = await self.args.end.get(align_to_near_frame=False)
 
-        assert self.api.media.path
+        assert self.api.playback.path
         path = await self.args.path.get_save_path(
             file_filter="Waveform Audio File (*.wav)",
             default_file_name="audio-{}-{}..{}.wav".format(
-                self.api.media.path.name, ms_to_str(start), ms_to_str(end)
+                self.api.playback.path.name, ms_to_str(start), ms_to_str(end)
             ),
         )
 
         pts_ranges = [(start, end)]
-        self.api.media.audio.save_wav(path, pts_ranges)
+        self.api.audio.save_wav(path, pts_ranges)
         self.api.log.info(f"saved audio sample to {path}")
 
     @staticmethod

@@ -32,8 +32,8 @@ class AudioSetSelectionCommand(BaseCommand):
 
     async def run(self) -> None:
         with self.api.undo.capture():
-            start = self.api.media.audio.view.selection_start
-            end = self.api.media.audio.view.selection_end
+            start = self.api.audio.view.selection_start
+            end = self.api.audio.view.selection_end
 
             if self.args.start is not None:
                 start = await self.args.start.get(
@@ -45,7 +45,7 @@ class AudioSetSelectionCommand(BaseCommand):
                     origin=end, align_to_near_frame=not self.args.no_align
                 )
 
-            self.api.media.audio.view.select(start, end)
+            self.api.audio.view.select(start, end)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

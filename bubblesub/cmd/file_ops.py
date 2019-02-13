@@ -82,7 +82,7 @@ class LoadVideoCommand(BaseCommand):
             directory=self.api.gui.get_dialog_dir(),
         )
 
-        self.api.media.load(path)
+        self.api.playback.load(path)
         self.api.log.info(f"loading {path}")
 
     @staticmethod

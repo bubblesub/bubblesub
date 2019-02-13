@@ -28,7 +28,7 @@ class AudioSlider(BaseGlobalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
-        api.media.current_pts_changed.connect(
+        api.playback.current_pts_changed.connect(
             self._on_video_current_pts_change
         )
 
@@ -52,9 +52,9 @@ class AudioSlider(BaseGlobalAudioWidget):
             self.end_drag_mode()
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
-        if not self._api.media.current_pts:
+        if not self._api.playback.current_pts:
             return
-        x = self.pts_to_x(self._api.media.current_pts)
+        x = self.pts_to_x(self._api.playback.current_pts)
         painter.setPen(
             QtGui.QPen(
                 self._api.gui.get_color("spectrogram/video-marker"),

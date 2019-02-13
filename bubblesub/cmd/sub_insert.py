@@ -37,8 +37,8 @@ class SubtitleInsertCommand(BaseCommand):
             raise AssertionError
 
         if not self.args.no_align:
-            start = self.api.media.video.align_pts_to_near_frame(start)
-            end = self.api.media.video.align_pts_to_near_frame(end)
+            start = self.api.video.align_pts_to_near_frame(start)
+            end = self.api.video.align_pts_to_near_frame(end)
 
         with self.api.undo.capture():
             self.api.subs.events.insert(

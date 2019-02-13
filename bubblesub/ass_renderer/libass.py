@@ -23,9 +23,6 @@ import ctypes
 import ctypes.util
 import typing as T
 
-import numpy as np
-import PIL.Image
-
 import bubblesub.ass
 
 _libass = ctypes.cdll.LoadLibrary(ctypes.util.find_library("ass"))

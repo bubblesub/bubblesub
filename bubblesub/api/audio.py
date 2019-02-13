@@ -25,10 +25,9 @@ import ffms
 import numpy as np
 from PyQt5 import QtCore
 
-import bubblesub.api.media.media  # pylint: disable=unused-import
+from bubblesub.api.audio_view import AudioViewApi
 from bubblesub.api.log import LogApi
-from bubblesub.api.media.audio_view import AudioViewApi
-from bubblesub.api.media.state import MediaState
+from bubblesub.api.playback import PlaybackApi, PlaybackFrontendState
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.cache import get_cache_file_path
 from bubblesub.util import sanitize_file_name
@@ -101,28 +100,29 @@ class AudioApi(QtCore.QObject):
     def __init__(
         self,
         log_api: LogApi,
-        media_api: "bubblesub.api.media.media.MediaApi",
         subs_api: SubtitlesApi,
+        playback_api: PlaybackApi,
     ) -> None:
         """
         Initialize self.
 
         :param log_api: logging API
-        :param media_api: media API
         :param subs_api: subtitles API
+        :param playback_api: playback API
         """
         super().__init__()
         self._log_api = log_api
-        self._media_api = media_api
+        self._playback_api = playback_api
+
+        self.view = AudioViewApi(subs_api, playback_api)
 
         self._audio_source: T.Union[None, ffms.AudioSource] = None
         self._audio_source_worker = AudioSourceWorker(log_api)
 
-        self._media_api.state_changed.connect(self._on_media_state_change)
+        self._playback_api.state_changed.connect(
+            self._on_playback_state_change
+        )
         self._audio_source_worker.task_finished.connect(self._got_audio_source)
-
-        self.view = AudioViewApi(self._media_api, subs_api)
-
         self._audio_source_worker.start()
 
     def shutdown(self) -> None:
@@ -273,22 +273,24 @@ class AudioApi(QtCore.QObject):
             }[self.sample_format],
         ).reshape(0, max(1, self.channel_count))
 
-    def _on_media_state_change(self, state: MediaState) -> None:
-        if state == MediaState.Unloaded:
+    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
+        if state == PlaybackFrontendState.Unloaded:
             self._audio_source = None
-        elif state == MediaState.Loading:
+        elif state == PlaybackFrontendState.Loading:
             self._audio_source = _LOADING
-            if self._media_api.path:
-                self._audio_source_worker.schedule_task(self._media_api.path)
+            if self._playback_api.path:
+                self._audio_source_worker.schedule_task(
+                    self._playback_api.path
+                )
         else:
-            assert state == MediaState.Loaded
+            assert state == PlaybackFrontendState.Loaded
 
     def _got_audio_source(
         self, result: T.Optional[T.Tuple[Path, ffms.AudioSource]]
     ) -> None:
         if result is not None:
             path, audio_source = result
-            if path == self._media_api.path:
+            if path == self._playback_api.path:
                 self._audio_source = audio_source
                 self.parsed.emit()
 

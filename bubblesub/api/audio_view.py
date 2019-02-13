@@ -20,8 +20,7 @@ import typing as T
 
 from PyQt5 import QtCore
 
-import bubblesub.api.media.media
-from bubblesub.api.media.state import MediaState
+from bubblesub.api.playback import PlaybackApi, PlaybackFrontendState
 from bubblesub.api.subs import SubtitlesApi
 
 
@@ -30,19 +29,17 @@ class AudioViewApi(QtCore.QObject):
     selection_changed = QtCore.pyqtSignal()
 
     def __init__(
-        self,
-        media_api: "bubblesub.api.media.media.MediaApi",
-        subs_api: SubtitlesApi,
+        self, subs_api: SubtitlesApi, playback_api: PlaybackApi
     ) -> None:
         """
         Initialize self.
 
-        :param media_api: media API
         :param subs_api: subtitles API
+        :param playback_api: playback API
         """
         super().__init__()
 
-        self._media_api = media_api
+        self._playback_api = playback_api
         self._subs_api = subs_api
 
         self._min = 0
@@ -52,8 +49,10 @@ class AudioViewApi(QtCore.QObject):
         self._selection_start = 0
         self._selection_end = 0
 
-        self._media_api.state_changed.connect(self._on_media_state_change)
-        self._media_api.max_pts_changed.connect(self.reset_view)
+        self._playback_api.state_changed.connect(
+            self._on_playback_state_change
+        )
+        self._playback_api.max_pts_changed.connect(self.reset_view)
         self._subs_api.events.items_inserted.connect(self.extend_view)
         self._subs_api.events.items_removed.connect(self.extend_view)
         self._subs_api.events.items_moved.connect(self.extend_view)
@@ -219,13 +218,13 @@ class AudioViewApi(QtCore.QObject):
     def extend_view(self) -> None:
         self._min = 0
         self._max = max(
-            [self._max, self._media_api.max_pts]
+            [self._max, self._playback_api.max_pts]
             + [sub.start for sub in self._subs_api.events]
             + [sub.end for sub in self._subs_api.events]
         )
 
-    def _on_media_state_change(self, state: MediaState) -> None:
-        if state == MediaState.Loading:
+    def _on_playback_state_change(self, state: PlaybackFrontendState) -> None:
+        if state == PlaybackFrontendState.Loading:
             self.reset_view()
 
     def _clip(self, value: T.Union[int, float]) -> int:
