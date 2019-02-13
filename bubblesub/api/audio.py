@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: test loading garbage files
 """Audio API."""
 
 import enum
@@ -55,7 +54,9 @@ class AudioSourceWorker(Worker):
         super().__init__()
         self._log_api = log_api
 
-    def _do_work(self, task: T.Any) -> T.Any:
+    def _do_work(
+        self, task: T.Any
+    ) -> T.Tuple[Path, T.Optional[ffms.AudioSource]]:
         """
         Create audio source.
 
@@ -83,19 +84,29 @@ class AudioSourceWorker(Worker):
         if not index:
             if not path.exists():
                 self._log_api.error(f"audio file {path} not found")
-                return None
+                return (path, None)
 
-            indexer = ffms.Indexer(str(path))
-            index = indexer.do_indexing(-1)
-            cache_path.parent.mkdir(exist_ok=True, parents=True)
-            index.write(str(cache_path))
+            try:
+                indexer = ffms.Indexer(str(path))
+                index = indexer.do_indexing(-1)
+            except ffms.Error as ex:
+                self._log_api.error(f"audio couldn't be loaded: {ex}")
+                return (path, None)
+            else:
+                cache_path.parent.mkdir(exist_ok=True, parents=True)
+                index.write(str(cache_path))
 
-        track_number = index.get_first_indexed_track_of_type(
-            ffms.FFMS_TYPE_AUDIO
-        )
-        source = ffms.AudioSource(str(path), track_number, index)
-        self._log_api.info("audio finished loading")
-        return (path, source)
+        try:
+            track_number = index.get_first_indexed_track_of_type(
+                ffms.FFMS_TYPE_AUDIO
+            )
+            source = ffms.AudioSource(str(path), track_number, index)
+        except ffms.Error as ex:
+            self._log_api.error(f"audio couldn't be loaded: {ex}")
+            return (path, None)
+        else:
+            self._log_api.info("audio finished loading")
+            return (path, source)
 
 
 class AudioApi(QtCore.QObject):
@@ -329,11 +340,16 @@ class AudioApi(QtCore.QObject):
     def _got_source(
         self, result: T.Optional[T.Tuple[Path, ffms.AudioSource]]
     ) -> None:
-        if result is not None:
-            path, source = result
-            if path == self._path:
-                self._source = source
-                self.state = AudioState.Loaded
+        path, source = result
+        if path != self._path:
+            return
+
+        self._source = source
+
+        if source is None:
+            self.state = AudioState.NotLoaded
+        else:
+            self.state = AudioState.Loaded
 
     def _wait_for_source(self) -> bool:
         if self._source is None:

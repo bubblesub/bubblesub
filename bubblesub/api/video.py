@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: test loading garbage files
 """Video API."""
 
 import bisect
@@ -57,7 +56,9 @@ class VideoSourceWorker(Worker):
         super().__init__()
         self._log_api = log_api
 
-    def _do_work(self, task: T.Any) -> T.Any:
+    def _do_work(
+        self, task: T.Any
+    ) -> T.Tuple[Path, T.Optional[ffms.VideoSource]]:
         """
         Create video source.
 
@@ -69,11 +70,16 @@ class VideoSourceWorker(Worker):
 
         if not path.exists():
             self._log_api.error(f"video file {path} not found")
-            return None
+            return (path, None)
 
-        source = ffms.VideoSource(str(path))
-        self._log_api.info("video finished loading")
-        return (path, source)
+        try:
+            source = ffms.VideoSource(str(path))
+        except ffms.Error as ex:
+            self._log_api.error(f"video couldn't be loaded: {ex}")
+            return (path, None)
+        else:
+            self._log_api.info("video finished loading")
+            return (path, source)
 
 
 class VideoApi(QtCore.QObject):
@@ -365,15 +371,17 @@ class VideoApi(QtCore.QObject):
             )
 
     def _got_source(self, result: T.Optional[ffms.VideoSource]) -> None:
-        if result is None:
-            return
-
         path, source = result
         if path != self._path:
             return
 
         with _SAMPLER_LOCK:
             self._source = source
+
+            if source is None:
+                self.state = VideoState.NotLoaded
+                return
+
             self._timecodes = [
                 int(round(pts)) for pts in source.track.timecodes
             ]
