@@ -89,6 +89,7 @@ class GuiApi(QtCore.QObject):
         box.addButton(box.Save)
         box.addButton(box.Discard)
         box.addButton(box.Cancel)
+        box.setDefaultButton(box.Discard)
 
         response = T.cast(int, box.exec_())
         if response == box.Save:
