@@ -258,9 +258,9 @@ class VideoApi(QtCore.QObject):
     @property
     def keyframes(self) -> T.List[int]:
         """
-        Return video keyframes' PTS.
+        Return video keyframes' indexes.
 
-        :return: video keyframes' PTS
+        :return: video keyframes' indexes
         """
         if not self.has_video_source:
             return []
