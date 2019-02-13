@@ -268,6 +268,28 @@ class VideoApi(QtCore.QObject):
             return []
         return self._keyframes
 
+    @property
+    def min_pts(self) -> int:
+        """
+        Return minimum video time in milliseconds.
+
+        :return: minimum PTS
+        """
+        if not self.timecodes:
+            return 0
+        return self.timecodes[0]
+
+    @property
+    def max_pts(self) -> int:
+        """
+        Return maximum video time in milliseconds.
+
+        :return: maximum PTS
+        """
+        if not self.timecodes:
+            return 0
+        return self.timecodes[-1]
+
     def get_frame(
         self, frame_idx: int, width: int, height: int
     ) -> T.Optional[np.array]:
