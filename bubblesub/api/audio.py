@@ -175,10 +175,7 @@ class AudioApi(QtCore.QObject):
         if not self._wait_for_audio_source():
             return 0
         # other properties:
-        # - BitsPerSample
         # - ChannelLayout
-        # - FirstTime
-        # - LastTime
         # - SampleFormat
         assert self._audio_source
         return T.cast(int, self._audio_source.properties.SampleRate)
@@ -208,6 +205,28 @@ class AudioApi(QtCore.QObject):
             return 0
         assert self._audio_source
         return T.cast(int, self._audio_source.properties.NumSamples)
+
+    @property
+    def min_time(self) -> int:
+        """
+        Return minimum time in milliseconds.
+
+        :return: audio start
+        """
+        if not self._wait_for_source():
+            return 0
+        return round(T.cast(float, self._source.properties.FirstTime) * 1000)
+
+    @property
+    def max_time(self) -> int:
+        """
+        Return maximum time in milliseconds.
+
+        :return: audio end
+        """
+        if not self._wait_for_source():
+            return 0
+        return round(T.cast(float, self._source.properties.LastTime) * 1000)
 
     def get_samples(self, start_frame: int, count: int) -> np.array:
         """
