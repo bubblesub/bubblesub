@@ -279,6 +279,17 @@ class VideoApi(QtCore.QObject):
             return self.timecodes[idx]
         return pts
 
+    def frame_idx_from_pts(self, pts: int) -> int:
+        """
+        Get index of a frame that contains given PTS.
+
+        :param pts: PTS to search for
+        :return: frame index, -1 if not found
+        """
+        if self.timecodes:
+            return max(0, bisect.bisect_left(self.timecodes, pts) - 1)
+        return -1
+
     @property
     def frame_rate(self) -> int:
         """

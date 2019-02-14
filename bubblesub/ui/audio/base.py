@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import bisect
 import enum
 import math
 import typing as T
@@ -146,7 +145,7 @@ class BaseLocalAudioWidget(BaseAudioWidget):
 
     def frame_idx_from_x(self, x: int) -> int:
         pts = self.pts_from_x(x)
-        return max(0, bisect.bisect_left(self._api.video.timecodes, pts) - 1)
+        return self._api.video.frame_idx_from_pts(pts)
 
 
 class BaseGlobalAudioWidget(BaseAudioWidget):
