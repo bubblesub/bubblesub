@@ -51,9 +51,9 @@ class AudioViewApi(QtCore.QObject):
         self._selection_start = 0
         self._selection_end = 0
 
-        audio_api.state_changed.connect(self.reset_view)
+        audio_api.state_changed.connect(self._extend_view)
         video_api.state_changed.connect(self._extend_view)
-        subs_api.loaded.connect(self._extend_view)
+        subs_api.loaded.connect(self.reset_view)
         subs_api.events.items_inserted.connect(self._extend_view)
         subs_api.events.items_removed.connect(self._extend_view)
         subs_api.events.items_moved.connect(self._extend_view)
