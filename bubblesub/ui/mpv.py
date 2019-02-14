@@ -70,10 +70,12 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             "keepaspect": True,
             "stop-playback-on-init-failure": False,
             "keep-open": True,
+            "track-auto-selection": False,
         }.items():
             self._mpv.set_option(key, value)
 
         self._mpv.observe_property("time-pos")
+        self._mpv.observe_property("track-list")
         self._mpv.observe_property("pause")
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
@@ -112,17 +114,30 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
     def _on_video_state_change(self, state: VideoState) -> None:
         if state == VideoState.NotLoaded:
-            if self._api.playback.is_ready:
-                self._mpv.command("playlist-remove", "current")
-            self._mpv.set_property("pause", True)
-            self._api.playback.state = PlaybackFrontendState.NotReady
+            self._sync_media()
         elif state == VideoState.Loading:
-            self._mpv.command("loadfile", str(self._api.video.path))
-            self._api.playback.state = PlaybackFrontendState.Loading
+            self._sync_media()
         self._need_subs_refresh = True
 
     def _on_audio_state_change(self, state: AudioState) -> None:
-        pass  # not implemented
+        if state == AudioState.NotLoaded:
+            self._sync_media()
+        elif state == AudioState.Loading:
+            self._sync_media()
+
+    def _sync_media(self) -> None:
+        self._mpv.set_property("pause", True)
+        self._mpv.command("loadfile", "null://")
+        external_files: T.Set[str] = set()
+        if self._api.video.path:
+            external_files.add(str(self._api.video.path))
+        if self._api.audio.path:
+            external_files.add(str(self._api.audio.path))
+        self._mpv.set_property("external-files", list(external_files))
+        if not external_files:
+            self._api.playback.state = PlaybackFrontendState.NotReady
+        else:
+            self._api.playback.state = PlaybackFrontendState.Loading
 
     def shutdown(self) -> None:
         self.makeCurrent()
@@ -224,6 +239,42 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
                 if self._handle_event(event):
                     break
 
+    def _on_track_list_ready(self, track_list: T.Any) -> None:
+        # self._api.log.debug(json.dumps(track_list, indent=4))
+        vid: T.Optional[int] = None
+        aid: T.Optional[int] = None
+
+        for track in track_list:
+            track_type = track["type"]
+            track_path = track.get("external-filename")
+
+            if (
+                track_type == "video"
+                and self._api.video.path
+                and self._api.video.path.samefile(track_path)
+            ):
+                vid = track["id"]
+
+            if (
+                track_type == "audio"
+                and self._api.audio.path
+                and self._api.audio.path.samefile(track_path)
+            ):
+                aid = track["id"]
+
+        if self._mpv.get_property("vid") != vid:
+            self._mpv.set_property("vid", vid if vid is not None else "no")
+            self._api.log.debug(f"playback: changing vid to {vid}")
+
+        if self._mpv.get_property("aid") != aid:
+            self._mpv.set_property("aid", aid if aid is not None else "no")
+            self._api.log.debug(f"playback: changing aid to {aid}")
+
+        if vid is not None or aid is not None:
+            self._api.playback.state = PlaybackFrontendState.Ready
+        else:
+            self._api.playback.state = PlaybackFrontendState.NotReady
+
     def _handle_event(self, event: mpv.Event) -> bool:
         if event.id in {mpv.Events.none, mpv.Events.shutdown}:
             return True
@@ -248,4 +299,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
                 )
                 self._api.playback.is_paused = event_prop.data
                 self._api.playback.pause_changed.connect(self._on_pause_change)
+            elif event_prop.name == "track-list":
+                self._on_track_list_ready(event_prop.data)
         return False
