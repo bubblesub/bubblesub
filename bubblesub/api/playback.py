@@ -46,7 +46,6 @@ class PlaybackApi(QtCore.QObject):
 
     state_changed = QtCore.pyqtSignal(PlaybackFrontendState)
     current_pts_changed = QtCore.pyqtSignal()
-    max_pts_changed = QtCore.pyqtSignal()
     volume_changed = QtCore.pyqtSignal()
     pause_changed = QtCore.pyqtSignal()
     mute_changed = QtCore.pyqtSignal()
@@ -56,7 +55,6 @@ class PlaybackApi(QtCore.QObject):
     request_seek = QtCore.pyqtSignal(int, bool)
     request_playback = QtCore.pyqtSignal(object, object)
     receive_current_pts_change = QtCore.pyqtSignal(int)
-    receive_max_pts_change = QtCore.pyqtSignal(int)
 
     def __init__(
         self,
@@ -85,10 +83,8 @@ class PlaybackApi(QtCore.QObject):
         self._is_muted = False
         self._is_paused = True
         self._current_pts = 0
-        self._max_pts = 0
 
         self.receive_current_pts_change.connect(self._on_current_pts_change)
-        self.receive_max_pts_change.connect(self._on_max_pts_change)
 
     def seek(self, pts: int, precise: bool = True) -> None:
         """
@@ -221,7 +217,7 @@ class PlaybackApi(QtCore.QObject):
 
         :return: maximum video position, 0 if no video
         """
-        return self._max_pts
+        return max(self._audio_api.max_time, self._video_api.max_pts)
 
     @property
     def is_paused(self) -> bool:
@@ -256,8 +252,3 @@ class PlaybackApi(QtCore.QObject):
         if new_pts != self._current_pts:
             self._current_pts = new_pts
             self.current_pts_changed.emit()
-
-    def _on_max_pts_change(self, new_pts: int) -> None:
-        if new_pts != self._max_pts:
-            self._max_pts = new_pts
-            self.max_pts_changed.emit()

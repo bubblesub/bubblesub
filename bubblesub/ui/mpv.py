@@ -74,8 +74,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._mpv.set_option(key, value)
 
         self._mpv.observe_property("time-pos")
-        self._mpv.observe_property("duration")
-        self._mpv.observe_property("mute")
         self._mpv.observe_property("pause")
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
@@ -173,7 +171,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             return
         if end is None:
             # XXX: mpv doesn't accept None nor "" so we use max pts
-            end = self._mpv.get_property("duration") * 1000
+            end = self._api.playback.max_pts
         else:
             end -= 1
         assert end is not None
@@ -244,9 +242,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             if event_prop.name == "time-pos":
                 pts = round((event_prop.data or 0) * 1000)
                 self._api.playback.receive_current_pts_change.emit(pts)
-            elif event_prop.name == "duration":
-                pts = round((event_prop.data or 0) * 1000)
-                self._api.playback.receive_max_pts_change.emit(pts)
             elif event_prop.name == "pause":
                 self._api.playback.pause_changed.disconnect(
                     self._on_pause_change
