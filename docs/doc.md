@@ -402,3 +402,9 @@ Unloads currently loaded audio file.
 
 ### <a name="cmd-unload-video"></a>`unload‑video`
 Unloads currently loaded video file.
+
+### <a name="cmd-video-zoom"></a>`video‑zoom`
+Zooms the video in or out by the specified factor.
+
+Usage: `video‑zoom expression`
+* `expression`: expression to calculate new zoom

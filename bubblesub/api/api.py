@@ -32,6 +32,7 @@ from bubblesub.api.playback import PlaybackApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.undo import UndoApi
 from bubblesub.api.video import VideoApi
+from bubblesub.api.video_view import VideoViewApi
 from bubblesub.cfg import Config
 
 
@@ -58,6 +59,7 @@ class Api:
         )
 
         self.audio.view = AudioViewApi(self.subs, self.audio, self.video)
+        self.video.view = VideoViewApi(self.subs)
 
         self.gui = GuiApi(self)
         self.cmd = bubblesub.api.cmd.CommandApi(self)
