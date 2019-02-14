@@ -47,7 +47,7 @@ def _write_meta(ass_file: AssFile, handle: T.IO[str]) -> None:
     meta.update(ass_file.meta.items())
     meta["ScriptType"] = "v4.00+"
     for key, value in meta.items():
-        print(key, value, sep=": ", file=handle)
+        print(key, "" if value is None else value, sep=": ", file=handle)
 
 
 def _write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
