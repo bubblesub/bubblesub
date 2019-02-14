@@ -55,7 +55,7 @@ class MySplashScreen(QtWidgets.QSplashScreen):
 
     def _ensure_painted(self) -> None:
         while not self._painted:
-            QtCore.QThread.usleep(1e3)
+            QtCore.QThread.usleep(1000)
             QtWidgets.QApplication.processEvents()
 
 
