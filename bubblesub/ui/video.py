@@ -16,7 +16,7 @@
 
 from math import floor
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.playback import (
@@ -34,6 +34,10 @@ class _VideoPreview(MpvWidget):
 
     def sizeHint(self) -> QtCore.QSize:
         return QtCore.QSize(400, 300)
+
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        multiplier = 1 if event.angleDelta().y() > 0 else -1
+        self._api.video.view.zoom += multiplier * 0.1
 
 
 class _VideoButtons(QtWidgets.QWidget):
