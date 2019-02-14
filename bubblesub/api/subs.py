@@ -98,13 +98,36 @@ class SubtitlesApi(QtCore.QObject):
         return self._path.parent / path
 
     @remembered_video_path.setter
-    def remembered_video_path(self, path: Path) -> None:
+    def remembered_video_path(self, path: T.Optional[Path]) -> None:
         """
         Set path of the associated video file, updating meta dict.
 
         :param path: path to the video file
         """
-        self.meta.update({"Video File": str(path), "Audio File": str(path)})
+        self.meta.update({"Video File": None if path is None else str(path)})
+
+    @property
+    def remembered_audio_path(self) -> T.Optional[Path]:
+        """
+        Return path of the associated audio file.
+
+        :return: path of the associated audio file or None if no audio
+        """
+        path: str = T.cast(str, self.meta.get("Audio File", ""))
+        if not path:
+            return None
+        if not self._path:
+            return None
+        return self._path.parent / path
+
+    @remembered_audio_path.setter
+    def remembered_audio_path(self, path: T.Optional[Path]) -> None:
+        """
+        Set path of the associated audio file, updating meta dict.
+
+        :param path: path to the audio file
+        """
+        self.meta.update({"Audio File": None if path is None else str(path)})
 
     @property
     def path(self) -> T.Optional[Path]:

@@ -69,11 +69,14 @@ class Api:
 
     def _on_subs_load(self) -> None:
         if self.subs.remembered_video_path:
-            self.audio.load(self.subs.remembered_video_path)
             self.video.load(self.subs.remembered_video_path)
         else:
-            self.audio.unload()
             self.video.unload()
+
+        if self.subs.remembered_audio_path:
+            self.audio.load(self.subs.remembered_audio_path)
+        else:
+            self.audio.unload()
 
     def shutdown(self) -> None:
         """Stop internal worker threads."""

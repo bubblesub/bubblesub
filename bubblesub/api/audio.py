@@ -149,6 +149,11 @@ class AudioApi(QtCore.QObject):
 
         self._log_api.info(f"audio: loading {path}")
         self.state = AudioState.Loading
+        if (
+            self._subs_api.remembered_audio_path is None
+            or not self._path.samefile(self._subs_api.remembered_audio_path)
+        ):
+            self._subs_api.remembered_audio_path = self._path
         self._source_worker.schedule_task(self._path)
 
     def shutdown(self) -> None:

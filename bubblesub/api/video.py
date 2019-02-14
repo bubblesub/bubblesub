@@ -138,7 +138,10 @@ class VideoApi(QtCore.QObject):
 
         self._log_api.info(f"video: loading {path}")
         self.state = VideoState.Loading
-        if str(self._subs_api.remembered_video_path) != str(self._path):
+        if (
+            self._subs_api.remembered_video_path is None
+            or not self._path.samefile(self._subs_api.remembered_video_path)
+        ):
             self._subs_api.remembered_video_path = self._path
         self._source_worker.schedule_task(self._path)
 
