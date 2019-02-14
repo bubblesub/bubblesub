@@ -16,6 +16,7 @@
 
 """Subtitles selection, usable as an argument to commands."""
 
+import asyncio
 import itertools
 import typing as T
 from math import inf
@@ -201,9 +202,18 @@ class SubtitlesSelection:
         if self.api.subs.has_selection:
             dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
         dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-        if dialog.exec_():
-            return T.cast(int, dialog.intValue())
-        return None
+        future: "asyncio.Future[T.Optional[Path]]" = asyncio.Future()
+
+        def on_accept() -> None:
+            future.set_result(dialog.intValue())
+
+        def on_reject() -> None:
+            future.set_result(None)
+
+        dialog.accepted.connect(on_accept)
+        dialog.rejected.connect(on_reject)
+        dialog.open()
+        return await future
 
     async def _show_time_dialog(
         self, main_window: QtWidgets.QMainWindow
