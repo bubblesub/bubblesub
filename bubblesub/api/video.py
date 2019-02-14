@@ -18,6 +18,7 @@
 
 import bisect
 import enum
+import fractions
 import threading
 import time
 import typing as T
@@ -102,6 +103,7 @@ class VideoApi(QtCore.QObject):
         self._path: T.Optional[Path] = None
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
+        self._frame_rate = 0
         self._width = 0
         self._height = 0
 
@@ -278,6 +280,15 @@ class VideoApi(QtCore.QObject):
         return pts
 
     @property
+    def frame_rate(self) -> int:
+        """
+        Return the frame rate.
+
+        :return: video frame rate
+        """
+        return self._frame_rate
+
+    @property
     def width(self) -> int:
         """
         Return horizontal video resolution.
@@ -389,6 +400,10 @@ class VideoApi(QtCore.QObject):
             self._keyframes = [idx for idx in source.track.keyframes]
             frame = source.get_frame(0)
             self._width = frame.EncodedWidth
+            self._frame_rate = fractions.Fraction(
+                self._source.properties.FPSNumerator,
+                self._source.properties.FPSDenominator,
+            )
             self._height = frame.EncodedHeight
             self._timecodes.sort()
             self._keyframes.sort()
