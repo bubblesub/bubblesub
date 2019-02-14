@@ -146,7 +146,7 @@ class BaseLocalAudioWidget(BaseAudioWidget):
 
     def frame_idx_from_x(self, x: int) -> int:
         pts = self.pts_from_x(x)
-        return max(0, bisect.bisect_left(self._api.video.timecodes, pts) - 1)
+        return self._api.video.frame_idx_from_pts(pts)
 
 
 class BaseGlobalAudioWidget(BaseAudioWidget):
