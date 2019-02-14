@@ -70,6 +70,10 @@ class AssRenderer:
         self._renderer.pixel_aspect = 1.0
 
     def render(self, time: int) -> PIL.Image:
+        image_data = self.render_numpy(time)
+        return PIL.Image.fromarray(image_data)
+
+    def render_numpy(self, time: int) -> np.ndarray:
         if self._track is None:
             raise ValueError("need source to render")
 
@@ -123,7 +127,7 @@ class AssRenderer:
             fragment[..., :3] = out_color * 255
             fragment[..., 3] = out_alpha * 255
 
-        return PIL.Image.fromarray(image_data)
+        return image_data
 
     def render_raw(self, time: int) -> libass.AssImageSequence:
         if self._track is None:

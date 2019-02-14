@@ -22,6 +22,7 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled
 from bubblesub.cmd.common import FancyPath
 from bubblesub.ui.util import (
+    AUDIO_FILE_FILTER,
     SUBS_FILE_FILTER,
     VIDEO_FILE_FILTER,
     save_dialog,

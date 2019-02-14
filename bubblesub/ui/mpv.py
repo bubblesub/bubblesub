@@ -75,8 +75,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         self._mpv.observe_property("time-pos")
         self._mpv.observe_property("duration")
-        self._mpv.observe_property("mute")
         self._mpv.observe_property("pause")
+        self._mpv.observe_property("track-list")
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
 
@@ -114,17 +114,39 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
     def _on_video_state_change(self, state: VideoState) -> None:
         if state == VideoState.NotLoaded:
-            if self._api.playback.is_ready:
-                self._mpv.command("playlist-remove", "current")
-            self._mpv.set_property("pause", True)
-            self._api.playback.state = PlaybackFrontendState.NotReady
+            self._api.log.debug("playback: unloading video")
+            self._sync_media()
         elif state == VideoState.Loading:
-            self._mpv.command("loadfile", str(self._api.video.path))
-            self._api.playback.state = PlaybackFrontendState.Loading
+            self._api.log.debug(
+                f"playback: loading video {self._api.video.path}"
+            )
+            self._sync_media()
         self._need_subs_refresh = True
 
     def _on_audio_state_change(self, state: AudioState) -> None:
-        pass  # not implemented
+        if state == AudioState.NotLoaded:
+            self._api.log.debug("playback: unloading audio")
+            self._sync_media()
+        elif state == AudioState.Loading:
+            self._api.log.debug(
+                f"playback: loading audio {self._api.audio.path}"
+            )
+            self._sync_media()
+        self._need_subs_refresh = True
+
+    def _sync_media(self) -> None:
+        print("video path", self._api.video.path)
+        print("audio path", self._api.audio.path)
+        external_files = []
+        if self._api.video.path:
+            external_files.append(str(self._api.video.path))
+        if self._api.audio.path:
+            external_files.append(str(self._api.audio.path))
+        print(external_files)
+        self._mpv.command("loadfile", "null://")
+        self._mpv.set_property("lavfi-complex", "[vid1] copy [vo]")
+        self._mpv.set_property("external-files", external_files)
+        self._api.playback.state = PlaybackFrontendState.Loading
 
     def shutdown(self) -> None:
         self.makeCurrent()
@@ -159,6 +181,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._refresh_subs()
 
     def _refresh_subs(self) -> None:
+        return
         if not self._api.playback.is_ready:
             return
         if self._mpv.get_property("sub"):
@@ -173,7 +196,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             return
         if end is None:
             # XXX: mpv doesn't accept None nor "" so we use max pts
-            end = self._mpv.get_property("duration") * 1000
+            end = max(self._api.video.max_pts, self._api.audio.max_time)
         else:
             end -= 1
         assert end is not None
@@ -247,6 +270,26 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             elif event_prop.name == "duration":
                 pts = round((event_prop.data or 0) * 1000)
                 self._api.playback.receive_max_pts_change.emit(pts)
+            elif event_prop.name == "track-list":
+                import json
+
+                print(json.dumps(event_prop.data, indent=4))
+                aid = -1
+                vid = -1
+                for track in event_prop.data:
+                    if track["type"] == "audio" and track[
+                        "external-filename"
+                    ] == str(self._api.audio.path):
+                        aid = track["id"]
+                    if track["type"] == "video" and track[
+                        "external-filename"
+                    ] == str(self._api.video.path):
+                        vid = track["id"]
+
+                self._mpv.set_property(
+                    "lavfi-complex",
+                    f"[vid{vid}] copy [vo]; [aid{aid}] acopy [ao]",
+                )
             elif event_prop.name == "pause":
                 self._api.playback.pause_changed.disconnect(
                     self._on_pause_change

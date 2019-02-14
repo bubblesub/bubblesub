@@ -14,26 +14,190 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import ctypes
+import typing as T
 from math import floor
 
-from PyQt5 import QtCore, QtWidgets
+import numpy as np
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
+from bubblesub.api.audio import AudioState
 from bubblesub.api.playback import (
     MAX_PLAYBACK_SPEED,
     MAX_VOLUME,
     MIN_PLAYBACK_SPEED,
     MIN_VOLUME,
+    PlaybackFrontendState,
 )
+from bubblesub.api.video import VideoState
+from bubblesub.ass_renderer import AssRenderer
 from bubblesub.ui.mpv import MpvWidget
 
 
-class _VideoPreview(MpvWidget):
+class _VideoPreviewMpv(MpvWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
 
     def sizeHint(self) -> QtCore.QSize:
         return QtCore.QSize(400, 300)
+
+
+class _VideoPreview(QtWidgets.QLabel):
+    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+        super().__init__(parent)
+        self._api = api
+        self._timer = QtCore.QTimer()
+        self._timer.setTimerType(QtCore.Qt.PreciseTimer)
+        self._timer.timeout.connect(self._on_next_frame)
+        self._cur_frame_idx = 0
+        self._end_frame_idx: T.Optional[int] = None
+        self._ass_renderer = AssRenderer()
+
+        api.subs.meta_changed.connect(self._on_subs_change)
+        api.subs.events.item_changed.connect(self._on_subs_change)
+        api.subs.events.items_inserted.connect(self._on_subs_change)
+        api.subs.events.items_removed.connect(self._on_subs_change)
+        api.subs.events.items_moved.connect(self._on_subs_change)
+        api.subs.styles.item_changed.connect(self._on_subs_change)
+        api.subs.styles.items_inserted.connect(self._on_subs_change)
+        api.subs.styles.items_removed.connect(self._on_subs_change)
+        api.subs.styles.items_moved.connect(self._on_subs_change)
+
+        api.video.state_changed.connect(self._on_video_state_change)
+        api.audio.state_changed.connect(self._on_audio_state_change)
+        api.playback.request_seek.connect(self._on_request_seek)
+        api.playback.request_playback.connect(self._on_request_playback)
+        api.playback.playback_speed_changed.connect(
+            self._on_playback_speed_change
+        )
+        api.playback.volume_changed.connect(self._on_volume_change)
+        api.playback.mute_changed.connect(self._on_mute_change)
+        api.playback.pause_changed.connect(self._on_pause_change)
+
+    def _on_subs_change(self) -> None:
+        # TODO: make this faster
+        self._ass_renderer.set_source(
+            self._api.subs.styles,
+            self._api.subs.events,
+            self._api.subs.meta,
+            (self.width(), self.height()),
+        )
+
+    @property
+    def cur_frame_idx(self) -> T.Optional[int]:
+        return self._cur_frame_idx
+
+    @cur_frame_idx.setter
+    def cur_frame_idx(self, value: T.Optional[int]) -> None:
+        self._cur_frame_idx = value
+        self._api.playback.receive_current_pts_change.emit(
+            self._api.video.timecodes[self._cur_frame_idx]
+        )
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        self._on_subs_change()
+        self._render_frame()
+
+    def sizeHint(self) -> QtCore.QSize:
+        return QtCore.QSize(400, 300)
+
+    def _on_video_state_change(self, state: VideoState) -> None:
+        self._sync_media()
+
+    def _on_audio_state_change(self, state: AudioState) -> None:
+        self._sync_media()
+
+    def _sync_media(self) -> None:
+        if (
+            self._api.audio.state == AudioState.Loading
+            or self._api.video.state == VideoState.Loading
+        ):
+            self._api.playback.state = PlaybackFrontendState.Loading
+        else:
+            self._api.playback.state = PlaybackFrontendState.Ready
+        if self._api.video.state == VideoState.Loaded:
+            self._timer.setInterval(float(self._api.video.frame_rate))
+        else:
+            self._timer.stop()
+
+    def _on_request_seek(self, pts: int, precise: bool) -> None:
+        self.cur_frame_idx = self._api.video.frame_idx_from_pts(pts)
+        self._render_frame()
+
+    def _on_request_playback(
+        self, start_pts: T.Optional[int], end_pts: T.Optional[int]
+    ) -> None:
+        self._api.playback.is_paused = False
+        if start_pts is not None:
+            self.cur_frame_idx = self._api.video.frame_idx_from_pts(start_pts)
+        if end_pts is not None:
+            self._end_frame_idx = self._api.video.frame_idx_from_pts(end_pts)
+        else:
+            self._end_frame_idx = None
+        self._timer.start()
+
+    def _on_playback_speed_change(self) -> None:
+        pass
+
+    def _on_volume_change(self) -> None:
+        pass
+
+    def _on_mute_change(self) -> None:
+        pass
+
+    def _on_pause_change(self) -> None:
+        self._end_frame_idx = None
+        if self._api.playback.is_paused:
+            self._timer.stop()
+        else:
+            self._timer.start()
+
+    def _on_next_frame(self) -> None:
+        self._render_frame()
+        if (
+            self._end_frame_idx is not None
+            and self.cur_frame_idx + 1 >= self._end_frame_idx
+        ):
+            self._api.playback.is_paused = True
+            self._timer.stop()
+        else:
+            self.cur_frame_idx += 1
+
+    def _render_frame(self) -> None:
+        frame = self._api.video.get_frame(
+            self.cur_frame_idx, self.width(), self.height()
+        )
+        if frame is None:
+            return
+        frame = frame.copy()
+
+        subs_overlay = self._ass_renderer.render_numpy(
+            self._api.playback.current_pts
+        )
+
+        src_color = subs_overlay[..., :3].astype(np.float32) / 255.0
+        src_alpha = subs_overlay[..., 3].astype(np.float32) / 255.0
+        dst_color = frame[..., :3] / 255.0
+
+        out_color = src_color * src_alpha[..., None] + dst_color * (
+            1.0 - src_alpha[..., None]
+        )
+
+        frame[..., :3] = out_color * 255
+
+        img = QtGui.QImage(
+            frame.flatten(),
+            frame.shape[1],
+            frame.shape[0],
+            frame.strides[0],
+            QtGui.QImage.Format_RGB888,
+        )
+        pix = QtGui.QPixmap.fromImage(img)
+        self.setPixmap(pix)
+
+    def shutdown(self) -> None:
+        pass
 
 
 class _VideoButtons(QtWidgets.QWidget):
