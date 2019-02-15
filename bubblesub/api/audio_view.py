@@ -20,9 +20,9 @@ import typing as T
 
 from PyQt5 import QtCore
 
-from bubblesub.api.audio import AudioApi
+from bubblesub.api.audio import AudioApi, AudioState
 from bubblesub.api.subs import SubtitlesApi
-from bubblesub.api.video import VideoApi
+from bubblesub.api.video import VideoApi, VideoState
 
 
 class AudioViewApi(QtCore.QObject):
@@ -44,6 +44,8 @@ class AudioViewApi(QtCore.QObject):
         self._audio_api = audio_api
         self._video_api = video_api
 
+        self._need_reset_after_audio = False
+
         self._min = 0
         self._max = 0
         self._view_start = 0
@@ -51,9 +53,9 @@ class AudioViewApi(QtCore.QObject):
         self._selection_start = 0
         self._selection_end = 0
 
-        audio_api.state_changed.connect(self._extend_view)
-        video_api.state_changed.connect(self._extend_view)
-        subs_api.loaded.connect(self.reset_view)
+        audio_api.state_changed.connect(self._on_audio_state_change)
+        video_api.state_changed.connect(self._on_video_state_change)
+        subs_api.loaded.connect(self._on_subs_load)
         subs_api.events.items_inserted.connect(self._extend_view)
         subs_api.events.items_removed.connect(self._extend_view)
         subs_api.events.items_moved.connect(self._extend_view)
@@ -229,6 +231,20 @@ class AudioViewApi(QtCore.QObject):
             + [sub.start for sub in self._subs_api.events]
             + [sub.end for sub in self._subs_api.events]
         )
+
+    def _on_audio_state_change(self, state: AudioState) -> None:
+        if self._need_reset_after_audio and state == AudioState.Loaded:
+            self._extend_view()
+            self.reset_view()
+            self._need_reset_after_audio = False
+
+    def _on_video_state_change(self, state: VideoState) -> None:
+        if state == VideoState.Loaded:
+            self._extend_view()
+
+    def _on_subs_load(self) -> None:
+        self._need_reset_after_audio = True
+        self.reset_view()
 
     def _clip(self, value: T.Union[int, float]) -> int:
         return max(min(self._max, int(value)), self._min)
