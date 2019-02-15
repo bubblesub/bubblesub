@@ -156,12 +156,16 @@ class BaseAudioWidget(QtWidgets.QWidget):
             pts = self._api.video.align_pts_to_near_frame(pts)
             for event in self._drag_data.selected_events:
                 event.start = pts
+                if event.start > event.end:
+                    event.end, event.start = event.start, event.end
             self._view.select(pts, self._view.selection_end)
 
         elif self._drag_data.mode == DragMode.SubtitleEnd:
             pts = self._api.video.align_pts_to_near_frame(pts)
             for event in self._drag_data.selected_events:
                 event.end = pts
+                if event.start > event.end:
+                    event.end, event.start = event.start, event.end
             self._view.select(self._view.selection_start, pts)
 
     def _zoomed(self, delta: int, mouse_x: int) -> None:
