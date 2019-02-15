@@ -103,7 +103,7 @@ class VideoApi(QtCore.QObject):
         self._path: T.Optional[Path] = None
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
-        self._frame_rate = 0
+        self._frame_rate = fractions.Fraction(0, 1)
         self._aspect_ratio = fractions.Fraction(1, 1)
         self._width = 0
         self._height = 0
@@ -123,6 +123,7 @@ class VideoApi(QtCore.QObject):
         self._source = None
         self._timecodes.clear()
         self._keyframes.clear()
+        self._frame_rate = fractions.Fraction(0, 1)
         self._aspect_ratio = fractions.Fraction(1, 1)
         self._width = 0
         self._height = 0
@@ -296,7 +297,7 @@ class VideoApi(QtCore.QObject):
         return -1
 
     @property
-    def frame_rate(self) -> int:
+    def frame_rate(self) -> fractions.Fraction:
         """
         Return the frame rate.
 
