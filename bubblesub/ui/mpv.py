@@ -176,7 +176,10 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         if not self._api.playback.is_ready:
             return
         if self._mpv.get_property("sub"):
-            self._mpv.command("sub_remove")
+            try:
+                self._mpv.command("sub_remove")
+            except mpv.MPVError:
+                pass
         with io.StringIO() as handle:
             write_ass(self._api.subs.ass_file, handle)
             self._mpv.command("sub_add", "memory://" + handle.getvalue())
