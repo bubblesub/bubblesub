@@ -104,6 +104,7 @@ class VideoApi(QtCore.QObject):
         self._timecodes: T.List[int] = []
         self._keyframes: T.List[int] = []
         self._frame_rate = 0
+        self._aspect_ratio = fractions.Fraction(1, 1)
         self._width = 0
         self._height = 0
 
@@ -122,6 +123,7 @@ class VideoApi(QtCore.QObject):
         self._source = None
         self._timecodes.clear()
         self._keyframes.clear()
+        self._aspect_ratio = fractions.Fraction(1, 1)
         self._width = 0
         self._height = 0
         self._last_output_fmt = None
@@ -321,6 +323,15 @@ class VideoApi(QtCore.QObject):
         return self._height
 
     @property
+    def aspect_ratio(self) -> fractions.Fraction:
+        """
+        Return the frame aspect ratio.
+
+        :return: video frame aspect ratio
+        """
+        return self._aspect_ratio
+
+    @property
     def timecodes(self) -> T.List[int]:
         """
         Return video frames' PTS.
@@ -412,15 +423,21 @@ class VideoApi(QtCore.QObject):
                 int(round(pts)) for pts in source.track.timecodes
             ]
             self._keyframes = [idx for idx in source.track.keyframes]
-            frame = source.get_frame(0)
-            self._width = frame.EncodedWidth
+            self._timecodes.sort()
+            self._keyframes.sort()
+
             self._frame_rate = fractions.Fraction(
                 self._source.properties.FPSNumerator,
                 self._source.properties.FPSDenominator,
             )
-            self._height = frame.EncodedHeight
-            self._timecodes.sort()
-            self._keyframes.sort()
+
+            self._aspect_ratio = fractions.Fraction(
+                self._source.properties.SARNum, self._source.properties.SARDen
+            )
+            frame = source.get_frame(0)
+            self._width = frame.EncodedWidth
+            self._height = int(frame.EncodedHeight / self._aspect_ratio)
+
             self.state = VideoState.Loaded
 
     def _wait_for_source(self) -> bool:
