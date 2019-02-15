@@ -154,10 +154,8 @@ class _StylePreview(QtWidgets.QGroupBox):
         self._renderer.set_source(
             fake_style_list, fake_event_list, fake_meta, resolution
         )
-        red, green, blue, alpha = self._renderer.render(time=0).split()
-        top = PIL.Image.merge("RGB", (red, green, blue))
-        mask = PIL.Image.merge("L", (alpha,))
-        image.paste(top, (0, 0), mask)
+        subs_image = self._renderer.render(time=0)
+        image = PIL.Image.composite(subs_image, image, subs_image)
 
         image = PIL.ImageQt.ImageQt(image)
         image = QtGui.QImage(image)

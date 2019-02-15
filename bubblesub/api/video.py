@@ -224,12 +224,8 @@ class VideoApi(QtCore.QObject):
                 (width, height),
             )
 
-            red, green, blue, alpha = self._ass_renderer.render(
-                time=pts
-            ).split()
-            top = PIL.Image.merge("RGB", (red, green, blue))
-            mask = PIL.Image.merge("L", (alpha,))
-            image.paste(top, (0, 0), mask)
+            subs_image = self._ass_renderer.render(time=pts)
+            image = PIL.Image.composite(subs_image, image, subs_image)
         image.save(str(path))
 
     def align_pts_to_near_frame(self, pts: int) -> int:
