@@ -22,6 +22,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.audio import AudioState
+from bubblesub.ass.event import AssEvent
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.util import blend_colors
 from bubblesub.util import chunks
@@ -38,6 +39,34 @@ DERIVATION_DISTANCE = 6
 NOT_CACHED = object()
 CACHING = object()
 CHUNK_SIZE = 50
+
+
+class SubtitleLabel:
+    text_margin = 4
+
+    def __init__(
+        self, painter: QtGui.QPainter, x1: int, x2: int, event: AssEvent
+    ) -> None:
+        self.event = event
+        self.text_width = painter.fontMetrics().width(self.text)
+        self.text_height = painter.fontMetrics().capHeight()
+        self.x1 = x1
+        self.y1 = 0
+        self.x2 = x1 + min(x2 - x1, self.text_margin * 2 + self.text_width)
+        self.y2 = self.text_margin * 2 + self.text_height
+        self.is_visible = (x2 - x1) >= 2 * self.text_margin + self.text_width
+
+    @property
+    def text_x(self) -> int:
+        return self.x1 + self.text_margin
+
+    @property
+    def text_y(self) -> int:
+        return self.y1 + self.text_margin
+
+    @property
+    def text(self) -> str:
+        return str(self.event.number)
 
 
 class SpectrumWorker(Worker):
@@ -112,6 +141,7 @@ class AudioPreview(BaseLocalAudioWidget):
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 1.5))
         self._spectrum_worker: T.Optional[SpectrumWorker] = None
+        self._labels: T.List[SubtitleLabel] = []
 
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
         self._need_repaint = False
@@ -154,6 +184,14 @@ class AudioPreview(BaseLocalAudioWidget):
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() == QtCore.Qt.LeftButton:
+            for label in self._labels:
+                if (
+                    label.x1 <= event.x() <= label.x2
+                    and label.y1 <= event.y() <= label.y2
+                ):
+                    self._api.subs.selected_indexes = [label.event.index]
+                    return
+
             if event.modifiers() & QtCore.Qt.ShiftModifier:
                 self.begin_drag_mode(DragMode.SubtitleStart, event)
             elif event.modifiers() & QtCore.Qt.ControlModifier:
@@ -287,14 +325,15 @@ class AudioPreview(BaseLocalAudioWidget):
             painter.drawLine(x, 0, x, h)
 
     def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
+        self._labels[:] = []
+
         h = painter.viewport().height()
-        label_height = painter.fontMetrics().capHeight()
 
         painter.setFont(QtGui.QFont(self.font().family(), 10))
 
-        for i, line in enumerate(self._api.subs.events):
-            x1 = self.pts_to_x(line.start)
-            x2 = self.pts_to_x(line.end)
+        for i, event in enumerate(self._api.subs.events):
+            x1 = self.pts_to_x(event.start)
+            x2 = self.pts_to_x(event.end)
             if x1 > x2:
                 x1, x2 = x2, x1
             if x2 < 0 or x1 >= self.width():
@@ -303,11 +342,8 @@ class AudioPreview(BaseLocalAudioWidget):
             is_selected = i in self._api.subs.selected_indexes
             color_key = "selected" if is_selected else "unselected"
 
-            rect_width = x2 - x1
-            label_text = str(line.number)
-            label_margin = 4
-            label_width = painter.fontMetrics().width(label_text)
-            is_label_visible = rect_width >= 2 * label_margin + label_width
+            label = SubtitleLabel(painter, x1, x2, event=event)
+            self._labels.append(label)
 
             painter.setPen(
                 QtGui.QPen(
@@ -319,7 +355,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 )
             )
 
-            if is_label_visible or is_selected:
+            if label.is_visible or is_selected:
                 painter.setBrush(
                     QtGui.QBrush(
                         self._api.gui.get_color(
@@ -330,10 +366,10 @@ class AudioPreview(BaseLocalAudioWidget):
                     )
                 )
                 painter.drawRect(
-                    x1,
-                    0,
-                    min(x2 - x1, label_margin * 2 + label_width),
-                    label_margin * 2 + label_height,
+                    label.x1,
+                    label.y1,
+                    label.x2 - label.x1,
+                    label.y2 - label.y1,
                 )
 
             painter.setBrush(
@@ -345,7 +381,7 @@ class AudioPreview(BaseLocalAudioWidget):
             )
             painter.drawRect(x1, 0, x2 - x1, h - 1)
 
-            if is_label_visible:
+            if label.is_visible:
                 painter.setPen(
                     QtGui.QPen(
                         self._api.gui.get_color(
@@ -356,7 +392,7 @@ class AudioPreview(BaseLocalAudioWidget):
                     )
                 )
                 painter.drawText(
-                    x1 + label_margin, label_height + label_margin, label_text
+                    label.text_x, label.text_y + label.text_height, label.text
                 )
 
     def _draw_selection(self, painter: QtGui.QPainter) -> None:
