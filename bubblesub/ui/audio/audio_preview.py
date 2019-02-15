@@ -295,6 +295,8 @@ class AudioPreview(BaseLocalAudioWidget):
         for i, line in enumerate(self._api.subs.events):
             x1 = self.pts_to_x(line.start)
             x2 = self.pts_to_x(line.end)
+            if x1 > x2:
+                x1, x2 = x2, x1
             if x2 < 0 or x1 >= self.width():
                 continue
 
