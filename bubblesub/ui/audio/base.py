@@ -17,28 +17,37 @@
 import enum
 import math
 import typing as T
+from dataclasses import dataclass
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.audio_view import AudioViewApi
+from bubblesub.ass.event import AssEvent
 
 SLIDER_SIZE = 20
 
 
 class DragMode(enum.Enum):
-    Off = 0
     SelectionStart = 1
     SelectionEnd = 2
     VideoPosition = 3
     AudioView = 4
+    SubtitleStart = 5
+    SubtitleEnd = 6
+
+
+@dataclass
+class DragData:
+    mode: DragMode
+    selected_events: T.List[AssEvent]
 
 
 class BaseAudioWidget(QtWidgets.QWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
-        self._drag_mode = DragMode.Off
+        self._drag_data: T.Optional[DragData] = None
 
         def update(*_: T.Any) -> None:
             self.update()
@@ -55,8 +64,9 @@ class BaseAudioWidget(QtWidgets.QWidget):
         return self._api.audio.view
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        self.setCursor(QtCore.Qt.SizeHorCursor)
-        self._apply_drag(event)
+        if self._drag_data:
+            self.setCursor(QtCore.Qt.SizeHorCursor)
+            self._apply_drag(event)
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         self.end_drag_mode()
@@ -72,34 +82,54 @@ class BaseAudioWidget(QtWidgets.QWidget):
     def begin_drag_mode(
         self, drag_mode: DragMode, event: QtGui.QMouseEvent
     ) -> None:
-        self._drag_mode = drag_mode
+        self._api.undo.begin_capture()
+        self._drag_data = DragData(
+            drag_mode, self._api.subs.selected_events[:]
+        )
         self._apply_drag(event)
 
     def end_drag_mode(self) -> None:
-        self._drag_mode = DragMode.Off
+        self._drag_data = None
         self.setCursor(QtCore.Qt.ArrowCursor)
+        self._api.undo.end_capture()
 
     def _apply_drag(self, event: QtGui.QMouseEvent) -> None:
         pts = self.pts_from_x(event.x())
-        if self._drag_mode == DragMode.SelectionStart:
+
+        if self._drag_data.mode == DragMode.SelectionStart:
             if self._view.has_selection:
                 self._view.select(
                     min(self._view.selection_end, pts),
                     self._view.selection_end,
                 )
-        elif self._drag_mode == DragMode.SelectionEnd:
+
+        elif self._drag_data.mode == DragMode.SelectionEnd:
             if self._view.has_selection:
                 self._view.select(
                     self._view.selection_start,
                     max(self._view.selection_start, pts),
                 )
-        elif self._drag_mode == DragMode.VideoPosition:
+
+        elif self._drag_data.mode == DragMode.VideoPosition:
             self._api.playback.seek(pts)
-        elif self._drag_mode == DragMode.AudioView:
+
+        elif self._drag_data.mode == DragMode.AudioView:
             old_center = self._view.view_start + self._view.view_size / 2
             new_center = pts
             distance = new_center - old_center
             self._view.move_view(int(distance))
+
+        elif self._drag_data.mode == DragMode.SubtitleStart:
+            pts = self._api.video.align_pts_to_near_frame(pts)
+            for event in self._drag_data.selected_events:
+                event.start = pts
+            self._view.select(pts, self._view.selection_end)
+
+        elif self._drag_data.mode == DragMode.SubtitleEnd:
+            pts = self._api.video.align_pts_to_near_frame(pts)
+            for event in self._drag_data.selected_events:
+                event.end = pts
+            self._view.select(self._view.selection_start, pts)
 
     def _zoomed(self, delta: int, mouse_x: int) -> None:
         if not self._view.size:
