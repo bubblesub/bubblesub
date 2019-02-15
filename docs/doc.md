@@ -227,7 +227,7 @@ Usage: `save‑screenshot [--pts=cf] [-p|--path=…] [-i|--include-subs] [--widt
 * `-p`, `--path`: path to save the screenshot to
 * `-i`, `--include-subs`: whether to "burn" the subtitles into the screenshot
 * `--width`: width of the screenshot (by default, original video width)
-* `--height`: height of the screenshot (by default, original video width)
+* `--height`: height of the screenshot (by default, original video height)
 
 ### <a name="cmd-search"></a>`search`
 Opens up the search dialog.

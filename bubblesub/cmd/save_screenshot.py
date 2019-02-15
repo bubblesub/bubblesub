@@ -82,7 +82,7 @@ class SaveScreenshotCommand(BaseCommand):
         )
         parser.add_argument(
             "--height",
-            help="height of the screenshot (by default, original video width)",
+            help="height of the screenshot (by default, original video height)",
             type=int,
         )
         parser.epilog = (
