@@ -146,6 +146,7 @@ class UndoApi:
         self._stack_pos = -1
         self._dirty = False
         self._prev_state: T.Optional[UndoState] = None
+        self._capture_nesting = 0
         self._ignore = False
 
         self._subs_api.loaded.connect(self._on_subtitles_load)
@@ -183,33 +184,38 @@ class UndoApi:
         """
         Record the application state before and after user operation.
 
+        Shorthand for begin_capture() and end_capture().
+
         Doesn't push onto undo stack if nothing has changed.
         This function should wrap any operation that makes "undoable" changes
         (such as changes to the ASS events or styles), especially operations
         from within commands. Otherwise the undo may behave unpredictably.
         """
-        if self._ignore:
+        self.begin_capture()
+        try:
             yield
+        finally:
+            self.end_capture()
+
+    def begin_capture(self) -> None:
+        """Begin undo capture."""
+        if self._ignore:
             return
 
         # if called recursively, split recorded changes into separate
         # undo point at the entrance point
-        is_nested = self._prev_state is not None
-        if is_nested:
-            cur_state = self._make_state()
+        cur_state = self._make_state()
+        if self._capture_nesting > 0:
             self._push(self._prev_state, cur_state)
+        self._prev_state = cur_state
+        self._capture_nesting += 1
 
-        self._prev_state = self._make_state()
-        try:
-            yield
-        finally:
-            cur_state = self._make_state()
-            self._push(self._prev_state, cur_state)
-
-            if is_nested:
-                self._prev_state = cur_state
-            else:
-                self._prev_state = None
+    def end_capture(self) -> None:
+        """End undo capture."""
+        cur_state = self._make_state()
+        self._push(self._prev_state, cur_state)
+        self._capture_nesting -= 1
+        self._prev_state = cur_state if self._capture_nesting else None
 
     def undo(self) -> None:
         """Restore previous application state."""
