@@ -126,6 +126,13 @@ class AudioApi(QtCore.QObject):
         self._subs_api = subs_api
 
         self._state = AudioState.NotLoaded
+        self._max_time = 0
+        self._min_time = 0
+        self._channel_count = 0
+        self._bits_per_sample = 0
+        self._sample_count = 0
+        self._sample_format = None
+        self._sample_rate = 0
         self._path: T.Optional[Path] = None
 
         self._source: T.Union[None, ffms.AudioSource] = None
@@ -135,6 +142,13 @@ class AudioApi(QtCore.QObject):
 
     def unload(self) -> None:
         self._source = None
+        self._min_time = 0
+        self._max_time = 0
+        self._channel_count = 0
+        self._bits_per_sample = 0
+        self._sample_count = 0
+        self._sample_format = None
+        self._sample_rate = 0
         self._path = None
         self.state = AudioState.NotLoaded
 
@@ -201,10 +215,7 @@ class AudioApi(QtCore.QObject):
 
         :return: channel count or 0 if no audio source
         """
-        if not self._wait_for_source():
-            return 0
-        assert self._source
-        return T.cast(int, self._source.properties.Channels)
+        return self._channel_count
 
     @property
     def bits_per_sample(self) -> int:
@@ -213,10 +224,7 @@ class AudioApi(QtCore.QObject):
 
         :return: bits per sample or 0 if no audio source
         """
-        if not self._wait_for_source():
-            return 0
-        assert self._source
-        return T.cast(int, self._source.properties.BitsPerSample)
+        return self._bits_per_sample
 
     @property
     def sample_rate(self) -> int:
@@ -225,13 +233,7 @@ class AudioApi(QtCore.QObject):
 
         :return: sample rate or 0 if no audio source
         """
-        if not self._wait_for_source():
-            return 0
-        # other properties:
-        # - ChannelLayout
-        # - SampleFormat
-        assert self._source
-        return T.cast(int, self._source.properties.SampleRate)
+        return self._sample_rate
 
     @property
     def sample_format(self) -> T.Optional[int]:
@@ -240,10 +242,7 @@ class AudioApi(QtCore.QObject):
 
         :return: sample format or None if no audio source
         """
-        if not self._wait_for_source():
-            return None
-        assert self._source
-        return T.cast(T.Optional[int], self._source.properties.SampleFormat)
+        return self._sample_format
 
     @property
     def sample_count(self) -> int:
@@ -252,32 +251,25 @@ class AudioApi(QtCore.QObject):
 
         :return: sample count or 0 if no audio source
         """
-        if not self._wait_for_source():
-            return 0
-        assert self._source
-        return T.cast(int, self._source.properties.NumSamples)
+        return self._sample_count
 
     @property
     def min_time(self) -> int:
         """
-        Return minimum time in milliseconds.
+        Return minimum time in milliseconds (generally 0).
 
-        :return: audio start
+        :return: audio start or 0 if no audio source
         """
-        if not self._wait_for_source():
-            return 0
-        return round(T.cast(float, self._source.properties.FirstTime) * 1000)
+        return self._min_time
 
     @property
     def max_time(self) -> int:
         """
         Return maximum time in milliseconds.
 
-        :return: audio end
+        :return: audio end or 0 if no audio source
         """
-        if not self._wait_for_source():
-            return 0
-        return round(T.cast(float, self._source.properties.LastTime) * 1000)
+        return self._max_time
 
     def get_samples(self, start_frame: int, count: int) -> np.array:
         """
@@ -351,6 +343,21 @@ class AudioApi(QtCore.QObject):
             return
 
         self._source = source
+        self._min_time = round(
+            T.cast(float, self._source.properties.FirstTime) * 1000
+        )
+        self._max_time = round(
+            T.cast(float, self._source.properties.LastTime) * 1000
+        )
+        self._channel_count = T.cast(int, self._source.properties.Channels)
+        self._bits_per_sample = T.cast(
+            int, self._source.properties.BitsPerSample
+        )
+        self._sample_rate = T.cast(int, self._source.properties.SampleRate)
+        self._sample_format = T.cast(
+            T.Optional[int], self._source.properties.SampleFormat
+        )
+        self._sample_count = T.cast(int, self._source.properties.NumSamples)
 
         if source is None:
             self.state = AudioState.NotLoaded
