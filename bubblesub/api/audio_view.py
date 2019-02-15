@@ -164,6 +164,8 @@ class AudioViewApi(QtCore.QObject):
         :param start_pts: start PTS
         :param end_pts: end PTS
         """
+        if start_pts > end_pts:
+            end_pts, start_pts = start_pts, end_pts
         self._selection_start = self._clip(start_pts)
         self._selection_end = self._clip(end_pts)
         self.selection_changed.emit()
@@ -175,6 +177,8 @@ class AudioViewApi(QtCore.QObject):
         :param start_pts: start PTS
         :param end_pts: end PTS
         """
+        if start_pts > end_pts:
+            end_pts, start_pts = start_pts, end_pts
         self._view_start = self._clip(start_pts)
         self._view_end = self._clip(end_pts)
         self.view_changed.emit()
