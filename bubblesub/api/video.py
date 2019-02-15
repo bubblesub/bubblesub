@@ -216,6 +216,7 @@ class VideoApi(QtCore.QObject):
         idx = self.timecodes.index(pts)
         frame = self.get_frame(idx, width, height)
         image = PIL.Image.frombytes("RGB", (width, height), frame)
+
         if include_subtitles:
             self._ass_renderer.set_source(
                 self._subs_api.styles,
@@ -223,9 +224,11 @@ class VideoApi(QtCore.QObject):
                 self._subs_api.meta,
                 (width, height),
             )
-
-            subs_image = self._ass_renderer.render(time=pts)
+            subs_image = self._ass_renderer.render(
+                time=pts, aspect_ratio=self._aspect_ratio
+            )
             image = PIL.Image.composite(subs_image, image, subs_image)
+
         image.save(str(path))
 
     def align_pts_to_near_frame(self, pts: int) -> int:

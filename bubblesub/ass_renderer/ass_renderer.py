@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import ctypes
+import fractions
 import typing as T
 
 import numpy as np
@@ -69,7 +70,9 @@ class AssRenderer:
         self._renderer.frame_size = video_resolution
         self._renderer.pixel_aspect = 1.0
 
-    def render(self, time: int) -> PIL.Image:
+    def render(
+        self, time: int, aspect_ratio: T.Union[float, fractions.Fraction]
+    ) -> PIL.Image:
         if self._track is None:
             raise ValueError("need source to render")
 
@@ -123,7 +126,13 @@ class AssRenderer:
             fragment[..., :3] = out_color * 255
             fragment[..., 3] = out_alpha * 255
 
-        return PIL.Image.fromarray(image_data)
+        ret = PIL.Image.fromarray(image_data)
+        ret = ret.resize(
+            (int(ret.width * aspect_ratio), ret.height), PIL.Image.LANCZOS
+        )
+        final = PIL.Image.new("RGBA", self._renderer.frame_size)
+        final.paste(ret, ((self._renderer.frame_size[0] - ret.width) // 2, 0))
+        return final
 
     def render_raw(self, time: int) -> libass.AssImageSequence:
         if self._track is None:

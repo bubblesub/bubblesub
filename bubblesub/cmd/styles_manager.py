@@ -154,7 +154,9 @@ class _StylePreview(QtWidgets.QGroupBox):
         self._renderer.set_source(
             fake_style_list, fake_event_list, fake_meta, resolution
         )
-        subs_image = self._renderer.render(time=0)
+        subs_image = self._renderer.render(
+            time=0, aspect_ratio=self._api.video.aspect_ratio
+        )
         image = PIL.Image.composite(subs_image, image, subs_image)
 
         image = PIL.ImageQt.ImageQt(image)
