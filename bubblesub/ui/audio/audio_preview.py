@@ -156,11 +156,15 @@ class AudioPreview(BaseLocalAudioWidget):
         if event.button() == QtCore.Qt.LeftButton:
             if event.modifiers() & QtCore.Qt.ShiftModifier:
                 self.begin_drag_mode(DragMode.SubtitleStart, event)
+            elif event.modifiers() & QtCore.Qt.ControlModifier:
+                self.begin_drag_mode(DragMode.NewSubtitleStart, event)
             else:
                 self.begin_drag_mode(DragMode.SelectionStart, event)
         elif event.button() == QtCore.Qt.RightButton:
             if event.modifiers() & QtCore.Qt.ShiftModifier:
                 self.begin_drag_mode(DragMode.SubtitleEnd, event)
+            elif event.modifiers() & QtCore.Qt.ControlModifier:
+                self.begin_drag_mode(DragMode.NewSubtitleEnd, event)
             else:
                 self.begin_drag_mode(DragMode.SelectionEnd, event)
         elif event.button() == QtCore.Qt.MiddleButton:

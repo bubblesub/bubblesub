@@ -35,12 +35,38 @@ class DragMode(enum.Enum):
     AudioView = 4
     SubtitleStart = 5
     SubtitleEnd = 6
+    NewSubtitleStart = 7
+    NewSubtitleEnd = 8
 
 
 @dataclass
 class DragData:
     mode: DragMode
     selected_events: T.List[AssEvent]
+
+
+def _create_new_subtitle(api: Api, pts: int, before: bool) -> None:
+    pts = api.video.align_pts_to_near_frame(pts)
+
+    if before:
+        if not api.subs.selected_indexes:
+            return
+        end = api.subs.selected_events[0].start
+        idx = api.subs.selected_indexes[0]
+        start = pts
+    else:
+        if api.subs.selected_indexes:
+            start = api.subs.selected_events[-1].end
+            idx = api.subs.selected_indexes[-1] + 1
+        else:
+            start = 0
+            idx = 0
+        end = pts
+
+    sub = api.subs.events.insert(
+        idx, AssEvent(start=start, end=end, style="Default")
+    )
+    api.subs.selected_indexes = [idx]
 
 
 class BaseAudioWidget(QtWidgets.QWidget):
@@ -83,10 +109,17 @@ class BaseAudioWidget(QtWidgets.QWidget):
         self, drag_mode: DragMode, event: QtGui.QMouseEvent
     ) -> None:
         self._api.undo.begin_capture()
-        self._drag_data = DragData(
-            drag_mode, self._api.subs.selected_events[:]
-        )
-        self._apply_drag(event)
+
+        if drag_mode in {DragMode.NewSubtitleStart, DragMode.NewSubtitleEnd}:
+            pts = self.pts_from_x(event.x())
+            _create_new_subtitle(
+                self._api, pts, before=drag_mode == DragMode.NewSubtitleStart
+            )
+        else:
+            self._drag_data = DragData(
+                drag_mode, self._api.subs.selected_events[:]
+            )
+            self._apply_drag(event)
 
     def end_drag_mode(self) -> None:
         self._drag_data = None
