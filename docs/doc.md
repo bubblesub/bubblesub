@@ -67,7 +67,7 @@ Context refers to the currently focused widget.
 |<kbd>2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=+1f</code> |
 |<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=-1f</code> |
 |<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=+1f</code> |
-|<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-commit-sel">audio-commit-sel</a> </code> |
+|<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-set">sub-set</a> --start=a.s --end=a.e</code> |
 |<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
 |<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
 |<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
@@ -99,14 +99,6 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-paste">sub-paste</a> --after</code> |
 
 # Default commands
-### <a name="cmd-audio-commit-sel"></a>`audio‑commit‑sel`
-Aliases: `audio-commit-selection`, `spectrogram-commit-sel`, `spectrogram-commit-selection`
-
-Commits the spectrogram selection into given subtitles. The subtitles start and end times are synced to the current spectrogram selection boundaries.
-
-Usage: `audio‑commit‑sel [-t|--target=selected]`
-* `-t`, `--target`: subtitles to commit selection into
-
 ### <a name="cmd-audio-scroll-view"></a>`audio‑scroll‑view`
 Aliases: `spectrogram-scroll-view`
 
