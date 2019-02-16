@@ -155,6 +155,8 @@ class AudioPreview(BaseLocalAudioWidget):
         timer.timeout.connect(self._repaint_if_needed)
         timer.start()
 
+        self.setMouseTracking(True)
+
         api.playback.current_pts_changed.connect(self.update)
         api.audio.state_changed.connect(self._on_audio_state_change)
         api.audio.view.view_changed.connect(self._on_audio_view_change)
@@ -208,6 +210,18 @@ class AudioPreview(BaseLocalAudioWidget):
         elif event.button() == QtCore.Qt.MiddleButton:
             self.begin_drag_mode(DragMode.VideoPosition, event)
             self.end_drag_mode()
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        if any(
+            label.x1 <= event.x() <= label.x2
+            and label.y1 <= event.y() <= label.y2
+            for label in self._labels
+        ):
+            self.setCursor(QtCore.Qt.PointingHandCursor)
+        else:
+            self.setCursor(QtCore.Qt.ArrowCursor)
+
+        super().mouseMoveEvent(event)
 
     def _generate_color_table(self) -> None:
         self._color_table = [
