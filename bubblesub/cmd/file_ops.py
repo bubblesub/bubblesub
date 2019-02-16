@@ -140,6 +140,9 @@ class LoadVideoCommand(BaseCommand):
     )
 
     async def run(self) -> None:
+        await self.api.gui.exec(self._run_with_gui)
+
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         path = await self.args.path.get_load_path(
             file_filter=VIDEO_FILE_FILTER,
             directory=self.api.gui.get_dialog_dir(),
@@ -148,7 +151,8 @@ class LoadVideoCommand(BaseCommand):
         # show the prompt earlier before loading anything
         # to avoid distracting the user with loading video in the background
         load_audio = await show_prompt(
-            f"Do you want to use this video file as the audio source?"
+            f"Do you want to use this video file as the audio source?",
+            main_window,
         )
 
         self.api.video.load(path)

@@ -295,7 +295,7 @@ class _StyleList(QtWidgets.QWidget):
         assert style is not None
 
         if not await show_prompt(
-            f'Are you sure you want to remove style "{style.name}"?'
+            f'Are you sure you want to remove style "{style.name}"?', self
         ):
             return
 

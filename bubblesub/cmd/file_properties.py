@@ -316,7 +316,8 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
             and new_res[1]
             and await show_prompt(
                 "The resolution was changed. "
-                "Do you want to rescale all the styles now?"
+                "Do you want to rescale all the styles now?",
+                self,
             )
         ):
             x_factor = new_res[0] / old_res[0]

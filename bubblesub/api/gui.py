@@ -82,7 +82,7 @@ class GuiApi(QtCore.QObject):
         doc_path = self._api.subs.path
         doc_name = doc_path.name if doc_path else "Untitled"
 
-        box = QtWidgets.QMessageBox()
+        box = QtWidgets.QMessageBox(self._main_window)
         box.setWindowTitle("Question")
         box.setText(f'Do you wish to save changes to "{doc_name}"?')
         box.setIcon(QtWidgets.QMessageBox.Question)

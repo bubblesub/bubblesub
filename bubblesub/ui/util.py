@@ -50,24 +50,24 @@ def async_dialog_exec(dialog: QtWidgets.QDialog) -> T.Any:
     return future
 
 
-async def show_error(msg: str) -> None:
-    box = QtWidgets.QMessageBox()
+async def show_error(msg: str, parent: QtWidgets.QWidget) -> None:
+    box = QtWidgets.QMessageBox(parent)
     box.setWindowTitle("Error")
     box.setIcon(QtWidgets.QMessageBox.Critical)
     box.setText(msg)
     await async_dialog_exec(box)
 
 
-async def show_notice(msg: str) -> None:
-    box = QtWidgets.QMessageBox()
+async def show_notice(msg: str, parent: QtWidgets.QWidget) -> None:
+    box = QtWidgets.QMessageBox(parent)
     box.setWindowTitle("Information")
     box.setIcon(QtWidgets.QMessageBox.Information)
     box.setText(msg)
     await async_dialog_exec(box)
 
 
-async def show_prompt(msg: str) -> bool:
-    box = QtWidgets.QMessageBox()
+async def show_prompt(msg: str, parent: QtWidgets.QWidget) -> bool:
+    box = QtWidgets.QMessageBox(parent)
     box.setWindowTitle("Question")
     box.setText(msg)
     box.setIcon(QtWidgets.QMessageBox.Question)

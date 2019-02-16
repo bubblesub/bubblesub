@@ -314,10 +314,9 @@ class _SearchDialog(QtWidgets.QDialog):
         self,
         api: Api,
         main_window: QtWidgets.QMainWindow,
-        show_replace_controls: bool,
-        parent: QtWidgets.QWidget = None,
+        show_replace_controls: bool
     ) -> None:
-        super().__init__(parent)
+        super().__init__(main_window)
         self._main_window = main_window
         self._api = api
 
@@ -411,21 +410,23 @@ class _SearchDialog(QtWidgets.QDialog):
         await show_notice(
             f"Replaced {count} occurences."
             if count
-            else "No occurences found."
+            else "No occurences found.",
+            self,
         )
 
     async def _search(self, reverse: bool) -> None:
         self._push_search_history()
         result = _search(self._api, self._handler, self._search_regex, reverse)
         if not result:
-            await show_notice("No occurences found.")
+            await show_notice("No occurences found.", self)
         self._update_replacement_enabled()
 
     async def _count(self) -> None:
         self._push_search_history()
         count = _count(self._api, self._handler, self._search_regex)
         await show_notice(
-            f"Found {count} occurences." if count else "No occurences found."
+            f"Found {count} occurences." if count else "No occurences found.",
+            self,
         )
 
     def _update_replacement_enabled(self) -> None:
@@ -547,7 +548,7 @@ class SearchRepeatCommand(BaseCommand):
             self.args.reverse,
         )
         if not result:
-            await show_notice("No occurences found.")
+            await show_notice("No occurences found.", main_window)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

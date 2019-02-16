@@ -116,7 +116,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
     async def next(self) -> bool:
         ret = self._iter_to_next_mispelt_match()
         if ret is None:
-            await show_notice("No more results.")
+            await show_notice("No more results.", self)
             self.reject()
             return False
         idx, start, end, word = ret
@@ -179,14 +179,17 @@ class SpellCheckCommand(BaseCommand):
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         spell_check_lang = self.api.cfg.opt["gui"]["spell_check"]
         if not spell_check_lang:
-            await show_error("Spell check was disabled in config.")
+            await show_error(
+                "Spell check was disabled in config.", main_window
+            )
             return
 
         try:
             dictionary = enchant.Dict(spell_check_lang)
         except enchant.errors.DictNotFoundError:
             await show_error(
-                f"Spell check language {spell_check_lang} was not found."
+                f"Spell check language {spell_check_lang} was not found.",
+                main_window,
             )
             return
 
