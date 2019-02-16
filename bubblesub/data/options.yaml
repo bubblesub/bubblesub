@@ -26,6 +26,7 @@ gui:
     preview_fonts: true
     try_to_refresh_fonts: true
 
+    console_history: []
     grid_columns: {}
     splitters: {}
     fonts: {}

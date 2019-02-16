@@ -26,6 +26,8 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogLevel
 
+MAX_HISTORY_ENTRIES = 100
+
 
 @dataclass
 class Completion:
@@ -226,14 +228,16 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self._edited = False
         self._compl: T.Optional[Completion] = None
 
-        self._history_pos = 0
         self._history: T.List[str] = []
+        self._history_pos = 0
 
         self.setObjectName("console-input")
         self.setFont(
             QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
         )
 
+        api.cfg.opt.changed.connect(self._on_options_load)
+        api.gui.terminated.connect(self._on_quit)
         self.returnPressed.connect(self._on_return_press)
         self.textEdited.connect(self._on_edit)
 
@@ -280,6 +284,16 @@ class ConsoleInput(QtWidgets.QLineEdit):
                 return
 
         super().keyPressEvent(event)
+
+    def _on_options_load(self) -> None:
+        if not self._history:
+            self._history = self._api.cfg.opt["gui"]["console_history"]
+            self._history_pos = len(self._history)
+
+    def _on_quit(self) -> None:
+        self._api.cfg.opt["gui"]["console_history"] = self._history[
+            -MAX_HISTORY_ENTRIES:
+        ]
 
     def _on_edit(self) -> None:
         self._edited = True

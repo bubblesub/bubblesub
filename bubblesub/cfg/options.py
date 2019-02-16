@@ -20,18 +20,26 @@ import collections
 import typing as T
 
 import yaml
+from PyQt5 import QtCore
 
 from bubblesub.cfg.base import SubConfig
+
+
+class _OptionsConfigSignals(QtCore.QObject):
+    # QObject doesn't play nice with multiple inheritance, hence composition
+    changed = QtCore.pyqtSignal()
 
 
 class OptionsConfig(SubConfig):
     """Main program options."""
 
     file_name = "options.yaml"
+    changed = property(lambda self: self._signals.changed)
 
     def __init__(self) -> None:
         """Initialize self."""
         self._storage: T.Dict[str, T.Any] = {}
+        self._signals = _OptionsConfigSignals()
         super().__init__()
 
     def _clear(self) -> None:
@@ -39,6 +47,7 @@ class OptionsConfig(SubConfig):
 
     def _loads(self, text: str) -> None:
         self._merge(self._storage, yaml.load(text))
+        self.changed.emit()
 
     def _merge(self, target: T.Any, source: T.Any) -> T.Any:
         for key, value in source.items():
