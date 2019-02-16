@@ -25,6 +25,10 @@ from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import ROOT_DIR
 
 
+def _get_user_path(root_dir: Path) -> Path:
+    return root_dir / "menu.conf"
+
+
 class MenuContext(enum.Enum):
     """Which GUI widget the menu appears in."""
 
@@ -87,18 +91,40 @@ class SubMenu(MenuItem):
 class MenuConfig(SubConfig):
     """Configuration for GUI menu."""
 
-    file_name = "menu.conf"
-
     def __init__(self) -> None:
         """Initialize self."""
+        super().__init__()
         self._menu: T.Dict[MenuContext, T.MutableSequence[MenuItem]] = {
             context: [] for context in MenuContext
         }
-        super().__init__()
+        self.load(None)
 
-    def _clear(self) -> None:
+    def create_example_file(self, root_dir: Path) -> None:
+        """
+        Create an example file for the user to get to know the config syntax.
+
+        :param root_dir: directory where to put the config file
+        """
+        user_path = _get_user_path(root_dir)
+        if not user_path.exists():
+            user_path.write_text((ROOT_DIR / "menu.example").read_text())
+
+    def load(self, root_dir: T.Optional[Path]) -> None:
+        """
+        Load internals of this config from the specified directory.
+
+        :param root_dir: directory where to look for the matching config file
+        """
         for context in MenuContext:
             self._menu[context].clear()
+        self._loads((ROOT_DIR / "menu.conf").read_text())
+        if root_dir:
+            user_path = _get_user_path(root_dir)
+            if user_path.exists():
+                try:
+                    self._loads(user_path.read_text())
+                except ConfigError as ex:
+                    raise ConfigError(f"error loading {user_path}: {ex}")
 
     def _loads(self, text: str) -> None:
         sections: T.Dict[MenuContext, str] = {}
@@ -152,18 +178,6 @@ class MenuConfig(SubConfig):
         for context, section_text in sections.items():
             source = section_text.split("\n")
             _recurse_tree(self._menu[context], -1, source)
-
-    def create_example_file(self, root_dir: Path) -> None:
-        """
-        Create an example file for the user to get to know the config syntax.
-
-        :param root_dir: directory where to put the config file
-        """
-        full_path = root_dir / self.file_name
-        if not full_path.exists():
-            full_path.write_text(
-                (ROOT_DIR / self.file_name).with_suffix(".example").read_text()
-            )
 
     def __getitem__(self, context: MenuContext) -> T.MutableSequence[MenuItem]:
         """

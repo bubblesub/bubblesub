@@ -39,12 +39,6 @@ class Config:
         self.menu = MenuConfig()
         self.root_dir = Path()
 
-    def reset(self) -> None:
-        """Reset configuration to factory defaults."""
-        self.opt.reset()
-        self.hotkeys.reset()
-        self.menu.reset()
-
     def load(self, root_dir: Path) -> None:
         """
         Load configuration from the specified path.

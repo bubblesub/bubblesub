@@ -29,58 +29,11 @@ class ConfigError(RuntimeError):
 class SubConfig(abc.ABC):
     """Base config."""
 
-    def __init__(self) -> None:
-        """Initialize self."""
-        self.reset()
-
-    @property
     @abc.abstractmethod
-    def file_name(self) -> str:
-        """Config file name."""
-        raise NotImplementedError("not implemented")
-
-    def reset(self) -> None:
-        """Reset to factory defaults."""
-        self._clear()
-        self.load(ROOT_DIR)
-
     def load(self, root_dir: Path) -> None:
         """
         Load internals of this config from the specified directory.
 
         :param root_dir: directory where to look for the matching config file
-        """
-        full_path = root_dir / self.file_name
-        if full_path.exists():
-            try:
-                self._loads(full_path.read_text())
-            except ConfigError as ex:
-                raise ConfigError(f"error loading {full_path}: {ex}")
-
-    def save(self, root_dir: Path) -> None:
-        full_path = root_dir / self.file_name
-        full_path.parent.mkdir(parents=True, exist_ok=True)
-        full_path.write_text(self._dumps())
-
-    @abc.abstractmethod
-    def _clear(self) -> None:
-        """Reset to blank state."""
-        raise NotImplementedError("not implemented")
-
-    @abc.abstractmethod
-    def _loads(self, text: str) -> None:
-        """
-        Load internals from a human readable representation.
-
-        :param text: INI, JSON, etc.
-        """
-        raise NotImplementedError("not implemented")
-
-    # doesn't have to be overridden
-    def _dumps(self) -> str:
-        """
-        Save internals to a human readable representation.
-
-        :return: INI, JSON, etc.
         """
         raise NotImplementedError("not implemented")
