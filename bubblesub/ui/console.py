@@ -241,6 +241,9 @@ class ConsoleInput(QtWidgets.QLineEdit):
         if event.type() != QtCore.QEvent.KeyPress:
             return super().event(event)
 
+        if not self.text():
+            return super().event(event)
+
         if event.key() not in {QtCore.Qt.Key_Tab, QtCore.Qt.Key_Backtab}:
             return super().event(event)
 
