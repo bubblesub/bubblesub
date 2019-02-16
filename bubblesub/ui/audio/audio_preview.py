@@ -186,20 +186,20 @@ class AudioPreview(BaseLocalAudioWidget):
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() == QtCore.Qt.LeftButton:
-            for label in self._labels:
-                if (
-                    label.x1 <= event.x() <= label.x2
-                    and label.y1 <= event.y() <= label.y2
-                ):
-                    self._api.subs.selected_indexes = [label.event.index]
-                    return
-
             if event.modifiers() & QtCore.Qt.ShiftModifier:
                 self.begin_drag_mode(DragMode.SubtitleStart, event)
             elif event.modifiers() & QtCore.Qt.ControlModifier:
                 self.begin_drag_mode(DragMode.NewSubtitleStart, event)
             else:
-                self.begin_drag_mode(DragMode.SelectionStart, event)
+                for label in self._labels:
+                    if (
+                        label.x1 <= event.x() <= label.x2
+                        and label.y1 <= event.y() <= label.y2
+                    ):
+                        self._api.subs.selected_indexes = [label.event.index]
+                        break
+                else:
+                    self.begin_drag_mode(DragMode.SelectionStart, event)
         elif event.button() == QtCore.Qt.RightButton:
             if event.modifiers() & QtCore.Qt.ShiftModifier:
                 self.begin_drag_mode(DragMode.SubtitleEnd, event)
@@ -212,14 +212,19 @@ class AudioPreview(BaseLocalAudioWidget):
             self.end_drag_mode()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        if any(
-            label.x1 <= event.x() <= label.x2
-            and label.y1 <= event.y() <= label.y2
-            for label in self._labels
-        ):
-            self.setCursor(QtCore.Qt.PointingHandCursor)
-        else:
-            self.setCursor(QtCore.Qt.ArrowCursor)
+        if not self._drag_data:
+            if event.modifiers() & QtCore.Qt.ShiftModifier:
+                self.setCursor(QtCore.Qt.ArrowCursor)
+            elif event.modifiers() & QtCore.Qt.ControlModifier:
+                self.setCursor(QtCore.Qt.ArrowCursor)
+            elif any(
+                label.x1 <= event.x() <= label.x2
+                and label.y1 <= event.y() <= label.y2
+                for label in self._labels
+            ):
+                self.setCursor(QtCore.Qt.PointingHandCursor)
+            else:
+                self.setCursor(QtCore.Qt.ArrowCursor)
 
         super().mouseMoveEvent(event)
 
