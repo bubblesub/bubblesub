@@ -31,6 +31,13 @@ VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
 AUDIO_FILE_FILTER = "Audio filters (*.wav *.mp3 *.flac *.avi *.mkv *.webm *.mp4);;All files (*.*)"
 
 
+def async_dialog_exec(dialog: QtWidgets.QDialog) -> T.Any:
+    future = asyncio.Future()
+    dialog.finished.connect(lambda result: future.set_result(result))
+    dialog.open()
+    return future
+
+
 def show_error(msg: str) -> None:
     box = QtWidgets.QMessageBox()
     box.setWindowTitle("Error")
@@ -139,18 +146,9 @@ async def load_dialog(
     )
     dialog.setFileMode(dialog.ExistingFile)
     dialog.setAcceptMode(dialog.AcceptOpen)
-    future: "asyncio.Future[T.Optional[Path]]" = asyncio.Future()
-
-    def on_accept() -> None:
-        future.set_result(Path(dialog.selectedFiles()[0]))
-
-    def on_reject() -> None:
-        future.set_result(None)
-
-    dialog.accepted.connect(on_accept)
-    dialog.rejected.connect(on_reject)
-    dialog.open()
-    return await future
+    if await async_dialog_exec(dialog):
+        return Path(dialog.selectedFiles()[0])
+    return None
 
 
 async def save_dialog(
@@ -175,18 +173,9 @@ async def save_dialog(
     )
     dialog.setFileMode(dialog.AnyFile)
     dialog.setAcceptMode(dialog.AcceptSave)
-    future: "asyncio.Future[T.Optional[Path]]" = asyncio.Future()
-
-    def on_accept() -> None:
-        future.set_result(Path(dialog.selectedFiles()[0]))
-
-    def on_reject() -> None:
-        future.set_result(None)
-
-    dialog.accepted.connect(on_accept)
-    dialog.rejected.connect(on_reject)
-    dialog.open()
-    return await future
+    if await async_dialog_exec(dialog):
+        return Path(dialog.selectedFiles()[0])
+    return None
 
 
 async def time_jump_dialog(
@@ -244,19 +233,10 @@ async def time_jump_dialog(
         def value(self) -> T.Tuple[int, bool]:
             return (self._time_edit.get_value(), self._radio_rel.isChecked())
 
-    future: "asyncio.Future[T.Optional[T.Tuple[int, bool]]]" = asyncio.Future()
     dialog = TimeJumpDialog(parent)
-
-    def on_accept() -> None:
-        future.set_result(dialog.value())
-
-    def on_reject() -> None:
-        future.set_result(None)
-
-    dialog.accepted.connect(on_accept)
-    dialog.rejected.connect(on_reject)
-    dialog.open()
-    return await future
+    if await async_dialog_exec(dialog):
+        return dialog.value()
+    return None
 
 
 def get_text_edit_row_height(

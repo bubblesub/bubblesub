@@ -27,7 +27,7 @@ from PyQt5 import QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
 from bubblesub.ass.event import AssEvent
-from bubblesub.ui.util import time_jump_dialog
+from bubblesub.ui.util import async_dialog_exec, time_jump_dialog
 from bubblesub.util import first
 
 IDX_REGEX = regex.compile(
@@ -202,18 +202,9 @@ class SubtitlesSelection:
         if self.api.subs.has_selection:
             dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
         dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-        future: "asyncio.Future[T.Optional[int]]" = asyncio.Future()
-
-        def on_accept() -> None:
-            future.set_result(dialog.intValue())
-
-        def on_reject() -> None:
-            future.set_result(None)
-
-        dialog.accepted.connect(on_accept)
-        dialog.rejected.connect(on_reject)
-        dialog.open()
-        return await future
+        if await async_dialog_exec(dialog):
+            return dialog.intValue()
+        return None
 
     async def _show_time_dialog(
         self, main_window: QtWidgets.QMainWindow
