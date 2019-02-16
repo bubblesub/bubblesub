@@ -24,6 +24,7 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
 from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.ui.util import async_dialog_exec
 from bubblesub.util import make_ranges
 
 
@@ -96,7 +97,7 @@ class SubtitlesMoveCommand(BaseCommand):
         if indexes:
             dialog.setIntValue(indexes[0] + 1)
         dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
-        if not dialog.exec_():
+        if not await async_dialog_exec(dialog):
             raise CommandCanceled
         return T.cast(int, dialog.intValue()) - 1
 

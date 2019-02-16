@@ -31,6 +31,18 @@ VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
 AUDIO_FILE_FILTER = "Audio filters (*.wav *.mp3 *.flac *.avi *.mkv *.webm *.mp4);;All files (*.*)"
 
 
+def async_slot(*args):
+    def real_decorator(fn):
+        @QtCore.pyqtSlot(*args)
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            asyncio.ensure_future(fn(*args, **kwargs))
+
+        return wrapper
+
+    return real_decorator
+
+
 def async_dialog_exec(dialog: QtWidgets.QDialog) -> T.Any:
     future = asyncio.Future()
     dialog.finished.connect(lambda result: future.set_result(result))
@@ -38,30 +50,30 @@ def async_dialog_exec(dialog: QtWidgets.QDialog) -> T.Any:
     return future
 
 
-def show_error(msg: str) -> None:
+async def show_error(msg: str) -> None:
     box = QtWidgets.QMessageBox()
     box.setWindowTitle("Error")
     box.setIcon(QtWidgets.QMessageBox.Critical)
     box.setText(msg)
-    box.exec_()
+    await async_dialog_exec(box)
 
 
-def show_notice(msg: str) -> None:
+async def show_notice(msg: str) -> None:
     box = QtWidgets.QMessageBox()
     box.setWindowTitle("Information")
     box.setIcon(QtWidgets.QMessageBox.Information)
     box.setText(msg)
-    box.exec_()
+    await async_dialog_exec(box)
 
 
-def show_prompt(msg: str) -> bool:
+async def show_prompt(msg: str) -> bool:
     box = QtWidgets.QMessageBox()
     box.setWindowTitle("Question")
     box.setText(msg)
     box.setIcon(QtWidgets.QMessageBox.Question)
     box.addButton("Yes", QtWidgets.QMessageBox.YesRole)
     box.addButton("No", QtWidgets.QMessageBox.NoRole)
-    return T.cast(int, box.exec_()) == 0
+    return await async_dialog_exec(box) == 0
 
 
 def blend_colors(

@@ -32,6 +32,8 @@ from bubblesub.ui.model.styles import AssStylesModel, AssStylesModelColumn
 from bubblesub.ui.util import (
     ColorPicker,
     ImmediateDataWidgetMapper,
+    async_dialog_exec,
+    async_slot,
     get_text_edit_row_height,
     show_prompt,
 )
@@ -245,8 +247,9 @@ class _StyleList(QtWidgets.QWidget):
             and selected.indexes()[0].row() < len(self._api.subs.styles) - 1
         )
 
-    def _on_add_button_click(self, event: QtGui.QMouseEvent) -> None:
-        style_name = self._prompt_for_unique_style_name()
+    @async_slot()
+    async def _on_add_button_click(self) -> None:
+        style_name = await self._prompt_for_unique_style_name()
         if not style_name:
             return
 
@@ -261,7 +264,7 @@ class _StyleList(QtWidgets.QWidget):
             | QtCore.QItemSelectionModel.Select,
         )
 
-    def _prompt_for_unique_style_name(
+    async def _prompt_for_unique_style_name(
         self, style_name: str = ""
     ) -> T.Optional[str]:
         prompt_text = "Name of the new style:"
@@ -270,7 +273,7 @@ class _StyleList(QtWidgets.QWidget):
             dialog.setLabelText(prompt_text)
             dialog.setTextValue(style_name)
             dialog.setInputMode(QtWidgets.QInputDialog.TextInput)
-            if not dialog.exec_():
+            if not await async_dialog_exec(dialog):
                 return None
             style_name = dialog.textValue()
 
@@ -286,11 +289,12 @@ class _StyleList(QtWidgets.QWidget):
                 style_name
             )
 
-    def _on_remove_button_click(self, event: QtGui.QMouseEvent) -> None:
+    @async_slot()
+    async def _on_remove_button_click(self) -> None:
         style = self._selected_style
         assert style is not None
 
-        if not show_prompt(
+        if not await show_prompt(
             f'Are you sure you want to remove style "{style.name}"?'
         ):
             return
@@ -349,7 +353,8 @@ class _StyleList(QtWidgets.QWidget):
             | QtCore.QItemSelectionModel.Select,
         )
 
-    def _on_rename_button_click(self, event: QtGui.QMouseEvent) -> None:
+    @async_slot()
+    async def _on_rename_button_click(self) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -357,7 +362,7 @@ class _StyleList(QtWidgets.QWidget):
         assert idx is not None
 
         old_name = style.name
-        new_name = self._prompt_for_unique_style_name(old_name)
+        new_name = await self._prompt_for_unique_style_name(old_name)
         if not new_name:
             return
 
@@ -704,7 +709,8 @@ class ManageStylesCommand(BaseCommand):
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         with self.api.undo.capture():
-            _StylesManagerDialog(self.api, main_window).exec_()
+            dialog = _StylesManagerDialog(self.api, main_window)
+            await async_dialog_exec(dialog)
 
 
 COMMANDS = [ManageStylesCommand]

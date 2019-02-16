@@ -147,7 +147,7 @@ class LoadVideoCommand(BaseCommand):
 
         # show the prompt earlier before loading anything
         # to avoid distracting the user with loading video in the background
-        load_audio = show_prompt(
+        load_audio = await show_prompt(
             f"Do you want to use this video file as the audio source?"
         )
 

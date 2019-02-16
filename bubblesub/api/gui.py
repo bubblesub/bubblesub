@@ -25,7 +25,7 @@ from pathlib import Path
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import bubblesub.api  # pylint: disable=unused-import
-from bubblesub.ui.util import SUBS_FILE_FILTER, save_dialog
+from bubblesub.ui.util import SUBS_FILE_FILTER, async_dialog_exec, save_dialog
 
 
 class GuiApi(QtCore.QObject):
@@ -91,7 +91,7 @@ class GuiApi(QtCore.QObject):
         box.addButton(box.Cancel)
         box.setDefaultButton(box.Save)
 
-        response = T.cast(int, box.exec_())
+        response = await async_dialog_exec(box)
         if response == box.Save:
             if not doc_path:
                 doc_path = await save_dialog(

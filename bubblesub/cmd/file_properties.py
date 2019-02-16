@@ -22,7 +22,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ui.util import show_prompt
+from bubblesub.ui.util import async_dialog_exec, async_slot, show_prompt
 
 
 def _rescale_styles(api: Api, factor: float) -> None:
@@ -236,7 +236,6 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
         self._load()
         self.setWindowTitle("File properties")
         self.resize(600, 600)
-        self.exec_()
 
     def _load(self) -> None:
         self._options_group_box.res_x_edit.setValue(
@@ -275,7 +274,8 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
                     [QtGui.QStandardItem(key), QtGui.QStandardItem(value)]
                 )
 
-    def _commit(self) -> None:
+    @async_slot()
+    async def _commit(self) -> None:
         old_res = (
             int(T.cast(str, self._api.subs.meta.get("PlayResX", "0"))),
             int(T.cast(str, self._api.subs.meta.get("PlayResY", "0"))),
@@ -314,7 +314,7 @@ class _FilePropertiesDialog(QtWidgets.QDialog):
             and old_res[1]
             and new_res[0]
             and new_res[1]
-            and show_prompt(
+            and await show_prompt(
                 "The resolution was changed. "
                 "Do you want to rescale all the styles now?"
             )
@@ -334,7 +334,8 @@ class FilePropertiesCommand(BaseCommand):
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         with self.api.undo.capture():
-            _FilePropertiesDialog(self.api, main_window)
+            dialog = _FilePropertiesDialog(self.api, main_window)
+            await async_dialog_exec(dialog)
 
 
 COMMANDS = [FilePropertiesCommand]

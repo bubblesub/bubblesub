@@ -25,7 +25,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import AssEvent
-from bubblesub.ui.util import show_notice
+from bubblesub.ui.util import async_dialog_exec, async_slot, show_notice
 
 MAX_HISTORY_ENTRIES = 25
 
@@ -385,45 +385,46 @@ class _SearchDialog(QtWidgets.QDialog):
         self._save_opt()
         return super().reject()
 
-    def action(self, sender: QtWidgets.QAbstractButton) -> None:
+    @async_slot(QtWidgets.QAbstractButton)
+    async def action(self, sender: QtWidgets.QAbstractButton) -> None:
         self._save_opt()
         if sender == self.replace_sel_btn:
-            self._replace_selection()
+            await self._replace_selection()
         elif sender == self.replace_all_btn:
-            self._replace_all()
+            await self._replace_all()
         elif sender == self.find_prev_btn:
-            self._search(reverse=True)
+            await self._search(reverse=True)
         elif sender == self.find_next_btn:
-            self._search(reverse=False)
+            await self._search(reverse=False)
         elif sender == self.count_btn:
-            self._count()
+            await self._count()
 
-    def _replace_selection(self) -> None:
+    async def _replace_selection(self) -> None:
         _replace_selection(self._handler, self._target_text)
         self._update_replacement_enabled()
 
-    def _replace_all(self) -> None:
+    async def _replace_all(self) -> None:
         self._push_search_history()
         count = _replace_all(
             self._api, self._handler, self._search_regex, self._target_text
         )
-        show_notice(
+        await show_notice(
             f"Replaced {count} occurences."
             if count
             else "No occurences found."
         )
 
-    def _search(self, reverse: bool) -> None:
+    async def _search(self, reverse: bool) -> None:
         self._push_search_history()
         result = _search(self._api, self._handler, self._search_regex, reverse)
         if not result:
-            show_notice("No occurences found.")
+            await show_notice("No occurences found.")
         self._update_replacement_enabled()
 
-    def _count(self) -> None:
+    async def _count(self) -> None:
         self._push_search_history()
         count = _count(self._api, self._handler, self._search_regex)
-        show_notice(
+        await show_notice(
             f"Found {count} occurences." if count else "No occurences found."
         )
 
@@ -502,9 +503,10 @@ class SearchCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        _SearchDialog(
+        dialog = _SearchDialog(
             self.api, main_window, show_replace_controls=False
-        ).exec_()
+        )
+        await async_dialog_exec(dialog)
 
 
 class SearchAndReplaceCommand(BaseCommand):
@@ -515,9 +517,10 @@ class SearchAndReplaceCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        _SearchDialog(
+        dialog = _SearchDialog(
             self.api, main_window, show_replace_controls=True
-        ).exec_()
+        )
+        await async_dialog_exec(dialog)
 
 
 class SearchRepeatCommand(BaseCommand):
@@ -544,7 +547,7 @@ class SearchRepeatCommand(BaseCommand):
             self.args.reverse,
         )
         if not result:
-            show_notice("No occurences found.")
+            await show_notice("No occurences found.")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

@@ -22,7 +22,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.util import spell_check_ass_line
-from bubblesub.ui.util import show_error, show_notice
+from bubblesub.ui.util import (
+    async_dialog_exec,
+    async_slot,
+    show_error,
+    show_notice,
+)
 
 
 class _SpellCheckDialog(QtWidgets.QDialog):
@@ -72,24 +77,22 @@ class _SpellCheckDialog(QtWidgets.QDialog):
 
         self.setWindowTitle("Spell checker")
 
-        if self._next():
-            self.exec_()
-
-    def action(self, sender: QtWidgets.QWidget) -> None:
+    @async_slot(QtWidgets.QAbstractButton)
+    async def action(self, sender: QtWidgets.QAbstractButton) -> None:
         if sender == self.replace_btn:
-            self._replace()
+            await self._replace()
         elif sender == self.add_btn:
-            self._add_to_dictionary()
+            await self._add_to_dictionary()
         elif sender == self.ignore_btn:
-            self._ignore()
+            await self._ignore()
         elif sender == self.ignore_all_btn:
-            self._ignore_all()
+            await self._ignore_all()
 
     @property
     def text_edit(self) -> QtWidgets.QWidget:
         return self._main_window.findChild(QtWidgets.QWidget, "text-editor")
 
-    def _replace(self) -> None:
+    async def _replace(self) -> None:
         text = self.text_edit.toPlainText()
         text = (
             text[: self.text_edit.textCursor().selectionStart()]
@@ -97,23 +100,23 @@ class _SpellCheckDialog(QtWidgets.QDialog):
             + text[self.text_edit.textCursor().selectionEnd() :]
         )
         self.text_edit.document().setPlainText(text)
-        self._next()
+        await self.next()
 
-    def _add_to_dictionary(self) -> None:
+    async def _add_to_dictionary(self) -> None:
         self._dictionary.add(self._mispelt_text_edit.text())
-        self._next()
+        await self.next()
 
-    def _ignore(self) -> None:
-        self._next()
+    async def _ignore(self) -> None:
+        await self.next()
 
-    def _ignore_all(self) -> None:
+    async def _ignore_all(self) -> None:
         self._dictionary.add_to_session(self._mispelt_text_edit.text())
-        self._next()
+        await self.next()
 
-    def _next(self) -> bool:
+    async def next(self) -> bool:
         ret = self._iter_to_next_mispelt_match()
         if ret is None:
-            show_notice("No more results.")
+            await show_notice("No more results.")
             self.reject()
             return False
         idx, start, end, word = ret
@@ -176,18 +179,20 @@ class SpellCheckCommand(BaseCommand):
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         spell_check_lang = self.api.cfg.opt["gui"]["spell_check"]
         if not spell_check_lang:
-            show_error("Spell check was disabled in config.")
+            await show_error("Spell check was disabled in config.")
             return
 
         try:
             dictionary = enchant.Dict(spell_check_lang)
         except enchant.errors.DictNotFoundError:
-            show_error(
+            await show_error(
                 f"Spell check language {spell_check_lang} was not found."
             )
             return
 
-        _SpellCheckDialog(self.api, main_window, dictionary)
+        dialog = _SpellCheckDialog(self.api, main_window, dictionary)
+        if await dialog.next():
+            await async_dialog_exec(dialog)
 
 
 COMMANDS = [SpellCheckCommand]
