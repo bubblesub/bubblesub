@@ -156,10 +156,18 @@ class AudioPreview(BaseLocalAudioWidget):
         timer.start()
 
         self.setMouseTracking(True)
+        QtWidgets.QApplication.instance().installEventFilter(self)
 
         api.playback.current_pts_changed.connect(self.update)
         api.audio.state_changed.connect(self._on_audio_state_change)
         api.audio.view.view_changed.connect(self._on_audio_view_change)
+
+    def eventFilter(
+        self, source: QtCore.QObject, event: QtCore.QEvent
+    ) -> bool:
+        if event.type() in {QtCore.QEvent.KeyPress, QtCore.QEvent.KeyRelease}:
+            self._update_cursor(event)
+        return False
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
         self._generate_color_table()
@@ -212,20 +220,7 @@ class AudioPreview(BaseLocalAudioWidget):
             self.end_drag_mode()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        if not self._drag_data:
-            if event.modifiers() & QtCore.Qt.ShiftModifier:
-                self.setCursor(QtCore.Qt.ArrowCursor)
-            elif event.modifiers() & QtCore.Qt.ControlModifier:
-                self.setCursor(QtCore.Qt.ArrowCursor)
-            elif any(
-                label.x1 <= event.x() <= label.x2
-                and label.y1 <= event.y() <= label.y2
-                for label in self._labels
-            ):
-                self.setCursor(QtCore.Qt.PointingHandCursor)
-            else:
-                self.setCursor(QtCore.Qt.ArrowCursor)
-
+        self._update_cursor(event)
         super().mouseMoveEvent(event)
 
     def _generate_color_table(self) -> None:
@@ -458,3 +453,25 @@ class AudioPreview(BaseLocalAudioWidget):
             polygon.append(QtCore.QPointF(x, y))
 
         painter.drawPolygon(polygon)
+
+    def _update_cursor(
+        self, event: T.Union[QtGui.QKeyEvent, QtGui.QMouseEvent]
+    ) -> None:
+        if self._drag_data:
+            return
+
+        # using QtWidgets.QApplication.keyboardModifiers() is unreliable,
+        # as it doesn't hold up to date values (at least on X11)
+        modifiers = event.modifiers()
+        pos = self.mapFromGlobal(QtGui.QCursor().pos())
+        if modifiers == QtCore.Qt.ShiftModifier:
+            self.setCursor(QtCore.Qt.SplitHCursor)
+        elif modifiers == QtCore.Qt.ControlModifier:
+            self.setCursor(QtCore.Qt.SizeHorCursor)
+        elif any(
+            label.x1 <= pos.x() <= label.x2 and label.y1 <= pos.y() <= label.y2
+            for label in self._labels
+        ):
+            self.setCursor(QtCore.Qt.PointingHandCursor)
+        else:
+            self.setCursor(QtCore.Qt.ArrowCursor)
