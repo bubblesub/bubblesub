@@ -49,20 +49,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, api: Api) -> None:
         super().__init__()
 
+        self._closing_state = ClosingState.Ready
         self._api = api
         self._update_title()
-
-        api.gui.request_quit.connect(self.close)
-        api.gui.request_begin_update.connect(
-            lambda: self.setUpdatesEnabled(False)
-        )
-        api.gui.request_end_update.connect(
-            lambda: self.setUpdatesEnabled(True)
-        )
-
-        api.gui.terminated.connect(self._store_splitters)
-        api.subs.loaded.connect(self._update_title)
-        api.cmd.commands_loaded.connect(self._setup_menu)
 
         self.video = Video(api, self)
         self.audio = Audio(api, self)
@@ -98,7 +87,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setStatusBar(self.status_bar)
 
         self.subs_grid.setFocus()
-
         self.subs_grid.restore_grid_columns()
         self.apply_palette(api.cfg.opt["gui"]["current_palette"])
         self._restore_splitters()
@@ -113,7 +101,28 @@ class MainWindow(QtWidgets.QMainWindow):
             },
         )
 
-        self._closing_state = ClosingState.Ready
+        api.gui.terminated.connect(self._store_splitters)
+        api.gui.request_quit.connect(self.close)
+        api.gui.request_begin_update.connect(
+            lambda: self.setUpdatesEnabled(False)
+        )
+        api.gui.request_end_update.connect(
+            lambda: self.setUpdatesEnabled(True)
+        )
+        api.subs.loaded.connect(self._update_title)
+        api.cmd.commands_loaded.connect(self._setup_menu)
+        QtWidgets.QApplication.instance().installEventFilter(self)
+
+    def eventFilter(
+        self, source: QtCore.QObject, event: QtCore.QEvent
+    ) -> bool:
+        if (
+            event.type() == QtCore.QEvent.WindowBlocked
+            and not self._api.playback.is_paused
+        ):
+            # pause video for modal dialogs
+            self._api.playback.is_paused = True
+        return False
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
         self._api.gui.get_color.cache_clear()
