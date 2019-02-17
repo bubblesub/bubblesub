@@ -22,24 +22,24 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 
 
-class SetPaletteCommand(BaseCommand):
-    names = ["set-palette"]
+class SetThemeCommand(BaseCommand):
+    names = ["set-theme"]
     help_text = "Changes the GUI color theme."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        main_window.apply_palette(self.args.palette_name)
+        main_window.apply_theme(self.args.theme_name)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            "palette_name",
-            help="name of the palette to change to",
+            "theme_name",
+            help="name of the theme to change to",
             type=str,
-            choices=list(api.cfg.opt["gui"]["palettes"]),
+            choices=list(api.cfg.opt["gui"]["themes"]),
         )
 
 
-COMMANDS = [SetPaletteCommand]
+COMMANDS = [SetThemeCommand]

@@ -251,17 +251,17 @@ Usage: `seek -p|--pos=… [--precise]`
 * `-p`, `--pos`: where to seek
 * `--precise`: whether to use precise seeking at the expense of performance
 
-### <a name="cmd-set-palette"></a>`set‑palette`
-Changes the GUI color theme.
-
-Usage: `set‑palette palette_name`
-* `palette_name`: name of the palette to change to (can be `dark`, `light`)
-
 ### <a name="cmd-set-playback-speed"></a>`set‑playback‑speed`
 Adjusts the video playback speed.
 
 Usage: `set‑playback‑speed expression`
 * `expression`: expression to calculate new playback speed
+
+### <a name="cmd-set-theme"></a>`set‑theme`
+Changes the GUI color theme.
+
+Usage: `set‑theme theme_name`
+* `theme_name`: name of the theme to change to (can be `dark`, `light`)
 
 ### <a name="cmd-set-volume"></a>`set‑volume`
 Adjusts the video volume.

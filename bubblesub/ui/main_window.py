@@ -88,7 +88,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
-        self.apply_palette(api.cfg.opt["gui"]["current_palette"])
+        self.apply_theme(api.cfg.opt["gui"]["current_theme"])
         self._restore_splitters()
         self._setup_menu()
 
@@ -151,13 +151,13 @@ class MainWindow(QtWidgets.QMainWindow):
             task.add_done_callback(on_close)
             event.ignore()
 
-    def apply_palette(self, palette_name: str) -> None:
+    def apply_theme(self, theme_name: str) -> None:
         try:
-            palette_def = self._api.cfg.opt["gui"]["palettes"][palette_name]
+            palette_def = self._api.cfg.opt["gui"]["themes"][theme_name]
         except KeyError:
-            raise ValueError(f'unknown palette: "{palette_name}"')
+            raise ValueError(f'unknown theme: "{theme_name}"')
 
-        self._api.cfg.opt["gui"]["current_palette"] = palette_name
+        self._api.cfg.opt["gui"]["current_theme"] = theme_name
 
         self._api.gui.get_color.cache_clear()
         palette = QtGui.QPalette()

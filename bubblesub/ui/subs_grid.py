@@ -36,7 +36,7 @@ class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
         self._api = api
         self._format = self._create_format()
 
-    def on_palette_change(self) -> None:
+    def on_theme_change(self) -> None:
         self._format = self._create_format()
 
     def _create_format(self) -> QtGui.QTextCharFormat:
@@ -211,7 +211,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         pass
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
-        self._subs_grid_delegate.on_palette_change()
+        self._subs_grid_delegate.on_theme_change()
 
     def _store_grid_columns(self) -> None:
         self._api.cfg.opt["gui"]["grid_columns"] = bytes(

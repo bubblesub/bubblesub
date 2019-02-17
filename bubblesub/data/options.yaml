@@ -22,7 +22,7 @@ styles:
 
 gui:
     spell_check: "en_US"
-    current_palette: "light"
+    current_theme: "light"
     preview_fonts: true
     try_to_refresh_fonts: true
 
@@ -31,7 +31,7 @@ gui:
     splitters: {}
     fonts: {}
 
-    palettes:
+    themes:
         dark:
             Window:                          "#353535"
             Active+WindowText:               "#FFFFFF"
