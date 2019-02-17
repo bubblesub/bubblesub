@@ -153,7 +153,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def apply_theme(self, theme_name: str) -> None:
         try:
-            palette_def = self._api.cfg.opt["gui"]["themes"][theme_name]
+            theme_def = self._api.cfg.opt["gui"]["themes"][theme_name]
         except KeyError:
             raise ValueError(f'unknown theme: "{theme_name}"')
 
@@ -161,7 +161,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._api.gui.get_color.cache_clear()
         palette = QtGui.QPalette()
-        for color_type in palette_def.keys():
+        for color_type in theme_def["palette"].keys():
             color = self._api.gui.get_color(color_type)
             if "+" in color_type:
                 group_name, role_name = color_type.split("+")
@@ -175,6 +175,7 @@ class MainWindow(QtWidgets.QMainWindow):
             elif target_role is not None:
                 palette.setColor(target_role, color)
         QtWidgets.QApplication.setPalette(palette)
+        self.setStyleSheet(theme_def["stylesheet"])
 
         self.update()
 

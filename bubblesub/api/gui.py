@@ -118,7 +118,8 @@ class GuiApi(QtCore.QObject):
         """
         current_theme = self._api.cfg.opt["gui"]["current_theme"]
         try:
-            palette_def = self._api.cfg.opt["gui"]["themes"][current_theme]
+            theme_def = self._api.cfg.opt["gui"]["themes"][current_theme]
+            palette_def = theme_def["palette"]
             color_name = palette_def[color_name]
             color_value = tuple(
                 int(match.group(1), 16)
