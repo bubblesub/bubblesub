@@ -46,7 +46,7 @@ class ClosingState(enum.IntEnum):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, api: Api, console: Console) -> None:
+    def __init__(self, api: Api) -> None:
         super().__init__()
 
         self._api = api
@@ -69,7 +69,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor = Editor(api, self)
         self.subs_grid = SubtitlesGrid(api, self)
         self.status_bar = StatusBar(api, self)
-        self.console = console
+        self.console = Console(api, self)
 
         self.editor_splitter = self._build_splitter(
             [(4, self.audio), (1, self.editor)], orientation=QtCore.Qt.Vertical
@@ -81,7 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         self.console_splitter = self._build_splitter(
-            [(2, self.subs_grid), (1, console)],
+            [(2, self.subs_grid), (1, self.console)],
             orientation=QtCore.Qt.Horizontal,
         )
 
@@ -90,7 +90,6 @@ class MainWindow(QtWidgets.QMainWindow):
             orientation=QtCore.Qt.Vertical,
         )
 
-        console.setParent(self.console_splitter)
         self.video.layout().setContentsMargins(0, 0, 2, 0)
         self.editor_splitter.setContentsMargins(2, 0, 0, 0)
         self.main_splitter.setContentsMargins(8, 8, 8, 8)

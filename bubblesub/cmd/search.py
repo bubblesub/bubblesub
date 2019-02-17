@@ -314,7 +314,7 @@ class _SearchDialog(QtWidgets.QDialog):
         self,
         api: Api,
         main_window: QtWidgets.QMainWindow,
-        show_replace_controls: bool
+        show_replace_controls: bool,
     ) -> None:
         super().__init__(main_window)
         self._main_window = main_window

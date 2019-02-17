@@ -160,9 +160,7 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         self.setReadOnly(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
 
-        api.log.logged.connect(self._on_log)
-
-    def _on_log(self, level: LogLevel, text: str) -> None:
+    def log(self, level: LogLevel, text: str) -> None:
         if level == LogLevel.Debug:
             return
 

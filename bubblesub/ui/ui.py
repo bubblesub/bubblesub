@@ -29,6 +29,9 @@ from bubblesub.data import ROOT_DIR
 if T.TYPE_CHECKING:
     from bubblesub.api import Api  # pylint: disable=unused-import
     from bubblesub.api.log import LogLevel  # pylint: disable=unused-import
+    from bubblesub.ui.main_window import (
+        MainWindow,
+    )  # pylint: disable=unused-import
 
 
 class MySplashScreen(QtWidgets.QSplashScreen):
@@ -59,6 +62,39 @@ class MySplashScreen(QtWidgets.QSplashScreen):
             QtWidgets.QApplication.processEvents()
 
 
+class Logger:
+    def __init__(self, api: "Api") -> None:
+        self._api = api
+        self._main_window: T.Optional["MainWindow"] = None
+        self._queued_logs: T.List[T.Tuple["LogLevel", str]] = []
+
+        sys.excepthook = self._on_error
+        api.log.logged.connect(self._on_log)
+
+    def set_main_window(self, main_window: "MainWindow") -> None:
+        self._main_window = main_window
+        for log_level, text in self._queued_logs:
+            self._on_log(log_level, text)
+        self._queued_logs.clear()
+
+    def _on_log(self, level: "LogLevel", text: str) -> None:
+        if self._main_window:
+            self._main_window.console.log_window.log(level, text)
+        else:
+            self._queued_logs.append((level, text))
+
+    def _on_error(
+        self,
+        type_: T.Type[BaseException],
+        value: BaseException,
+        traceback: types.TracebackType,
+    ) -> None:
+        self._api.log.error("An unhandled error occurred: ")
+        self._api.log.error(
+            "".join(tb.format_exception(type_, value, traceback))
+        )
+
+
 class Application:
     def __init__(self, args: argparse.Namespace):
         self._args = args
@@ -79,23 +115,10 @@ class Application:
         self._splash.showMessage("Loading API...")
 
     def run(self, api: "Api") -> None:
-        from bubblesub.ui.console import Console
-        from bubblesub.ui.main_window import MainWindow
         from bubblesub.cfg import ConfigError
+        from bubblesub.ui.main_window import MainWindow
 
-        def on_error(
-            type_: T.Type[BaseException],
-            value: BaseException,
-            traceback: types.TracebackType,
-        ) -> None:
-            api.log.error("An unhandled error occurred: ")
-            api.log.error(
-                "".join(tb.format_exception(type_, value, traceback))
-            )
-
-        sys.excepthook = on_error
-
-        console = Console(api, None)
+        logger = Logger(api)
         self._app.aboutToQuit.connect(api.shutdown)
 
         try:
@@ -112,8 +135,9 @@ class Application:
 
         if self._splash:
             self._splash.showMessage("Loading UI...")
-        main_window = MainWindow(api, console)
+        main_window = MainWindow(api)
         api.gui.set_main_window(main_window)
+        logger.set_main_window(main_window)
 
         main_window.show()
 
