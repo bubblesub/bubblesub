@@ -50,7 +50,7 @@ gui:
                 Disabled+ButtonText:             "#646464"
                 Link:                            "#2A82DA"
                 Highlight:                       "#2A82DA"
-                HighlightedText:                 "#000000"
+                HighlightedText:                 "#FFFFFF"
                 ToolTipBase:                     "#FFFFFF"
                 ToolTipText:                     "#FFFFFF"
                 spectrogram/video-marker:        "#00A000"
@@ -73,7 +73,29 @@ gui:
                 console/debug:                   "#0064C8"
                 console/timestamp:               "#828282"
                 console/command:                 "#64C864"
-            stylesheet: ""
+            stylesheet: |
+                QMenu {
+                    background: palette(base);
+                    border: 1px solid #606060;
+                }
+                QMenu::separator {
+                    height: 1px;
+                    background: #606060;
+                    margin: 2px 5px 2px 5px;
+                }
+                QMenu::item {
+                    color: palette(text);
+                    padding: 2px 25px 2px 25px;
+                    border: 1px solid transparent;
+                }
+                QMenu::item:disabled {
+                    color: palette(text+disabled);
+                }
+                QMenu::item:selected {
+                    border-color: #31a2ff;
+                    background: palette(highlight);
+                    color: palette(highlighted-text);
+                }
 
         light:
             palette:
