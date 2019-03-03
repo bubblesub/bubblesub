@@ -143,6 +143,7 @@ class AudioPreview(BaseLocalAudioWidget):
         self._spectrum_worker: T.Optional[SpectrumWorker] = None
         self._labels: T.List[SubtitleLabel] = []
 
+        self._mouse_pos: T.Optional[QtCore.QPoint] = None
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
         self._need_repaint = False
         self._color_table: T.List[int] = []
@@ -167,6 +168,8 @@ class AudioPreview(BaseLocalAudioWidget):
     ) -> bool:
         if event.type() in {QtCore.QEvent.KeyPress, QtCore.QEvent.KeyRelease}:
             self._update_cursor(event)
+        if event.type() in {QtCore.QEvent.Enter, QtCore.QEvent.Leave}:
+            self._update_cursor(None)
         return False
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
@@ -187,6 +190,7 @@ class AudioPreview(BaseLocalAudioWidget):
         self._draw_frame(painter, bottom_line=False)
         self._draw_keyframes(painter)
         self._draw_video_pos(painter)
+        self._draw_mouse(painter)
 
         painter.end()
 
@@ -232,6 +236,7 @@ class AudioPreview(BaseLocalAudioWidget):
             )
             for i in range(256)
         ]
+        self._mouse_color = self._api.gui.get_color("spectrogram/mouse-marker")
 
     def _repaint_if_needed(self) -> None:
         if self._need_repaint:
@@ -454,16 +459,42 @@ class AudioPreview(BaseLocalAudioWidget):
 
         painter.drawPolygon(polygon)
 
+    def _draw_mouse(self, painter: QtGui.QPainter) -> None:
+        if not self._mouse_pos:
+            return
+        pts = self.pts_from_x(self._mouse_pos.x())
+        pts = self._api.video.align_pts_to_near_frame(pts)
+        x = self.pts_to_x(pts)
+
+        painter.setPen(self._mouse_color)
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.drawLine(x, 0, x, painter.viewport().height())
+
     def _update_cursor(
-        self, event: T.Union[QtGui.QKeyEvent, QtGui.QMouseEvent]
+        self, event: T.Union[QtGui.QKeyEvent, QtGui.QMouseEvent, None]
     ) -> None:
-        if self._drag_data:
+        pos = self.mapFromGlobal(QtGui.QCursor().pos())
+
+        if self._mouse_pos:
+            pts = self.pts_from_x(self._mouse_pos.x())
+            pts = self._api.video.align_pts_to_near_frame(pts)
+            x = self.pts_to_x(pts)
+            self.update(x, 0, x, self.height())
+
+        self._mouse_pos = pos if self.geometry().contains(pos) else None
+
+        if self._mouse_pos:
+            pts = self.pts_from_x(self._mouse_pos.x())
+            pts = self._api.video.align_pts_to_near_frame(pts)
+            x = self.pts_to_x(pts)
+            self.update(x, 0, x, self.height())
+
+        if self._drag_data or not event:
             return
 
         # using QtWidgets.QApplication.keyboardModifiers() is unreliable,
         # as it doesn't hold up to date values (at least on X11)
         modifiers = event.modifiers()
-        pos = self.mapFromGlobal(QtGui.QCursor().pos())
         if modifiers == QtCore.Qt.ShiftModifier:
             self.setCursor(QtCore.Qt.SplitHCursor)
         elif modifiers == QtCore.Qt.ControlModifier:
@@ -474,4 +505,4 @@ class AudioPreview(BaseLocalAudioWidget):
         ):
             self.setCursor(QtCore.Qt.PointingHandCursor)
         else:
-            self.setCursor(QtCore.Qt.ArrowCursor)
+            self.setCursor(QtCore.Qt.CrossCursor)
