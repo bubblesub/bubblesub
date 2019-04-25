@@ -91,6 +91,11 @@ plugin](docs/example_plugin.py))
     I don't say no, maybe in the future, if the project gets more popular.
     For now, `git master` is the way to go.
 
+## Contact
+
+* **Issue tracker**: [GitHub issues](https://github.com/rr-/bubblesub)
+* **IRC channel**: `#bubblesub` on `irc.rizon.net`
+
 ## Acknowledgments
 
 I'd like to thank all
