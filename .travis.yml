@@ -1,0 +1,12 @@
+language: python
+
+matrix:
+    include:
+        - os: linux
+          services: docker
+          dist: trusty
+          before_install:
+          - docker build -t bubblesub .
+          script:
+          - docker run -tid --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix bubblesub
+          - docker stop $( docker ps -a -q)
