@@ -431,9 +431,18 @@ class VideoApi(QtCore.QObject):
                 self._source.properties.FPSDenominator,
             )
 
-            self._aspect_ratio = fractions.Fraction(
-                self._source.properties.SARNum, self._source.properties.SARDen
+            self._aspect_ratio = (
+                fractions.Fraction(
+                    self._source.properties.SARNum,
+                    self._source.properties.SARDen,
+                )
+                if (
+                    self._source.properties.SARNum
+                    and self._source.properties.SARDen
+                )
+                else fractions.Fraction(1, 1)
             )
+
             frame = source.get_frame(0)
             self._width = frame.EncodedWidth
             self._height = int(frame.EncodedHeight / self._aspect_ratio)
