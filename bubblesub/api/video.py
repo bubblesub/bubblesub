@@ -24,7 +24,7 @@ import time
 import typing as T
 from pathlib import Path
 
-import ffms
+import ffms2
 import numpy as np
 import PIL.Image
 from PyQt5 import QtCore
@@ -36,7 +36,7 @@ from bubblesub.worker import Worker
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
-_PIX_FMT = [ffms.get_pix_fmt("rgb24")]
+_PIX_FMT = [ffms2.get_pix_fmt("rgb24")]
 
 
 class VideoState(enum.Enum):
@@ -59,7 +59,7 @@ class VideoSourceWorker(Worker):
 
     def _do_work(
         self, task: T.Any
-    ) -> T.Tuple[Path, T.Optional[ffms.VideoSource]]:
+    ) -> T.Tuple[Path, T.Optional[ffms2.VideoSource]]:
         """
         Create video source.
 
@@ -74,8 +74,8 @@ class VideoSourceWorker(Worker):
             return (path, None)
 
         try:
-            source = ffms.VideoSource(str(path))
-        except ffms.Error as ex:
+            source = ffms2.VideoSource(str(path))
+        except ffms2.Error as ex:
             self._log_api.error(f"video couldn't be loaded: {ex}")
             return (path, None)
         else:
@@ -109,7 +109,7 @@ class VideoApi(QtCore.QObject):
         self._height = 0
 
         self._ass_renderer = AssRenderer()
-        self._source: T.Union[None, ffms.VideoSource] = None
+        self._source: T.Union[None, ffms2.VideoSource] = None
         self._source_worker = VideoSourceWorker(log_api)
         self._source_worker.task_finished.connect(self._got_source)
 
@@ -395,7 +395,7 @@ class VideoApi(QtCore.QObject):
                 return None
             assert self._source
 
-            new_output_fmt = (_PIX_FMT, width, height, ffms.FFMS_RESIZER_AREA)
+            new_output_fmt = (_PIX_FMT, width, height, ffms2.FFMS_RESIZER_AREA)
             if self._last_output_fmt != new_output_fmt:
                 self._source.set_output_format(*new_output_fmt)
                 self._last_output_fmt = new_output_fmt
@@ -407,7 +407,7 @@ class VideoApi(QtCore.QObject):
                 .reshape(height, width, 3)
             )
 
-    def _got_source(self, result: T.Optional[ffms.VideoSource]) -> None:
+    def _got_source(self, result: T.Optional[ffms2.VideoSource]) -> None:
         path, source = result
         if path != self._path:
             return

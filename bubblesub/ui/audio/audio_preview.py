@@ -16,7 +16,7 @@
 
 import typing as T
 
-import ffms
+import ffms2
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -109,11 +109,11 @@ class SpectrumWorker(Worker):
         if sample_fmt is None:
             return None
 
-        if sample_fmt == ffms.FFMS_FMT_S16:
+        if sample_fmt == ffms2.FFMS_FMT_S16:
             samples /= 32768.0
-        elif sample_fmt == ffms.FFMS_FMT_S32:
+        elif sample_fmt == ffms2.FFMS_FMT_S32:
             samples /= 4_294_967_296.0
-        elif sample_fmt not in (ffms.FFMS_FMT_FLT, ffms.FFMS_FMT_DBL):
+        elif sample_fmt not in (ffms2.FFMS_FMT_FLT, ffms2.FFMS_FMT_DBL):
             raise RuntimeError(f"unknown sample format: {sample_fmt}")
 
         assert self._input is not None

@@ -313,7 +313,7 @@ setup(
     package_dir={"bubblesub": "bubblesub"},
     package_data={"bubblesub": ["data/*", "data/**/*"]},
     install_requires=[
-        "ffms",
+        "ffms2",
         "numpy",
         "scipy",
         "pyfftw",

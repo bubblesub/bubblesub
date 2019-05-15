@@ -22,7 +22,7 @@ import time
 import typing as T
 from pathlib import Path
 
-import ffms
+import ffms2
 import numpy as np
 from PyQt5 import QtCore
 
@@ -56,7 +56,7 @@ class AudioSourceWorker(Worker):
 
     def _do_work(
         self, task: T.Any
-    ) -> T.Tuple[Path, T.Optional[ffms.AudioSource]]:
+    ) -> T.Tuple[Path, T.Optional[ffms2.AudioSource]]:
         """
         Create audio source.
 
@@ -73,12 +73,12 @@ class AudioSourceWorker(Worker):
         index = None
         if cache_path.exists():
             try:
-                index = ffms.Index.read(
+                index = ffms2.Index.read(
                     index_file=str(cache_path), source_file=str(path)
                 )
                 if not index.belongs_to_file(str(path)):
                     index = None
-            except ffms.Error:
+            except ffms2.Error:
                 index = None
 
         if not index:
@@ -87,9 +87,11 @@ class AudioSourceWorker(Worker):
                 return (path, None)
 
             try:
-                indexer = ffms.Indexer(str(path))
-                index = indexer.do_indexing(-1)
-            except ffms.Error as ex:
+                indexer = ffms2.Indexer(str(path))
+                for track in indexer.track_info_list:
+                    indexer.track_index_settings(track.num, 1, 0)
+                index = indexer.do_indexing2()
+            except ffms2.Error as ex:
                 self._log_api.error(f"audio couldn't be loaded: {ex}")
                 return (path, None)
             else:
@@ -98,10 +100,10 @@ class AudioSourceWorker(Worker):
 
         try:
             track_number = index.get_first_indexed_track_of_type(
-                ffms.FFMS_TYPE_AUDIO
+                ffms2.FFMS_TYPE_AUDIO
             )
-            source = ffms.AudioSource(str(path), track_number, index)
-        except ffms.Error as ex:
+            source = ffms2.AudioSource(str(path), track_number, index)
+        except ffms2.Error as ex:
             self._log_api.error(f"audio couldn't be loaded: {ex}")
             return (path, None)
         else:
@@ -135,7 +137,7 @@ class AudioApi(QtCore.QObject):
         self._sample_format = None
         self._path: T.Optional[Path] = None
 
-        self._source: T.Union[None, ffms.AudioSource] = None
+        self._source: T.Union[None, ffms2.AudioSource] = None
         self._source_worker = AudioSourceWorker(log_api)
         self._source_worker.task_finished.connect(self._got_source)
         self._source_worker.start()
@@ -327,16 +329,16 @@ class AudioApi(QtCore.QObject):
         return np.zeros(
             0,
             dtype={
-                ffms.FFMS_FMT_U8: np.uint8,
-                ffms.FFMS_FMT_S16: np.int16,
-                ffms.FFMS_FMT_S32: np.int32,
-                ffms.FFMS_FMT_FLT: np.float32,
-                ffms.FFMS_FMT_DBL: np.float64,
+                ffms2.FFMS_FMT_U8: np.uint8,
+                ffms2.FFMS_FMT_S16: np.int16,
+                ffms2.FFMS_FMT_S32: np.int32,
+                ffms2.FFMS_FMT_FLT: np.float32,
+                ffms2.FFMS_FMT_DBL: np.float64,
             }[self.sample_format],
         ).reshape(0, max(1, self.channel_count))
 
     def _got_source(
-        self, result: T.Optional[T.Tuple[Path, ffms.AudioSource]]
+        self, result: T.Optional[T.Tuple[Path, ffms2.AudioSource]]
     ) -> None:
         path, source = result
         if path != self._path:

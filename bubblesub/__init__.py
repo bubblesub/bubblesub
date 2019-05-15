@@ -19,4 +19,4 @@
 import lazy_import
 
 lazy_import.lazy_module("numpy")
-lazy_import.lazy_module("ffms")
+lazy_import.lazy_module("ffms2")
