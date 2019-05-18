@@ -33,7 +33,7 @@ libxkbcommon-x11-0 libxkbcommon0 libgnutlsxx28 libass-dev libsdl2-dev"
 ENV FFMPEG="libavcodec-dev libavformat-dev libavdevice-dev"
 
 # List of bubblesub packages
-ENV BUBBLESUB="python3.7 python3.7-dev python3-pip python-enchant fftw3 qt5-default"
+ENV BUBBLESUB="python3.7 python3.7-dev python3-pip python-enchant"
 
 # Install bubblesub's dependencies
 RUN add-apt-repository ppa:jonathonf/ffmpeg-4 && \
@@ -52,7 +52,8 @@ RUN git config --global http.sslVerify false
 RUN rm -f /usr/bin/python && \
     ln -s /usr/bin/python3.7 /usr/bin/python && \
     python -m pip install -U pip && \
-    pip install setuptools dataclasses
+    pip install setuptools dataclasses && \
+    pip install pytest docstring_parser mock
 
 # Install mpv
 RUN git clone --depth 1 https://github.com/mpv-player/mpv.git && \
@@ -76,7 +77,6 @@ RUN cd ..
 # Install ffms2
 RUN git clone https://github.com/FFMS/ffms2.git && \
     cd ffms2 && \
-    git checkout -b bubblesub-fix 2d3b4fa && \
     ./autogen.sh && \
     make && \
     make install
@@ -108,5 +108,4 @@ RUN ldconfig
 # Run bubblesub as user
 USER bubblesub
 
-# Launch bubblesub
-CMD bubblesub
+CMD pytest /bubblesub/bubblesub
