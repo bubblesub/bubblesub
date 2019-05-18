@@ -24,6 +24,8 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s; <a href="#user-content-cmd-pause">pause</a> off</code> |
 |<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f</code> |
 |<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f</code> |
+|<kbd>Ctrl+;</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s</code> |
+|<kbd>Ctrl+'</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.e</code> |
 |<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms</code> |
 |<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+500ms</code> |
 |<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
