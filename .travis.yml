@@ -8,5 +8,4 @@ matrix:
           before_install:
           - docker build -t bubblesub .
           script:
-          - docker run -tid --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix bubblesub
-          - docker stop $( docker ps -a -q)
+          - docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix bubblesub
