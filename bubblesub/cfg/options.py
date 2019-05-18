@@ -76,11 +76,11 @@ class OptionsConfig(SubConfig):
         user_path.write_text(self._dumps())
 
     def _loads(self, text: str) -> None:
-        self._merge(self._storage, yaml.load(text))
+        self._merge(self._storage, yaml.load(text, Loader=yaml.SafeLoader))
 
     def _merge(self, target: T.Any, source: T.Any) -> T.Any:
         for key, value in source.items():
-            if isinstance(value, collections.Mapping):
+            if isinstance(value, collections.abc.Mapping):
                 target[key] = self._merge(target.get(key, {}), value)
             else:
                 target[key] = value
