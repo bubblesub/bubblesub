@@ -14,12 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
+import pathlib
+import signal
 import subprocess
+import tempfile
 import typing as T
+
+SERVER_NUM = 99
 
 
 def test_run() -> None:
     try:
-        subprocess.run("bubblesub", timeout=4, check=True)
+        subprocess.run(["xvfb-run", "bubblesub"], timeout=4, check=True)
     except subprocess.TimeoutExpired:
+        tmp_dir = pathlib.Path(tempfile.gettempdir())
+        lock_file = tmp_dir / f".X{SERVER_NUM}-lock"
+        pid = int(lock_file.read_text().strip())
+        os.kill(pid, signal.SIGINT)
         assert True
