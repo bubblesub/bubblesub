@@ -6,7 +6,7 @@ MAINTAINER rr- "https://github.com/rr-"
 ENV DEBIAN_FRONTEND noninteractive
 
 # List of system packages
-ENV SYSTEM="build-essential software-properties-common sudo locales \
+ENV SYSTEM="build-essential software-properties-common locales \
 autoconf automake libtool git-core pkg-config wget nasm"
 
 # Prepare building machine
@@ -33,7 +33,7 @@ libxkbcommon-x11-0 libxkbcommon0 libgnutlsxx28 libass-dev libsdl2-dev"
 ENV FFMPEG="libavcodec-dev libavformat-dev libavdevice-dev"
 
 # List of bubblesub packages
-ENV BUBBLESUB="python3.7 python3.7-dev python3-pip python-enchant"
+ENV BUBBLESUB="python3.7 python3.7-dev python3-pip python-enchant xvfb"
 
 # Install bubblesub's dependencies
 RUN add-apt-repository ppa:jonathonf/ffmpeg-4 && \
@@ -90,22 +90,8 @@ RUN git clone --depth 1 https://github.com/rr-/bubblesub.git && \
     export LC_ALL=en_US.UTF-8 && \
     pip install .
 
-# Define a new user called bubblesub
-RUN export uid=1000 gid=1000 && \
-    mkdir -p /home/bubblesub && \
-    echo "bubblesub:x:${uid}:${gid}:Bubblesub,,,:/home/bubblesub:/bin/bash" >> /etc/passwd && \
-    echo "bubblesub:x:${uid}:" >> /etc/group && \
-    echo "bubblesub ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/bubblesub && \
-    chmod 0440 /etc/sudoers.d/bubblesub && \
-    chown ${uid}:${gid} -R /home/bubblesub
-
-# Set environment variables
-ENV HOME /home/bubblesub
-ENV PATH /usr/local/lib:$PATH
-ENV LD_CONFIG_PATH /usr/local/lib
+# Find libffms2.so
 RUN ldconfig
 
-# Run bubblesub as user
-USER bubblesub
-
-CMD pytest /bubblesub/bubblesub
+# Run pytest
+CMD pytest bubblesub/bubblesub/
