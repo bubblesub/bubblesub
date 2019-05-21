@@ -18,7 +18,6 @@ import typing as T
 
 import mock
 import pytest
-
 from bubblesub.api.video import VideoApi
 
 
@@ -36,7 +35,7 @@ def _test_align_pts_to_frame(
     ) as video_api_mock:
         video_api_mock.return_value = [0, 10, 20]
 
-        video_api = VideoApi(log_api, subs_api)
+        video_api = VideoApi(log_api, subs_api, shell=True)
         actual = align_func(video_api)(origin)
         assert actual == expected
 

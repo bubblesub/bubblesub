@@ -88,7 +88,9 @@ class VideoApi(QtCore.QObject):
 
     state_changed = QtCore.pyqtSignal(VideoState)
 
-    def __init__(self, log_api: LogApi, subs_api: SubtitlesApi) -> None:
+    def __init__(
+        self, log_api: LogApi, subs_api: SubtitlesApi, shell: bool = False
+    ) -> None:
         """
         Initialize self.
 
@@ -115,7 +117,8 @@ class VideoApi(QtCore.QObject):
 
         self._last_output_fmt: T.Any = None
 
-        self._source_worker.start()
+        if not shell:
+            self._source_worker.start()
 
     def unload(self) -> None:
         """Unload current video source."""
