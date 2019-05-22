@@ -1,8 +1,7 @@
 [tool.black]
 line-length = 79
-py36 = true
 
 [tool.isort]
-known_third_party = "mpv,pyqtcolordialog,ass_tag_parser"
+known_third_party = "mpv,pyqtcolordialog,ass_tag_parser,ffms2"
 multi_line_output = 3
 include_trailing_comma = true
