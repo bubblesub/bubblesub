@@ -16,18 +16,19 @@
 
 import typing as T
 
-import enchant
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.util import spell_check_ass_line
+from bubblesub.spell_check import SpellChecker, SpellCheckerError
 from bubblesub.ui.util import (
     async_dialog_exec,
     async_slot,
     show_error,
     show_notice,
 )
+from bubblesub.util import ucfirst
 
 
 class _SpellCheckDialog(QtWidgets.QDialog):
@@ -35,12 +36,12 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         self,
         api: Api,
         main_window: QtWidgets.QMainWindow,
-        dictionary: enchant.Dict,
+        spell_checker: SpellChecker,
     ) -> None:
         super().__init__(main_window)
         self._main_window = main_window
         self._api = api
-        self._dictionary = dictionary
+        self._spell_checker = spell_checker
         self._lines_to_spellcheck = api.subs.selected_events
 
         self._mispelt_text_edit = QtWidgets.QLineEdit(self)
@@ -103,14 +104,14 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         await self.next()
 
     async def _add_to_dictionary(self) -> None:
-        self._dictionary.add(self._mispelt_text_edit.text())
+        self._spell_checker.add(self._mispelt_text_edit.text())
         await self.next()
 
     async def _ignore(self) -> None:
         await self.next()
 
     async def _ignore_all(self) -> None:
-        self._dictionary.add_to_session(self._mispelt_text_edit.text())
+        self._spell_checker.add_to_session(self._mispelt_text_edit.text())
         await self.next()
 
     async def next(self) -> bool:
@@ -130,7 +131,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]
             for start, end, word in spell_check_ass_line(
-                self._dictionary, line.text.replace("\\N", "\n")
+                self._spell_checker, line.text.replace("\\N", "\n")
             ):
                 assert line.index is not None
                 if (
@@ -156,7 +157,7 @@ class _SpellCheckDialog(QtWidgets.QDialog):
         self._mispelt_text_edit.setText(mispelt_word)
 
         self._suggestions_list_view.model().clear()
-        for suggestion in self._dictionary.suggest(mispelt_word):
+        for suggestion in self._spell_checker.suggest(mispelt_word):
             item = QtGui.QStandardItem(suggestion)
             item.setEditable(False)
             self._suggestions_list_view.model().appendRow(item)
@@ -185,12 +186,9 @@ class SpellCheckCommand(BaseCommand):
             return
 
         try:
-            dictionary = enchant.Dict(spell_check_lang)
-        except enchant.errors.DictNotFoundError:
-            await show_error(
-                f"Spell check language {spell_check_lang} was not found.",
-                main_window,
-            )
+            dictionary = SpellChecker(spell_check_lang)
+        except SpellCheckerError as ex:
+            await show_error(ucfirst(str(ex)) + ".", main_window)
             return
 
         dialog = _SpellCheckDialog(self.api, main_window, dictionary)

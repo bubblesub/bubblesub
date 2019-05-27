@@ -17,11 +17,11 @@
 import contextlib
 import typing as T
 
-import enchant
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.ass.util import spell_check_ass_line
+from bubblesub.spell_check import SpellChecker, SpellCheckerError
 from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
 from bubblesub.ui.time_edit import TimeEdit
 from bubblesub.ui.util import (
@@ -36,12 +36,12 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
 
         spell_check_lang = api.cfg.opt["gui"]["spell_check"]
         try:
-            self._dictionary = (
-                enchant.Dict(spell_check_lang) if spell_check_lang else None
+            self._spell_checker = (
+                SpellChecker(spell_check_lang) if spell_check_lang else None
             )
-        except enchant.errors.DictNotFoundError:
-            self._dictionary = None
-            api.log.warn(f"dictionary {spell_check_lang} not installed")
+        except SpellCheckerError as ex:
+            self._spell_checker = None
+            api.log.warn(str(ex))
 
         self._fmt = QtGui.QTextCharFormat()
         self._fmt.setUnderlineColor(QtCore.Qt.red)
@@ -49,10 +49,12 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
         self._fmt.setFontUnderline(True)
 
     def highlightBlock(self, text: str) -> None:
-        if not self._dictionary:
+        if not self._spell_checker:
             return
 
-        for start, end, _match in spell_check_ass_line(self._dictionary, text):
+        for start, end, _match in spell_check_ass_line(
+            self._spell_checker, text
+        ):
             self.setFormat(start, end - start, self._fmt)
 
 

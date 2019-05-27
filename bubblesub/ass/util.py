@@ -19,8 +19,9 @@
 import typing as T
 
 import ass_tag_parser
-import enchant
 import regex
+
+from bubblesub.spell_check import SpellChecker
 
 
 def escape_ass_tag(text: str) -> str:
@@ -94,14 +95,14 @@ def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
 
 
 def spell_check_ass_line(
-    dictionary: enchant.Dict, text: str
+    spell_checker: SpellChecker, text: str
 ) -> T.Iterable[T.Tuple[int, int, str]]:
     """
     Iterate over badly spelled words within an ASS line.
 
     Doesn't take into account effects such as text invisibility etc.
 
-    :param dictionary: dictionary object to validate the words with
+    :param spell_checker: spell checker to validate the words with
     :param text: input ASS line
     :return: iterator over tuples with start, end and text
     """
@@ -116,7 +117,7 @@ def spell_check_ass_line(
         if isinstance(item, ass_tag_parser.AssText):
             for match in iter_words_ass_line(item.text):
                 word = match.group(0)
-                if not dictionary.check(word):
+                if not spell_checker.check(word):
                     results.append(
                         (
                             item.meta.start + match.start(),

@@ -181,3 +181,15 @@ def first(source: T.Iterable[T.Any], default: T.Any = None) -> T.Any:
         return next(iter(source))
     except StopIteration:
         return default
+
+
+def ucfirst(source: str) -> str:
+    """
+    Return source string with capitalized first letter.
+
+    :param source: source string
+    :return: transformed string
+    """
+    if not source:
+        return source
+    return source[0].upper() + source[1:]
