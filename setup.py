@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import io
+import os
 import sys
 import typing as T
 from pathlib import Path
@@ -301,6 +302,28 @@ class MypyCommand(Command):
         sys.exit(status.returncode)
 
 
+install_packages = [
+    "ffms2",
+    "numpy",
+    "scipy",
+    "pyfftw",
+    "PyQT5",
+    "quamash",
+    "regex",
+    "pyqtcolordialog",
+    "pympv",
+    "xdg",
+    "ass_tag_parser",
+    "Pillow",
+    "pyyaml",
+    "parsimonious",
+    "pluginbase",
+    "lazy_import",
+]
+
+if os.name != "nt":
+    install_packages.append("pyenchant")
+
 setup(
     author="Marcin Kurczewski",
     author_email="rr-@sakuya.pl",
@@ -312,25 +335,7 @@ setup(
     entry_points={"console_scripts": ["bubblesub = bubblesub.__main__:main"]},
     package_dir={"bubblesub": "bubblesub"},
     package_data={"bubblesub": ["data/*", "data/**/*"]},
-    install_requires=[
-        "ffms2",
-        "numpy",
-        "scipy",
-        "pyfftw",
-        "PyQT5",
-        "quamash",
-        "regex",
-        "pyenchant",
-        "pyqtcolordialog",
-        "pympv",
-        "xdg",
-        "ass_tag_parser",
-        "Pillow",
-        "pyyaml",
-        "parsimonious",
-        "pluginbase",
-        "lazy_import",
-    ],
+    install_requires=install_packages,
     extras_require={
         "develop": [
             "black",
