@@ -25,8 +25,12 @@ import typing as T
 
 import bubblesub.ass
 
-_libass = ctypes.cdll.LoadLibrary(ctypes.util.find_library("ass"))
-_libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
+_libass = ctypes.cdll.LoadLibrary(
+    ctypes.util.find_library("ass") or ctypes.util.find_library("libass")
+)
+_libc = ctypes.cdll.LoadLibrary(
+    ctypes.util.find_library("c") or ctypes.util.find_library("msvcrt")
+)
 
 
 def _encode_str(text: T.Optional[str]) -> T.Optional[bytes]:
