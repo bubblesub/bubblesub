@@ -5,7 +5,6 @@ basic:
     log_levels: ["error","warning","info","cmd-echo"]
 
 audio:
-    spectrogram_resolution: 10
     spectrogram_sync_interval: 65
 
 video:

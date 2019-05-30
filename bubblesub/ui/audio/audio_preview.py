@@ -38,21 +38,21 @@ except ImportError:
 
 DERIVATION_SIZE = 10
 DERIVATION_DISTANCE = 6
-NOT_CACHED = object()
-CACHING = object()
 CHUNK_SIZE = 50
 
 
 class SpectrumWorkerSignals(QtCore.QObject):
-    finished = QtCore.pyqtSignal(object)
+    finished = QtCore.pyqtSignal()
 
 
 class SpectrumWorker(QueueWorker):
     def __init__(self, log_api: LogApi, audio_api: AudioApi) -> None:
         super().__init__(log_api)
         self.signals = SpectrumWorkerSignals()
-
         self._audio_api = audio_api
+
+        self.cache: T.Dict[int, T.List[int]] = {}
+
         self._input = pyfftw.empty_aligned(
             2 << DERIVATION_SIZE, dtype=np.float32
         )
@@ -64,17 +64,17 @@ class SpectrumWorker(QueueWorker):
         )
 
     def _process_task(self, chunk: T.Any) -> None:
-        response = []
-        for pts in chunk:
-            out = self._get_spectrogram_for_pts(pts)
-            response.append((pts, out))
-        self.signals.finished.emit(response)
+        anything_changed = False
+        for block_idx in chunk:
+            out = self._get_spectrogram_for_block_idx(block_idx)
+            if out is not None:
+                self.cache[block_idx] = out
+                anything_changed = True
+        if anything_changed:
+            self.signals.finished.emit()
 
-    def _get_spectrogram_for_pts(self, pts: int) -> np.array:
-        audio_frame = int(pts * self._audio_api.sample_rate / 1000.0)
-        first_sample = (
-            audio_frame >> DERIVATION_DISTANCE
-        ) << DERIVATION_DISTANCE
+    def _get_spectrogram_for_block_idx(self, block_idx: int) -> np.array:
+        first_sample = block_idx << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
         samples = self._audio_api.get_samples(first_sample, sample_count)
@@ -144,7 +144,6 @@ class AudioPreview(BaseLocalAudioWidget):
         self._labels: T.List[SubtitleLabel] = []
 
         self._mouse_pos: T.Optional[QtCore.QPoint] = None
-        self._spectrum_cache: T.Dict[int, T.List[int]] = {}
         self._need_repaint = False
         self._color_table: T.List[int] = []
         self._pixels: np.array = np.zeros([0, 0], dtype=np.uint8)
@@ -252,29 +251,20 @@ class AudioPreview(BaseLocalAudioWidget):
         self._need_repaint = True
         self.update()
 
-        self._spectrum_cache = {
-            key: value
-            for key, value in self._spectrum_cache.items()
-            if value is not CACHING
-        }
         self._spectrum_worker.clear_tasks()
 
-        horizontal_res = self._api.cfg.opt["audio"]["spectrogram_resolution"]
         max_pts = self._api.playback.max_pts
 
         pts_to_update = set()
         for x in range(self.width() * 2):
-            pts = self.pts_from_x(x)
-            pts = (pts // horizontal_res) * horizontal_res
+            pts = self.block_idx_from_x(x)
             if pts < 0 or (max_pts and pts >= max_pts):
                 continue
-            if pts not in self._spectrum_cache:
+            if pts not in self._spectrum_worker.cache:
                 pts_to_update.add(pts)
 
         for chunk in chunks(list(sorted(pts_to_update)), CHUNK_SIZE):
             self._spectrum_worker.schedule_task(reversed(chunk))
-            for pts in chunk:
-                self._spectrum_cache[pts] = CACHING
 
     def _on_audio_state_change(self, state: AudioState) -> None:
         if state == AudioState.NotLoaded:
@@ -293,25 +283,19 @@ class AudioPreview(BaseLocalAudioWidget):
 
         self._schedule_current_audio_view()
 
-    def _on_spectrum_update(
-        self, response: T.List[T.Tuple[int, T.Optional[T.List[int]]]]
-    ) -> None:
-        for pts, column in response:
-            if column is not None:
-                self._spectrum_cache[pts] = column
+    def _on_spectrum_update(self) -> None:
         self._need_repaint = True
 
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
-        horizontal_res = self._api.cfg.opt["audio"]["spectrogram_resolution"]
-
         pixels = self._pixels.transpose()
         prev_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
         for x in range(pixels.shape[0]):
-            pts = self.pts_from_x(x)
-            pts = (pts // horizontal_res) * horizontal_res
-            column = self._spectrum_cache.get(pts, NOT_CACHED)
-            if column is NOT_CACHED or column is CACHING:
-                column = prev_column
+            block_idx = self.block_idx_from_x(x)
+            column = prev_column
+            if self._spectrum_worker:
+                column = self._spectrum_worker.cache.get(
+                    block_idx, prev_column
+                )
             pixels[x] = column
 
         image = QtGui.QImage(
@@ -326,6 +310,13 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.scale(1, painter.viewport().height() / (pixels.shape[1] - 1))
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
+
+    def block_idx_from_x(self, x) -> int:
+        pts = self.pts_from_x(x)
+        return (
+            int(pts * self._api.audio.sample_rate / 1000.0)
+            >> DERIVATION_DISTANCE
+        )
 
     def _draw_keyframes(self, painter: QtGui.QPainter) -> None:
         h = painter.viewport().height()
