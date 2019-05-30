@@ -28,7 +28,7 @@ from bubblesub.api.cmd import CommandCanceled, CommandError, CommandUnavailable
 from bubblesub.ass.event import AssEvent
 from bubblesub.ui.util import time_jump_dialog
 
-GRAMMAR = """
+GRAMMAR = r"""
 line =
     unary_operation /
     binary_operation /
