@@ -27,6 +27,7 @@ from bubblesub.ass.meta import AssMeta
 from bubblesub.ass.reader import load_ass
 from bubblesub.ass.style import AssStyle, AssStyleList
 from bubblesub.ass.writer import write_ass
+from bubblesub.util import first
 
 
 class SubtitlesApi(QtCore.QObject):
@@ -48,7 +49,7 @@ class SubtitlesApi(QtCore.QObject):
         self._path: T.Optional[Path] = None
 
         self.ass_file = AssFile()
-        self.ass_file.styles.append(AssStyle(name="Default"))
+        self.ass_file.styles.append(AssStyle(name=self.default_style_name))
 
         self.meta_changed = self.ass_file.meta.changed
 
@@ -177,6 +178,18 @@ class SubtitlesApi(QtCore.QObject):
         """
         return [self.events[idx] for idx in self.selected_indexes]
 
+    @property
+    def default_style_name(self) -> str:
+        """
+        Return default style name.
+
+        :return: first style name if it exists, otherwise "Default"
+        """
+        style = first(self.styles)
+        if style and style.name:
+            return style.name
+        return "Default"
+
     def unload(self) -> None:
         """Load empty ASS file."""
         self._path = None
@@ -184,7 +197,7 @@ class SubtitlesApi(QtCore.QObject):
         self.ass_file.meta.clear()
         self.ass_file.events.clear()
         self.ass_file.styles.clear()
-        self.ass_file.styles.append(AssStyle(name="Default"))
+        self.ass_file.styles.append(AssStyle(name=self.default_style_name))
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:

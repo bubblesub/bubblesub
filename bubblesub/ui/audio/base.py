@@ -64,7 +64,7 @@ def _create_new_subtitle(api: Api, pts: int, before: bool) -> None:
         end = pts
 
     sub = api.subs.events.insert(
-        idx, AssEvent(start=start, end=end, style="Default")
+        idx, AssEvent(start=start, end=end, style=api.subs.default_style_name)
     )
     api.subs.selected_indexes = [idx]
 

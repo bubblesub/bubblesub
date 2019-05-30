@@ -42,7 +42,12 @@ class SubtitleInsertCommand(BaseCommand):
 
         with self.api.undo.capture():
             self.api.subs.events.insert(
-                idx, AssEvent(start=start, end=end, style="Default")
+                idx,
+                AssEvent(
+                    start=start,
+                    end=end,
+                    style=self.api.subs.default_style_name,
+                ),
             )
             self.api.subs.selected_indexes = [idx]
 
