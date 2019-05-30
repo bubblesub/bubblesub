@@ -34,21 +34,14 @@ class WorkerSignals(QtCore.QObject):
 class QueueWorker(QtCore.QRunnable):
     """Worker thread for continuous task queues."""
 
-    def __init__(
-        self, log_api: LogApi, func: T.Callable[[T.Any], T.Any]
-    ) -> None:
+    def __init__(self, log_api: LogApi) -> None:
         """
         Initialize self.
 
         :param log_api: logging API
-        :param func: the function to run on this worker thread
         """
         super().__init__()
-        self.signals = WorkerSignals()
-
         self._log_api = log_api
-        self._func = func
-
         self._running = False
         self._clearing = False
         self._queue: queue.LifoQueue[T.Any] = queue.LifoQueue()
@@ -57,25 +50,37 @@ class QueueWorker(QtCore.QRunnable):
         """
         Run the thread.
 
-        Gets tasks from the internal queue and passes them to internal
-        callbacks. Once the task has been completed, signals the result via
-        "finished" signal.
+        Gets tasks from the internal queue and passes them to the _process_task
+        function.
         Erroneous tasks (processing of which throws an exception) are
         discarded, and the exception is logged to stdout.
         """
         self._running = True
+        with self._log_api.exception_guard():
+            self._started()
         while self._running:
             if self._clearing:
                 time.sleep(0.1)
                 continue
 
-            arg = self._queue.get()
-            if arg is None:
+            task = self._queue.get()
+            if task is None:
                 break
             with self._log_api.exception_guard():
-                result = self._func(arg)
-                self.signals.finished.emit(result)
+                self._process_task(task)
             self._queue.task_done()
+            if self._queue.empty():
+                self._queue_cleared()
+        with self._log_api.exception_guard():
+            self._finished()
+
+    def _process_task(self, task: T.Any) -> None:
+        """
+        Process a task and return a result.
+
+        :param task: task to process
+        """
+        pass
 
     def stop(self) -> None:
         """Stop processing any remaining tasks and quit the thread ASAP."""
@@ -105,6 +110,46 @@ class QueueWorker(QtCore.QRunnable):
                 continue
             self._queue.task_done()
         self._clearing = False
+
+    def _started(self) -> None:
+        """Called when the thread starts."""
+        pass
+
+    def _finished(self) -> None:
+        """Called when the thread finishes."""
+        pass
+
+    def _queue_cleared(self) -> None:
+        """Called when the last task in the queue gets finished."""
+        pass
+
+
+class CallbackQueueWorker(QueueWorker):
+    """
+    Worker thread for continuous task queues with a user provided callback.
+    """
+
+    def __init__(
+        self, log_api: LogApi, func: T.Callable[[T.Any], T.Any]
+    ) -> None:
+        """
+        Initialize self.
+
+        :param log_api: logging API
+        :param func: the function to run on this worker thread
+        """
+        super().__init__(log_api)
+        self.signals = WorkerSignals()
+        self._func = func
+
+    def _process_task(self, task: T.Any) -> None:
+        """
+        Process a task and return a result.
+
+        :param task: task to process
+        """
+        result = self._func(task)
+        self.signals.finished.emit(result)
 
 
 class OneShotWorker(QtCore.QRunnable):
@@ -140,8 +185,11 @@ class ThreadingApi:
         worker.signals.finished.connect(complete_callback)
         self._thread_pool.start(worker)
 
+    def schedule_runnable(self, runnable) -> None:
+        self._thread_pool.start(runnable)
+
     def create_task_queue(self, function, complete_callback) -> QueueWorker:
-        worker = QueueWorker(self._log_api, function)
+        worker = CallbackQueueWorker(self._log_api, function)
         worker.signals.finished.connect(complete_callback)
         self._thread_pool.start(worker)
         return worker
