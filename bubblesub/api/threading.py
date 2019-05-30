@@ -124,34 +124,6 @@ class QueueWorker(QtCore.QRunnable):
         pass
 
 
-class CallbackQueueWorker(QueueWorker):
-    """
-    Worker thread for continuous task queues with a user provided callback.
-    """
-
-    def __init__(
-        self, log_api: LogApi, func: T.Callable[[T.Any], T.Any]
-    ) -> None:
-        """
-        Initialize self.
-
-        :param log_api: logging API
-        :param func: the function to run on this worker thread
-        """
-        super().__init__(log_api)
-        self.signals = WorkerSignals()
-        self._func = func
-
-    def _process_task(self, task: T.Any) -> None:
-        """
-        Process a task and return a result.
-
-        :param task: task to process
-        """
-        result = self._func(task)
-        self.signals.finished.emit(result)
-
-
 class OneShotWorker(QtCore.QRunnable):
     """Worker thread for one shot tasks."""
 
@@ -187,9 +159,3 @@ class ThreadingApi:
 
     def schedule_runnable(self, runnable) -> None:
         self._thread_pool.start(runnable)
-
-    def create_task_queue(self, function, complete_callback) -> QueueWorker:
-        worker = CallbackQueueWorker(self._log_api, function)
-        worker.signals.finished.connect(complete_callback)
-        self._thread_pool.start(worker)
-        return worker
