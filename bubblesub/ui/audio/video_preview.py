@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import queue
 import threading
 import typing as T
 
@@ -42,11 +41,8 @@ class VideoBandWorker(QueueWorker):
     def __init__(self, log_api: LogApi, video_api: VideoApi) -> None:
         super().__init__(log_api)
         self.signals = VideoBandWorkerSignals()
-
         self._video_api = video_api
-        self._queue: "queue.Queue[int]" = queue.Queue()
-        self._running = False
-        self._clearing = False
+
         self._anything_to_save = False
         self._cache_name: T.Optional[str] = None
         self.cache: T.Dict[int, np.array] = {}
@@ -56,13 +52,12 @@ class VideoBandWorker(QueueWorker):
     def _process_task(self, frame_idx: int) -> None:
         frame = self._video_api.get_frame(frame_idx, 1, _BAND_Y_RESOLUTION)
         if frame is None:
-            return False
+            return
         frame = frame.reshape(_BAND_Y_RESOLUTION, 3)
         with _CACHE_LOCK:
             self.cache[frame_idx] = frame.copy()
         self._anything_to_save = True
         self.signals.cache_updated.emit()
-        return True
 
     def _queue_cleared(self) -> None:
         self._save_to_cache()
