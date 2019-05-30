@@ -94,8 +94,8 @@ class SpectrumWorker(QueueWorker):
 
         out = self._fftw()
 
-        scale_factor = 9 / np.sqrt(1 * (1 << DERIVATION_SIZE))
-        out = np.log(
+        scale_factor = 9 / np.sqrt(2 * (2 << DERIVATION_SIZE))
+        out = np.log10(
             np.sqrt(np.real(out) * np.real(out) + np.imag(out) * np.imag(out))
             * scale_factor
             + 1
