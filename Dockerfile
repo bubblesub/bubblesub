@@ -72,8 +72,6 @@ RUN git clone --depth 1 https://github.com/mpv-player/mpv.git && \
     ./waf -j4 && \
     ./waf install
 
-RUN cd ..
-
 # Install ffms2
 RUN git clone https://github.com/FFMS/ffms2.git && \
     cd ffms2 && \
@@ -81,17 +79,24 @@ RUN git clone https://github.com/FFMS/ffms2.git && \
     make && \
     make install
 
-RUN cd ..
+WORKDIR bubblesub
+
+# Install bubblesub dependencies
+RUN mkdir -p bubblesub && \
+    touch bubblesub/__init__.py
+COPY setup.py .
+COPY pyproject.toml .
+RUN locale-gen en_US.UTF-8 && \
+    export LC_ALL=en_US.UTF-8 && \
+    pip install -e .
 
 # Install bubblesub
-RUN git clone --depth 1 https://github.com/rr-/bubblesub.git && \
-    cd bubblesub && \
-    locale-gen en_US.UTF-8 && \
-    export LC_ALL=en_US.UTF-8 && \
-    pip install .
+COPY bubblesub bubblesub
+# ...but not local development garbage
+RUN find . -type d -name __pycache__ -exec rm -r {} \+
 
 # Find libffms2.so
 RUN ldconfig
 
 # Run pytest
-CMD pytest bubblesub/bubblesub/
+CMD pytest bubblesub/
