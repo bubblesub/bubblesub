@@ -22,7 +22,9 @@ import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.audio import AudioState
+from bubblesub.api.audio import AudioApi, AudioState
+from bubblesub.api.log import LogApi
+from bubblesub.api.threading import QueueWorker
 from bubblesub.ass.event import AssEvent
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.util import blend_colors
@@ -41,56 +43,69 @@ CACHING = object()
 CHUNK_SIZE = 50
 
 
-def _get_spectrogram_for_pts(api: Api, pts: int) -> np.array:
-    audio_frame = int(pts * api.audio.sample_rate / 1000.0)
-    first_sample = (audio_frame >> DERIVATION_DISTANCE) << DERIVATION_DISTANCE
-    sample_count = 2 << DERIVATION_SIZE
-
-    samples = api.audio.get_samples(first_sample, sample_count)
-    samples = np.mean(samples, axis=1)
-    sample_fmt = api.audio.sample_format
-    if sample_fmt is None:
-        return None
-
-    if sample_fmt == ffms2.FFMS_FMT_S16:
-        samples /= 32768.0
-    elif sample_fmt == ffms2.FFMS_FMT_S32:
-        samples /= 4_294_967_296.0
-    elif sample_fmt not in (ffms2.FFMS_FMT_FLT, ffms2.FFMS_FMT_DBL):
-        raise RuntimeError(f"unknown sample format: {sample_fmt}")
-
-    input = pyfftw.empty_aligned(2 << DERIVATION_SIZE, dtype=np.float32)
-    input[0 : len(samples)] = samples
-
-    output = pyfftw.empty_aligned(
-        (1 << DERIVATION_SIZE) + 1, dtype=np.complex64
-    )
-
-    fftw = pyfftw.FFTW(input, output, flags=("FFTW_MEASURE",))
-
-    out = fftw()
-
-    scale_factor = 9 / np.sqrt(1 * (1 << DERIVATION_SIZE))
-    out = np.log(
-        np.sqrt(np.real(out) * np.real(out) + np.imag(out) * np.imag(out))
-        * scale_factor
-        + 1
-    )
-
-    out *= 255
-    out = np.clip(out, 0, 255)
-    out = np.flip(out, axis=0)
-    out = out.astype(dtype=np.uint8)
-    return out
+class SpectrumWorkerSignals(QtCore.QObject):
+    finished = QtCore.pyqtSignal(object)
 
 
-def _process_spectrum(api: Api, task: T.Any) -> T.Any:
-    chunk = task
-    response = []
-    for pts in chunk:
-        out = _get_spectrogram_for_pts(api, pts)
-        response.append((pts, out))
-    return response
+class SpectrumWorker(QueueWorker):
+    def __init__(self, log_api: LogApi, audio_api: AudioApi) -> None:
+        super().__init__(log_api)
+        self.signals = SpectrumWorkerSignals()
+
+        self._audio_api = audio_api
+        self._input = pyfftw.empty_aligned(
+            2 << DERIVATION_SIZE, dtype=np.float32
+        )
+        self._output = pyfftw.empty_aligned(
+            (1 << DERIVATION_SIZE) + 1, dtype=np.complex64
+        )
+        self._fftw = pyfftw.FFTW(
+            self._input, self._output, flags=("FFTW_MEASURE",)
+        )
+
+    def _process_task(self, chunk: T.Any) -> None:
+        response = []
+        for pts in chunk:
+            out = self._get_spectrogram_for_pts(pts)
+            response.append((pts, out))
+        self.signals.finished.emit(response)
+
+    def _get_spectrogram_for_pts(self, pts: int) -> np.array:
+        audio_frame = int(pts * self._audio_api.sample_rate / 1000.0)
+        first_sample = (
+            audio_frame >> DERIVATION_DISTANCE
+        ) << DERIVATION_DISTANCE
+        sample_count = 2 << DERIVATION_SIZE
+
+        samples = self._audio_api.get_samples(first_sample, sample_count)
+        samples = np.mean(samples, axis=1)
+        sample_fmt = self._audio_api.sample_format
+        if sample_fmt is None:
+            return None
+
+        if sample_fmt == ffms2.FFMS_FMT_S16:
+            samples /= 32768.0
+        elif sample_fmt == ffms2.FFMS_FMT_S32:
+            samples /= 4_294_967_296.0
+        elif sample_fmt not in (ffms2.FFMS_FMT_FLT, ffms2.FFMS_FMT_DBL):
+            raise RuntimeError(f"unknown sample format: {sample_fmt}")
+
+        self._input[0 : len(samples)] = samples
+
+        out = self._fftw()
+
+        scale_factor = 9 / np.sqrt(1 * (1 << DERIVATION_SIZE))
+        out = np.log(
+            np.sqrt(np.real(out) * np.real(out) + np.imag(out) * np.imag(out))
+            * scale_factor
+            + 1
+        )
+
+        out *= 255
+        out = np.clip(out, 0, 255)
+        out = np.flip(out, axis=0)
+        out = out.astype(dtype=np.uint8)
+        return out
 
 
 class SubtitleLabel:
@@ -272,10 +287,13 @@ class AudioPreview(BaseLocalAudioWidget):
                 self._spectrum_worker = None
 
         elif state == AudioState.Loading and pyfftw:
-            self._spectrum_worker = self._api.threading.create_task_queue(
-                functools.partial(_process_spectrum, self._api),
-                self._on_spectrum_update,
+            self._spectrum_worker = SpectrumWorker(
+                self._api.log, self._api.audio
             )
+            self._spectrum_worker.signals.finished.connect(
+                self._on_spectrum_update
+            )
+            self._api.threading.schedule_runnable(self._spectrum_worker)
 
         self._schedule_current_audio_view()
 
