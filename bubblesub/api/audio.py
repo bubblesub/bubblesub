@@ -29,7 +29,6 @@ from PyQt5 import QtCore
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
-from bubblesub.cache import get_cache_file_path
 from bubblesub.util import sanitize_file_name
 
 _LOADING = object()
@@ -54,35 +53,18 @@ def _load_audio_source(
     """
     log_api.info(f"started loading audio ({path})")
 
-    cache_path = get_cache_file_path(f"{sanitize_file_name(path)}-audio-index")
+    if not path.exists():
+        log_api.error(f"audio file {path} not found")
+        return (path, None)
 
-    index = None
-    if cache_path.exists():
-        try:
-            index = ffms2.Index.read(
-                index_file=str(cache_path), source_file=str(path)
-            )
-            if not index.belongs_to_file(str(path)):
-                index = None
-        except ffms2.Error:
-            index = None
-
-    if not index:
-        if not path.exists():
-            log_api.error(f"audio file {path} not found")
-            return (path, None)
-
-        try:
-            indexer = ffms2.Indexer(str(path))
-            for track in indexer.track_info_list:
-                indexer.track_index_settings(track.num, 1, 0)
-            index = indexer.do_indexing2()
-        except ffms2.Error as ex:
-            log_api.error(f"audio couldn't be loaded: {ex}")
-            return (path, None)
-        else:
-            cache_path.parent.mkdir(exist_ok=True, parents=True)
-            index.write(str(cache_path))
+    try:
+        indexer = ffms2.Indexer(str(path))
+        for track in indexer.track_info_list:
+            indexer.track_index_settings(track.num, 1, 0)
+        index = indexer.do_indexing2()
+    except ffms2.Error as ex:
+        log_api.error(f"audio couldn't be loaded: {ex}")
+        return (path, None)
 
     try:
         track_number = index.get_first_indexed_track_of_type(
