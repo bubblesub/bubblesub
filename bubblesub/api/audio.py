@@ -255,8 +255,9 @@ class AudioApi(QtCore.QObject):
         with _SAMPLER_LOCK:
             self._wait_for_source()
             if not self._source:
-                return np.zeros(count).reshape(
-                    (count, max(1, self.channel_count))
+                channel_count = max(1, self.channel_count)
+                return np.zeros(count * channel_count).reshape(
+                    (count, channel_count)
                 )
             if start_frame + count > self.sample_count:
                 count = max(0, self.sample_count - start_frame)
