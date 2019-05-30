@@ -60,32 +60,33 @@ class VideoBandWorker(QueueWorker):
         self.signals.cache_updated.emit()
 
     def _queue_cleared(self) -> None:
-        self._save_to_cache()
+        with _CACHE_LOCK:
+            self._save_to_cache()
 
     def _on_video_state_change(self, state: VideoState) -> None:
         if state == VideoState.NotLoaded:
-            if self._anything_to_save:
-                self._save_to_cache()
-            self.clear_tasks()
-            self._cache_name = None
             with _CACHE_LOCK:
+                if self._anything_to_save:
+                    self._save_to_cache()
+                self.clear_tasks()
+                self._cache_name = None
                 self.cache = {}
             self.signals.cache_updated.emit()
 
         elif state == VideoState.Loading:
-            assert self._video_api.path
-            self._cache_name = (
-                sanitize_file_name(self._video_api.path) + "-video-band"
-            )
-            self.clear_tasks()
-            self._anything_to_save = False
             with _CACHE_LOCK:
+                assert self._video_api.path
+                self._cache_name = (
+                    sanitize_file_name(self._video_api.path) + "-video-band"
+                )
+                self.clear_tasks()
+                self._anything_to_save = False
                 self.cache = self._load_from_cache()
             self.signals.cache_updated.emit()
 
         elif state == VideoState.Loaded:
-            for frame_idx in range(len(self._video_api.timecodes)):
-                with _CACHE_LOCK:
+            with _CACHE_LOCK:
+                for frame_idx in range(len(self._video_api.timecodes)):
                     if frame_idx not in self.cache:
                         self._queue.put(frame_idx)
 
@@ -102,8 +103,7 @@ class VideoBandWorker(QueueWorker):
 
     def _save_to_cache(self) -> None:
         if self._cache_name is not None:
-            with _CACHE_LOCK:
-                save_cache(self._cache_name, self.cache)
+            save_cache(self._cache_name, self.cache)
 
 
 class VideoPreview(BaseLocalAudioWidget):
