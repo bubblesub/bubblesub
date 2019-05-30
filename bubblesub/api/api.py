@@ -30,6 +30,7 @@ from bubblesub.api.gui import GuiApi
 from bubblesub.api.log import LogApi
 from bubblesub.api.playback import PlaybackApi
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.api.threading import ThreadingApi
 from bubblesub.api.undo import UndoApi
 from bubblesub.api.video import VideoApi
 from bubblesub.api.video_view import VideoViewApi
@@ -52,8 +53,10 @@ class Api:
         self.subs = SubtitlesApi()
         self.undo = UndoApi(self.cfg, self.subs)
 
-        self.video = VideoApi(self.log, self.subs)
-        self.audio = AudioApi(self.log, self.subs)
+        self.threading = ThreadingApi(self.log)
+
+        self.video = VideoApi(self.threading, self.log, self.subs)
+        self.audio = AudioApi(self.threading, self.log, self.subs)
         self.playback = PlaybackApi(
             self.log, self.subs, self.video, self.audio
         )
@@ -79,8 +82,3 @@ class Api:
             self.audio.load(self.subs.remembered_audio_path)
         else:
             self.audio.unload()
-
-    def shutdown(self) -> None:
-        """Stop internal worker threads."""
-        self.audio.shutdown()
-        self.video.shutdown()

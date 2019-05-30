@@ -119,7 +119,6 @@ class Application:
         from bubblesub.ui.main_window import MainWindow
 
         logger = Logger(api)
-        self._app.aboutToQuit.connect(api.shutdown)
 
         try:
             if self._splash:

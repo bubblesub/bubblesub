@@ -28,9 +28,9 @@ from PyQt5 import QtCore
 
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.api.threading import ThreadingApi
 from bubblesub.cache import get_cache_file_path
 from bubblesub.util import sanitize_file_name
-from bubblesub.worker import Worker
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
@@ -42,73 +42,59 @@ class AudioState(enum.Enum):
     Loaded = enum.auto()
 
 
-class AudioSourceWorker(Worker):
-    """Detached audio source provider."""
+def _load_audio_source(
+    log_api: LogApi, path: T.Any
+) -> T.Tuple[Path, T.Optional[ffms2.AudioSource]]:
+    """
+    Create audio source.
 
-    def __init__(self, log_api: "LogApi") -> None:
-        """
-        Initialize self.
+    :param log_api: logging API
+    :param path: path to the audio file
+    :return: input path and resulting audio source
+    """
+    log_api.info(f"started loading audio ({path})")
 
-        :param log_api: logging API
-        """
-        super().__init__()
-        self._log_api = log_api
+    cache_path = get_cache_file_path(f"{sanitize_file_name(path)}-audio-index")
 
-    def _do_work(
-        self, task: T.Any
-    ) -> T.Tuple[Path, T.Optional[ffms2.AudioSource]]:
-        """
-        Create audio source.
-
-        :param task: path to the audio file
-        :return: audio source
-        """
-        path = T.cast(Path, task)
-        self._log_api.info(f"started loading audio ({path})")
-
-        cache_path = get_cache_file_path(
-            f"{sanitize_file_name(path)}-audio-index"
-        )
-
-        index = None
-        if cache_path.exists():
-            try:
-                index = ffms2.Index.read(
-                    index_file=str(cache_path), source_file=str(path)
-                )
-                if not index.belongs_to_file(str(path)):
-                    index = None
-            except ffms2.Error:
+    index = None
+    if cache_path.exists():
+        try:
+            index = ffms2.Index.read(
+                index_file=str(cache_path), source_file=str(path)
+            )
+            if not index.belongs_to_file(str(path)):
                 index = None
+        except ffms2.Error:
+            index = None
 
-        if not index:
-            if not path.exists():
-                self._log_api.error(f"audio file {path} not found")
-                return (path, None)
-
-            try:
-                indexer = ffms2.Indexer(str(path))
-                for track in indexer.track_info_list:
-                    indexer.track_index_settings(track.num, 1, 0)
-                index = indexer.do_indexing2()
-            except ffms2.Error as ex:
-                self._log_api.error(f"audio couldn't be loaded: {ex}")
-                return (path, None)
-            else:
-                cache_path.parent.mkdir(exist_ok=True, parents=True)
-                index.write(str(cache_path))
+    if not index:
+        if not path.exists():
+            log_api.error(f"audio file {path} not found")
+            return (path, None)
 
         try:
-            track_number = index.get_first_indexed_track_of_type(
-                ffms2.FFMS_TYPE_AUDIO
-            )
-            source = ffms2.AudioSource(str(path), track_number, index)
+            indexer = ffms2.Indexer(str(path))
+            for track in indexer.track_info_list:
+                indexer.track_index_settings(track.num, 1, 0)
+            index = indexer.do_indexing2()
         except ffms2.Error as ex:
-            self._log_api.error(f"audio couldn't be loaded: {ex}")
+            log_api.error(f"audio couldn't be loaded: {ex}")
             return (path, None)
         else:
-            self._log_api.info("audio finished loading")
-            return (path, source)
+            cache_path.parent.mkdir(exist_ok=True, parents=True)
+            index.write(str(cache_path))
+
+    try:
+        track_number = index.get_first_indexed_track_of_type(
+            ffms2.FFMS_TYPE_AUDIO
+        )
+        source = ffms2.AudioSource(str(path), track_number, index)
+    except ffms2.Error as ex:
+        log_api.error(f"audio couldn't be loaded: {ex}")
+        return (path, None)
+    else:
+        log_api.info("audio finished loading")
+        return (path, source)
 
 
 class AudioApi(QtCore.QObject):
@@ -116,14 +102,21 @@ class AudioApi(QtCore.QObject):
 
     state_changed = QtCore.pyqtSignal(AudioState)
 
-    def __init__(self, log_api: LogApi, subs_api: SubtitlesApi) -> None:
+    def __init__(
+        self,
+        threading_api: ThreadingApi,
+        log_api: LogApi,
+        subs_api: SubtitlesApi,
+    ) -> None:
         """
         Initialize self.
 
+        :param threading_api: threading API
         :param log_api: logging API
         :param subs_api: subtitles API
         """
         super().__init__()
+        self._threading_api = threading_api
         self._log_api = log_api
         self._subs_api = subs_api
 
@@ -138,9 +131,6 @@ class AudioApi(QtCore.QObject):
         self._path: T.Optional[Path] = None
 
         self._source: T.Union[None, ffms2.AudioSource] = None
-        self._source_worker = AudioSourceWorker(log_api)
-        self._source_worker.task_finished.connect(self._got_source)
-        self._source_worker.start()
 
     def unload(self) -> None:
         self._source = None
@@ -170,11 +160,10 @@ class AudioApi(QtCore.QObject):
             or not self._path.samefile(self._subs_api.remembered_audio_path)
         ):
             self._subs_api.remembered_audio_path = self._path
-        self._source_worker.schedule_task(self._path)
-
-    def shutdown(self) -> None:
-        """Stop internal worker threads."""
-        self._source_worker.stop()
+        self._threading_api.schedule_task(
+            lambda: _load_audio_source(self._log_api, self._path),
+            self._got_source,
+        )
 
     @property
     def path(self) -> T.Optional[Path]:
