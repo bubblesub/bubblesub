@@ -22,7 +22,9 @@ import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.video import VideoState
+from bubblesub.api.log import LogApi
+from bubblesub.api.threading import QueueWorker
+from bubblesub.api.video import VideoApi, VideoState
 from bubblesub.cache import load_cache, save_cache
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
 from bubblesub.util import sanitize_file_name
@@ -32,12 +34,16 @@ _NOT_CACHED = object()
 _BAND_Y_RESOLUTION = 30
 
 
-class VideoBandWorker(QtCore.QObject):
+class VideoBandWorkerSignals(QtCore.QObject):
     cache_updated = QtCore.pyqtSignal()
 
-    def __init__(self, api: Api) -> None:
-        super().__init__()
-        self._api = api
+
+class VideoBandWorker(QueueWorker):
+    def __init__(self, log_api: LogApi, video_api: VideoApi) -> None:
+        super().__init__(log_api)
+        self.signals = VideoBandWorkerSignals()
+
+        self._video_api = video_api
         self._queue: "queue.Queue[int]" = queue.Queue()
         self._running = False
         self._clearing = False
@@ -45,67 +51,48 @@ class VideoBandWorker(QtCore.QObject):
         self._cache_name: T.Optional[str] = None
         self.cache: T.Dict[int, np.array] = {}
 
-        api.video.state_changed.connect(self._on_video_state_change)
+        video_api.state_changed.connect(self._on_video_state_change)
 
-    def run(self) -> None:
-        self._running = True
-        while self._running:
-            if self._clearing:
-                continue
-            frame_idx = self._queue.get()
-            if frame_idx is None:
-                break
+    def _process_task(self, frame_idx: int) -> None:
+        frame = self._video_api.get_frame(frame_idx, 1, _BAND_Y_RESOLUTION)
+        if frame is None:
+            return False
+        frame = frame.reshape(_BAND_Y_RESOLUTION, 3)
+        with _CACHE_LOCK:
+            self.cache[frame_idx] = frame.copy()
+        self._anything_to_save = True
+        self.signals.cache_updated.emit()
+        return True
 
-            frame = self._api.video.get_frame(frame_idx, 1, _BAND_Y_RESOLUTION)
-            if frame is not None:
-                frame = frame.reshape(_BAND_Y_RESOLUTION, 3)
-                with _CACHE_LOCK:
-                    self.cache[frame_idx] = frame.copy()
-                self.cache_updated.emit()
-                self._anything_to_save = True
-
-            self._queue.task_done()
-            if self._queue.empty():
-                self._save_to_cache()
-
-    def stop(self) -> None:
-        self._clear_queue()
-        self._running = False
+    def _queue_cleared(self) -> None:
+        self._save_to_cache()
 
     def _on_video_state_change(self, state: VideoState) -> None:
         if state == VideoState.NotLoaded:
             if self._anything_to_save:
                 self._save_to_cache()
-            self._clear_queue()
+            self.clear_tasks()
             self._cache_name = None
             with _CACHE_LOCK:
                 self.cache = {}
-            self.cache_updated.emit()
+            self.signals.cache_updated.emit()
+
         elif state == VideoState.Loading:
-            assert self._api.video.path
+            assert self._video_api.path
             self._cache_name = (
-                sanitize_file_name(self._api.video.path) + "-video-band"
+                sanitize_file_name(self._video_api.path) + "-video-band"
             )
-            self._clear_queue()
+            self.clear_tasks()
             self._anything_to_save = False
             with _CACHE_LOCK:
                 self.cache = self._load_from_cache()
-            self.cache_updated.emit()
+            self.signals.cache_updated.emit()
+
         elif state == VideoState.Loaded:
-            for frame_idx in range(len(self._api.video.timecodes)):
+            for frame_idx in range(len(self._video_api.timecodes)):
                 with _CACHE_LOCK:
                     if frame_idx not in self.cache:
                         self._queue.put(frame_idx)
-
-    def _clear_queue(self) -> None:
-        self._clearing = True
-        while not self._queue.empty():
-            try:
-                self._queue.get(False)
-            except queue.Empty:
-                continue
-            self._queue.task_done()
-        self._clearing = False
 
     def _load_from_cache(self) -> T.Dict[int, np.array]:
         if self._cache_name is None:
@@ -132,12 +119,9 @@ class VideoPreview(BaseLocalAudioWidget):
             QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum
         )
 
-        self._worker = VideoBandWorker(api)
-        self._worker.cache_updated.connect(self._on_video_band_update)
-        self._worker_thread = QtCore.QThread()
-        self._worker.moveToThread(self._worker_thread)
-        self._worker_thread.started.connect(self._worker.run)
-        self._worker_thread.start()
+        self._worker = VideoBandWorker(api.log, api.video)
+        self._worker.signals.cache_updated.connect(self._on_video_band_update)
+        self._api.threading.schedule_runnable(self._worker)
 
         self._need_repaint = False
         self._pixels: np.array = np.zeros([0, 0, 3], dtype=np.uint8)
