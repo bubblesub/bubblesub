@@ -130,8 +130,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event: QtCore.QEvent) -> None:
         if self._closing_state == ClosingState.Confirmed:
             self._api.gui.terminated.emit()
-            self.audio.shutdown()
-            self.video.shutdown()
             event.accept()
         elif self._closing_state == ClosingState.WaitingForConfirmation:
             event.ignore()

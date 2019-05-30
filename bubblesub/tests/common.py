@@ -21,6 +21,7 @@ from pathlib import Path
 import pytest
 
 from bubblesub.api import Api
+from bubblesub.api.threading import ThreadingApi
 
 APP_ROOT_DIR = Path(__file__).parent.parent
 TESTS_ROOT_DIR = APP_ROOT_DIR / "tests"

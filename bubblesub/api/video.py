@@ -31,8 +31,8 @@ from PyQt5 import QtCore
 
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
+from bubblesub.api.threading import ThreadingApi
 from bubblesub.ass_renderer import AssRenderer
-from bubblesub.worker import Worker
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
@@ -45,42 +45,30 @@ class VideoState(enum.Enum):
     Loaded = enum.auto()
 
 
-class VideoSourceWorker(Worker):
-    """Detached video source provider."""
+def _load_video_source(
+    log_api: LogApi, path: Path
+) -> T.Tuple[Path, T.Optional[ffms2.VideoSource]]:
+    """
+    Create video source.
 
-    def __init__(self, log_api: LogApi) -> None:
-        """
-        Initialize self.
+    :param log_api: logging API
+    :param path: path to the video file
+    :return: input path and resulting video source
+    """
+    log_api.info(f"started loading video... ({path})")
 
-        :param log_api: logging API
-        """
-        super().__init__()
-        self._log_api = log_api
+    if not path.exists():
+        log_api.error(f"video file {path} not found")
+        return (path, None)
 
-    def _do_work(
-        self, task: T.Any
-    ) -> T.Tuple[Path, T.Optional[ffms2.VideoSource]]:
-        """
-        Create video source.
-
-        :param task: path to the video file
-        :return: video source
-        """
-        path = T.cast(Path, task)
-        self._log_api.info(f"started loading video... ({path})")
-
-        if not path.exists():
-            self._log_api.error(f"video file {path} not found")
-            return (path, None)
-
-        try:
-            source = ffms2.VideoSource(str(path))
-        except ffms2.Error as ex:
-            self._log_api.error(f"video couldn't be loaded: {ex}")
-            return (path, None)
-        else:
-            self._log_api.info("video finished loading")
-            return (path, source)
+    try:
+        source = ffms2.VideoSource(str(path))
+    except ffms2.Error as ex:
+        log_api.error(f"video couldn't be loaded: {ex}")
+        return (path, None)
+    else:
+        log_api.info("video finished loading")
+        return (path, source)
 
 
 class VideoApi(QtCore.QObject):
@@ -88,14 +76,21 @@ class VideoApi(QtCore.QObject):
 
     state_changed = QtCore.pyqtSignal(VideoState)
 
-    def __init__(self, log_api: LogApi, subs_api: SubtitlesApi) -> None:
+    def __init__(
+        self,
+        threading_api: ThreadingApi,
+        log_api: LogApi,
+        subs_api: SubtitlesApi,
+    ) -> None:
         """
         Initialize self.
 
+        :param threading_api: threading API
         :param log_api: logging API
         :param subs_api: subtitles API
         """
         super().__init__()
+        self._threading_api = threading_api
         self._log_api = log_api
         self._subs_api = subs_api
 
@@ -110,12 +105,8 @@ class VideoApi(QtCore.QObject):
 
         self._ass_renderer = AssRenderer()
         self._source: T.Union[None, ffms2.VideoSource] = None
-        self._source_worker = VideoSourceWorker(log_api)
-        self._source_worker.task_finished.connect(self._got_source)
 
         self._last_output_fmt: T.Any = None
-
-        self._source_worker.start()
 
     def unload(self) -> None:
         """Unload current video source."""
@@ -146,11 +137,10 @@ class VideoApi(QtCore.QObject):
             or not self._path.samefile(self._subs_api.remembered_video_path)
         ):
             self._subs_api.remembered_video_path = self._path
-        self._source_worker.schedule_task(self._path)
-
-    def shutdown(self) -> None:
-        """Stop internal worker threads."""
-        self._source_worker.stop()
+        self._threading_api.schedule_task(
+            lambda: _load_video_source(self._log_api, self._path),
+            self._got_source,
+        )
 
     @property
     def path(self) -> T.Optional[Path]:
