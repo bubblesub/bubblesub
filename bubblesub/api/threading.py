@@ -44,7 +44,7 @@ class QueueWorker(QtCore.QRunnable):
         self._log_api = log_api
         self._running = False
         self._clearing = False
-        self._queue: queue.LifoQueue[T.Any] = queue.LifoQueue()
+        self._queue: queue.Queue[T.Any] = queue.Queue()
 
     def run(self) -> None:
         """

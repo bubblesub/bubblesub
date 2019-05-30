@@ -271,11 +271,7 @@ class AudioPreview(BaseLocalAudioWidget):
             if pts not in self._spectrum_cache:
                 pts_to_update.add(pts)
 
-        # since the task queue is a LIFO queue, in order to render the columns
-        # left-to-right, they need to be iterated backwards (hence reversed()).
-        for chunk in chunks(
-            list(sorted(pts_to_update, reverse=True)), CHUNK_SIZE
-        ):
+        for chunk in chunks(list(sorted(pts_to_update)), CHUNK_SIZE):
             self._spectrum_worker.schedule_task(reversed(chunk))
             for pts in chunk:
                 self._spectrum_cache[pts] = CACHING
