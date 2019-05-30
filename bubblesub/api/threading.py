@@ -16,6 +16,10 @@
 
 """Threading API."""
 
+import queue
+import sys
+import time
+import traceback
 import typing as T
 
 from PyQt5 import QtCore
@@ -25,6 +29,82 @@ from bubblesub.api.log import LogApi
 
 class WorkerSignals(QtCore.QObject):
     finished = QtCore.pyqtSignal(object)
+
+
+class QueueWorker(QtCore.QRunnable):
+    """Worker thread for continuous task queues."""
+
+    def __init__(
+        self, log_api: LogApi, func: T.Callable[[T.Any], T.Any]
+    ) -> None:
+        """
+        Initialize self.
+
+        :param log_api: logging API
+        :param func: the function to run on this worker thread
+        """
+        super().__init__()
+        self.signals = WorkerSignals()
+
+        self._log_api = log_api
+        self._func = func
+
+        self._running = False
+        self._clearing = False
+        self._queue: queue.LifoQueue[T.Any] = queue.LifoQueue()
+
+    def run(self) -> None:
+        """
+        Run the thread.
+
+        Gets tasks from the internal queue and passes them to internal
+        callbacks. Once the task has been completed, signals the result via
+        "finished" signal.
+        Erroneous tasks (processing of which throws an exception) are
+        discarded, and the exception is logged to stdout.
+        """
+        self._running = True
+        while self._running:
+            if self._clearing:
+                time.sleep(0.1)
+                continue
+
+            arg = self._queue.get()
+            if arg is None:
+                break
+            with self._log_api.exception_guard():
+                result = self._func(arg)
+                self.signals.finished.emit(result)
+            self._queue.task_done()
+
+    def stop(self) -> None:
+        """Stop processing any remaining tasks and quit the thread ASAP."""
+        self.clear_tasks()
+        self._running = False
+        self._queue.put(None)  # make sure run() exits
+
+    def schedule_task(self, task_data: T.Any) -> None:
+        """
+        Put a new task onto internal task queue.
+
+        :param task_data: task to process
+        """
+        self._queue.put(task_data)
+
+    def clear_tasks(self) -> None:
+        """
+        Remove all remaining tasks.
+
+        Doesn't fire the finished signal.
+        """
+        self._clearing = True
+        while not self._queue.empty():
+            try:
+                self._queue.get(False)
+            except queue.Empty:
+                continue
+            self._queue.task_done()
+        self._clearing = False
 
 
 class OneShotWorker(QtCore.QRunnable):
@@ -59,3 +139,9 @@ class ThreadingApi:
         worker = OneShotWorker(self._log_api, function)
         worker.signals.finished.connect(complete_callback)
         self._thread_pool.start(worker)
+
+    def create_task_queue(self, function, complete_callback) -> QueueWorker:
+        worker = QueueWorker(self._log_api, function)
+        worker.signals.finished.connect(complete_callback)
+        self._thread_pool.start(worker)
+        return worker
