@@ -41,6 +41,10 @@
 - Install `bubblesub`: `pip install --user .`
 - Run bubblesub: `python3 -m bubblesub` or simply `bubblesub`
 
+If you want to simplify `bubblesub` installation, look at our [Dockerfile](Dockerfile).
+You will find what dependencies are needed, how to install them and how to run 
+our tests.
+
 ## Documentation
 
 #### Default hotkeys and commands
