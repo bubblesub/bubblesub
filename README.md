@@ -4,7 +4,13 @@
 
 <p align='center'>
     Simple extensible ASS subtitle editor for Linux
+    <br />
+    <br />
+    <a href="https://travis-ci.org/rr-/bubblesub">
+        <img src="https://travis-ci.org/rr-/bubblesub.svg?branch=master">
+    </a>
 </p>
+
 
 ## Features
 
