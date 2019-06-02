@@ -83,14 +83,15 @@ def verify_function_returns(
         assert not is_sentence(docstring.returns.description)
 
 
-def verify_function_docstring(node: ast.FunctionDef) -> None:
+def verify_function_docstring(path: Path, node: ast.FunctionDef) -> None:
     docstring = ast.get_docstring(node)
     if not docstring:
         return
 
     docstring = docstring_parser.parse(docstring)
-    verify_function_params(node, docstring)
-    verify_function_returns(node, docstring)
+    if not path.name.startswith("test_"):
+        verify_function_params(node, docstring)
+        verify_function_returns(node, docstring)
 
 
 @pytest.mark.parametrize("path", collect_source_files())
@@ -98,7 +99,7 @@ def test_docstrings(path: Path) -> None:
     for node in ast.walk(ast.parse(path.read_text())):
         try:
             if isinstance(node, ast.FunctionDef):
-                verify_function_docstring(node)
+                verify_function_docstring(path, node)
         except AssertionError:
             print(f"Error at {path}:{node.lineno}")
             raise

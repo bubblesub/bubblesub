@@ -42,16 +42,19 @@ def _ms_to_timestamp(milliseconds: int) -> str:
     return f"{hours:01d}:{minutes:02d}:{seconds:02d}.{milliseconds // 10:02d}"
 
 
-def _write_meta(ass_file: AssFile, handle: T.IO[str]) -> None:
+def write_meta(ass_file: AssFile, handle: T.IO[str]) -> None:
     meta: T.Dict[str, str] = OrderedDict()
     meta["ScriptType"] = "sentinel"  # make sure script type is the first entry
     meta.update(ass_file.meta.items())
     meta["ScriptType"] = "v4.00+"
+
+    print("[Script Info]", file=handle)
+    for line in NOTICE.splitlines(False):
+        print(";", line, file=handle)
     for key, value in meta.items():
         print(key, "" if value is None else value, sep=": ", file=handle)
 
-
-def _write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
+def write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
     print("\n[V4+ Styles]", file=handle)
     print(
         "Format: Name, Fontname, Fontsize, PrimaryColour, "
@@ -65,7 +68,7 @@ def _write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
         _write_style(style, handle)
 
 
-def _write_style(style: AssStyle, handle: T.IO[str]) -> None:
+def write_style(style: AssStyle, handle: T.IO[str]) -> None:
     print(
         "Style: "
         + ",".join(
@@ -99,8 +102,8 @@ def _write_style(style: AssStyle, handle: T.IO[str]) -> None:
     )
 
 
-def _write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
-    print("\n[Events]", file=handle)
+def write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
+    print("[Events]", file=handle)
     print(
         "Format: Layer, Start, End, Style, Name, "
         "MarginL, MarginR, MarginV, Effect, Text",
@@ -110,7 +113,7 @@ def _write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
         _write_event(event, handle)
 
 
-def _write_event(event: AssEvent, handle: T.IO[str]) -> None:
+def write_event(event: AssEvent, handle: T.IO[str]) -> None:
     text = event.text
 
     if event.start is not None and event.end is not None:
@@ -153,10 +156,8 @@ def write_ass(ass_file: AssFile, target: T.Union[Path, T.IO[str]]) -> None:
             write_ass(ass_file, handle)
             return
 
-    print("[Script Info]", file=target)
-    for line in NOTICE.splitlines(False):
-        print(";", line, file=target)
-
-    _write_meta(ass_file, target)
-    _write_styles(ass_file, target)
-    _write_events(ass_file, target)
+    write_meta(ass_file, target)
+    print("", file=target)
+    write_styles(ass_file, target)
+    print("", file=target)
+    write_events(ass_file, target)
