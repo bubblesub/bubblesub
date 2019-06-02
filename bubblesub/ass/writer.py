@@ -18,6 +18,7 @@
 
 import typing as T
 from collections import OrderedDict
+from pathlib import Path
 
 from bubblesub.ass.event import AssEvent
 from bubblesub.ass.file import AssFile
@@ -140,17 +141,22 @@ def _write_event(event: AssEvent, handle: T.IO[str]) -> None:
     )
 
 
-def write_ass(ass_file: AssFile, handle: T.IO[str]) -> None:
+def write_ass(ass_file: AssFile, target: T.Union[Path, T.IO[str]]) -> None:
     """
     Save ASS to the specified target.
 
     :param ass_file: file to save
-    :param handle: writable stream
+    :param target: writable stream or a path
     """
-    print("[Script Info]", file=handle)
-    for line in NOTICE.splitlines(False):
-        print(";", line, file=handle)
+    if isinstance(target, Path):
+        with target.open("w") as handle:
+            write_ass(ass_file, handle)
+            return
 
-    _write_meta(ass_file, handle)
-    _write_styles(ass_file, handle)
-    _write_events(ass_file, handle)
+    print("[Script Info]", file=target)
+    for line in NOTICE.splitlines(False):
+        print(";", line, file=target)
+
+    _write_meta(ass_file, target)
+    _write_styles(ass_file, target)
+    _write_events(ass_file, target)
