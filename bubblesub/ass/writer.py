@@ -65,7 +65,7 @@ def write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
         file=handle,
     )
     for style in ass_file.styles:
-        _write_style(style, handle)
+        write_style(style, handle)
 
 
 def write_style(style: AssStyle, handle: T.IO[str]) -> None:
@@ -110,7 +110,7 @@ def write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
         file=handle,
     )
     for event in ass_file.events:
-        _write_event(event, handle)
+        write_event(event, handle)
 
 
 def write_event(event: AssEvent, handle: T.IO[str]) -> None:
