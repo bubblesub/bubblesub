@@ -55,7 +55,7 @@ def write_meta(ass_file: AssFile, handle: T.IO[str]) -> None:
         print(key, "" if value is None else value, sep=": ", file=handle)
 
 def write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
-    print("\n[V4+ Styles]", file=handle)
+    print("[V4+ Styles]", file=handle)
     print(
         "Format: Name, Fontname, Fontsize, PrimaryColour, "
         "SecondaryColour, OutlineColour, BackColour, Bold, Italic, "
