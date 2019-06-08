@@ -42,6 +42,7 @@
     - [`libmpv`](https://github.com/mpv-player/mpv.git)
     - [`ffms`](https://github.com/FFMS/ffms2)
     - [`fftw`](https://github.com/FFTW/fftw3)
+    - `Qt5` bindings
 - Clone the repository: `git clone https://github.com/rr-/bubblesub`
 - Enter its directory: `cd bubblesub`
 - Install `bubblesub`: `pip install --user .`
