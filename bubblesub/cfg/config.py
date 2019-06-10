@@ -19,18 +19,16 @@
 import typing as T
 from pathlib import Path
 
-import xdg
-
 from bubblesub.cfg.hotkeys import HotkeysConfig
 from bubblesub.cfg.menu import MenuConfig
 from bubblesub.cfg.options import OptionsConfig
-from bubblesub.data import ROOT_DIR
+from bubblesub.data import ROOT_DIR, USER_CONFIG_DIR
 
 
 class Config:
     """Umbrella class containing all the configuration."""
 
-    DEFAULT_PATH = Path(xdg.XDG_CONFIG_HOME) / "bubblesub"
+    DEFAULT_PATH = USER_CONFIG_DIR / "bubblesub"
 
     def __init__(self) -> None:
         """Initialize self."""

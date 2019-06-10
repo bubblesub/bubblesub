@@ -312,7 +312,6 @@ install_packages = [
     "regex",
     "pyqtcolordialog",
     "pympv",
-    "xdg",
     "ass_tag_parser",
     "Pillow",
     "pyyaml",

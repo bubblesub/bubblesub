@@ -20,7 +20,7 @@ import pickle
 import typing as T
 from pathlib import Path
 
-import xdg
+from bubblesub.data import USER_CACHE_DIR
 
 CACHE_SUFFIX = ".dat"
 
@@ -31,7 +31,7 @@ def get_cache_dir() -> Path:
 
     :return: path to cache files
     """
-    return Path(xdg.XDG_CACHE_HOME) / "bubblesub"
+    return USER_CACHE_DIR / "bubblesub"
 
 
 def get_cache_file_path(cache_name: str) -> Path:

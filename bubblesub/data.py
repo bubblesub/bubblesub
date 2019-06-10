@@ -14,8 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Path to program data."""
+"""Paths to program data and user data."""
 
+import os
 from pathlib import Path
 
+
+def _path_from_env(variable: str, default: Path) -> Path:
+    value = os.environ.get(variable)
+    if value:
+        return Path(value)
+    return default
+
+
 ROOT_DIR = Path(__file__).parent / "data"
+USER_HOME = Path(os.path.expandvars("$HOME"))
+USER_CONFIG_DIR = _path_from_env("XDG_CONFIG_HOME", USER_HOME / ".config")
+USER_CACHE_DIR = _path_from_env("XDG_CACHE_HOME", USER_HOME / ".cache")
