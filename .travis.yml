@@ -17,7 +17,7 @@ matrix:
     deploy:
       provider: releases
       api_key:
-        secure: qOm6rK82TsBfIKxpn8hTTnTWPsJl0g/WrzXcnoiwiulFZtoxq0QzJUz5iYNZYfJbVvHhZEea9QLBWTNwyHK50QGdMTMXvDHaxq942p59DajnpQyRdmEmyzu34TqP7W49jZCm41yH4+yPVE9wkokGUaXGUDCKk321LmHwHAqJ4oh243L2W5SgvAmMbR8ZuTmeLw8FUD8E209OhxI8CQTNHAlaA6uWSs+KhrFYsrgVWUB8liZ/Z0W2OkzeDzsw8enFKL1MBvgv+aa3f4ICgjqeNmSl1IB8o6bJP5Ndzq2KTZUY22ei0wP/es/uLDRnWkD+313CkEE5oaPvOPddDuE3VWC8+ed/CBlUo2178BnTDNhAd+E9W9xAkUV0YcKoydO30L047HlYMwdnh7FnT8lx5fqhCY9HIvBxrwglA8RDLHpD0M/SeJMLaMphcoYnad1kxv3TpFHIf7N6LHlIqvYmLXUo1ENYKACrzYjrwpMV+DYFTK8wac3UdPHXxKRaxTCMRhA09/kJyfgHxxwBEAPCP91+3W6dtvFWKf/UvMli0aMCovT4RSmT20PUcLYYNWA+77wh3mxjuVhQxeamb1QtwK3XK+o0+03kTVASNH7gJdAoaje9+rhr9vxe+K88IA/AqB+52w/1SIz7LrNLed/lum9khf97IdcF1Ns0JjmxtzM=
+        secure: WtfE32HAOhzvoPVX1vNOzOT27AAl4j5C/kUzEuzf6QHBIV5R/aq3a7vNIndX7zgK84ddQthN7Rmbm3bi1s3czEFQrpf+Yi7zXxUY56R+z80F1EnYcJ1e++QeQtBmtbMawpQcogKquJa7l+NB+0juQlUvOcsYEMuzAF/cZFQn5DvUgD6tLfA3CcwyUe86zHY3TOx32Aiq/BK/DxzWjjYfx+JOR8ehXEtI
       file: bubblesub.zip
       skip_cleanup: true
       on:
