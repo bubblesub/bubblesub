@@ -1,5 +1,4 @@
 language: bash
-
 matrix:
   include:
   - os: linux
@@ -17,10 +16,10 @@ matrix:
     deploy:
       provider: releases
       api_key:
-        secure: WtfE32HAOhzvoPVX1vNOzOT27AAl4j5C/kUzEuzf6QHBIV5R/aq3a7vNIndX7zgK84ddQthN7Rmbm3bi1s3czEFQrpf+Yi7zXxUY56R+z80F1EnYcJ1e++QeQtBmtbMawpQcogKquJa7l+NB+0juQlUvOcsYEMuzAF/cZFQn5DvUgD6tLfA3CcwyUe86zHY3TOx32Aiq/BK/DxzWjjYfx+JOR8ehXEtI
+        secure: ZYfn5VtRJYhL9YovdApmtRXprsO+jPNb/gOKhNGymaJS1ZA9dtIOTNafWevwnP3rEmbl6LNjazVdaJU74yJMOcBqcrdRMjPJukS5vSi7uMEdoT+yV+LwyDNZ9G7IXP/xa8+qkrQTKNik/fEaovMYDjbX02qHEKBYCWKB8tGpLsJCSoBFEZTXghtBoJFxbvBIqvINasYavv2WaFJNHf6/9DTS5Xl5rV/sZyK9vB0aTGNVVbm9g1TTszkj5Os7qLPyWhcfQqpIX9o2CQi/PcpVagS0exrQPvSzGfJ+tYMwP1SP1CRRN+H0v91OD2CqspCKfoA5kkYzslmccvg2HFwsMXTeary5Snz0Ljrs7Qdtulhx+xIEOh6AWyTdymL0UoJV8Uvgbc4+gLNKfMuRhNwpLzeFebrtZAXsubzAI+g0XBkpWCQhQAHJhlPswBnZY731ewph/UfS+fv+fB91KF1GMOqv0EdxQgzz17+9eUSKpPRrBqMlo+PqfEpd8ZY6FRo5SSoAwL8cE6XIR9nH1gQQncsYuJb8rpJ+gA0EaH+W5ChGTp3nVH7Jwnu/z0Vbm6pv8EGRnA9mBFuF3zP3J6jvZO5TulR7YhZLoMuwcuJqXFgfPNmaYCx925z4HGTQM7Ic5c0Dz7d5PRejhi6C3v6ohPimcekmifoycV/fCFK/aNg=
       file: bubblesub.zip
       skip_cleanup: true
       on:
         repo: rr-/bubblesub
-        branch: master
-        tags: true
+        branch: test_windows
+        tags: false
