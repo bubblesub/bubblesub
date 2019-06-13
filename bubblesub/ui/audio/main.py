@@ -17,6 +17,7 @@
 from PyQt5 import QtCore, QtWidgets
 
 from bubblesub.api import Api
+from bubblesub.api.audio import AudioState
 from bubblesub.ui.audio.audio_preview import AudioPreview
 from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.audio_timeline import AudioTimeline
@@ -43,6 +44,8 @@ class Audio(QtWidgets.QWidget):
         layout.addWidget(self._video_preview)
         layout.addWidget(self._slider)
 
+        api.audio.state_changed.connect(self._on_audio_state_change)
+
         api.subs.events.items_inserted.connect(self._sync_selection)
         api.subs.events.items_removed.connect(self._sync_selection)
         api.subs.events.items_moved.connect(self._sync_selection)
@@ -52,6 +55,10 @@ class Audio(QtWidgets.QWidget):
 
     def shutdown(self) -> None:
         self._video_preview.shutdown()
+
+    def _on_audio_state_change(self, state: AudioState) -> None:
+        if state == AudioState.Loaded:
+            self._api.audio.view.reset_view()
 
     def _sync_selection(self) -> None:
         if len(self._api.subs.selected_indexes) >= 1:
