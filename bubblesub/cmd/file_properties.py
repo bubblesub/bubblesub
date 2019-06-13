@@ -22,7 +22,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ui.util import async_dialog_exec, async_slot, show_prompt
+from bubblesub.ui.util import (
+    Dialog,
+    async_dialog_exec,
+    async_slot,
+    show_prompt,
+)
 
 
 def _rescale_styles(api: Api, factor: float) -> None:
@@ -207,7 +212,7 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
             self.model.removeRow(row)
 
 
-class _FilePropertiesDialog(QtWidgets.QDialog):
+class _FilePropertiesDialog(Dialog):
     def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
         super().__init__(main_window)
         self._main_window = main_window

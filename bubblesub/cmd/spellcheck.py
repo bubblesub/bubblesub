@@ -23,6 +23,7 @@ from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.util import spell_check_ass_line
 from bubblesub.spell_check import SpellChecker, SpellCheckerError
 from bubblesub.ui.util import (
+    Dialog,
     async_dialog_exec,
     async_slot,
     show_error,
@@ -31,7 +32,7 @@ from bubblesub.ui.util import (
 from bubblesub.util import ucfirst
 
 
-class _SpellCheckDialog(QtWidgets.QDialog):
+class _SpellCheckDialog(Dialog):
     def __init__(
         self,
         api: Api,

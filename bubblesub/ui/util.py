@@ -143,6 +143,21 @@ class ColorPicker(QtWidgets.QWidget):
     color = QtCore.pyqtProperty(QtGui.QColor, get_color, set_color, user=True)
 
 
+class Dialog(QtWidgets.QDialog):
+    """A dialog that automatically closes and disconnects all signals after
+    exiting.
+    """
+
+    def __init__(self, main_window: QtWidgets.QMainWindow) -> None:
+        super().__init__(main_window)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+
+    def done(self, code: int) -> None:
+        ret = super().done(code)
+        self.close()
+        return ret
+
+
 async def load_dialog(
     parent: QtWidgets.QWidget,
     file_filter: str,

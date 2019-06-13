@@ -31,6 +31,7 @@ from bubblesub.ui.font_combo_box import FontComboBox, refresh_font_db
 from bubblesub.ui.model.styles import AssStylesModel, AssStylesModelColumn
 from bubblesub.ui.util import (
     ColorPicker,
+    Dialog,
     ImmediateDataWidgetMapper,
     async_dialog_exec,
     async_slot,
@@ -666,7 +667,7 @@ class _StyleEditor(QtWidgets.QWidget):
             self._mapper.set_current_index(None)
 
 
-class _StylesManagerDialog(QtWidgets.QDialog):
+class _StylesManagerDialog(Dialog):
     def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
         super().__init__(main_window)
         model = AssStylesModel(self, api.subs.styles)

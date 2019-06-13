@@ -25,7 +25,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass.event import AssEvent
-from bubblesub.ui.util import async_dialog_exec, async_slot, show_notice
+from bubblesub.ui.util import (
+    Dialog,
+    async_dialog_exec,
+    async_slot,
+    show_notice,
+)
 
 MAX_HISTORY_ENTRIES = 25
 
@@ -309,7 +314,7 @@ class _SearchTextEdit(QtWidgets.QComboBox):
         self.setCompleter(completer)
 
 
-class _SearchDialog(QtWidgets.QDialog):
+class _SearchDialog(Dialog):
     def __init__(
         self,
         api: Api,
