@@ -207,7 +207,7 @@ class PyTestCommand(Command):
     user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
 
     def initialize_options(self):
-        self.pytest_args = ""
+        self.pytest_args = "-m 'not ci'"
 
     def finalize_options(self):
         pass

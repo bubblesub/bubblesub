@@ -19,17 +19,21 @@ import pathlib
 import signal
 import subprocess
 import tempfile
-import typing as T
+
+import pytest
 
 SERVER_NUM = 99
+TIMEOUT = 4
 
 
+@pytest.mark.ci
 def test_run() -> None:
     try:
-        subprocess.run(["xvfb-run", "bubblesub"], timeout=4, check=True)
+        subprocess.run(["xvfb-run", "bubblesub"], timeout=TIMEOUT, check=True)
     except subprocess.TimeoutExpired:
         tmp_dir = pathlib.Path(tempfile.gettempdir())
         lock_file = tmp_dir / f".X{SERVER_NUM}-lock"
         pid = int(lock_file.read_text().strip())
         os.kill(pid, signal.SIGINT)
-        assert True
+    else:
+        assert False, f"program not terminated after {TIMEOUT} s"
