@@ -46,8 +46,7 @@ class SaveAudioSampleCommand(BaseCommand):
             ),
         )
 
-        pts_ranges = [(start, end)]
-        self.api.audio.save_wav(path, pts_ranges)
+        self.api.audio.save_wav(path, start, end)
         self.api.log.info(f"saved audio sample to {path}")
 
     @staticmethod

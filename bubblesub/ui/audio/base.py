@@ -131,8 +131,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
 
         if self._drag_data.mode == DragMode.SelectionStart:
             self._view.select(
-                min(self._view.selection_end, pts),
-                self._view.selection_end,
+                min(self._view.selection_end, pts), self._view.selection_end
             )
 
         elif self._drag_data.mode == DragMode.SelectionEnd:

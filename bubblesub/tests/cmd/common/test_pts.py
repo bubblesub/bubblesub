@@ -245,11 +245,7 @@ def test_frames(
 
 
 @pytest.mark.parametrize(
-    "expr,selection,expected_value",
-    [
-        ("a.s", (1, 2), 1),
-        ("a.e", (1, 2), 2),
-    ],
+    "expr,selection,expected_value", [("a.s", (1, 2), 1), ("a.e", (1, 2), 2)]
 )
 def test_audio_selection(
     expr: str,

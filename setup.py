@@ -305,7 +305,6 @@ class MypyCommand(Command):
 install_packages = [
     "ffms2",
     "numpy",
-    "scipy",
     "pyfftw",
     "PyQT5",
     "quamash",

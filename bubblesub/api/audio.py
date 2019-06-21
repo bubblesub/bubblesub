@@ -16,6 +16,7 @@
 
 """Audio API."""
 
+import contextlib
 import enum
 import threading
 import time
@@ -30,6 +31,7 @@ from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
 from bubblesub.util import sanitize_file_name
+from bubblesub.util.wav import write_wav
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
@@ -268,34 +270,34 @@ class AudioApi(QtCore.QObject):
 
     def save_wav(
         self,
-        path_or_handle: T.Union[Path, T.IO[str]],
-        pts_ranges: T.List[T.Tuple[int, int]],
+        path_or_handle: T.Union[Path, T.IO[bytes]],
+        start_pts: int,
+        end_pts: int,
     ) -> None:
         """
         Save samples for the currently loaded audio source as WAV file.
 
-        :param path_or_handle: where to put the WAV file in
-        :param pts_ranges: list of start PTS / end PTS pairs to sample
+        :param path_or_handle: where to put the result WAV file in
+        :param start_pts: start PTS
+        :param end_pts: end PTS
         """
-        samples = self._create_empty_sample_buffer()
-
-        for pts_range in pts_ranges:
-            start_pts, end_pts = pts_range
-            start_frame = int(start_pts * self.sample_rate / 1000)
-            end_frame = int(end_pts * self.sample_rate / 1000)
-            frame_count = end_frame - start_frame
-            samples = np.concatenate(
-                (samples, self.get_samples(start_frame, frame_count))
-            )
+        start_frame = int(start_pts * self.sample_rate / 1000)
+        end_frame = int(end_pts * self.sample_rate / 1000)
+        frame_count = end_frame - start_frame
+        if frame_count < 0:
+            raise ValueError("negative number of frames")
+        samples = self.get_samples(start_frame, frame_count)
 
         # increase compatibility with external programs
         if samples.dtype.name in ("float32", "float64"):
             samples = (samples * (1 << 31)).astype(np.int32)
 
-        # pylint: disable=no-member
-        import scipy.io.wavfile
+        ctx = contextlib.nullcontext(path_or_handle)
+        if isinstance(path_or_handle, Path):
+            ctx = path_or_handle.open("wb")
 
-        scipy.io.wavfile.write(path_or_handle, self.sample_rate, samples)
+        with ctx as handle:
+            write_wav(handle, self.sample_rate, samples)
 
     def _create_empty_sample_buffer(self) -> np.array:
         return np.zeros(

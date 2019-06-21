@@ -54,6 +54,7 @@ def write_meta(ass_file: AssFile, handle: T.IO[str]) -> None:
     for key, value in meta.items():
         print(key, "" if value is None else value, sep=": ", file=handle)
 
+
 def write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
     print("[V4+ Styles]", file=handle)
     print(
