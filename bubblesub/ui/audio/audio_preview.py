@@ -244,11 +244,11 @@ class AudioPreview(BaseLocalAudioWidget):
         self._schedule_current_audio_view()
 
     def _schedule_current_audio_view(self) -> None:
-        if not self._spectrum_worker:
-            return
-
         self._need_repaint = True
         self.update()
+
+        if not self._spectrum_worker:
+            return
 
         self._spectrum_worker.clear_tasks()
 
