@@ -15,6 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import ast
+import contextlib
+import re
+import typing as T
 from pathlib import Path
 
 import docstring_parser
@@ -30,6 +33,27 @@ IGNORED_ARGUMENTS = {
     "_exc_val",
     "_exc_tb",
 }
+
+
+def _get_nodes() -> T.Iterable[T.Tuple[Path, ast.AST, str]]:
+    for path in collect_source_files():
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, (ast.FunctionDef, ast.Module)):
+                docstring = ast.get_docstring(node, clean=False)
+                yield path, node, docstring
+
+
+_NODES = list(_get_nodes())
+
+
+@contextlib.contextmanager
+def _decorated_log(path: Path, node: ast.AST) -> T.Any:
+    try:
+        yield
+    except AssertionError:
+        line_number = getattr(node, "lineno", "?")
+        print(f"Error at {path}:{line_number}")
+        raise
 
 
 def is_sentence(text: str) -> bool:
@@ -83,23 +107,36 @@ def verify_function_returns(
         assert not is_sentence(docstring.returns.description)
 
 
-def verify_function_docstring(path: Path, node: ast.FunctionDef) -> None:
-    docstring = ast.get_docstring(node)
-    if not docstring:
-        return
+@pytest.mark.parametrize(
+    "path,node,docstring",
+    ((path, node, docstring) for path, node, docstring in _NODES if docstring),
+)
+def test_docstrings_validity(
+    path: Path, node: ast.AST, docstring: str
+) -> None:
+    with _decorated_log(path, node):
+        assert not docstring.startswith(
+            ("\n", " ")
+        ), "don't start docstrings with whitespace"
 
-    docstring = docstring_parser.parse(docstring)
-    if not path.name.startswith("test_"):
+        if "\n" in docstring:
+            assert docstring.rstrip(" ").endswith(
+                "\n"
+            ), "end multiline docstrings with a newline"
+
+
+@pytest.mark.parametrize(
+    "path,node,docstring",
+    (
+        (path, node, docstring)
+        for path, node, docstring in _NODES
+        if isinstance(node, ast.FunctionDef) and docstring
+    ),
+)
+def test_function_docstrings_validity(
+    path: Path, node: ast.AST, docstring: str
+) -> None:
+    with _decorated_log(path, node):
+        docstring = docstring_parser.parse(docstring)
         verify_function_params(node, docstring)
         verify_function_returns(node, docstring)
-
-
-@pytest.mark.parametrize("path", collect_source_files())
-def test_docstrings(path: Path) -> None:
-    for node in ast.walk(ast.parse(path.read_text())):
-        try:
-            if isinstance(node, ast.FunctionDef):
-                verify_function_docstring(path, node)
-        except AssertionError:
-            print(f"Error at {path}:{node.lineno}")
-            raise

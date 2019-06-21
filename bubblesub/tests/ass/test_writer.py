@@ -39,7 +39,12 @@ from bubblesub.ass.writer import write_ass
 def test_write_ass_handle(
     write_meta_mock, write_styles_mock, write_events_mock
 ) -> None:
-    """Test the write_ass function for file handles."""
+    """Test the write_ass function for file handles.
+
+    :param write_meta_mock: mock to write_meta function
+    :param write_styles_mock: mock to write_styles function
+    :param write_events_mock: mock to write_events function
+    """
     handle = io.StringIO()
     ass_file = AssFile()
 
@@ -65,7 +70,12 @@ def test_write_ass_handle(
 def test_write_ass_file(
     write_meta_mock, write_styles_mock, write_events_mock
 ) -> None:
-    """Test the write_ass function for file paths."""
+    """Test the write_ass function for file paths.
+
+    :param write_meta_mock: mock to write_meta function
+    :param write_styles_mock: mock to write_styles function
+    :param write_events_mock: mock to write_events function
+    """
     ass_file = AssFile()
     with tempfile.TemporaryDirectory() as dir_name:
         path = Path(dir_name) / "tmp.ass"
