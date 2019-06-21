@@ -20,7 +20,7 @@ styles:
     preview_test_text: "Test テスト\n0123456789"
 
 gui:
-    spell_check: "en_US"
+    spell_check: "en"
     current_theme: "light"
     preview_fonts: true
     try_to_refresh_fonts: true

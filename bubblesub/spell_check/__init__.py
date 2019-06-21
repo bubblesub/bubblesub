@@ -19,4 +19,7 @@ from .common import DictNotFound, SpellCheckerError, SpellCheckerNotFound
 try:
     from .enchant import EnchantSpellChecker as SpellChecker
 except ImportError:
-    from .dummy import DummySpellChecker as SpellChecker
+    try:
+        from .pyspellchecker import PySpellCheckerSpellChecker as SpellChecker
+    except ImportError:
+        from .dummy import DummySpellChecker as SpellChecker
