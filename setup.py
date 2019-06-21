@@ -320,7 +320,9 @@ install_packages = [
     "lazy_import",
 ]
 
-if os.name != "nt":
+if os.name == "nt":
+    install_packages.append("pyspellchecker")
+else:
     install_packages.append("pyenchant")
 
 setup(
