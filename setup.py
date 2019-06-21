@@ -244,38 +244,6 @@ class FormatCommand(Command):
         sys.exit(0)
 
 
-class LintCommand(Command):
-    description = "run linters"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        import subprocess
-        import glob
-
-        commands = [
-            ["pycodestyle", "--ignore=E203,W503", "bubblesub"],
-            [
-                "pydocstyle",
-                "bubblesub/api",
-                "bubblesub/opt",
-                "bubblesub/ass",
-                #'bubblesub/cmd',
-            ]
-            + glob.glob("bubblesub/*.py"),
-            ["pylint", "bubblesub"],
-        ]
-
-        for command in commands:
-            status = subprocess.run(command)
-        sys.exit(0)
-
-
 class MypyCommand(Command):
     description = "run type checks"
     user_options = []
@@ -336,23 +304,10 @@ setup(
     package_dir={"bubblesub": "bubblesub"},
     package_data={"bubblesub": ["data/*", "data/**/*"]},
     install_requires=install_packages,
-    extras_require={
-        "develop": [
-            "black",
-            "docstring_parser",
-            "isort",
-            "mypy",
-            "pycodestyle",
-            "pydocstyle",
-            "pylint",
-            "pytest",
-        ]
-    },
+    extras_require={"develop": ["docstring_parser", "mypy", "pytest"]},
     cmdclass={
         "doc": GenerateDocumentationCommand,
         "test": PyTestCommand,
-        "fmt": FormatCommand,
-        "lint": LintCommand,
         "mypy": MypyCommand,
     },
     classifiers=[

@@ -48,7 +48,10 @@ disable=
 
     # plain stupid
     no-self-use,
-    too-few-public-methods
+    too-few-public-methods,
+
+    # pre-commit has problems
+    import-error
 
 [typecheck]
 ignored-modules=
