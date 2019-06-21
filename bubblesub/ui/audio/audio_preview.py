@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import functools
 import typing as T
 
 import ffms2
@@ -63,9 +62,9 @@ class SpectrumWorker(QueueWorker):
             self._input, self._output, flags=("FFTW_MEASURE",)
         )
 
-    def _process_task(self, chunk: T.Any) -> None:
+    def _process_task(self, task: T.Any) -> None:
         anything_changed = False
-        for block_idx in chunk:
+        for block_idx in task:
             out = self._get_spectrogram_for_block_idx(block_idx)
             if out is not None:
                 self.cache[block_idx] = out

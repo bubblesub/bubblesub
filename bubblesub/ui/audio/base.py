@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
-import math
 import typing as T
 from dataclasses import dataclass
 
@@ -63,7 +62,7 @@ def _create_new_subtitle(api: Api, pts: int, before: bool) -> None:
             idx = 0
         end = pts
 
-    sub = api.subs.events.insert(
+    api.subs.events.insert(
         idx, AssEvent(start=start, end=end, style=api.subs.default_style_name)
     )
     api.subs.selected_indexes = [idx]

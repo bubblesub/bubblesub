@@ -17,9 +17,7 @@
 """Threading API."""
 
 import queue
-import sys
 import time
-import traceback
 import typing as T
 
 from PyQt5 import QtCore
@@ -77,7 +75,6 @@ class QueueWorker(QtCore.QRunnable):
 
         :param task: task to process
         """
-        pass
 
     def stop(self) -> None:
         """Stop processing any remaining tasks and quit the thread ASAP."""
@@ -108,15 +105,12 @@ class QueueWorker(QtCore.QRunnable):
 
     def _started(self) -> None:
         """Called when the thread starts."""
-        pass
 
     def _finished(self) -> None:
         """Called when the thread finishes."""
-        pass
 
     def _queue_cleared(self) -> None:
         """Called when the last task in the queue gets finished."""
-        pass
 
 
 class OneShotWorker(QtCore.QRunnable):

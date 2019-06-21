@@ -49,7 +49,8 @@ class VideoBandWorker(QueueWorker):
 
         video_api.state_changed.connect(self._on_video_state_change)
 
-    def _process_task(self, frame_idx: int) -> None:
+    def _process_task(self, task: T.Any) -> None:
+        frame_idx = T.cast(int, task)
         frame = self._video_api.get_frame(frame_idx, 1, _BAND_Y_RESOLUTION)
         if frame is None:
             return

@@ -31,6 +31,7 @@ class DummySpellChecker(BaseSpellChecker):
 
         :param language: language to check the spelling with
         """
+        super().__init__(language)
         raise SpellCheckerNotFound
 
     def add(self, word: str) -> None:

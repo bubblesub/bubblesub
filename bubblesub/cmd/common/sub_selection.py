@@ -16,7 +16,6 @@
 
 """Subtitles selection, usable as an argument to commands."""
 
-import asyncio
 import itertools
 import typing as T
 from math import inf

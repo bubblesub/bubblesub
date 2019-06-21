@@ -29,9 +29,9 @@ from bubblesub.data import ROOT_DIR
 if T.TYPE_CHECKING:
     from bubblesub.api import Api  # pylint: disable=unused-import
     from bubblesub.api.log import LogLevel  # pylint: disable=unused-import
-    from bubblesub.ui.main_window import (
+    from bubblesub.ui.main_window import (  # pylint: disable=unused-import
         MainWindow,
-    )  # pylint: disable=unused-import
+    )
 
 
 class MySplashScreen(QtWidgets.QSplashScreen):

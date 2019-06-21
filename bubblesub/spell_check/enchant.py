@@ -31,10 +31,11 @@ class EnchantSpellChecker(BaseSpellChecker):
 
         :param language: language to check the spelling with
         """
+        super().__init__(language)
         try:
             self._dict = enchant.Dict(language)
         except enchant.errors.DictNotFoundError:
-            raise DictNotFoundError(language)
+            raise DictNotFound(language)
 
     def add(self, word: str) -> None:
         """Add a word globally.

@@ -54,7 +54,7 @@ class BaseSpellChecker:
 
         :param language: language to check the spelling with
         """
-        self.language = None
+        self.language = language
 
     @abc.abstractmethod
     def add(self, word: str) -> None:
@@ -62,7 +62,6 @@ class BaseSpellChecker:
 
         :param word: word to add to the dictionary
         """
-        ...
 
     @abc.abstractmethod
     def add_to_session(self, word: str) -> None:
@@ -70,7 +69,6 @@ class BaseSpellChecker:
 
         :param word: word to add to the dictionary
         """
-        ...
 
     @abc.abstractmethod
     def check(self, word: str) -> bool:
@@ -79,7 +77,6 @@ class BaseSpellChecker:
         :param word: word to check
         :return: whether the word is spelt correctly
         """
-        ...
 
     @abc.abstractmethod
     def suggest(self, word: str) -> T.Iterable[str]:
@@ -88,4 +85,3 @@ class BaseSpellChecker:
         :param word: word to check
         :return: list of closest candidates
         """
-        ...

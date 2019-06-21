@@ -23,7 +23,7 @@ from pathlib import Path
 import yaml
 from PyQt5 import QtCore
 
-from bubblesub.cfg.base import SubConfig
+from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import ROOT_DIR
 
 

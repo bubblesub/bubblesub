@@ -222,9 +222,8 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         """
         if isinstance(idx, slice):
             raise RuntimeError("slice assignment is not supported")
-        else:
-            self._items[idx] = value
-            self.item_changed.emit(idx)
+        self._items[idx] = value
+        self.item_changed.emit(idx)
 
     def __iter__(self) -> T.Iterator[TItem]:
         """Iterate directly over the collection values.

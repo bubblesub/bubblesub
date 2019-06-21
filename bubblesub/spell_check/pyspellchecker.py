@@ -31,6 +31,7 @@ class PySpellCheckerSpellChecker(BaseSpellChecker):
 
         :param language: language to check the spelling with
         """
+        super().__init__(language)
         self._ignored: T.Set[str] = set()
         try:
             self._dict = spellchecker.SpellChecker(language=language)

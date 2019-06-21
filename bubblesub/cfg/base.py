@@ -19,8 +19,6 @@
 import abc
 from pathlib import Path
 
-from bubblesub.data import ROOT_DIR
-
 
 class ConfigError(RuntimeError):
     """Base config error."""

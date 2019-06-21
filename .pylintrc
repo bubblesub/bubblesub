@@ -23,7 +23,8 @@ good-names=
     initializeGL,
     paintGL,
     sizeHint,
-    showMessage
+    showMessage,
+    eventFilter
 
 [format]
 max-line-length=79

@@ -30,7 +30,6 @@ from PyQt5 import QtCore
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
-from bubblesub.util import sanitize_file_name
 from bubblesub.util.wav import write_wav
 
 _LOADING = object()

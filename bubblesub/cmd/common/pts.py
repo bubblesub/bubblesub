@@ -24,7 +24,7 @@ from dataclasses import dataclass
 import parsimonious
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import CommandCanceled, CommandError, CommandUnavailable
+from bubblesub.api.cmd import CommandCanceled, CommandError
 from bubblesub.ass.event import AssEvent
 from bubblesub.ui.util import time_jump_dialog
 

@@ -135,7 +135,9 @@ class FontComboBox(QtWidgets.QComboBox):
             parent,
             editable=True,
             insertPolicy=QtWidgets.QComboBox.NoInsert,
-            sizeAdjustPolicy=QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon,
+            sizeAdjustPolicy=(
+                QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon
+            ),
         )
         self.addItems(_get_font_families())
         if api.cfg.opt["gui"]["preview_fonts"]:
