@@ -357,10 +357,12 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         )
         prev_value = widget.property(name)
         if cur_value != prev_value:
-            widget.setProperty(name, cur_value)
             if isinstance(widget, QtWidgets.QComboBox) and row_idx is not None:
+                widget.blockSignals(True)
                 cb_row_idx = widget.findText(cur_value)
                 widget.setCurrentIndex(cb_row_idx)
+                widget.blockSignals(False)
+            widget.setProperty(name, cur_value)
 
     def _write_to_model(
         self, widget: QtWidgets.QWidget, row_idx: int, col_idx: int
