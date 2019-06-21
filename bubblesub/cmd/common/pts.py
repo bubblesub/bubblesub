@@ -439,8 +439,6 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     async def visit_audio_selection(
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
-        if not self._api.audio.view.has_selection:
-            raise CommandUnavailable("audio selection is not available")
         _, boundary = _flatten(visited)
         if boundary == _Token.start:
             return _Time(self._api.audio.view.selection_start)

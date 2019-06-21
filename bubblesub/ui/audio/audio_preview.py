@@ -399,8 +399,6 @@ class AudioPreview(BaseLocalAudioWidget):
                 )
 
     def _draw_selection(self, painter: QtGui.QPainter) -> None:
-        if not self._view.has_selection:
-            return
         h = self.height()
         color_key = (
             "spectrogram/focused-sel"

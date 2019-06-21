@@ -130,18 +130,16 @@ class BaseAudioWidget(QtWidgets.QWidget):
         pts = self.pts_from_x(event.x())
 
         if self._drag_data.mode == DragMode.SelectionStart:
-            if self._view.has_selection:
-                self._view.select(
-                    min(self._view.selection_end, pts),
-                    self._view.selection_end,
-                )
+            self._view.select(
+                min(self._view.selection_end, pts),
+                self._view.selection_end,
+            )
 
         elif self._drag_data.mode == DragMode.SelectionEnd:
-            if self._view.has_selection:
-                self._view.select(
-                    self._view.selection_start,
-                    max(self._view.selection_start, pts),
-                )
+            self._view.select(
+                self._view.selection_start,
+                max(self._view.selection_start, pts),
+            )
 
         elif self._drag_data.mode == DragMode.VideoPosition:
             self._api.playback.seek(pts)

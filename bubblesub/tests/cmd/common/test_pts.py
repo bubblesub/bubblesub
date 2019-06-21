@@ -249,24 +249,16 @@ def test_frames(
     [
         ("a.s", (1, 2), 1),
         ("a.e", (1, 2), 2),
-        ("a.s", None, CommandUnavailable),
-        ("a.e", None, CommandUnavailable),
     ],
 )
 def test_audio_selection(
     expr: str,
-    selection: T.Optional[T.Tuple[int, int]],
+    selection: T.Tuple[int, int],
     expected_value: T.Union[int, T.Type[CommandError]],
 ) -> None:
     api = MagicMock()
-    if selection:
-        api.audio.view.has_selection = True
-        api.audio.view.selection_start = selection[0]
-        api.audio.view.selection_end = selection[1]
-    else:
-        api.audio.view.has_selection = False
-        api.audio.view.selection_start = None
-        api.audio.view.selection_end = None
+    api.audio.view.selection_start = selection[0]
+    api.audio.view.selection_end = selection[1]
     pts = Pts(api, expr)
     _assert_pts_value(pts, expected_value)
 

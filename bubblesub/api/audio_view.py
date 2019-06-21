@@ -144,15 +144,6 @@ class AudioViewApi(QtCore.QObject):
         """
         return self._selection_end - self._selection_start
 
-    @property
-    def has_selection(self) -> bool:
-        """
-        Return whether has selection.
-
-        :return: whether has selection
-        """
-        return self._selection_start != 0 or self._selection_end != 0
-
     def unselect(self) -> None:
         """Clear selection."""
         self._selection_start = 0
