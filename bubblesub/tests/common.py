@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Shared utility functions for tests."""
+
 import argparse
 import typing as T
 from pathlib import Path
@@ -28,6 +30,11 @@ TESTS_ROOT_DIR = APP_ROOT_DIR / "tests"
 
 
 def collect_source_files(root: Path = APP_ROOT_DIR) -> T.Iterable[Path]:
+    """Return source files belonging to bubblesub.
+
+    :param root: root dir, defaulting to the whole project
+    :return: generator of paths
+    """
     for path in root.iterdir():
         if path.is_dir():
             yield from collect_source_files(path)
@@ -37,6 +44,10 @@ def collect_source_files(root: Path = APP_ROOT_DIR) -> T.Iterable[Path]:
 
 @pytest.fixture
 def api() -> Api:
+    """Return core API instance for testing purposes.
+
+    :return: core API
+    """
     args = argparse.Namespace()
     setattr(args, "no_video", True)
     return Api(args)

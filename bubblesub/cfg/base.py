@@ -23,7 +23,7 @@ from bubblesub.data import ROOT_DIR
 
 
 class ConfigError(RuntimeError):
-    pass
+    """Base config error."""
 
 
 class SubConfig(abc.ABC):

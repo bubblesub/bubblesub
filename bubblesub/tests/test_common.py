@@ -14,9 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Tests for tests.common module."""
+
 from .common import collect_source_files
 
 
 def test_collect_files() -> None:
+    """Sanity check to test that collecting the source files actually yields
+    sensible results.
+    """
     files = list(collect_source_files())
     assert any(p.name == "__main__.py" for p in files)

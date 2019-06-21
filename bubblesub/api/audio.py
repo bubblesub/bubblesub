@@ -38,6 +38,8 @@ _SAMPLER_LOCK = threading.Lock()
 
 
 class AudioState(enum.Enum):
+    """Audio source state."""
+
     NotLoaded = enum.auto()
     Loading = enum.auto()
     Loaded = enum.auto()
@@ -115,6 +117,7 @@ class AudioApi(QtCore.QObject):
         self._source: T.Union[None, ffms2.AudioSource] = None
 
     def unload(self) -> None:
+        """Unload currently loaded audio source."""
         self._source = None
         self._min_time = 0
         self._max_time = 0
@@ -148,6 +151,10 @@ class AudioApi(QtCore.QObject):
 
     @property
     def path(self) -> T.Optional[Path]:
+        """Return current audio source path.
+
+        :return: path
+        """
         return self._path
 
     @property

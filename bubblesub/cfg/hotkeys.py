@@ -135,6 +135,11 @@ class HotkeysConfig(SubConfig):
         return iter(self._hotkeys)
 
     def __getitem__(self, key: T.Any) -> T.Optional[str]:
+        """Retrieve hotkey cmdline by shortcut.
+
+        :param key: shortcut
+        :return: hotkey cmdline if found, None otherwise
+        """
         context, shortcut = key
         for hotkey in self._hotkeys:
             if hotkey.context == context and hotkey.shortcut == shortcut:
@@ -142,6 +147,12 @@ class HotkeysConfig(SubConfig):
         return None
 
     def __setitem__(self, key: T.Any, cmdline: T.Optional[str]) -> None:
+        """Update hotkey cmdline by shortcut.
+        If cmdline is None, remove the hotkey.
+
+        :param key: shortcut to update
+        :param cmdline: cmdline to set
+        """
         context, shortcut = self._parse_key(key)
 
         for i, hotkey in enumerate(self._hotkeys):

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Module for drawing ASS structures to numpy bitmaps."""
+
 import ctypes
 import fractions
 import typing as T
@@ -29,9 +31,10 @@ from bubblesub.ass_renderer import libass
 
 
 class AssRenderer:
-    """Public renderer facade"""
+    """Public renderer facade."""
 
     def __init__(self) -> None:
+        """Initialize self."""
         self._ctx = libass.AssContext()
         self._renderer = self._ctx.make_renderer()
         self._renderer.set_fonts()
@@ -48,6 +51,13 @@ class AssRenderer:
         meta: AssMeta,
         video_resolution: T.Tuple[int, int],
     ) -> None:
+        """Set source ASS data.
+
+        :param style_list: list of ASS styles
+        :param event_list: list of ASS events
+        :param meta: ASS metadata
+        :param video_resolution: (width, height) tuple
+        """
         self.style_list = style_list
         self.event_list = event_list
         self.meta = meta
@@ -73,6 +83,12 @@ class AssRenderer:
     def render(
         self, time: int, aspect_ratio: T.Union[float, fractions.Fraction]
     ) -> PIL.Image:
+        """Render the ASS data to a PIL.Image bitmap.
+
+        :param time: PTS to render at
+        :param aspect_ratio: pixel aspect ratio to use
+        :return: PIL image
+        """
         if self._track is None:
             raise ValueError("need source to render")
 
@@ -135,6 +151,11 @@ class AssRenderer:
         return final
 
     def render_raw(self, time: int) -> libass.AssImageSequence:
+        """Render the ASS data to a numpy array.
+
+        :param time: PTS to render at
+        :return: numpy array with RGB data
+        """
         if self._track is None:
             raise ValueError("need source to render")
 

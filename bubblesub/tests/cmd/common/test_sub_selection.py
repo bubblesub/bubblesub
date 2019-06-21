@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Test SubtitlesSelection class."""
+
 import asyncio
 import typing as T
 from unittest.mock import MagicMock
@@ -71,6 +73,14 @@ def test_get_all_indexes(
     current_pts: T.Union[int, T.Any],
     expected_indexes: T.Union[T.List[int], T.Type[CommandError]],
 ) -> None:
+    """Test that parsing various inputs returns expected subtitle indexes.
+
+    :param expr: input expression to parse
+    :param sub_count: how many subtitles to simulate
+    :param sub_selection: current subtitle selection indexes to simulate
+    :param current_pts: current video PTS to simulate
+    :param expected_indexes: expected selection indexes
+    """
     api = MagicMock()
     api.playback.current_pts = current_pts
     api.subs.events = [MagicMock() for _ in range(sub_count)]

@@ -43,6 +43,11 @@ def _ms_to_timestamp(milliseconds: int) -> str:
 
 
 def write_meta(ass_file: AssFile, handle: T.IO[str]) -> None:
+    """Write ASS meta to a file.
+
+    :param ass_file: ASS file to take the metadata from
+    :param handle: handle to write the metadata to
+    """
     meta: T.Dict[str, str] = OrderedDict()
     meta["ScriptType"] = "sentinel"  # make sure script type is the first entry
     meta.update(ass_file.meta.items())
@@ -56,6 +61,11 @@ def write_meta(ass_file: AssFile, handle: T.IO[str]) -> None:
 
 
 def write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
+    """Write ASS styles to a file.
+
+    :param ass_file: ASS file to take the styles from
+    :param handle: handle to write the styles to
+    """
     print("[V4+ Styles]", file=handle)
     print(
         "Format: Name, Fontname, Fontsize, PrimaryColour, "
@@ -70,6 +80,11 @@ def write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
 
 
 def write_style(style: AssStyle, handle: T.IO[str]) -> None:
+    """Write ASS style to a file.
+
+    :param style: ASS style to write
+    :param handle: handle to write the style to
+    """
     print(
         "Style: "
         + ",".join(
@@ -104,6 +119,11 @@ def write_style(style: AssStyle, handle: T.IO[str]) -> None:
 
 
 def write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
+    """Write ASS events to a file.
+
+    :param ass_file: ASS file to take the events from
+    :param handle: handle to write the events to
+    """
     print("[Events]", file=handle)
     print(
         "Format: Layer, Start, End, Style, Name, "
@@ -115,6 +135,11 @@ def write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
 
 
 def write_event(event: AssEvent, handle: T.IO[str]) -> None:
+    """Write ASS event to a file.
+
+    :param event: ASS event to write
+    :param handle: handle to write the event to
+    """
     text = event.text
 
     if event.start is not None and event.end is not None:

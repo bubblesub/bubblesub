@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Basic program installation test for Travis CI."""
+
 import os
 import pathlib
 import signal
@@ -28,6 +30,11 @@ TIMEOUT = 4
 
 @pytest.mark.ci
 def test_run() -> None:
+    """Test if bubblesub is able to run. Use xvfb-run to simulate
+    virtual framebuffer on headless machines.
+
+    This test is to be used by CI only.
+    """
     try:
         subprocess.run(["xvfb-run", "bubblesub"], timeout=TIMEOUT, check=True)
     except subprocess.TimeoutExpired:

@@ -14,21 +14,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Shared definitions of spell checker classes."""
+
 import abc
 import typing as T
 
 
 class SpellCheckerError(Exception):
-    pass
+    """Base spell checker error."""
 
 
 class DictNotFound(SpellCheckerError):
+    """Dictionary not found error."""
+
     def __init__(self, language: str) -> None:
+        """Initialize self.
+
+        :param language: dictionary language that wasn't found
+        """
         super().__init__(f"dictionary {language} not installed")
 
 
 class SpellCheckerNotFound(SpellCheckerError):
+    """Spell checker not found error."""
+
     def __init__(self) -> None:
+        """Initialize self."""
         super().__init__(
             "no spell checker module installed "
             "(either install pyenchant or pyspellchecker)"
@@ -36,21 +47,45 @@ class SpellCheckerNotFound(SpellCheckerError):
 
 
 class BaseSpellChecker:
+    """Base spell checker class."""
+
     def __init__(self, language: str) -> None:
+        """Initialize self.
+
+        :param language: language to check the spelling with
+        """
         self.language = None
 
     @abc.abstractmethod
     def add(self, word: str) -> None:
+        """Add a word globally.
+
+        :param word: word to add to the dictionary
+        """
         ...
 
     @abc.abstractmethod
     def add_to_session(self, word: str) -> None:
+        """Add a word temporarily.
+
+        :param word: word to add to the dictionary
+        """
         ...
 
     @abc.abstractmethod
     def check(self, word: str) -> bool:
+        """Check whether a word is spelt correctly.
+
+        :param word: word to check
+        :return: whether the word is spelt correctly
+        """
         ...
 
     @abc.abstractmethod
     def suggest(self, word: str) -> T.Iterable[str]:
+        """Check for similar words to the given word.
+
+        :param word: word to check
+        :return: list of closest candidates
+        """
         ...

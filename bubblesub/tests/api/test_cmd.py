@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Tests for bubblesub.api.cmd module."""
+
 import typing as T
 
 import pytest
@@ -42,5 +44,10 @@ from bubblesub.api.cmd import split_invocation
 def test_split_invocation(
     invocation: str, expected: T.List[T.List[str]]
 ) -> None:
+    """Test parsing of CLI invocations.
+
+    :param invocation: input expression to parse
+    :param expected: list of expected tokens
+    """
     actual = split_invocation(invocation)
     assert actual == expected

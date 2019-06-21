@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Tests for bubblesub command naming."""
+
 import re
 import typing as T
 
@@ -22,7 +24,16 @@ from bubblesub.tests.common import api  # pylint: disable=unused-import
 
 
 def normalize_class_name(name: str) -> T.Iterable[str]:
-    def handler(match: T.Match) -> str:
+    """Cater for some conventions in class naming.
+
+    For example, while commands are named sub-*, classes should be named
+    Subtitle*.
+
+    :param name: name to normalize
+    :return: collection of names that are okay
+    """
+
+    def _handler(match: T.Match) -> str:
         if match.start() == 0:
             return match.group().lower()
         return "-" + match.group(0).lower()
@@ -37,12 +48,17 @@ def normalize_class_name(name: str) -> T.Iterable[str]:
     name = name.replace("Milliseconds", "Ms")
     name = name.replace("Command", "Cmd")
 
-    name = re.sub("[A-Z]", handler, name)
+    name = re.sub("[A-Z]", _handler, name)
 
     yield name
 
 
 def normalize_command_name(name: str) -> T.Iterable[str]:
+    """Allow some leeway in command naming.
+
+    :param name: name to normalize
+    :return: collection of names that are okay
+    """
     match = re.match(r"^((?P<prefix>[^/]*)\/)?(?P<stem>.*)$", name)
     assert match
     prefix = match.group("prefix")
@@ -55,6 +71,11 @@ def normalize_command_name(name: str) -> T.Iterable[str]:
 
 
 def verify_name(cls_name: str, cmd_name: str) -> None:
+    """Tests whether class name doesn't mismatch given command name.
+
+    :param cls_name: name of the Python class for the command
+    :param cmd_name: name of the command as in the UI
+    """
     assert set(normalize_class_name(cls_name)) & set(
         normalize_command_name(cmd_name)
     ), f"Class name {cls_name!r} doesn't match command name {cmd_name!r}"
@@ -63,6 +84,10 @@ def verify_name(cls_name: str, cmd_name: str) -> None:
 def test_command_naming(  # pylint: disable=redefined-outer-name
     api: Api
 ) -> None:
+    """Checks class names for accordance with the command names they define.
+
+    :param api: core API
+    """
     api.cmd.reload_commands()
 
     assert len(api.cmd.get_all()) >= 1

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Test Pts class."""
+
 import asyncio
 import typing as T
 from unittest.mock import MagicMock
@@ -101,6 +103,12 @@ def test_basic_arithmetic(
     origin: T.Optional[int],
     expected_value: T.Union[int, T.Type[CommandError]],
 ) -> None:
+    """Test time arithemtic.
+
+    :param expr: input expression to parse
+    :param origin: optional origin to parse against
+    :param expected_value: expected PTS
+    """
     api = MagicMock()
     pts = Pts(api, expr)
 
@@ -144,6 +152,14 @@ def test_subtitles(
     sub_selection: T.List[int],
     expected_value: int,
 ) -> None:
+    """Test first, last, current, previous, next and selected subtitle
+    boundaries.
+
+    :param expr: input expression to parse
+    :param sub_times: subtitle PTS to simulate
+    :param sub_selection: current subtitle selection indexes to simulate
+    :param expected_value: expected PTS
+    """
     api = MagicMock()
     api.subs.events = AssEventList()
     for start, end in sub_times:
@@ -232,6 +248,14 @@ def test_frames(
     keyframe_indexes: T.List[int],
     expected_value: T.Union[int, T.Type[CommandError]],
 ) -> None:
+    """Test frame and keyframe arithmetic.
+
+    :param expr: input expression to parse
+    :param frame_times: frame PTS to simulate
+    :param cur_frame_idx: current video frame index to simulate
+    :param keyframe_indexes: which frames are keyframes to simulate
+    :param expected_value: expected PTS
+    """
     api = MagicMock()
     api.video.timecodes = frame_times
     api.video.keyframes = keyframe_indexes
@@ -252,6 +276,12 @@ def test_audio_selection(
     selection: T.Tuple[int, int],
     expected_value: T.Union[int, T.Type[CommandError]],
 ) -> None:
+    """Test audio selection magic strings.
+
+    :param expr: input expression to parse
+    :param selection: audio selection to simulate
+    :param expected_value: expected PTS
+    """
     api = MagicMock()
     api.audio.view.selection_start = selection[0]
     api.audio.view.selection_end = selection[1]
@@ -265,6 +295,12 @@ def test_audio_selection(
 def test_audio_view(
     expr: str, view: T.Optional[T.Tuple[int, int]], expected_value: int
 ) -> None:
+    """Test spectrogram viewport magic strings.
+
+    :param expr: input expression to parse
+    :param view: audio view to simulate
+    :param expected_value: expected PTS
+    """
     api = MagicMock()
     api.audio.view.view_start = view[0]
     api.audio.view.view_end = view[1]
@@ -273,6 +309,7 @@ def test_audio_view(
 
 
 def test_default_subtitle_duration() -> None:
+    """Test default subtitle duration magic string."""
     api = MagicMock()
     api.cfg.opt = {"subs": {"default_duration": 123}}
     pts = Pts(api, "dsd")
@@ -281,6 +318,7 @@ def test_default_subtitle_duration() -> None:
 
 
 def test_min_max() -> None:
+    """Test min and max possible PTS magic strings."""
     api = MagicMock()
     api.playback.max_pts = 999
 

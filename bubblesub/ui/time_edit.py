@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Definition of the TimeEdit widget."""
+
 import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -23,6 +25,11 @@ from bubblesub.util import ms_to_str, str_to_ms
 
 class _TimeLineEdit(QtWidgets.QLineEdit):
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        """Handle up and down arrows key presses to increment or decrement the
+        PTS value of the TimeEdit widget.
+
+        :param event: keypress event
+        """
         super().keyPressEvent(event)
 
         if not event.key() in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Down):
@@ -47,6 +54,12 @@ class TimeEdit(QtWidgets.QWidget):
         allow_negative: bool = False,
         **kwargs: T.Any,
     ) -> None:
+        """Initialize self.
+
+        :param parent: parent widget
+        :param allow_negative: whether to allow negative PTS
+        :param kwargs: kwargs to pass to QWidget
+        """
         super().__init__(parent, **kwargs)
         self._value = 0
         self._allow_negative = False
@@ -66,6 +79,10 @@ class TimeEdit(QtWidgets.QWidget):
         self._qt_value = str_to_ms(text)
 
     def set_allow_negative(self, allow: bool) -> None:
+        """Change whether negative PTS are allowed.
+
+        :param allow: whether to allow negative PTS
+        """
         self._allow_negative = allow
         self._qt_value = 0
         self._reset_mask()
@@ -88,9 +105,17 @@ class TimeEdit(QtWidgets.QWidget):
             self.value_changed.emit(self._value)
 
     def get_value(self) -> int:
+        """Return current PTS.
+
+        :return: selected PTS
+        """
         return self._qt_value
 
     def set_value(self, time: int) -> None:
+        """Set current PTS.
+
+        :param time: PTS to set
+        """
         self._qt_value = time
 
     def _reset_mask(self) -> None:

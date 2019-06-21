@@ -123,7 +123,9 @@ def _unpickle(data: bytes) -> T.Any:
 
 
 class UndoApi:
-    """The undo API."""
+    """API for manipulation of undo and redo data for subtitles styles, events
+    and metadata.
+    """
 
     def __init__(self, cfg: Config, subs_api: SubtitlesApi) -> None:
         """Initialize self.

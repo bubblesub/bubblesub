@@ -40,6 +40,8 @@ _PIX_FMT = [ffms2.get_pix_fmt("rgb24")]
 
 
 class VideoState(enum.Enum):
+    """Video source state."""
+
     NotLoaded = enum.auto()
     Loading = enum.auto()
     Loaded = enum.auto()
@@ -107,7 +109,7 @@ class VideoApi(QtCore.QObject):
         self._last_output_fmt: T.Any = None
 
     def unload(self) -> None:
-        """Unload current video source."""
+        """Unload currently loaded video source."""
         self._path = None
         self._source = None
         self._timecodes.clear()
@@ -141,6 +143,10 @@ class VideoApi(QtCore.QObject):
 
     @property
     def path(self) -> T.Optional[Path]:
+        """Return current video source path.
+
+        :return: path
+        """
         return self._path
 
     @property

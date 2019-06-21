@@ -25,6 +25,8 @@ from bubblesub.api.subs import SubtitlesApi
 
 
 class VideoViewApi(QtCore.QObject):
+    """API for video preview."""
+
     zoom_changed = QtCore.pyqtSignal()
 
     def __init__(self, subs_api: SubtitlesApi) -> None:

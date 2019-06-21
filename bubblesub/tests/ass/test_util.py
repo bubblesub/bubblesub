@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Tests for bubblesub.ass.util module."""
+
 import pytest
 
 from bubblesub.ass.util import iter_words_ass_line
@@ -35,5 +37,10 @@ from bubblesub.ass.util import iter_words_ass_line
     ],
 )
 def test_iter_words_ass_line(ass_text, expected):
+    """Tests iterating over words in ASS lines.
+
+    :param ass_text: input ASS line
+    :param expected: expected list of words
+    """
     actual = [match.group(0) for match in iter_words_ass_line(ass_text)]
     assert actual == expected

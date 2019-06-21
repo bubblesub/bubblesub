@@ -26,6 +26,8 @@ from bubblesub.api.video import VideoApi, VideoState
 
 
 class AudioViewApi(QtCore.QObject):
+    """API for spectrogram preview."""
+
     view_changed = QtCore.pyqtSignal()
     selection_changed = QtCore.pyqtSignal()
 

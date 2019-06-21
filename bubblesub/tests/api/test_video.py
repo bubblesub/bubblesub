@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Tests for bubblesub.api.video module."""
+
 import typing as T
 
 import mock
@@ -27,6 +29,12 @@ def _test_align_pts_to_frame(
     expected: int,
     align_func: T.Callable[[VideoApi], T.Callable[[int], int]],
 ) -> None:
+    """Test aligning PTS to frames using a few mocked frames.
+
+    :param origin: source PTS
+    :param expected: expected PTS
+    :param align_func: the function to test
+    """
     threading_api = mock.MagicMock()
     log_api = mock.MagicMock()
     subs_api = mock.MagicMock()
@@ -59,6 +67,11 @@ def _test_align_pts_to_frame(
     ],
 )
 def test_align_pts_to_prev_frame(origin: int, expected: int) -> None:
+    """Test aligning PTS to the previous frame.
+
+    :param origin: source PTS
+    :param expected: expected PTS
+    """
     _test_align_pts_to_frame(
         origin, expected, lambda video_api: video_api.align_pts_to_prev_frame
     )
@@ -81,6 +94,11 @@ def test_align_pts_to_prev_frame(origin: int, expected: int) -> None:
     ],
 )
 def test_align_pts_to_next_frame(origin: int, expected: int) -> None:
+    """Test aligning PTS to the next frame.
+
+    :param origin: source PTS
+    :param expected: expected PTS
+    """
     _test_align_pts_to_frame(
         origin, expected, lambda video_api: video_api.align_pts_to_next_frame
     )
@@ -107,6 +125,11 @@ def test_align_pts_to_next_frame(origin: int, expected: int) -> None:
     ],
 )
 def test_align_pts_to_near_frame(origin: int, expected: int) -> None:
+    """Test aligning PTS to the nearest frame.
+
+    :param origin: source PTS
+    :param expected: expected PTS
+    """
     _test_align_pts_to_frame(
         origin, expected, lambda video_api: video_api.align_pts_to_near_frame
     )

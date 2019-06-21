@@ -14,6 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Spell checker class.
+
+Loads lazily first spell checker available.
+DummySpellChecker is always available.
+"""
+
 from .common import DictNotFound, SpellCheckerError, SpellCheckerNotFound
 
 try:

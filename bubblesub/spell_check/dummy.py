@@ -14,25 +14,49 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Dummy spell checker implementation that throws lazily an error on usage
+attempt.
+"""
+
 import typing as T
 
 from bubblesub.spell_check.common import BaseSpellChecker, SpellCheckerNotFound
 
 
 class DummySpellChecker(BaseSpellChecker):
-    """Throws lazily an error on usage attempt."""
+    """Spell checker implementation"""
 
     def __init__(self, language: str) -> None:
+        """Immediately raise an exception.
+
+        :param language: language to check the spelling with
+        """
         raise SpellCheckerNotFound
 
     def add(self, word: str) -> None:
-        pass
+        """Add a word globally.
+
+        :param word: word to add to the dictionary
+        """
 
     def add_to_session(self, word: str) -> None:
-        pass
+        """Add a word temporarily.
+
+        :param word: word to add to the dictionary
+        """
 
     def check(self, word: str) -> bool:
+        """Check whether a word is spelt correctly.
+
+        :param word: word to check
+        :return: whether the word is spelt correctly
+        """
         return True
 
     def suggest(self, word: str) -> T.Iterable[str]:
+        """Check for similar words to the given word.
+
+        :param word: word to check
+        :return: list of closest candidates
+        """
         return []

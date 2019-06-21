@@ -88,7 +88,17 @@ class OptionsConfig(SubConfig):
         return yaml.dump(self._storage, indent=4, default_flow_style=False)
 
     def __getitem__(self, key: T.Any) -> T.Any:
+        """Returns given configuration item.
+
+        :param key: key to retrieve
+        :return: configuration value
+        """
         return self._storage[key]
 
     def __setitem__(self, key: T.Any, value: T.Any) -> None:
+        """Updates given configuration item.
+
+        :param key: key to update
+        :param value: new configuration value
+        """
         self._storage[key] = value

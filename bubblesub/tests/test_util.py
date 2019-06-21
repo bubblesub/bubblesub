@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Tests for bubblesub.util module."""
+
 import typing as T
 
 import pytest
@@ -47,5 +49,11 @@ def test_make_ranges(
     reverse: bool,
     expected_ranges: T.List[T.Tuple[int, int]],
 ) -> None:
+    """Test whether make_ranges function produces correct ranges.
+
+    :param indexes: input flat array of numbers
+    :param reverse: whether to construct ranges in reverse order
+    :param expected_ranges: list of expected tuples (idx, count)
+    """
     actual_ranges = list(make_ranges(indexes, reverse=reverse))
     assert actual_ranges == expected_ranges

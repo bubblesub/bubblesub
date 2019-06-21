@@ -100,18 +100,18 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
         ast.USub: operator.neg,
     }
 
-    def eval_(
+    def _eval(
         node: T.List[ast.stmt]
     ) -> T.Union[int, float, fractions.Fraction]:
         if isinstance(node, ast.Num):
             return fractions.Fraction(node.n)
         if isinstance(node, ast.BinOp):
-            return op_map[type(node.op)](eval_(node.left), eval_(node.right))
+            return op_map[type(node.op)](_eval(node.left), _eval(node.right))
         if isinstance(node, ast.UnaryOp):
-            return op_map[type(node.op)](eval_(node.operand))
+            return op_map[type(node.op)](_eval(node.operand))
         raise TypeError(node)
 
-    return eval_(ast.parse(str(expr), mode="eval").body)
+    return _eval(ast.parse(str(expr), mode="eval").body)
 
 
 def make_ranges(

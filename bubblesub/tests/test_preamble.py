@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Tests for copyright notices."""
+
 from pathlib import Path
 
 import pytest
@@ -23,6 +25,11 @@ from .common import collect_source_files
 
 @pytest.mark.parametrize("path", collect_source_files())
 def test_preamble(path: Path) -> None:
+    """Test if given file starts with copyright preamble and contains necessary
+    copyright notices.
+
+    :param path: path to check
+    """
     preamble_body = """
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
