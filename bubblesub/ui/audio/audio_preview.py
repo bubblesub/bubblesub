@@ -324,7 +324,7 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         for keyframe in self._api.video.keyframes:
             timecode = self._api.video.timecodes[keyframe]
-            x = self.pts_to_x(timecode)
+            x = round(self.pts_to_x(timecode))
             painter.drawLine(x, 0, x, h)
 
     def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
@@ -335,8 +335,8 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.setFont(QtGui.QFont(self.font().family(), 10))
 
         for i, event in enumerate(self._api.subs.events):
-            x1 = self.pts_to_x(event.start)
-            x2 = self.pts_to_x(event.end)
+            x1 = round(self.pts_to_x(event.start))
+            x2 = round(self.pts_to_x(event.end))
             if x1 > x2:
                 x1, x2 = x2, x1
             if x2 < 0 or x1 >= self.width():
@@ -415,29 +415,29 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.setBrush(
             QtGui.QBrush(self._api.gui.get_color(f"{color_key}-fill"))
         )
-        x1 = self.pts_to_x(self._view.selection_start)
-        x2 = self.pts_to_x(self._view.selection_end)
+        x1 = round(self.pts_to_x(self._view.selection_start))
+        x2 = round(self.pts_to_x(self._view.selection_end))
         painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
         if not self._api.playback.current_pts:
             return
-        x = self.pts_to_x(self._api.playback.current_pts)
+        x = round(self.pts_to_x(self._api.playback.current_pts))
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
 
         width = 7
         polygon = QtGui.QPolygonF()
         for x, y in [
-            (x - width / 2, 0),
-            (x + width / 2, 0),
-            (x + 1, width / 2),
+            (x - width // 2, 0),
+            (x + width // 2, 0),
+            (x + 1, width // 2),
             (x + 1, painter.viewport().height() - 1),
             (x, painter.viewport().height() - 1),
-            (x, width / 2),
-            (x - width / 2, 0),
+            (x, width // 2),
+            (x - width // 2, 0),
         ]:
-            polygon.append(QtCore.QPointF(x, y))
+            polygon.append(QtCore.QPoint(x, y))
 
         painter.drawPolygon(polygon)
 
@@ -446,7 +446,7 @@ class AudioPreview(BaseLocalAudioWidget):
             return
         pts = self.pts_from_x(self._mouse_pos.x())
         pts = self._api.video.align_pts_to_near_frame(pts)
-        x = self.pts_to_x(pts)
+        x = round(self.pts_to_x(pts))
 
         painter.setPen(self._mouse_color)
         painter.setBrush(QtCore.Qt.NoBrush)

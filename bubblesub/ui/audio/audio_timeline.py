@@ -66,7 +66,7 @@ class AudioTimeline(BaseLocalAudioWidget):
         text_height = painter.fontMetrics().capHeight()
 
         for pts in range(start_pts, end_pts, one_second):
-            x = self.pts_to_x(pts)
+            x = round(self.pts_to_x(pts))
             if x < 0 or x >= self.width():
                 continue
 
@@ -83,7 +83,7 @@ class AudioTimeline(BaseLocalAudioWidget):
                     pts // one_minute, (pts % one_minute) // one_second
                 )
                 long_text_width = painter.fontMetrics().width(long_text)
-                next_label_x = self.pts_to_x(pts + 10 * one_second)
+                next_label_x = round(self.pts_to_x(pts + 10 * one_second))
                 if long_text_width < next_label_x - x:
                     text = long_text
                 else:
@@ -98,24 +98,24 @@ class AudioTimeline(BaseLocalAudioWidget):
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         for keyframe in self._api.video.keyframes:
             timecode = self._api.video.timecodes[keyframe]
-            x = self.pts_to_x(timecode)
+            x = round(self.pts_to_x(timecode))
             painter.drawLine(x, 0, x, h)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
         if not self._api.playback.current_pts:
             return
-        x = self.pts_to_x(self._api.playback.current_pts)
+        x = round(self.pts_to_x(self._api.playback.current_pts))
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
 
         width = 7
         polygon = QtGui.QPolygonF()
         for x, y in [
-            (x - width / 2, 0),
-            (x + width / 2, 0),
-            (x + width / 2, painter.viewport().height()),
-            (x - width / 2, painter.viewport().height()),
+            (x - width // 2, 0),
+            (x + width // 2, 0),
+            (x + width // 2, painter.viewport().height()),
+            (x - width // 2, painter.viewport().height()),
         ]:
-            polygon.append(QtCore.QPointF(x, y))
+            polygon.append(QtCore.QPoint(x, y))
 
         painter.drawPolygon(polygon)

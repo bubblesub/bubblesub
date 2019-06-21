@@ -202,11 +202,11 @@ class BaseAudioWidget(QtWidgets.QWidget):
 class BaseLocalAudioWidget(BaseAudioWidget):
     def pts_to_x(self, pts: int) -> float:
         scale = self.width() / max(1, self._view.view_size)
-        return math.floor((pts - self._view.view_start) * scale)
+        return (pts - self._view.view_start) * scale
 
-    def pts_from_x(self, x: float) -> int:
+    def pts_from_x(self, x: float) -> float:
         scale = self._view.view_size / self.width()
-        return int(x * scale + self._view.view_start)
+        return x * scale + self._view.view_start
 
     def frame_idx_from_x(self, x: int) -> int:
         pts = self.pts_from_x(x)
@@ -218,6 +218,6 @@ class BaseGlobalAudioWidget(BaseAudioWidget):
         scale = T.cast(int, self.width()) / max(1, self._view.size)
         return (pts - self._view.min) * scale
 
-    def pts_from_x(self, x: float) -> int:
+    def pts_from_x(self, x: float) -> float:
         scale = self._view.size / self.width()
         return int(x * scale + self._view.min)

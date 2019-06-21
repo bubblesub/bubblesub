@@ -54,7 +54,7 @@ class AudioSlider(BaseGlobalAudioWidget):
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
         if not self._api.playback.current_pts:
             return
-        x = self.pts_to_x(self._api.playback.current_pts)
+        x = round(self.pts_to_x(self._api.playback.current_pts))
         painter.setPen(
             QtGui.QPen(
                 self._api.gui.get_color("spectrogram/video-marker"),
@@ -72,15 +72,15 @@ class AudioSlider(BaseGlobalAudioWidget):
         color.setAlpha(40)
         painter.setBrush(QtGui.QBrush(color))
         for line in self._api.subs.events:
-            x1 = self.pts_to_x(line.start)
-            x2 = self.pts_to_x(line.end)
+            x1 = round(self.pts_to_x(line.start))
+            x2 = round(self.pts_to_x(line.end))
             painter.drawRect(x1, 0, x2 - x1, h - 1)
 
     def _draw_slider(self, painter: QtGui.QPainter) -> None:
         h = self.height()
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(self.palette().highlight()))
-        x1 = self.pts_to_x(self._view.view_start)
-        x2 = self.pts_to_x(self._view.view_end)
+        x1 = round(self.pts_to_x(self._view.view_start))
+        x2 = round(self.pts_to_x(self._view.view_end))
         painter.drawRect(x1, 0, x2 - x1, h / 4)
         painter.drawRect(x1, h - 1 - h / 4, x2 - x1, h / 4)
