@@ -31,8 +31,7 @@ class SubConfig(abc.ABC):
 
     @abc.abstractmethod
     def load(self, root_dir: Path) -> None:
-        """
-        Load internals of this config from the specified directory.
+        """Load internals of this config from the specified directory.
 
         :param root_dir: directory where to look for the matching config file
         """

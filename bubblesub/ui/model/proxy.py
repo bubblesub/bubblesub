@@ -27,8 +27,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     def __init__(
         self, parent: QtCore.QObject, list_: ObservableList[T.Any]
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param parent: owner object
         :param list_: the list to adapt
@@ -52,8 +51,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     def rowCount(
         self, _parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
-        """
-        Return number of rows.
+        """Return number of rows.
 
         :param _parent: unused
         :return: number of rows
@@ -63,8 +61,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     def columnCount(
         self, _parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
-        """
-        Return number of columns.
+        """Return number of columns.
 
         :param _parent: unused
         :return: number of columns
@@ -74,8 +71,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     def data(
         self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole
     ) -> T.Any:
-        """
-        Retrieve cell data at the specified position.
+        """Retrieve cell data at the specified position.
 
         :param index: cell position
         :param role: what kind of information to retrieve
@@ -91,8 +87,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         value: T.Any,
         role: int = QtCore.Qt.DisplayRole,
     ) -> bool:
-        """
-        Update cell data at the specified position.
+        """Update cell data at the specified position.
 
         :param index: cell position
         :param value: new associated cell data

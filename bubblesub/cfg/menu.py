@@ -44,8 +44,7 @@ class MenuCommand(MenuItem):
     """Menu item associated with a bubblesub command."""
 
     def __init__(self, name: str, cmdline: str) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         Menu label is taken from the associated command.
 
@@ -64,8 +63,7 @@ class MenuPlaceholder(MenuItem):
     """Menu text that does nothing (always disabled)."""
 
     def __init__(self, text: str) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param text: text to display
         """
@@ -78,8 +76,7 @@ class SubMenu(MenuItem):
     def __init__(
         self, name: str, children: T.MutableSequence[MenuItem]
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param name: menu label
         :param children: submenu items
@@ -100,8 +97,8 @@ class MenuConfig(SubConfig):
         self.load(None)
 
     def create_example_file(self, root_dir: Path) -> None:
-        """
-        Create an example file for the user to get to know the config syntax.
+        """Create an example file for the user to get to know the config
+        syntax.
 
         :param root_dir: directory where to put the config file
         """
@@ -110,8 +107,7 @@ class MenuConfig(SubConfig):
             user_path.write_text((ROOT_DIR / "menu.example").read_text())
 
     def load(self, root_dir: T.Optional[Path]) -> None:
-        """
-        Load internals of this config from the specified directory.
+        """Load internals of this config from the specified directory.
 
         :param root_dir: directory where to look for the matching config file
         """
@@ -180,8 +176,7 @@ class MenuConfig(SubConfig):
             _recurse_tree(self._menu[context], -1, source)
 
     def __getitem__(self, context: MenuContext) -> T.MutableSequence[MenuItem]:
-        """
-        Retrieve list of menu items by the specified context.
+        """Retrieve list of menu items by the specified context.
 
         :param context: context
         :return: contextual menu
@@ -191,8 +186,7 @@ class MenuConfig(SubConfig):
     def __iter__(
         self
     ) -> T.Iterator[T.Tuple[MenuContext, T.MutableSequence[MenuItem]]]:
-        """
-        Let users iterate directly over this config.
+        """Let users iterate directly over this config.
 
         :return: iterator
         """

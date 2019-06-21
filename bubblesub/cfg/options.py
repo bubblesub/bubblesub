@@ -49,8 +49,7 @@ class OptionsConfig(SubConfig):
         self.load(None)
 
     def load(self, root_dir: T.Optional[Path]) -> None:
-        """
-        Load internals of this config from the specified directory.
+        """Load internals of this config from the specified directory.
 
         :param root_dir: directory where to look for the matching config file
         """
@@ -66,8 +65,7 @@ class OptionsConfig(SubConfig):
         self.changed.emit()
 
     def save(self, root_dir: Path) -> None:
-        """
-        Save internals of this config to the specified directory.
+        """Save internals of this config to the specified directory.
 
         :param root_dir: directory where to save the matching config file
         """

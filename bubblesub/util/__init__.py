@@ -24,8 +24,7 @@ from pathlib import Path
 
 
 def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
-    """
-    Convert PTS to tuple symbolizing time.
+    """Convert PTS to tuple symbolizing time.
 
     :param milliseconds: PTS
     :return: tuple with hours, minutes, seconds and milliseconds
@@ -41,8 +40,7 @@ def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
 
 
 def ms_to_str(milliseconds: int) -> str:
-    """
-    Convert PTS to a human readable form.
+    """Convert PTS to a human readable form.
 
     :param milliseconds: PTS
     :return: PTS representation in form of `[-]HH:MM:SS.mmm`
@@ -53,8 +51,7 @@ def ms_to_str(milliseconds: int) -> str:
 
 
 def str_to_ms(text: str) -> int:
-    """
-    Convert a human readable text in form of `[[-]HH:]MM:SS.mmm` to PTS.
+    """Convert a human readable text in form of `[[-]HH:]MM:SS.mmm` to PTS.
 
     :param text: input text
     :return: PTS
@@ -85,8 +82,7 @@ def str_to_ms(text: str) -> int:
 
 
 def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
-    """
-    Evaluate simple expression.
+    """Evaluate simple expression.
 
     :param expr: expression to evaluate
     :return: scalar result
@@ -121,8 +117,7 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
 def make_ranges(
     indexes: T.Iterable[int], reverse: bool = False
 ) -> T.Iterable[T.Tuple[int, int]]:
-    """
-    Group indexes together into a list of consecutive ranges.
+    """Group indexes together into a list of consecutive ranges.
 
     :param indexes: list of source indexes
     :param reverse: whether ranges should be made in reverse order
@@ -141,8 +136,7 @@ def make_ranges(
 
 
 def sanitize_file_name(file_name: T.Union[Path, str]) -> str:
-    """
-    Remove unusable characters from a file name.
+    """Remove unusable characters from a file name.
 
     :param file_name: file name to sanitize
     :return: sanitized file name
@@ -158,8 +152,7 @@ def sanitize_file_name(file_name: T.Union[Path, str]) -> str:
 
 
 def chunks(source: T.List[T.Any], size: int) -> T.Iterable[T.List[T.Any]]:
-    """
-    Yield successive chunks of given size from source.
+    """Yield successive chunks of given size from source.
 
     :param source: source list
     :param size: chunk size
@@ -170,8 +163,7 @@ def chunks(source: T.List[T.Any], size: int) -> T.Iterable[T.List[T.Any]]:
 
 
 def first(source: T.Iterable[T.Any], default: T.Any = None) -> T.Any:
-    """
-    Return first element from a list or default value if the list is empty.
+    """Return first element from a list or default value if the list is empty.
 
     :param source: source list
     :param default: default value
@@ -184,8 +176,7 @@ def first(source: T.Iterable[T.Any], default: T.Any = None) -> T.Any:
 
 
 def ucfirst(source: str) -> str:
-    """
-    Return source string with capitalized first letter.
+    """Return source string with capitalized first letter.
 
     :param source: source string
     :return: transformed string

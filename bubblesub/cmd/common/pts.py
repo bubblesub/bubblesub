@@ -187,8 +187,7 @@ class _Time:
         api: Api,
         func: T.Callable[[int, int], int],
     ) -> "_Time":
-        """
-        Performs time arithmetic.
+        """Performs time arithmetic.
 
         Tries to preserve frame numbers between math operations if possible.
         Resolves basic frame arithmetic into actual frame times.
@@ -214,8 +213,7 @@ class _Time:
         raise NotImplementedError(f"unknown time unit: {time2.unit}")
 
     def unpack(self, api: Api) -> int:
-        """
-        Resolves frame indexes into pts.
+        """Resolves frame indexes into pts.
 
         :param api: core API
         :return: resolved pts

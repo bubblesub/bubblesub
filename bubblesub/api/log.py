@@ -43,8 +43,7 @@ class LogApi(QtCore.QObject):
     logged = QtCore.pyqtSignal(LogLevel, str)
 
     def __init__(self, cfg: Config) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param cfg: program configuration
         """
@@ -52,48 +51,42 @@ class LogApi(QtCore.QObject):
         self._cfg = cfg
 
     def debug(self, text: str) -> None:
-        """
-        Log a message with debug level.
+        """Log a message with debug level.
 
         :param text: text to log
         """
         self.log(LogLevel.Debug, text)
 
     def info(self, text: str) -> None:
-        """
-        Log a message with info level.
+        """Log a message with info level.
 
         :param text: text to log
         """
         self.log(LogLevel.Info, text)
 
     def warn(self, text: str) -> None:
-        """
-        Log a message with warning level.
+        """Log a message with warning level.
 
         :param text: text to log
         """
         self.log(LogLevel.Warning, text)
 
     def error(self, text: str) -> None:
-        """
-        Log a message with error level.
+        """Log a message with error level.
 
         :param text: text to log
         """
         self.log(LogLevel.Error, text)
 
     def command_echo(self, text: str) -> None:
-        """
-        Log a message with command echo level.
+        """Log a message with command echo level.
 
         :param text: text to log
         """
         self.log(LogLevel.CommandEcho, text)
 
     def log(self, level: LogLevel, text: str) -> None:
-        """
-        Log a message.
+        """Log a message.
 
         :param level: level to log the message with
         :param text: text to log
@@ -109,8 +102,7 @@ class LogApi(QtCore.QObject):
 
     @contextlib.contextmanager
     def exception_guard(self) -> T.Iterator[None]:
-        """
-        Eats exceptions and logs then as an error.
+        """Eats exceptions and logs then as an error.
 
         :return: context manager
         """

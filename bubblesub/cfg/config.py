@@ -38,8 +38,7 @@ class Config:
         self.root_dir = Path()
 
     def load(self, root_dir: Path) -> None:
-        """
-        Load configuration from the specified path.
+        """Load configuration from the specified path.
 
         :param root_dir: root directory to load the configuration from
         """
@@ -49,8 +48,7 @@ class Config:
         self.menu.load(root_dir)
 
     def save(self, root_dir: Path) -> None:
-        """
-        Save configuration to the specified path.
+        """Save configuration to the specified path.
 
         :param root_dir: root directory to save the configuration to
         """
@@ -59,8 +57,7 @@ class Config:
         self.menu.create_example_file(root_dir)
 
     def get_assets(self, directory_name: str) -> T.Iterable[Path]:
-        """
-        Get path to all static assets under given directory name.
+        """Get path to all static assets under given directory name.
 
         :param directory_name: directory that contains relevant assets
         :return: list of paths found in the user and built-in asset directories

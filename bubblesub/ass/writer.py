@@ -146,8 +146,7 @@ def write_event(event: AssEvent, handle: T.IO[str]) -> None:
 
 
 def write_ass(ass_file: AssFile, target: T.Union[Path, T.IO[str]]) -> None:
-    """
-    Save ASS to the specified target.
+    """Save ASS to the specified target.
 
     :param ass_file: file to save
     :param target: writable stream or a path

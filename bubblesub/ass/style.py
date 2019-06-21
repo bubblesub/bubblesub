@@ -53,8 +53,7 @@ class AssStyle(ObservableObject):
         margin_vertical: int = 20,
         encoding: int = 1,
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param name: style name
         :param font_name: font family
@@ -110,8 +109,7 @@ class AssStyle(ObservableObject):
         self.encoding = encoding
 
     def scale(self, factor: float) -> None:
-        """
-        Scale self by the given factor.
+        """Scale self by the given factor.
 
         :param factor: scale to scale self by
         """
@@ -124,8 +122,7 @@ class AssStyle(ObservableObject):
 
     @property
     def index(self) -> T.Optional[int]:
-        """
-        Return style index in the parent style list, starting at 0.
+        """Return style index in the parent style list, starting at 0.
 
         :return: index if style has parent list, None otherwise
         """
@@ -136,8 +133,7 @@ class AssStyle(ObservableObject):
 
     @property
     def name(self) -> str:
-        """
-        Return style name.
+        """Return style name.
 
         :return: style name
         """
@@ -145,8 +141,7 @@ class AssStyle(ObservableObject):
 
     @name.setter
     def name(self, new_name: str) -> None:
-        """
-        Set new style name.
+        """Set new style name.
 
         Remembers old name so that the event with style change can be fired
         with the old name.
@@ -163,8 +158,7 @@ class AssStyle(ObservableObject):
             self.style_list.item_changed.emit(self.index)
 
     def __getstate__(self) -> T.Any:
-        """
-        Return pickle compatible object representation.
+        """Return pickle compatible object representation.
 
         The pickled copy is detached from the parent list.
 
@@ -175,8 +169,7 @@ class AssStyle(ObservableObject):
         return ret
 
     def __setstate__(self, state: T.Any) -> None:
-        """
-        Load class state from pickle compatible object representation.
+        """Load class state from pickle compatible object representation.
 
         :param state: object representation
         """
@@ -184,8 +177,7 @@ class AssStyle(ObservableObject):
         self.style_list = None
 
     def __copy__(self) -> "AssStyle":
-        """
-        Duplicate self.
+        """Duplicate self.
 
         The copy is detached from the parent list.
 
@@ -203,8 +195,7 @@ class AssStyleList(ObservableList[AssStyle]):
     """ASS style list."""
 
     def insert(self, idx: int, *items: AssStyle) -> None:
-        """
-        Insert styles at the specified position.
+        """Insert styles at the specified position.
 
         :param idx: index to add the new styles at
         :param items: styles to add
@@ -215,8 +206,7 @@ class AssStyleList(ObservableList[AssStyle]):
         super().insert(idx, *items)
 
     def remove(self, idx: int, count: int) -> None:
-        """
-        Remove styles at the specified position.
+        """Remove styles at the specified position.
 
         :param idx: where to start the removal
         :param count: how many elements to remove
@@ -226,8 +216,7 @@ class AssStyleList(ObservableList[AssStyle]):
         super().remove(idx, count)
 
     def get_by_name(self, name: str) -> T.Optional[AssStyle]:
-        """
-        Retrieve style by its name.
+        """Retrieve style by its name.
 
         :param name: name of the style to look for
         :return: style instance if one was found, None otherwise

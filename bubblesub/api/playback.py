@@ -63,8 +63,7 @@ class PlaybackApi(QtCore.QObject):
         video_api: VideoApi,
         audio_api: AudioApi,
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param log_api: logging API
         :param subs_api: subtitles API
@@ -87,8 +86,7 @@ class PlaybackApi(QtCore.QObject):
         self.receive_current_pts_change.connect(self._on_current_pts_change)
 
     def seek(self, pts: int, precise: bool = True) -> None:
-        """
-        Seek to specified position in the video.
+        """Seek to specified position in the video.
 
         :param pts: PTS to seek to
         :param precise: whether to be preciser at the expense of performance
@@ -98,8 +96,7 @@ class PlaybackApi(QtCore.QObject):
             self.request_seek.emit(pts, precise)
 
     def play(self, start: int, end: T.Optional[int]) -> None:
-        """
-        Play the currently loaded video at specified PTS range.
+        """Play the currently loaded video at specified PTS range.
 
         :param start: start PTS
         :param end: end PTS
@@ -108,8 +105,7 @@ class PlaybackApi(QtCore.QObject):
 
     @property
     def state(self) -> PlaybackFrontendState:
-        """
-        Return current playback state.
+        """Return current playback state.
 
         :return: playback state
         """
@@ -117,8 +113,7 @@ class PlaybackApi(QtCore.QObject):
 
     @state.setter
     def state(self, value: PlaybackFrontendState) -> None:
-        """
-        Set current playback state.
+        """Set current playback state.
 
         :param value: new playback state
         """
@@ -129,8 +124,7 @@ class PlaybackApi(QtCore.QObject):
 
     @property
     def playback_speed(self) -> fractions.Fraction:
-        """
-        Return playback rate for the currently loaded video.
+        """Return playback rate for the currently loaded video.
 
         :return: playback rate for the currently loaded video, 1.0 if no video
         """
@@ -140,8 +134,7 @@ class PlaybackApi(QtCore.QObject):
     def playback_speed(
         self, value: T.Union[fractions.Fraction, int, float]
     ) -> None:
-        """
-        Set new playback rate for the currently loaded video.
+        """Set new playback rate for the currently loaded video.
 
         :param value: new playback rate
         """
@@ -157,8 +150,7 @@ class PlaybackApi(QtCore.QObject):
 
     @property
     def volume(self) -> fractions.Fraction:
-        """
-        Return volume for the currently loaded video.
+        """Return volume for the currently loaded video.
 
         :return: volume for the currently loaded video, 100.0 if no video
         """
@@ -166,8 +158,7 @@ class PlaybackApi(QtCore.QObject):
 
     @volume.setter
     def volume(self, value: T.Union[fractions.Fraction, int, float]) -> None:
-        """
-        Set new volume for the currently loaded video.
+        """Set new volume for the currently loaded video.
 
         :param value: new volume
         """
@@ -183,8 +174,7 @@ class PlaybackApi(QtCore.QObject):
 
     @property
     def is_muted(self) -> bool:
-        """
-        Return whether the video is muted.
+        """Return whether the video is muted.
 
         :return: whether the video is muted
         """
@@ -192,8 +182,7 @@ class PlaybackApi(QtCore.QObject):
 
     @is_muted.setter
     def is_muted(self, value: bool) -> None:
-        """
-        Mute or unmute the video.
+        """Mute or unmute the video.
 
         :param value: whether to mute the video
         """
@@ -203,8 +192,7 @@ class PlaybackApi(QtCore.QObject):
 
     @property
     def current_pts(self) -> int:
-        """
-        Return current video position.
+        """Return current video position.
 
         :return: current video position, 0 if no video
         """
@@ -212,8 +200,7 @@ class PlaybackApi(QtCore.QObject):
 
     @property
     def max_pts(self) -> int:
-        """
-        Return maximum video position.
+        """Return maximum video position.
 
         :return: maximum video position, 0 if no video
         """
@@ -221,8 +208,7 @@ class PlaybackApi(QtCore.QObject):
 
     @property
     def is_paused(self) -> bool:
-        """
-        Return whether the currently loaded video is paused.
+        """Return whether the currently loaded video is paused.
 
         :return: whether the currently loaded video is paused, True if no video
         """
@@ -230,8 +216,7 @@ class PlaybackApi(QtCore.QObject):
 
     @is_paused.setter
     def is_paused(self, value: bool) -> None:
-        """
-        Pause or unpause the video.
+        """Pause or unpause the video.
 
         :param value: whether to pause the video
         """
@@ -241,8 +226,7 @@ class PlaybackApi(QtCore.QObject):
 
     @property
     def is_ready(self) -> bool:
-        """
-        Return whether the playback frontend is ready.
+        """Return whether the playback frontend is ready.
 
         :return: whether the playback frontend is ready
         """

@@ -28,8 +28,7 @@ class VideoViewApi(QtCore.QObject):
     zoom_changed = QtCore.pyqtSignal()
 
     def __init__(self, subs_api: SubtitlesApi) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param subs_api: subtitles API
         """
@@ -43,8 +42,7 @@ class VideoViewApi(QtCore.QObject):
 
     @property
     def zoom(self) -> fractions.Fraction:
-        """
-        Return zoom factor.
+        """Return zoom factor.
 
         :return: zoom factor
         """
@@ -52,8 +50,7 @@ class VideoViewApi(QtCore.QObject):
 
     @zoom.setter
     def zoom(self, value: T.Union[fractions.Fraction, int, float]) -> None:
-        """
-        Sets new zoom factor.
+        """Sets new zoom factor.
 
         :param value: new zoom factor
         """
@@ -64,7 +61,5 @@ class VideoViewApi(QtCore.QObject):
             self.zoom_changed.emit()
 
     def reset_view(self) -> None:
-        """
-        Resets the view to the defaults.
-        """
+        """Resets the view to the defaults."""
         self.zoom = 0

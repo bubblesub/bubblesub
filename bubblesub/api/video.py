@@ -48,8 +48,7 @@ class VideoState(enum.Enum):
 def _load_video_source(
     log_api: LogApi, path: Path
 ) -> T.Tuple[Path, T.Optional[ffms2.VideoSource]]:
-    """
-    Create video source.
+    """Create video source.
 
     :param log_api: logging API
     :param path: path to the video file
@@ -82,8 +81,7 @@ class VideoApi(QtCore.QObject):
         log_api: LogApi,
         subs_api: SubtitlesApi,
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param threading_api: threading API
         :param log_api: logging API
@@ -122,8 +120,7 @@ class VideoApi(QtCore.QObject):
         self.state = VideoState.NotLoaded
 
     def load(self, path: T.Union[str, Path]) -> None:
-        """
-        Load video from specified file.
+        """Load video from specified file.
 
         :param path: path to load the video from
         """
@@ -148,8 +145,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def state(self) -> VideoState:
-        """
-        Return current video state.
+        """Return current video state.
 
         :return: video state
         """
@@ -157,8 +153,7 @@ class VideoApi(QtCore.QObject):
 
     @state.setter
     def state(self, value: VideoState) -> None:
-        """
-        Set current video state.
+        """Set current video state.
 
         :param value: new video state
         """
@@ -169,8 +164,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def is_ready(self) -> bool:
-        """
-        Return whether if the video is loaded.
+        """Return whether if the video is loaded.
 
         :return: whether if the video is loaded
         """
@@ -184,8 +178,7 @@ class VideoApi(QtCore.QObject):
         width: T.Optional[int],
         height: T.Optional[int],
     ) -> None:
-        """
-        Save a screenshot into specified destination.
+        """Save a screenshot into specified destination.
 
         :param pts: pts to make screenshot of
         :param path: path to save the screenshot to
@@ -222,8 +215,7 @@ class VideoApi(QtCore.QObject):
         image.save(str(path))
 
     def align_pts_to_near_frame(self, pts: int) -> int:
-        """
-        Align PTS to a frame closest to given PTS.
+        """Align PTS to a frame closest to given PTS.
 
         :param pts: PTS to align
         :return: aligned PTS
@@ -243,8 +235,7 @@ class VideoApi(QtCore.QObject):
         return pts
 
     def align_pts_to_prev_frame(self, pts: int) -> int:
-        """
-        Align PTS to a frame immediately before given PTS.
+        """Align PTS to a frame immediately before given PTS.
 
         :param pts: PTS to align
         :return: aligned PTS
@@ -259,8 +250,7 @@ class VideoApi(QtCore.QObject):
         return pts
 
     def align_pts_to_next_frame(self, pts: int) -> int:
-        """
-        Align PTS to a frame immediately after given PTS.
+        """Align PTS to a frame immediately after given PTS.
 
         :param pts: PTS to align
         :return: aligned PTS
@@ -275,8 +265,7 @@ class VideoApi(QtCore.QObject):
         return pts
 
     def frame_idx_from_pts(self, pts: int) -> int:
-        """
-        Get index of a frame that contains given PTS.
+        """Get index of a frame that contains given PTS.
 
         :param pts: PTS to search for
         :return: frame index, -1 if not found
@@ -287,8 +276,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def frame_rate(self) -> fractions.Fraction:
-        """
-        Return the frame rate.
+        """Return the frame rate.
 
         :return: video frame rate
         """
@@ -296,8 +284,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def width(self) -> int:
-        """
-        Return horizontal video resolution.
+        """Return horizontal video resolution.
 
         :return: video width in pixels
         """
@@ -305,8 +292,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def height(self) -> int:
-        """
-        Return vertical video resolution.
+        """Return vertical video resolution.
 
         :return: video height in pixels
         """
@@ -314,8 +300,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def aspect_ratio(self) -> fractions.Fraction:
-        """
-        Return the frame aspect ratio.
+        """Return the frame aspect ratio.
 
         :return: video frame aspect ratio
         """
@@ -323,8 +308,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def timecodes(self) -> T.List[int]:
-        """
-        Return video frames' PTS.
+        """Return video frames' PTS.
 
         :return: video frames' PTS
         """
@@ -334,8 +318,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def keyframes(self) -> T.List[int]:
-        """
-        Return video keyframes' indexes.
+        """Return video keyframes' indexes.
 
         :return: video keyframes' indexes
         """
@@ -345,8 +328,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def min_pts(self) -> int:
-        """
-        Return minimum video time in milliseconds.
+        """Return minimum video time in milliseconds.
 
         :return: minimum PTS
         """
@@ -356,8 +338,7 @@ class VideoApi(QtCore.QObject):
 
     @property
     def max_pts(self) -> int:
-        """
-        Return maximum video time in milliseconds.
+        """Return maximum video time in milliseconds.
 
         :return: maximum PTS
         """
@@ -368,8 +349,7 @@ class VideoApi(QtCore.QObject):
     def get_frame(
         self, frame_idx: int, width: int, height: int
     ) -> T.Optional[np.array]:
-        """
-        Get raw video data from the currently loaded video source.
+        """Get raw video data from the currently loaded video source.
 
         :param frame_idx: frame number
         :param width: output image width

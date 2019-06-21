@@ -26,8 +26,7 @@ CACHE_SUFFIX = ".dat"
 
 
 def get_cache_dir() -> Path:
-    """
-    Return path to cache files.
+    """Return path to cache files.
 
     :return: path to cache files
     """
@@ -35,8 +34,7 @@ def get_cache_dir() -> Path:
 
 
 def get_cache_file_path(cache_name: str) -> Path:
-    """
-    Translate cache file name into full path.
+    """Translate cache file name into full path.
 
     :param cache_name: name of cache file
     :return: full cache file path
@@ -45,8 +43,7 @@ def get_cache_file_path(cache_name: str) -> Path:
 
 
 def load_cache(cache_name: str) -> T.Any:
-    """
-    Load cached object from disk.
+    """Load cached object from disk.
 
     :param cache_name: name of cache file
     :return: persisted object
@@ -62,8 +59,7 @@ def load_cache(cache_name: str) -> T.Any:
 
 
 def save_cache(cache_name: str, data: T.Any) -> None:
-    """
-    Save object to disk cache.
+    """Save object to disk cache.
 
     :param cache_name: name of cache file
     :param data: object to persist

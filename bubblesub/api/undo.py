@@ -38,8 +38,7 @@ class UndoState:
         meta: AssMeta,
         selected_indexes: T.List[int],
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param events: list of events for the currently loaded ASS file
         :param styles: list of styles for the currently loaded ASS file
@@ -53,8 +52,7 @@ class UndoState:
 
     @property
     def events(self) -> AssEventList:
-        """
-        Return list of remembered events.
+        """Return list of remembered events.
 
         :return: list of remembered events
         """
@@ -62,8 +60,7 @@ class UndoState:
 
     @property
     def styles(self) -> AssStyleList:
-        """
-        Return list of remembered styles.
+        """Return list of remembered styles.
 
         :return: list of remembered styles
         """
@@ -71,16 +68,14 @@ class UndoState:
 
     @property
     def meta(self) -> T.Dict[str, str]:
-        """
-        Return remembered meta dict.
+        """Return remembered meta dict.
 
         :return: meta dict
         """
         return T.cast(T.Dict[str, str], _unpickle(self._meta))
 
     def __eq__(self, other: T.Any) -> T.Any:
-        """
-        Whether two UndoStates are equivalent.
+        """Whether two UndoStates are equivalent.
 
         Needed to tell if nothing has changed when deciding whether to push
         onto the undo stack.
@@ -98,8 +93,7 @@ class UndoState:
         return NotImplemented
 
     def __ne__(self, other: T.Any) -> T.Any:
-        """
-        Opposite of __eq__.
+        """Opposite of __eq__.
 
         :param other: object to compare self with
         :return: bool or NotImplemented to fall back to default implementation
@@ -111,8 +105,7 @@ class UndoState:
 
 
 def _pickle(data: T.Any) -> bytes:
-    """
-    Serialize data and use compression to save memory usage.
+    """Serialize data and use compression to save memory usage.
 
     :param data: object to serialize
     :return: serialized data
@@ -121,8 +114,7 @@ def _pickle(data: T.Any) -> bytes:
 
 
 def _unpickle(data: bytes) -> T.Any:
-    """
-    Deserialize data.
+    """Deserialize data.
 
     :param data: serialized data
     :return: deserialized object
@@ -134,8 +126,7 @@ class UndoApi:
     """The undo API."""
 
     def __init__(self, cfg: Config, subs_api: SubtitlesApi) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param cfg: program configuration
         :param subs_api: subtitles API
@@ -154,8 +145,7 @@ class UndoApi:
 
     @property
     def needs_save(self) -> bool:
-        """
-        Return whether there are any unsaved changes.
+        """Return whether there are any unsaved changes.
 
         :return: whether there are any unsaved changes
         """
@@ -163,8 +153,7 @@ class UndoApi:
 
     @property
     def has_undo(self) -> bool:
-        """
-        Return whether there's anything to undo.
+        """Return whether there's anything to undo.
 
         :return: whether there's anything to undo
         """
@@ -172,8 +161,7 @@ class UndoApi:
 
     @property
     def has_redo(self) -> bool:
-        """
-        Return whether there's anything to redo.
+        """Return whether there's anything to redo.
 
         :return: whether there's anything to redo
         """
@@ -181,8 +169,7 @@ class UndoApi:
 
     @contextlib.contextmanager
     def capture(self) -> T.Iterator[None]:
-        """
-        Record the application state before and after user operation.
+        """Record the application state before and after user operation.
 
         Shorthand for begin_capture() and end_capture().
 
@@ -257,8 +244,7 @@ class UndoApi:
     def _push(
         self, old_state: T.Optional[UndoState], new_state: UndoState
     ) -> None:
-        """
-        Discard any redo information and push given state.
+        """Discard any redo information and push given state.
 
         :param old_state: state before change
         :param new_state: state after change

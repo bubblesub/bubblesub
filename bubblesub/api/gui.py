@@ -37,8 +37,7 @@ class GuiApi(QtCore.QObject):
     request_end_update = QtCore.pyqtSignal()
 
     def __init__(self, api: "bubblesub.api.Api") -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param api: core API
         """
@@ -47,8 +46,7 @@ class GuiApi(QtCore.QObject):
         self._main_window: T.Optional[QtWidgets.QWidget] = None
 
     def set_main_window(self, main_window: QtWidgets.QWidget) -> None:
-        """
-        Set main window instance, needed to interact with the GUI.
+        """Set main window instance, needed to interact with the GUI.
 
         :param main_window: main window instance
         """
@@ -57,8 +55,7 @@ class GuiApi(QtCore.QObject):
     async def exec(
         self, func: T.Callable[..., T.Any], *args: T.Any, **kwargs: T.Any
     ) -> T.Any:
-        """
-        Execute function in GUI thread.
+        """Execute function in GUI thread.
 
         :param func: function to execute
         :param args: arguments passed to the function
@@ -71,8 +68,7 @@ class GuiApi(QtCore.QObject):
         self.request_quit.emit()
 
     async def confirm_unsaved_changes(self) -> bool:
-        """
-        Ask user to continue if there are unsaved changes to the subtitles.
+        """Ask user to continue if there are unsaved changes to the subtitles.
 
         :return: true it's okay to proceed, false if user has chosen to cancel
         """
@@ -110,8 +106,7 @@ class GuiApi(QtCore.QObject):
 
     @functools.lru_cache(maxsize=None)
     def get_color(self, color_name: str) -> QtGui.QColor:
-        """
-        Receive a color from the current color scheme.
+        """Receive a color from the current color scheme.
 
         :param color_name: color name to retrieve
         :return: color
@@ -132,8 +127,7 @@ class GuiApi(QtCore.QObject):
         return QtGui.QColor(*color_value)
 
     def get_dialog_dir(self) -> T.Optional[Path]:
-        """
-        Retrieve default dialog path.
+        """Retrieve default dialog path.
 
         :return: default path
         """

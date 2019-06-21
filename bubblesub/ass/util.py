@@ -25,8 +25,7 @@ from bubblesub.spell_check import SpellChecker
 
 
 def escape_ass_tag(text: str) -> str:
-    """
-    Escape text so that it doesn't get treated as ASS tags.
+    """Escape text so that it doesn't get treated as ASS tags.
 
     :param text: text to escape
     :return: escaped text
@@ -35,8 +34,7 @@ def escape_ass_tag(text: str) -> str:
 
 
 def unescape_ass_tag(text: str) -> str:
-    """
-    Do the reverse operation to escape_ass_tag().
+    """Do the reverse operation to escape_ass_tag().
 
     :param text: text to unescape
     :return: unescaped text
@@ -45,8 +43,7 @@ def unescape_ass_tag(text: str) -> str:
 
 
 def ass_to_plaintext(text: str) -> str:
-    """
-    Strip ASS tags from an ASS line.
+    """Strip ASS tags from an ASS line.
 
     :param text: input ASS line
     :return: plain text
@@ -60,8 +57,7 @@ def ass_to_plaintext(text: str) -> str:
 
 
 def character_count(text: str) -> int:
-    """
-    Count how many characters an ASS line contains.
+    """Count how many characters an ASS line contains.
 
     Doesn't take into account effects such as text invisibility etc.
 
@@ -74,8 +70,7 @@ def character_count(text: str) -> int:
 
 
 def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
-    """
-    Iterate over words within an ASS line.
+    """Iterate over words within an ASS line.
 
     Doesn't take into account effects such as text invisibility etc.
 
@@ -97,8 +92,7 @@ def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
 def spell_check_ass_line(
     spell_checker: SpellChecker, text: str
 ) -> T.Iterable[T.Tuple[int, int, str]]:
-    """
-    Iterate over badly spelled words within an ASS line.
+    """Iterate over badly spelled words within an ASS line.
 
     Doesn't take into account effects such as text invisibility etc.
 

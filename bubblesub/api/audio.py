@@ -46,8 +46,7 @@ class AudioState(enum.Enum):
 def _load_audio_source(
     log_api: LogApi, path: T.Any
 ) -> T.Tuple[Path, T.Optional[ffms2.AudioSource]]:
-    """
-    Create audio source.
+    """Create audio source.
 
     :param log_api: logging API
     :param path: path to the audio file
@@ -92,8 +91,7 @@ class AudioApi(QtCore.QObject):
         log_api: LogApi,
         subs_api: SubtitlesApi,
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param threading_api: threading API
         :param log_api: logging API
@@ -129,8 +127,7 @@ class AudioApi(QtCore.QObject):
         self.state = AudioState.NotLoaded
 
     def load(self, path: T.Union[str, Path]) -> None:
-        """
-        Load audio from specified file.
+        """Load audio from specified file.
 
         :param path: path to load the audio from
         """
@@ -155,8 +152,7 @@ class AudioApi(QtCore.QObject):
 
     @property
     def state(self) -> AudioState:
-        """
-        Return current audio state.
+        """Return current audio state.
 
         :return: audio state
         """
@@ -164,8 +160,7 @@ class AudioApi(QtCore.QObject):
 
     @state.setter
     def state(self, value: AudioState) -> None:
-        """
-        Set current audio state.
+        """Set current audio state.
 
         :param value: new audio state
         """
@@ -176,8 +171,7 @@ class AudioApi(QtCore.QObject):
 
     @property
     def is_ready(self) -> bool:
-        """
-        Return whether if the audio is loaded.
+        """Return whether if the audio is loaded.
 
         :return: whether if the audio is loaded
         """
@@ -185,8 +179,7 @@ class AudioApi(QtCore.QObject):
 
     @property
     def channel_count(self) -> int:
-        """
-        Return channel count for currently loaded audio source.
+        """Return channel count for currently loaded audio source.
 
         :return: channel count or 0 if no audio source
         """
@@ -194,8 +187,7 @@ class AudioApi(QtCore.QObject):
 
     @property
     def bits_per_sample(self) -> int:
-        """
-        Return bits per sample for currently loaded audio source.
+        """Return bits per sample for currently loaded audio source.
 
         :return: bits per sample or 0 if no audio source
         """
@@ -203,8 +195,7 @@ class AudioApi(QtCore.QObject):
 
     @property
     def sample_rate(self) -> int:
-        """
-        Return sample rate for currently loaded audio source.
+        """Return sample rate for currently loaded audio source.
 
         :return: sample rate or 0 if no audio source
         """
@@ -212,8 +203,7 @@ class AudioApi(QtCore.QObject):
 
     @property
     def sample_format(self) -> T.Optional[int]:
-        """
-        Return sample format for currently loaded audio source.
+        """Return sample format for currently loaded audio source.
 
         :return: sample format or None if no audio source
         """
@@ -221,8 +211,7 @@ class AudioApi(QtCore.QObject):
 
     @property
     def sample_count(self) -> int:
-        """
-        Return sample count for currently loaded audio source.
+        """Return sample count for currently loaded audio source.
 
         :return: sample count or 0 if no audio source
         """
@@ -230,8 +219,7 @@ class AudioApi(QtCore.QObject):
 
     @property
     def min_time(self) -> int:
-        """
-        Return minimum time in milliseconds (generally 0).
+        """Return minimum time in milliseconds (generally 0).
 
         :return: audio start or 0 if no audio source
         """
@@ -239,16 +227,14 @@ class AudioApi(QtCore.QObject):
 
     @property
     def max_time(self) -> int:
-        """
-        Return maximum time in milliseconds.
+        """Return maximum time in milliseconds.
 
         :return: audio end or 0 if no audio source
         """
         return self._max_time
 
     def get_samples(self, start_frame: int, count: int) -> np.array:
-        """
-        Get raw audio samples from the currently loaded audio source.
+        """Get raw audio samples from the currently loaded audio source.
 
         :param start_frame: start frame (not PTS)
         :param count: how many samples to get
@@ -274,8 +260,7 @@ class AudioApi(QtCore.QObject):
         start_pts: int,
         end_pts: int,
     ) -> None:
-        """
-        Save samples for the currently loaded audio source as WAV file.
+        """Save samples for the currently loaded audio source as WAV file.
 
         :param path_or_handle: where to put the result WAV file in
         :param start_pts: start PTS

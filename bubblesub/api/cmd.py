@@ -14,8 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""
-Command API.
+"""Command API.
 
 Commands use the API layer to manipulate the program state in
 interesting, complex ways.
@@ -55,8 +54,7 @@ class CommandUnavailable(CommandError):
     """The given command cannot be evaluated."""
 
     def __init__(self, text: T.Optional[str] = None) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param text: optional text error
         """
@@ -75,8 +73,7 @@ class CommandArgumentParser(argparse.ArgumentParser):
     """Overloaded ArgumentParser, suitable for commands."""
 
     def error(self, message):
-        """
-        Rather than exiting, raise an exception.
+        """Rather than exiting, raise an exception.
 
         :param message: error message about to be shown to the user
         """
@@ -89,8 +86,7 @@ class CommandArgumentParser(argparse.ArgumentParser):
 
 
 def split_invocation(invocation: str) -> T.List[T.List[str]]:
-    """
-    Split invocation into name and arguments array.
+    """Split invocation into name and arguments array.
 
     :param invocation: command line to parse
     :return: tuple containing command name and arguments
@@ -146,8 +142,7 @@ class BaseCommand(abc.ABC):
         args: argparse.Namespace,
         invocation: str,
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param api: core API
         :param args: command arguments
@@ -162,8 +157,7 @@ class BaseCommand(abc.ABC):
     def names(  # pylint: disable=no-self-argument
         cls: T.Type["BaseCommand"]
     ) -> T.List[str]:
-        """
-        Return command names.
+        """Return command names.
 
         Must be globally unique and should be human readable.
 
@@ -175,8 +169,7 @@ class BaseCommand(abc.ABC):
     @classproperty
     @abc.abstractproperty
     def help_text(self) -> str:
-        """
-        Return command description shown in help.
+        """Return command description shown in help.
 
         :return: description
         """
@@ -184,8 +177,7 @@ class BaseCommand(abc.ABC):
 
     @property
     def is_enabled(self) -> bool:
-        """
-        Return whether the command can be executed.
+        """Return whether the command can be executed.
 
         :return: whether the command can be executed
         """
@@ -200,8 +192,7 @@ class BaseCommand(abc.ABC):
     def decorate_parser(
         api: "bubblesub.api.Api", parser: argparse.ArgumentParser
     ) -> None:
-        """
-        Configure argument parser with custom command switches.
+        """Configure argument parser with custom command switches.
 
         :param api: core API
         :param parser: parser to configure
@@ -214,8 +205,7 @@ class CommandApi(QtCore.QObject):
     commands_loaded = QtCore.pyqtSignal()
 
     def __init__(self, api: "bubblesub.api.Api") -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param api: core API
         """
@@ -228,8 +218,7 @@ class CommandApi(QtCore.QObject):
         self._plugin_modules: T.List[T.Any] = []
 
     def run_cmdline(self, cmdline: T.Union[str, T.List[T.List[str]]]) -> None:
-        """
-        Run given cmdline.
+        """Run given cmdline.
 
         :param cmdline: either a list of command arguments, or a plain string
         """
@@ -239,8 +228,7 @@ class CommandApi(QtCore.QObject):
     def parse_cmdline(
         self, cmdline: T.Union[str, T.List[T.List[str]]]
     ) -> T.List[BaseCommand]:
-        """
-        Create BaseCommand instances based on given invocation.
+        """Create BaseCommand instances based on given invocation.
 
         :param cmdline: either a list of command arguments, or a plain string
         :return: list of command instances
@@ -266,16 +254,14 @@ class CommandApi(QtCore.QObject):
         return ret
 
     def run(self, cmd: BaseCommand) -> None:
-        """
-        Execute given command.
+        """Execute given command.
 
         :param cmd: command to run
         """
         asyncio.ensure_future(self.run_async(cmd))
 
     async def run_async(self, cmd: BaseCommand) -> bool:
-        """
-        Execute given command asynchronously.
+        """Execute given command asynchronously.
 
         :param cmd: command to run
         :return: whether the command was executed without problems
@@ -309,8 +295,7 @@ class CommandApi(QtCore.QObject):
         return True
 
     def get(self, name: str) -> T.Optional[T.Type[BaseCommand]]:
-        """
-        Return class by command name.
+        """Return class by command name.
 
         :param name: name to search for
         :return: type if command found, None otherwise
@@ -318,8 +303,7 @@ class CommandApi(QtCore.QObject):
         return self._cmd_registry.get(name, None)
 
     def get_all(self) -> T.List[T.Type[BaseCommand]]:
-        """
-        Return list of all registered command types.
+        """Return list of all registered command types.
 
         :return: list of types
         """
@@ -340,8 +324,7 @@ class CommandApi(QtCore.QObject):
         self.commands_loaded.emit()
 
     def get_plugin_menu_items(self) -> T.List[MenuItem]:
-        """
-        Return plugin menu items.
+        """Return plugin menu items.
 
         :return: plugins menu
         """
@@ -366,8 +349,7 @@ class CommandApi(QtCore.QObject):
         self._plugin_sources.clear()
 
     def _load_commands(self, path: Path, identifier: str) -> None:
-        """
-        Load commands from the specified path.
+        """Load commands from the specified path.
 
         Each file must have a `COMMANDS` global constant that contains
         a collection of commands inheriting from BaseCommand.

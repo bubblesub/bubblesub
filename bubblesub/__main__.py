@@ -25,8 +25,7 @@ from bubblesub.ui import ui
 
 
 def parse_args() -> argparse.Namespace:
-    """
-    Parse user arguments from CLI.
+    """Parse user arguments from CLI.
 
     :return: parsed args
     """

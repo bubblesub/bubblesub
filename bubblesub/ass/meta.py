@@ -38,8 +38,7 @@ class AssMeta(QtCore.QObject):
         self.changed.emit()
 
     def update(self, new_content: T.Mapping[str, str]) -> None:
-        """
-        Update self with new content.
+        """Update self with new content.
 
         :param new_content: content to update with
         """
@@ -48,8 +47,7 @@ class AssMeta(QtCore.QObject):
             self.changed.emit()
 
     def get(self, key: str, fallback: T.Any = None) -> T.Optional[str]:
-        """
-        Get value under given key.
+        """Get value under given key.
 
         :param key: key to look up the value for
         :param fallback: what to return if the value is not found
@@ -58,8 +56,7 @@ class AssMeta(QtCore.QObject):
         return self._data.get(key, fallback)
 
     def set(self, key: str, value: str) -> None:
-        """
-        Set value under given key.
+        """Set value under given key.
 
         :param key: key to set the value for
         :param value: the new value
@@ -69,8 +66,7 @@ class AssMeta(QtCore.QObject):
             self.changed.emit()
 
     def remove(self, key: str) -> None:
-        """
-        Remove the specified key.
+        """Remove the specified key.
 
         :param key: key to remove
         """
@@ -79,8 +75,7 @@ class AssMeta(QtCore.QObject):
             self.changed.emit()
 
     def items(self) -> T.ItemsView[str, str]:
-        """
-        Return contents as key-value tuples.
+        """Return contents as key-value tuples.
 
         :return: list of key-value tuples
         """

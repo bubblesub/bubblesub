@@ -31,8 +31,7 @@ from bubblesub.util import first
 
 
 class SubtitlesApi(QtCore.QObject):
-    """
-    The subtitles API.
+    """The subtitles API.
 
     Encapsulates ASS styles, subtitles and subtitle selection.
     """
@@ -57,8 +56,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def events(self) -> AssEventList:
-        """
-        Return list of ASS events.
+        """Return list of ASS events.
 
         :return: list of events
         """
@@ -66,8 +64,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def styles(self) -> AssStyleList:
-        """
-        Return list of ASS styles.
+        """Return list of ASS styles.
 
         :return: list of styles
         """
@@ -75,8 +72,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def meta(self) -> AssMeta:
-        """
-        Return additional information associated with the ASS file.
+        """Return additional information associated with the ASS file.
 
         This holds basic information about ASS version, video resolution etc.
 
@@ -86,8 +82,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def remembered_video_path(self) -> T.Optional[Path]:
-        """
-        Return path of the associated video file.
+        """Return path of the associated video file.
 
         :return: path of the associated video file or None if no video
         """
@@ -100,8 +95,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @remembered_video_path.setter
     def remembered_video_path(self, path: T.Optional[Path]) -> None:
-        """
-        Set path of the associated video file, updating meta dict.
+        """Set path of the associated video file, updating meta dict.
 
         :param path: path to the video file
         """
@@ -109,8 +103,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def remembered_audio_path(self) -> T.Optional[Path]:
-        """
-        Return path of the associated audio file.
+        """Return path of the associated audio file.
 
         :return: path of the associated audio file or None if no audio
         """
@@ -123,8 +116,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @remembered_audio_path.setter
     def remembered_audio_path(self, path: T.Optional[Path]) -> None:
-        """
-        Set path of the associated audio file, updating meta dict.
+        """Set path of the associated audio file, updating meta dict.
 
         :param path: path to the audio file
         """
@@ -132,8 +124,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def path(self) -> T.Optional[Path]:
-        """
-        Return path of the currently loaded ASS file.
+        """Return path of the currently loaded ASS file.
 
         :return: path of the currently loaded ASS file or None if no file
         """
@@ -141,8 +132,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def has_selection(self) -> bool:
-        """
-        Return whether there are any selected events.
+        """Return whether there are any selected events.
 
         :return: whether there are any selected events
         """
@@ -150,8 +140,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def selected_indexes(self) -> T.List[int]:
-        """
-        Return indexes of the selected events.
+        """Return indexes of the selected events.
 
         :return: indexes of the selected events
         """
@@ -159,8 +148,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @selected_indexes.setter
     def selected_indexes(self, new_selection: T.List[int]) -> None:
-        """
-        Update event selection.
+        """Update event selection.
 
         :param new_selection: new list of selected indexes
         """
@@ -171,8 +159,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def selected_events(self) -> T.List[AssEvent]:
-        """
-        Return list of selected events.
+        """Return list of selected events.
 
         :return: list of selected events
         """
@@ -180,8 +167,7 @@ class SubtitlesApi(QtCore.QObject):
 
     @property
     def default_style_name(self) -> str:
-        """
-        Return default style name.
+        """Return default style name.
 
         :return: first style name if it exists, otherwise "Default"
         """
@@ -201,8 +187,7 @@ class SubtitlesApi(QtCore.QObject):
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:
-        """
-        Load specified ASS file.
+        """Load specified ASS file.
 
         :param path: path to load the file from
         """
@@ -218,8 +203,7 @@ class SubtitlesApi(QtCore.QObject):
     def save_ass(
         self, path: T.Union[str, Path], remember_path: bool = False
     ) -> None:
-        """
-        Save current state to the specified file.
+        """Save current state to the specified file.
 
         :param path: path to save the state to
         :param remember_path:

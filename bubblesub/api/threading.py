@@ -35,8 +35,7 @@ class QueueWorker(QtCore.QRunnable):
     """Worker thread for continuous task queues."""
 
     def __init__(self, log_api: LogApi) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param log_api: logging API
         """
@@ -47,8 +46,7 @@ class QueueWorker(QtCore.QRunnable):
         self._queue: queue.Queue[T.Any] = queue.Queue()
 
     def run(self) -> None:
-        """
-        Run the thread.
+        """Run the thread.
 
         Gets tasks from the internal queue and passes them to the _process_task
         function.
@@ -75,8 +73,7 @@ class QueueWorker(QtCore.QRunnable):
             self._finished()
 
     def _process_task(self, task: T.Any) -> None:
-        """
-        Process a task and return a result.
+        """Process a task and return a result.
 
         :param task: task to process
         """
@@ -89,16 +86,14 @@ class QueueWorker(QtCore.QRunnable):
         self._queue.put(None)  # make sure run() exits
 
     def schedule_task(self, task_data: T.Any) -> None:
-        """
-        Put a new task onto internal task queue.
+        """Put a new task onto internal task queue.
 
         :param task_data: task to process
         """
         self._queue.put(task_data)
 
     def clear_tasks(self) -> None:
-        """
-        Remove all remaining tasks.
+        """Remove all remaining tasks.
 
         Doesn't fire the finished signal.
         """
@@ -128,8 +123,7 @@ class OneShotWorker(QtCore.QRunnable):
     """Worker thread for one shot tasks."""
 
     def __init__(self, log_api: LogApi, func: T.Callable[[], T.Any]) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param log_api: logging API
         :param func: the function to run on this worker thread

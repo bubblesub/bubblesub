@@ -32,8 +32,7 @@ class AudioViewApi(QtCore.QObject):
     def __init__(
         self, subs_api: SubtitlesApi, audio_api: AudioApi, video_api: VideoApi
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param subs_api: subtitles API
         :param audio_api: audio API
@@ -65,8 +64,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def min(self) -> int:
-        """
-        Return minimum PTS.
+        """Return minimum PTS.
 
         :return: minimum PTS
         """
@@ -74,8 +72,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def max(self) -> int:
-        """
-        Return maximum PTS.
+        """Return maximum PTS.
 
         :return: maximum PTS
         """
@@ -83,8 +80,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def size(self) -> int:
-        """
-        Return how many PTS frames audio has.
+        """Return how many PTS frames audio has.
 
         :return: how many PTS frames audio has
         """
@@ -92,8 +88,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def view_start(self) -> int:
-        """
-        Return shown start PTS.
+        """Return shown start PTS.
 
         :return: shown start PTS
         """
@@ -101,8 +96,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def view_end(self) -> int:
-        """
-        Return shown end PTS.
+        """Return shown end PTS.
 
         :return: shown end PTS
         """
@@ -110,8 +104,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def view_size(self) -> int:
-        """
-        Return shown window size.
+        """Return shown window size.
 
         :return: shown window size
         """
@@ -119,8 +112,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def selection_start(self) -> int:
-        """
-        Return selection start PTS.
+        """Return selection start PTS.
 
         :return: selection start PTS
         """
@@ -128,8 +120,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def selection_end(self) -> int:
-        """
-        Return selection end PTS.
+        """Return selection end PTS.
 
         :return: selection end PTS
         """
@@ -137,8 +128,7 @@ class AudioViewApi(QtCore.QObject):
 
     @property
     def selection_size(self) -> int:
-        """
-        Return selection size.
+        """Return selection size.
 
         :return: selection size
         """
@@ -151,8 +141,7 @@ class AudioViewApi(QtCore.QObject):
         self.selection_changed.emit()
 
     def select(self, start_pts: int, end_pts: int) -> None:
-        """
-        Set new selection.
+        """Set new selection.
 
         :param start_pts: start PTS
         :param end_pts: end PTS
@@ -164,8 +153,7 @@ class AudioViewApi(QtCore.QObject):
         self.selection_changed.emit()
 
     def view(self, start_pts: int, end_pts: int) -> None:
-        """
-        Set new view window.
+        """Set new view window.
 
         :param start_pts: start PTS
         :param end_pts: end PTS
@@ -177,8 +165,7 @@ class AudioViewApi(QtCore.QObject):
         self.view_changed.emit()
 
     def zoom_view(self, factor: float, origin: float) -> None:
-        """
-        Zoom the view window.
+        """Zoom the view window.
 
         :param factor: zoom factor (>1 = zoom in, <1 = zoom out)
         :param origin: 0…1 relative to the view window
@@ -193,8 +180,7 @@ class AudioViewApi(QtCore.QObject):
         self.move_view(distance)  # emits view_changed
 
     def move_view(self, distance: int) -> None:
-        """
-        Move the view window.
+        """Move the view window.
 
         :param distance: distance in PTS
         """
@@ -207,9 +193,7 @@ class AudioViewApi(QtCore.QObject):
             self.view(self._view_start + distance, self._view_end + distance)
 
     def reset_view(self) -> None:
-        """
-        Resets the view to show the entire spectrogram.
-        """
+        """Resets the view to show the entire spectrogram."""
         self._min = 0
         self._max = 0
         self._extend_view()

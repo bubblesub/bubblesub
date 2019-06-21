@@ -24,8 +24,7 @@ TItem = T.TypeVar("TItem")  # pylint: disable=invalid-name
 
 
 class classproperty(property):
-    """
-    Combine @property and @classmethod.
+    """Combine @property and @classmethod.
 
     >>> class foo:
     ...     @classproperty
@@ -37,8 +36,7 @@ class classproperty(property):
     """
 
     def __init__(self, func: T.Callable[[type], TItem]) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param func: getter function, which accepts class type as
             its only argument
@@ -47,8 +45,7 @@ class classproperty(property):
         self.func = func
 
     def __get__(self, cls: object, owner: type) -> TItem:
-        """
-        Invoke the getter function.
+        """Invoke the getter function.
 
         :param cls: (unused)
         :param owner: parent object
@@ -66,8 +63,7 @@ class ObservableObject:
         self._dirty = False
 
     def __setattr__(self, prop: str, new_value: T.Any) -> None:
-        """
-        Set attribute.
+        """Set attribute.
 
         Called whenever the user changes any of the class attributes.
         Changes to properties starting with _ won't be tracked.
@@ -88,8 +84,7 @@ class ObservableObject:
                     self._setattr_impl(prop, new_value)
 
     def _setattr_normal(self, prop: str, new_value: T.Any) -> None:
-        """
-        Regular implementation of attribute setter.
+        """Regular implementation of attribute setter.
 
         Calls _after_change immediately.
 
@@ -100,8 +95,7 @@ class ObservableObject:
         self._after_change()
 
     def _setattr_throttled(self, prop: str, new_value: T.Any) -> None:
-        """
-        Throttled implementation of attribute setter.
+        """Throttled implementation of attribute setter.
 
         Doesn't call _after_change until after the user calls the .end_update()
         method.
@@ -113,8 +107,7 @@ class ObservableObject:
         self._dirty = True
 
     def begin_update(self) -> None:
-        """
-        Start throttling calls to ._after_change() method.
+        """Start throttling calls to ._after_change() method.
 
         Useful for batch object updates - rather than having .after_change()
         method called after every change to the instance properties, it's
@@ -123,8 +116,7 @@ class ObservableObject:
         self._setattr_impl = self._setattr_throttled
 
     def end_update(self) -> None:
-        """
-        Stop throttling calls to ._after_change() method.
+        """Stop throttling calls to ._after_change() method.
 
         If the object was modified in the meantime, calls ._after_change()
         method only once.
@@ -135,8 +127,7 @@ class ObservableObject:
         self._dirty = False
 
     def _after_change(self) -> None:
-        """
-        Meant to be overriden by the user.
+        """Meant to be overriden by the user.
 
         Called after class properties have changed.
         """
@@ -177,24 +168,21 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         self._items: T.List[TItem] = []
 
     def __getstate__(self) -> T.Any:
-        """
-        Return pickle compatible object representation.
+        """Return pickle compatible object representation.
 
         :return: object representation
         """
         return self._items
 
     def __setstate__(self, state: T.Any) -> None:
-        """
-        Load class state from pickle compatible object representation.
+        """Load class state from pickle compatible object representation.
 
         :param state: object representation
         """
         self._items = state
 
     def __len__(self) -> int:
-        """
-        Return how many items the collection contains.
+        """Return how many items the collection contains.
 
         :return: number of items
         """
@@ -202,8 +190,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
 
     @T.overload
     def __getitem__(self, idx: slice) -> T.List[TItem]:
-        """
-        Retrieve item at given position.
+        """Retrieve item at given position.
 
         :param idx: item position
         :return: value at given position
@@ -212,8 +199,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
 
     @T.overload
     def __getitem__(self, idx: int) -> TItem:
-        """
-        Retrieve item at given position.
+        """Retrieve item at given position.
 
         :param idx: item position
         :return: value at given position
@@ -221,8 +207,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         ...  # pylint: disable=pointless-statement
 
     def __getitem__(self, idx):
-        """
-        Retrieve item at given position.
+        """Retrieve item at given position.
 
         :param idx: item position
         :return: value at given position
@@ -230,8 +215,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         return self._items[idx]
 
     def __setitem__(self, idx: T.Union[slice, int], value: T.Any) -> None:
-        """
-        Set item at given position.
+        """Set item at given position.
 
         :param idx: position to modify
         :param value: new value
@@ -243,8 +227,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
             self.item_changed.emit(idx)
 
     def __iter__(self) -> T.Iterator[TItem]:
-        """
-        Iterate directly over the collection values.
+        """Iterate directly over the collection values.
 
         :return: iterator
         """
@@ -253,8 +236,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
     def get(
         self, idx: int, default: T.Optional[TItem] = None
     ) -> T.Optional[TItem]:
-        """
-        Retrieve item at given position.
+        """Retrieve item at given position.
 
         :param idx: item's position
         :param default: value to return if position is out of bounds
@@ -265,8 +247,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         return self._items[idx]
 
     def index(self, item: TItem) -> T.Optional[int]:
-        """
-        Look up item's position in the collection.
+        """Look up item's position in the collection.
 
         :param item: item to look up
         :return: item's position if found, None otherwise
@@ -277,8 +258,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         return None
 
     def append(self, *items: TItem) -> None:
-        """
-        Insert new values at the end of the list.
+        """Insert new values at the end of the list.
 
         Emits items_about_to_be_inserted items_inserted events.
 
@@ -287,8 +267,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         self.insert(len(self), *items)
 
     def insert(self, idx: int, *items: TItem) -> None:
-        """
-        Insert new values at given position.
+        """Insert new values at given position.
 
         Emits items_about_to_be_inserted and items_inserted events.
 
@@ -302,8 +281,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         self.items_inserted.emit(idx, len(items))
 
     def remove(self, idx: int, count: int) -> None:
-        """
-        Remove part of the collection's content.
+        """Remove part of the collection's content.
 
         Emits items_about_to_be_removed and items_removed events.
 
@@ -315,16 +293,14 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         self.items_removed.emit(idx, count)
 
     def clear(self) -> None:
-        """
-        Clear the entire collection.
+        """Clear the entire collection.
 
         Emits items_about_to_be_removed and items_removed events.
         """
         self.remove(0, len(self))
 
     def move(self, idx: int, count: int, new_idx: int) -> None:
-        """
-        Move one item to a new position.
+        """Move one item to a new position.
 
         Emits items_about_to_be_moved and items_moved events.
 
@@ -339,8 +315,7 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         self.items_moved.emit(idx, count, new_idx)
 
     def replace(self, values: T.List[TItem]) -> None:
-        """
-        Replace the entire collection with new content.
+        """Replace the entire collection with new content.
 
         Emits items_about_to_be_removed, items_removed,
         items_about_to_be_inserted and items_inserted events.

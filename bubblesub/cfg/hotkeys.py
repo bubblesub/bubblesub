@@ -45,8 +45,7 @@ class Hotkey:
     def __init__(
         self, context: HotkeyContext, shortcut: str, cmdline: str
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param context: context in the gui the hotkey works for
         :param shortcut: key combination that activates the hotkey
@@ -79,8 +78,8 @@ class HotkeysConfig(SubConfig):
         self.load(None)
 
     def create_example_file(self, root_dir: Path) -> None:
-        """
-        Create an example file for the user to get to know the config syntax.
+        """Create an example file for the user to get to know the config
+        syntax.
 
         :param root_dir: directory where to put the config file
         """
@@ -89,8 +88,7 @@ class HotkeysConfig(SubConfig):
             user_path.write_text((ROOT_DIR / "hotkeys.example").read_text())
 
     def load(self, root_dir: T.Optional[Path]) -> None:
-        """
-        Load internals of this config from the specified directory.
+        """Load internals of this config from the specified directory.
 
         :param root_dir: directory where to look for the matching config file
         """
@@ -130,8 +128,7 @@ class HotkeysConfig(SubConfig):
             )
 
     def __iter__(self) -> T.Iterator[Hotkey]:
-        """
-        Let users iterate directly over this config.
+        """Let users iterate directly over this config.
 
         :return: iterator
         """

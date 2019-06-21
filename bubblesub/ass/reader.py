@@ -165,8 +165,7 @@ def _dummy_handler(
 
 
 def load_ass(handle: T.IO[str], ass_file: AssFile) -> None:
-    """
-    Load ASS from the specified source.
+    """Load ASS from the specified source.
 
     :param handle: readable stream
     :param ass_file: file to load to
@@ -213,8 +212,7 @@ def load_ass(handle: T.IO[str], ass_file: AssFile) -> None:
 
 
 def read_ass(source: T.Union[Path, T.IO[str]]) -> AssFile:
-    """
-    Read ASS from the specified source.
+    """Read ASS from the specified source.
 
     :param source: readable stream or a path
     :return: read ass file

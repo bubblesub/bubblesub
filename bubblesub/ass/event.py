@@ -39,8 +39,7 @@ class AssEvent(ObservableObject):
         margin_vertical: int = 0,
         is_comment: bool = False,
     ) -> None:
-        """
-        Initialize self.
+        """Initialize self.
 
         :param start: start PTS
         :param end: end PTS
@@ -74,8 +73,7 @@ class AssEvent(ObservableObject):
 
     @property
     def text(self) -> str:
-        """
-        Return event text.
+        """Return event text.
 
         :return: text
         """
@@ -83,8 +81,7 @@ class AssEvent(ObservableObject):
 
     @text.setter
     def text(self, value: str) -> None:
-        """
-        Set new event text.
+        """Set new event text.
 
         :param value: new text
         """
@@ -92,8 +89,7 @@ class AssEvent(ObservableObject):
 
     @property
     def note(self) -> str:
-        """
-        Return event note.
+        """Return event note.
 
         Notes are shown in the editor, but not in the player.
 
@@ -103,8 +99,7 @@ class AssEvent(ObservableObject):
 
     @note.setter
     def note(self, value: str) -> None:
-        """
-        Set new note.
+        """Set new note.
 
         :param value: new note
         """
@@ -112,8 +107,7 @@ class AssEvent(ObservableObject):
 
     @property
     def duration(self) -> int:
-        """
-        Return subtitle duration in milliseconds.
+        """Return subtitle duration in milliseconds.
 
         :return: duration
         """
@@ -121,8 +115,7 @@ class AssEvent(ObservableObject):
 
     @duration.setter
     def duration(self, value: int) -> None:
-        """
-        Set new duration.
+        """Set new duration.
 
         :param value: new duration
         """
@@ -130,8 +123,7 @@ class AssEvent(ObservableObject):
 
     @property
     def index(self) -> T.Optional[int]:
-        """
-        Return subtitle index in the parent subtitle list, starting at 0.
+        """Return subtitle index in the parent subtitle list, starting at 0.
 
         :return: index if subtitle has parent list, None otherwise
         """
@@ -142,8 +134,7 @@ class AssEvent(ObservableObject):
 
     @property
     def number(self) -> T.Optional[int]:
-        """
-        Return subtitle index in the parent subtitle list, starting at 1.
+        """Return subtitle index in the parent subtitle list, starting at 1.
 
         :return: index if subtitle has parent list, None otherwise
         """
@@ -154,8 +145,7 @@ class AssEvent(ObservableObject):
 
     @property
     def prev(self) -> T.Optional["AssEvent"]:
-        """
-        Return previous subtitle from the parent subtitle list.
+        """Return previous subtitle from the parent subtitle list.
 
         :return: previous subtitle if has parent list, None otherwise
         """
@@ -167,8 +157,7 @@ class AssEvent(ObservableObject):
 
     @property
     def next(self) -> T.Optional["AssEvent"]:
-        """
-        Return next subtitle from the parent subtitle list.
+        """Return next subtitle from the parent subtitle list.
 
         :return: next subtitle if has parent list, None otherwise
         """
@@ -185,8 +174,7 @@ class AssEvent(ObservableObject):
             self.event_list.item_changed.emit(index)
 
     def __getstate__(self) -> T.Any:
-        """
-        Return pickle compatible object representation.
+        """Return pickle compatible object representation.
 
         The pickled copy is detached from the parent list.
 
@@ -197,8 +185,7 @@ class AssEvent(ObservableObject):
         return ret
 
     def __setstate__(self, state: T.Any) -> None:
-        """
-        Load class state from pickle compatible object representation.
+        """Load class state from pickle compatible object representation.
 
         :param state: object representation
         """
@@ -206,8 +193,7 @@ class AssEvent(ObservableObject):
         self.event_list = None
 
     def __copy__(self) -> "AssEvent":
-        """
-        Duplicate self.
+        """Duplicate self.
 
         The copy is detached from the parent list.
 
@@ -225,8 +211,7 @@ class AssEventList(ObservableList[AssEvent]):
     """ASS event list."""
 
     def insert(self, idx: int, *items: AssEvent) -> None:
-        """
-        Insert events at the specified position.
+        """Insert events at the specified position.
 
         :param idx: index to add the new events at
         :param items: events to add
@@ -237,8 +222,7 @@ class AssEventList(ObservableList[AssEvent]):
         super().insert(idx, *items)
 
     def remove(self, idx: int, count: int) -> None:
-        """
-        Remove events at the specified position.
+        """Remove events at the specified position.
 
         :param idx: where to start the removal
         :param count: how many elements to remove
