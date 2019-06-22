@@ -4,9 +4,6 @@ basic:
     max_undo: 1000
     log_levels: ["error","warning","info","cmd-echo"]
 
-audio:
-    spectrogram_sync_interval: 65
-
 video:
     subs_sync_interval: 65
     sync_pos_to_selection: true

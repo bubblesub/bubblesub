@@ -73,16 +73,20 @@ class BaseAudioWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self._api = api
         self._drag_data: T.Optional[DragData] = None
+        self._last_paint_cache_key = 0
 
-        def update(*_: T.Any) -> None:
+    def repaint(self) -> None:
+        self._last_paint_cache_key = self._get_paint_cache_key()
+        self.update()
+
+    def repaint_if_needed(self) -> None:
+        paint_cache_key = self._get_paint_cache_key()
+        if paint_cache_key != self._last_paint_cache_key:
+            self._last_paint_cache_key = paint_cache_key
             self.update()
 
-        api.audio.view.selection_changed.connect(update)
-        api.audio.view.view_changed.connect(update)
-        api.subs.events.item_changed.connect(update)
-        api.subs.events.items_inserted.connect(update)
-        api.subs.events.items_removed.connect(update)
-        api.subs.events.items_moved.connect(update)
+    def _get_paint_cache_key(self) -> int:
+        raise NotImplementedError("not implemented")
 
     @property
     def _view(self) -> AudioViewApi:
@@ -150,18 +154,24 @@ class BaseAudioWidget(QtWidgets.QWidget):
 
         elif self._drag_data.mode == DragMode.SubtitleStart:
             pts = self._api.video.align_pts_to_near_frame(pts)
-            for event in self._drag_data.selected_events:
-                event.start = pts
-                if event.start > event.end:
-                    event.end, event.start = event.start, event.end
+            for ass_event in self._drag_data.selected_events:
+                ass_event.start = pts
+                if ass_event.start > ass_event.end:
+                    ass_event.end, ass_event.start = (
+                        ass_event.start,
+                        ass_event.end,
+                    )
             self._view.select(pts, self._view.selection_end)
 
         elif self._drag_data.mode == DragMode.SubtitleEnd:
             pts = self._api.video.align_pts_to_near_frame(pts)
-            for event in self._drag_data.selected_events:
-                event.end = pts
-                if event.start > event.end:
-                    event.end, event.start = event.start, event.end
+            for ass_event in self._drag_data.selected_events:
+                ass_event.end = pts
+                if ass_event.start > ass_event.end:
+                    ass_event.end, ass_event.start = (
+                        ass_event.start,
+                        ass_event.end,
+                    )
             self._view.select(self._view.selection_start, pts)
 
     def _zoomed(self, delta: int, mouse_x: int) -> None:

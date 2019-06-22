@@ -143,23 +143,43 @@ class AudioPreview(BaseLocalAudioWidget):
         self._labels: T.List[SubtitleLabel] = []
 
         self._mouse_pos: T.Optional[QtCore.QPoint] = None
-        self._need_repaint = False
         self._color_table: T.List[int] = []
         self._pixels: np.array = np.zeros([0, 0], dtype=np.uint8)
 
         self._generate_color_table()
 
-        timer = QtCore.QTimer(self)
-        timer.setInterval(api.cfg.opt["audio"]["spectrogram_sync_interval"])
-        timer.timeout.connect(self._repaint_if_needed)
-        timer.start()
-
         self.setMouseTracking(True)
         QtWidgets.QApplication.instance().installEventFilter(self)
 
-        api.playback.current_pts_changed.connect(self.update)
         api.audio.state_changed.connect(self._on_audio_state_change)
         api.audio.view.view_changed.connect(self._on_audio_view_change)
+
+        api.audio.view.selection_changed.connect(self.repaint_if_needed)
+        api.playback.current_pts_changed.connect(self.repaint_if_needed)
+        api.subs.events.item_changed.connect(self.repaint_if_needed)
+        api.subs.events.items_inserted.connect(self.repaint_if_needed)
+        api.subs.events.items_moved.connect(self.repaint_if_needed)
+        api.subs.events.items_removed.connect(self.repaint_if_needed)
+
+    def _get_paint_cache_key(self) -> int:
+        return hash(
+            tuple(
+                # subtitle rectangles
+                [(event.start, event.end) for event in self._api.subs.events]
+                + [
+                    # frames, keyframes
+                    self._api.video.state,
+                    # audio view
+                    self._api.audio.view.view_start,
+                    self._api.audio.view.view_end,
+                    # audio selection
+                    self._api.audio.view.selection_start,
+                    self._api.audio.view.selection_end,
+                    # video position
+                    self._api.playback.current_pts,
+                ]
+            )
+        )
 
     def eventFilter(
         self, source: QtCore.QObject, event: QtCore.QEvent
@@ -191,8 +211,6 @@ class AudioPreview(BaseLocalAudioWidget):
         self._draw_mouse(painter)
 
         painter.end()
-
-        self._need_repaint = False
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() == QtCore.Qt.LeftButton:
@@ -236,16 +254,11 @@ class AudioPreview(BaseLocalAudioWidget):
         ]
         self._mouse_color = self._api.gui.get_color("spectrogram/mouse-marker")
 
-    def _repaint_if_needed(self) -> None:
-        if self._need_repaint:
-            self.update()
-
     def _on_audio_view_change(self) -> None:
         self._schedule_current_audio_view()
 
     def _schedule_current_audio_view(self) -> None:
-        self._need_repaint = True
-        self.update()
+        self.repaint_if_needed()
 
         if not self._spectrum_worker:
             return
@@ -275,15 +288,10 @@ class AudioPreview(BaseLocalAudioWidget):
             self._spectrum_worker = SpectrumWorker(
                 self._api.log, self._api.audio
             )
-            self._spectrum_worker.signals.finished.connect(
-                self._on_spectrum_update
-            )
+            self._spectrum_worker.signals.finished.connect(self.repaint)
             self._api.threading.schedule_runnable(self._spectrum_worker)
 
         self._schedule_current_audio_view()
-
-    def _on_spectrum_update(self) -> None:
-        self._need_repaint = True
 
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
         pixels = self._pixels.transpose()

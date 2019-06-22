@@ -115,20 +115,25 @@ class VideoPreview(BaseLocalAudioWidget):
             QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum
         )
 
-        self._worker = VideoBandWorker(api.log, api.video)
-        self._worker.signals.cache_updated.connect(self._on_video_band_update)
-        self._api.threading.schedule_runnable(self._worker)
-
-        self._need_repaint = False
         self._pixels: np.array = np.zeros([0, 0, 3], dtype=np.uint8)
 
-        timer = QtCore.QTimer(self)
-        timer.setInterval(api.cfg.opt["audio"]["spectrogram_sync_interval"])
-        timer.timeout.connect(self._repaint_if_needed)
-        timer.start()
+        self._worker = VideoBandWorker(api.log, api.video)
+        self._worker.signals.cache_updated.connect(self.repaint)
+        self._api.threading.schedule_runnable(self._worker)
 
-        api.audio.view.view_changed.connect(self._on_audio_view_change)
-        api.video.state_changed.connect(self.update)
+        api.video.state_changed.connect(self.repaint_if_needed)
+        api.audio.view.view_changed.connect(self.repaint_if_needed)
+
+    def _get_paint_cache_key(self) -> int:
+        return hash(
+            (
+                # frame bitmaps
+                self._api.video.state,
+                # audio view
+                self._api.audio.view.view_start,
+                self._api.audio.view.view_end,
+            )
+        )
 
     def shutdown(self) -> None:
         self._worker.stop()
@@ -145,18 +150,6 @@ class VideoPreview(BaseLocalAudioWidget):
         self._draw_video_band(painter)
         self._draw_frame(painter, bottom_line=False)
         painter.end()
-
-        self._need_repaint = False
-
-    def _repaint_if_needed(self) -> None:
-        if self._need_repaint:
-            self.update()
-
-    def _on_audio_view_change(self) -> None:
-        self._need_repaint = True
-
-    def _on_video_band_update(self) -> None:
-        self._need_repaint = True
 
     def _draw_video_band(self, painter: QtGui.QPainter) -> None:
         pixels = self._pixels.transpose(1, 0, 2)

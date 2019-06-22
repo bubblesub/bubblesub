@@ -28,12 +28,29 @@ class AudioSlider(BaseGlobalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
-        api.playback.current_pts_changed.connect(
-            self._on_video_current_pts_change
-        )
 
-    def _on_video_current_pts_change(self) -> None:
-        self.update()
+        api.audio.view.selection_changed.connect(self.repaint_if_needed)
+        api.audio.view.view_changed.connect(self.repaint_if_needed)
+        api.playback.current_pts_changed.connect(self.repaint_if_needed)
+        api.subs.events.item_changed.connect(self.repaint_if_needed)
+        api.subs.events.items_inserted.connect(self.repaint_if_needed)
+        api.subs.events.items_moved.connect(self.repaint_if_needed)
+        api.subs.events.items_removed.connect(self.repaint_if_needed)
+
+    def _get_paint_cache_key(self) -> int:
+        return hash(
+            tuple(
+                # subtitle rectangles
+                [(event.start, event.end) for event in self._api.subs.events]
+                + [
+                    # audio view
+                    self._api.audio.view.view_start,
+                    self._api.audio.view.view_end,
+                    # video position
+                    self._api.playback.current_pts,
+                ]
+            )
+        )
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()

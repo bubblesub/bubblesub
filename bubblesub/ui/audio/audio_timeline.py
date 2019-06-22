@@ -29,9 +29,22 @@ class AudioTimeline(BaseLocalAudioWidget):
 
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
 
-        api.playback.current_pts_changed.connect(self.update)
-        api.audio.state_changed.connect(self.update)
-        api.audio.view.view_changed.connect(self.update)
+        api.audio.state_changed.connect(self.repaint_if_needed)
+        api.audio.view.view_changed.connect(self.repaint_if_needed)
+        api.playback.current_pts_changed.connect(self.repaint_if_needed)
+
+    def _get_paint_cache_key(self) -> int:
+        return hash(
+            (
+                # keyframes
+                self._api.video.state,
+                # audio view
+                self._api.audio.view.view_start,
+                self._api.audio.view.view_end,
+                # video position
+                self._api.playback.current_pts,
+            )
+        )
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
