@@ -19,6 +19,7 @@
 import typing as T
 
 import mock
+import numpy as np
 import pytest
 
 from bubblesub.api.video import VideoApi
@@ -42,9 +43,8 @@ def _test_align_pts_to_frame(
     with mock.patch(
         VideoApi.__module__ + "." + VideoApi.__name__ + ".timecodes",
         new_callable=mock.PropertyMock,
+        return_value=[0, 10, 20],
     ) as video_api_mock:
-        video_api_mock.return_value = [0, 10, 20]
-
         video_api = VideoApi(threading_api, log_api, subs_api)
         actual = align_func(video_api)(origin)
         assert actual == expected
@@ -133,3 +133,70 @@ def test_align_pts_to_near_frame(origin: int, expected: int) -> None:
     _test_align_pts_to_frame(
         origin, expected, lambda video_api: video_api.align_pts_to_near_frame
     )
+
+
+@pytest.mark.parametrize(
+    "timecodes,pts,expected",
+    [
+        # no timecodes
+        ([], -1, -1),
+        ([], 0, -1),
+        ([], 2.2, -1),
+        ([], np.array([0], dtype=np.int), np.array([-1], dtype=np.int)),
+        ([], np.array([0.0], dtype=np.float), np.array([-1], dtype=np.int)),
+        # integers
+        ([0, 10, 20], -1, 0),
+        ([0, 10, 20], 0, 0),
+        ([0, 10, 20], 1, 0),
+        ([0, 10, 20], 9, 0),
+        ([0, 10, 20], 10, 1),
+        ([0, 10, 20], 11, 1),
+        ([0, 10, 20], 19, 1),
+        ([0, 10, 20], 20, 2),
+        ([0, 10, 20], 21, 2),
+        # floating points
+        ([0, 10, 20], 0.1, 0),
+        ([0, 10, 20], 9.9, 0),
+        ([0, 10, 20], 10 - 1e-5, 0),
+        ([0, 10, 20], 10.0, 1),
+        ([0, 10, 20], 50.0, 2),
+        # numpy arrays
+        (
+            [0, 10, 20],
+            np.array([-1, 0, 1, 9, 10, 19, 20, 21], dtype=np.int),
+            np.array([0, 0, 0, 0, 1, 1, 2, 2], dtype=np.int),
+        ),
+        (
+            [0, 10, 20],
+            np.array([0.1, 9.9, 10 - 1e5, 10.0, 50.0], dtype=np.float),
+            np.array([0, 0, 0, 1, 2], dtype=np.int),
+        ),
+    ],
+)
+def test_frame_idx_from_pts(
+    timecodes: T.List[int],
+    pts: T.Union[float, int, np.array],
+    expected: T.Union[int, np.array],
+) -> None:
+    """Test getting frame index from PTS.
+
+    :param timecodes: frame timecodes to emulate
+    :param pts: source PTS
+    :param expected: expected frame index
+    """
+    threading_api = mock.MagicMock()
+    log_api = mock.MagicMock()
+    subs_api = mock.MagicMock()
+
+    with mock.patch(
+        VideoApi.__module__ + "." + VideoApi.__name__ + ".timecodes",
+        new_callable=mock.PropertyMock,
+        return_value=timecodes,
+    ) as video_api_mock:
+        video_api = VideoApi(threading_api, log_api, subs_api)
+        if isinstance(pts, np.ndarray):
+            np.testing.assert_array_equal(
+                video_api.frame_idx_from_pts(pts), expected
+            )
+        else:
+            assert video_api.frame_idx_from_pts(pts) == expected

@@ -270,15 +270,17 @@ class VideoApi(QtCore.QObject):
             return self.timecodes[idx]
         return pts
 
-    def frame_idx_from_pts(self, pts: int) -> int:
+    def frame_idx_from_pts(
+        self, pts: T.Union[float, int, np.array]
+    ) -> T.Union[int, np.array]:
         """Get index of a frame that contains given PTS.
 
         :param pts: PTS to search for
         :return: frame index, -1 if not found
         """
-        if self.timecodes:
-            return max(0, bisect.bisect_left(self.timecodes, pts) - 1)
-        return -1
+        ret = np.searchsorted(self.timecodes, pts, "right").astype(np.int)
+        ret = np.clip(ret - 1, a_min=0 if self.timecodes else -1, a_max=None)
+        return ret
 
     @property
     def frame_rate(self) -> fractions.Fraction:
