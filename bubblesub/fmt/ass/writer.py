@@ -16,6 +16,7 @@
 
 """ASS file writer."""
 
+import functools
 import typing as T
 from collections import OrderedDict
 from pathlib import Path
@@ -79,43 +80,49 @@ def write_styles(ass_file: AssFile, handle: T.IO[str]) -> None:
         write_style(style, handle)
 
 
+@functools.lru_cache(maxsize=1024)
+def serialize_style(style: AssStyle) -> str:
+    """Serializes ASS style to plain text.
+
+    :param style: ASS style to serialize
+    :return: serialized ASS style
+    """
+    return "Style: " + ",".join(
+        [
+            _escape(style.name),
+            _escape(style.font_name),
+            _escape(f"{style.font_size:d}"),
+            _escape(_serialize_color(style.primary_color)),
+            _escape(_serialize_color(style.secondary_color)),
+            _escape(_serialize_color(style.outline_color)),
+            _escape(_serialize_color(style.back_color)),
+            _escape("-1" if style.bold else "0"),
+            _escape("-1" if style.italic else "0"),
+            _escape("-1" if style.underline else "0"),
+            _escape("-1" if style.strike_out else "0"),
+            _escape(f"{style.scale_x:}"),
+            _escape(f"{style.scale_y:}"),
+            _escape(f"{style.spacing:}"),
+            _escape(f"{style.angle:}"),
+            _escape(f"{style.border_style:d}"),
+            _escape(f"{style.outline:}"),
+            _escape(f"{style.shadow:}"),
+            _escape(f"{style.alignment:d}"),
+            _escape(f"{style.margin_left:d}"),
+            _escape(f"{style.margin_right:d}"),
+            _escape(f"{style.margin_vertical:d}"),
+            _escape(f"{style.encoding:d}"),
+        ]
+    )
+
+
 def write_style(style: AssStyle, handle: T.IO[str]) -> None:
     """Write ASS style to a file.
 
     :param style: ASS style to write
     :param handle: handle to write the style to
     """
-    print(
-        "Style: "
-        + ",".join(
-            [
-                _escape(style.name),
-                _escape(style.font_name),
-                _escape(f"{style.font_size:d}"),
-                _escape(_serialize_color(style.primary_color)),
-                _escape(_serialize_color(style.secondary_color)),
-                _escape(_serialize_color(style.outline_color)),
-                _escape(_serialize_color(style.back_color)),
-                _escape("-1" if style.bold else "0"),
-                _escape("-1" if style.italic else "0"),
-                _escape("-1" if style.underline else "0"),
-                _escape("-1" if style.strike_out else "0"),
-                _escape(f"{style.scale_x:}"),
-                _escape(f"{style.scale_y:}"),
-                _escape(f"{style.spacing:}"),
-                _escape(f"{style.angle:}"),
-                _escape(f"{style.border_style:d}"),
-                _escape(f"{style.outline:}"),
-                _escape(f"{style.shadow:}"),
-                _escape(f"{style.alignment:d}"),
-                _escape(f"{style.margin_left:d}"),
-                _escape(f"{style.margin_right:d}"),
-                _escape(f"{style.margin_vertical:d}"),
-                _escape(f"{style.encoding:d}"),
-            ]
-        ),
-        file=handle,
-    )
+    print(serialize_style(style), file=handle)
 
 
 def write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
@@ -134,11 +141,12 @@ def write_events(ass_file: AssFile, handle: T.IO[str]) -> None:
         write_event(event, handle)
 
 
-def write_event(event: AssEvent, handle: T.IO[str]) -> None:
-    """Write ASS event to a file.
+@functools.lru_cache(maxsize=1024)
+def serialize_event(event: AssEvent) -> str:
+    """Serializes ASS event to plain text.
 
-    :param event: ASS event to write
-    :param handle: handle to write the event to
+    :param event: ASS event to serialize
+    :return: serialized ASS event
     """
     text = event.text
 
@@ -149,7 +157,7 @@ def write_event(event: AssEvent, handle: T.IO[str]) -> None:
         text += "{NOTE:%s}" % escape_ass_tag(event.note.replace("\n", "\\N"))
 
     event_type = "Comment" if event.is_comment else "Dialogue"
-    print(
+    return (
         event_type
         + ": "
         + ",".join(
@@ -165,9 +173,17 @@ def write_event(event: AssEvent, handle: T.IO[str]) -> None:
                 _escape(event.effect),
                 text,
             ]
-        ),
-        file=handle,
+        )
     )
+
+
+def write_event(event: AssEvent, handle: T.IO[str]) -> None:
+    """Write ASS event to a file.
+
+    :param event: ASS event to write
+    :param handle: handle to write the event to
+    """
+    print(serialize_event(event), file=handle)
 
 
 def write_ass(ass_file: AssFile, target: T.Union[Path, T.IO[str]]) -> None:

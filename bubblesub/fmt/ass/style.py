@@ -108,6 +108,15 @@ class AssStyle(ObservableObject):
         self.margin_vertical = margin_vertical
         self.encoding = encoding
 
+        self._hash = 0
+
+    def __hash__(self) -> int:
+        """Make this class available for use in sets and so on.
+
+        :return: class hash
+        """
+        return self._hash
+
     def scale(self, factor: float) -> None:
         """Scale self by the given factor.
 
@@ -156,6 +165,35 @@ class AssStyle(ObservableObject):
         index = self.index
         if index is not None and self.style_list is not None:
             self.style_list.item_changed.emit(self.index)
+
+        self._hash = hash(
+            (
+                id(self.style_list),
+                self.name,
+                self.font_name,
+                self.font_size,
+                self.primary_color,
+                self.secondary_color,
+                self.outline_color,
+                self.back_color,
+                self.bold,
+                self.italic,
+                self.underline,
+                self.strike_out,
+                self.scale_x,
+                self.scale_y,
+                self.spacing,
+                self.angle,
+                self.border_style,
+                self.outline,
+                self.shadow,
+                self.alignment,
+                self.margin_left,
+                self.margin_right,
+                self.margin_vertical,
+                self.encoding,
+            )
+        )
 
     def __getstate__(self) -> T.Any:
         """Return pickle compatible object representation.

@@ -71,6 +71,15 @@ class AssEvent(ObservableObject):
         self.margin_vertical = margin_vertical
         self.is_comment = is_comment
 
+        self._hash = 0
+
+    def __hash__(self) -> int:
+        """Make this class available for use in sets and so on.
+
+        :return: class hash
+        """
+        return self._hash
+
     @property
     def text(self) -> str:
         """Return event text.
@@ -172,6 +181,24 @@ class AssEvent(ObservableObject):
         index = self.index
         if index is not None and self.event_list is not None:
             self.event_list.item_changed.emit(index)
+
+        self._hash = hash(
+            (
+                id(self.event_list),
+                self.start,
+                self.end,
+                self.style,
+                self.actor,
+                self.text,
+                self.note,
+                self.effect,
+                self.layer,
+                self.margin_left,
+                self.margin_right,
+                self.margin_vertical,
+                self.is_comment,
+            )
+        )
 
     def __getstate__(self) -> T.Any:
         """Return pickle compatible object representation.
