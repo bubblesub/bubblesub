@@ -22,10 +22,10 @@ import typing as T
 import zlib
 
 from bubblesub.api.subs import SubtitlesApi
-from bubblesub.ass.event import AssEventList
-from bubblesub.ass.meta import AssMeta
-from bubblesub.ass.style import AssStyleList
 from bubblesub.cfg import Config
+from bubblesub.fmt.ass.event import AssEventList
+from bubblesub.fmt.ass.meta import AssMeta
+from bubblesub.fmt.ass.style import AssStyleList
 
 
 class UndoState:

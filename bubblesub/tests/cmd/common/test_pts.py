@@ -23,8 +23,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from bubblesub.api.cmd import CommandError
-from bubblesub.ass.event import AssEvent, AssEventList
 from bubblesub.cmd.common import Pts
+from bubblesub.fmt.ass.event import AssEvent, AssEventList
 
 
 def _assert_pts_value(

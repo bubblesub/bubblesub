@@ -9,9 +9,9 @@ import speech_recognition as sr
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ass.event import AssEvent
 from bubblesub.cfg.menu import MenuCommand, SubMenu
 from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.fmt.ass.event import AssEvent
 
 
 class SpeechRecognitionCommand(BaseCommand):

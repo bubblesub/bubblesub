@@ -24,10 +24,10 @@ import typing as T
 import numpy as np
 import PIL.Image
 
-from bubblesub.ass.event import AssEventList
-from bubblesub.ass.meta import AssMeta
-from bubblesub.ass.style import AssStyleList
 from bubblesub.ass_renderer import libass
+from bubblesub.fmt.ass.event import AssEventList
+from bubblesub.fmt.ass.meta import AssMeta
+from bubblesub.fmt.ass.style import AssStyleList
 
 
 class AssRenderer:

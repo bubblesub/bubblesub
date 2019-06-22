@@ -22,8 +22,8 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
-from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.util import async_dialog_exec
 from bubblesub.util import make_ranges
 

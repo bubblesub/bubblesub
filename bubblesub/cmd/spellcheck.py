@@ -20,7 +20,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ass.util import spell_check_ass_line
+from bubblesub.fmt.ass.util import spell_check_ass_line
 from bubblesub.spell_check import SpellChecker, SpellCheckerError
 from bubblesub.ui.util import (
     Dialog,

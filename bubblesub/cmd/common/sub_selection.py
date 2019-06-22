@@ -25,7 +25,7 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
-from bubblesub.ass.event import AssEvent
+from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.util import async_dialog_exec, time_jump_dialog
 from bubblesub.util import first
 

@@ -24,7 +24,7 @@ from bubblesub.api import Api
 from bubblesub.api.audio import AudioApi, AudioState
 from bubblesub.api.log import LogApi
 from bubblesub.api.threading import QueueWorker
-from bubblesub.ass.event import AssEvent
+from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.util import blend_colors
 from bubblesub.util import chunks

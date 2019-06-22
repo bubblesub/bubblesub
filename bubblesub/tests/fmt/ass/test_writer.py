@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for bubblesub.ass.writer module."""
+"""Tests for bubblesub.fmt.ass.writer module."""
 
 import io
 import tempfile
@@ -22,20 +22,20 @@ import unittest
 import unittest.mock
 from pathlib import Path
 
-from bubblesub.ass.file import AssFile
-from bubblesub.ass.writer import write_ass
+from bubblesub.fmt.ass.file import AssFile
+from bubblesub.fmt.ass.writer import write_ass
 
 
 @unittest.mock.patch(
-    "bubblesub.ass.writer.write_meta",
+    "bubblesub.fmt.ass.writer.write_meta",
     side_effect=lambda ass_file, handle: handle.write("META"),
 )
 @unittest.mock.patch(
-    "bubblesub.ass.writer.write_styles",
+    "bubblesub.fmt.ass.writer.write_styles",
     side_effect=lambda ass_file, handle: handle.write("STYLES"),
 )
 @unittest.mock.patch(
-    "bubblesub.ass.writer.write_events",
+    "bubblesub.fmt.ass.writer.write_events",
     side_effect=lambda ass_file, handle: handle.write("EVENTS"),
 )
 def test_write_ass_handle(
@@ -58,15 +58,15 @@ def test_write_ass_handle(
 
 
 @unittest.mock.patch(
-    "bubblesub.ass.writer.write_meta",
+    "bubblesub.fmt.ass.writer.write_meta",
     side_effect=lambda ass_file, handle: handle.write("META"),
 )
 @unittest.mock.patch(
-    "bubblesub.ass.writer.write_styles",
+    "bubblesub.fmt.ass.writer.write_styles",
     side_effect=lambda ass_file, handle: handle.write("STYLES"),
 )
 @unittest.mock.patch(
-    "bubblesub.ass.writer.write_events",
+    "bubblesub.fmt.ass.writer.write_events",
     side_effect=lambda ass_file, handle: handle.write("EVENTS"),
 )
 def test_write_ass_file(

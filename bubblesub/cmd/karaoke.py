@@ -22,8 +22,8 @@ import ass_tag_parser
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
-from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.fmt.ass.event import AssEvent
 
 
 class _Syllable:

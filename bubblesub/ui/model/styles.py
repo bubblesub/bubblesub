@@ -19,7 +19,7 @@ import typing as T
 
 from PyQt5 import QtCore, QtGui
 
-from bubblesub.ass.style import AssColor, AssStyle
+from bubblesub.fmt.ass.style import AssColor, AssStyle
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 
 

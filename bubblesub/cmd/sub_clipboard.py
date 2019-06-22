@@ -24,8 +24,8 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
-from bubblesub.ass.event import AssEvent
 from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.util import ms_to_str, str_to_ms
 
 

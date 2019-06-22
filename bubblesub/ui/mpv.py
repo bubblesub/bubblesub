@@ -25,7 +25,7 @@ from bubblesub.api import Api
 from bubblesub.api.audio import AudioState
 from bubblesub.api.playback import PlaybackFrontendState
 from bubblesub.api.video import VideoState
-from bubblesub.ass.writer import write_ass
+from bubblesub.fmt.ass.writer import write_ass
 from bubblesub.util import ms_to_str
 
 

@@ -30,7 +30,7 @@ from PyQt5 import QtCore
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
-from bubblesub.util.wav import write_wav
+from bubblesub.fmt.wav import write_wav
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()

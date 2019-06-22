@@ -14,4 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for bubblesub.ass module."""
+"""ASS file."""
+
+from bubblesub.fmt.ass.event import AssEventList
+from bubblesub.fmt.ass.meta import AssMeta
+from bubblesub.fmt.ass.style import AssStyleList
+
+
+class AssFile:
+    """ASS file."""
+
+    def __init__(self) -> None:
+        """Initialize self."""
+        self.styles = AssStyleList()
+        self.events = AssEventList()
+        self.meta = AssMeta()

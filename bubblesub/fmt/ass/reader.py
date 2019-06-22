@@ -20,10 +20,10 @@ import re
 import typing as T
 from pathlib import Path
 
-from bubblesub.ass.event import AssEvent
-from bubblesub.ass.file import AssFile
-from bubblesub.ass.style import AssColor, AssStyle
-from bubblesub.ass.util import unescape_ass_tag
+from bubblesub.fmt.ass.event import AssEvent
+from bubblesub.fmt.ass.file import AssFile
+from bubblesub.fmt.ass.style import AssColor, AssStyle
+from bubblesub.fmt.ass.util import unescape_ass_tag
 
 TIMESTAMP_RE = re.compile(r"(\d{1,2}):(\d{2}):(\d{2})[.,](\d{2,3})")
 SECTION_HEADING_RE = re.compile(r"^\[([^\]]+)\]$")

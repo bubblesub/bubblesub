@@ -21,12 +21,12 @@ from pathlib import Path
 
 from PyQt5 import QtCore
 
-from bubblesub.ass.event import AssEvent, AssEventList
-from bubblesub.ass.file import AssFile
-from bubblesub.ass.meta import AssMeta
-from bubblesub.ass.reader import load_ass
-from bubblesub.ass.style import AssStyle, AssStyleList
-from bubblesub.ass.writer import write_ass
+from bubblesub.fmt.ass.event import AssEvent, AssEventList
+from bubblesub.fmt.ass.file import AssFile
+from bubblesub.fmt.ass.meta import AssMeta
+from bubblesub.fmt.ass.reader import load_ass
+from bubblesub.fmt.ass.style import AssStyle, AssStyleList
+from bubblesub.fmt.ass.writer import write_ass
 from bubblesub.util import first
 
 
