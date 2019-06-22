@@ -31,7 +31,9 @@ class AudioTimeline(BaseLocalAudioWidget):
 
         api.audio.state_changed.connect(self.repaint_if_needed)
         api.audio.view.view_changed.connect(self.repaint_if_needed)
-        api.playback.current_pts_changed.connect(self.repaint_if_needed)
+        api.playback.current_pts_changed.connect(
+            self.repaint, QtCore.Qt.DirectConnection
+        )
 
     def _get_paint_cache_key(self) -> int:
         return hash(

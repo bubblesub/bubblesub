@@ -157,7 +157,9 @@ class AudioPreview(BaseLocalAudioWidget):
         api.audio.view.view_changed.connect(self._on_audio_view_change)
 
         api.audio.view.selection_changed.connect(self.repaint_if_needed)
-        api.playback.current_pts_changed.connect(self.repaint_if_needed)
+        api.playback.current_pts_changed.connect(
+            self.repaint, QtCore.Qt.DirectConnection
+        )
         api.subs.events.item_changed.connect(self.repaint_if_needed)
         api.subs.events.items_inserted.connect(self.repaint_if_needed)
         api.subs.events.items_moved.connect(self.repaint_if_needed)

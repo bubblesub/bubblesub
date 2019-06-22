@@ -99,7 +99,9 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         api.video.state_changed.connect(self._on_video_state_change)
         api.audio.state_changed.connect(self._on_audio_state_change)
-        api.playback.request_seek.connect(self._on_request_seek)
+        api.playback.request_seek.connect(
+            self._on_request_seek, QtCore.Qt.DirectConnection
+        )
         api.playback.request_playback.connect(self._on_request_playback)
         api.playback.playback_speed_changed.connect(
             self._on_playback_speed_change

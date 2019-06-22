@@ -83,7 +83,9 @@ class PlaybackApi(QtCore.QObject):
         self._is_paused = True
         self._current_pts = 0
 
-        self.receive_current_pts_change.connect(self._on_current_pts_change)
+        self.receive_current_pts_change.connect(
+            self._on_current_pts_change, QtCore.Qt.DirectConnection
+        )
 
     def seek(self, pts: int, precise: bool = True) -> None:
         """Seek to specified position in the video.

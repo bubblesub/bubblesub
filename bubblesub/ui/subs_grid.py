@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import datetime
 import functools
 import re
 import typing as T
@@ -28,6 +29,7 @@ from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
 
 MAGIC_MARGIN = 2  # ????
 HIGHLIGHTABLE_CHUNKS = {"\N{FULLWIDTH ASTERISK}", "\\N", "\\h", "\\n"}
+SEEK_THRESHOLD = datetime.timedelta(seconds=0.2)
 
 
 class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
@@ -126,6 +128,8 @@ class SubtitlesGrid(QtWidgets.QTableView):
             self.fontMetrics().height() + MAGIC_MARGIN
         )
 
+        self._last_seek = datetime.datetime.min
+
         self._subs_grid_delegate = SubtitlesGridDelegate(self._api, self)
         for col_idx in {AssEventsModelColumn.Text, AssEventsModelColumn.Note}:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
@@ -155,13 +159,6 @@ class SubtitlesGrid(QtWidgets.QTableView):
 
         self._setup_subs_menu()
         self._setup_header_menu()
-
-        self._seek_to: T.Optional[int] = None
-
-        timer = QtCore.QTimer(self)
-        timer.setInterval(50)
-        timer.timeout.connect(self._sync_sub_selection)
-        timer.start()
 
     def _setup_subs_menu(self) -> None:
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -217,16 +214,6 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self._api.cfg.opt["gui"]["grid_columns"] = bytes(
             self.horizontalHeader().saveState()
         )
-
-    def _sync_sub_selection(self) -> None:
-        if (
-            self._seek_to is not None
-            and self._api.cfg.opt["video"]["sync_pos_to_selection"]
-            and self._api.playback.is_ready
-        ):
-            self._api.playback.is_paused = True
-            self._api.playback.seek(self._seek_to)
-            self._seek_to = None
 
     def _open_subs_menu(self, position: QtCore.QPoint) -> None:
         self._subs_menu.exec_(self.viewport().mapToGlobal(position))
@@ -296,5 +283,12 @@ class SubtitlesGrid(QtWidgets.QTableView):
     def _sync_api_selection_to_video(
         self, rows: T.List[int], _changed: bool
     ) -> None:
-        if len(rows) == 1:
-            self._seek_to = self._api.subs.events[rows[0]].start
+        if (
+            len(rows) == 1
+            and self._api.cfg.opt["video"]["sync_pos_to_selection"]
+            and self._api.playback.is_ready
+            and (datetime.datetime.now() - self._last_seek) >= SEEK_THRESHOLD
+        ):
+            self._api.playback.is_paused = True
+            self._api.playback.seek(self._api.subs.events[rows[0]].start)
+            self._last_seek = datetime.datetime.now()
