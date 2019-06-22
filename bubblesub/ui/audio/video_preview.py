@@ -29,7 +29,6 @@ from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
 from bubblesub.util import sanitize_file_name
 
 _CACHE_LOCK = threading.Lock()
-_NOT_CACHED = object()
 _BAND_Y_RESOLUTION = 30
 
 
@@ -152,16 +151,22 @@ class VideoPreview(BaseLocalAudioWidget):
         painter.end()
 
     def _draw_video_band(self, painter: QtGui.QPainter) -> None:
+        if not self._api.video.timecodes:
+            return
+
         pixels = self._pixels.transpose(1, 0, 2)
         prev_column = np.zeros([pixels.shape[1], 3], dtype=np.uint8)
-        for x in range(pixels.shape[0]):
-            frame_idx = self.frame_idx_from_x(x)
-            column = self._worker.cache.get(frame_idx, _NOT_CACHED)
-            if column is _NOT_CACHED:
-                column = prev_column
-            else:
-                prev_column = column
+
+        min_pts = self.pts_from_x(0)
+        max_pts = self.pts_from_x(self.width() - 1)
+
+        pts_range = np.linspace(min_pts, max_pts, self.width())
+        frame_idx_range = self._api.video.frame_idx_from_pts(pts_range)
+
+        for x, frame_idx in enumerate(frame_idx_range):
+            column = self._worker.cache.get(frame_idx, prev_column)
             pixels[x] = column
+            prev_column = column
 
         image = QtGui.QImage(
             self._pixels.data,

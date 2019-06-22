@@ -216,10 +216,6 @@ class BaseLocalAudioWidget(BaseAudioWidget):
         scale = self._view.view_size / self.width()
         return x * scale + self._view.view_start
 
-    def frame_idx_from_x(self, x: int) -> int:
-        pts = self.pts_from_x(x)
-        return self._api.video.frame_idx_from_pts(pts)
-
 
 class BaseGlobalAudioWidget(BaseAudioWidget):
     def pts_to_x(self, pts: int) -> float:
