@@ -86,11 +86,12 @@ class ObservableObject:
     def _setattr_normal(self, prop: str, new_value: T.Any) -> None:
         """Regular implementation of attribute setter.
 
-        Calls _after_change immediately.
+        Calls _before_change and _after_change immediately.
 
         :param prop: property name
         :param new_value: new value
         """
+        self._before_change()
         super().__setattr__(prop, new_value)
         self._after_change()
 
@@ -98,20 +99,23 @@ class ObservableObject:
         """Throttled implementation of attribute setter.
 
         Doesn't call _after_change until after the user calls the .end_update()
-        method.
+        method. Calls before_change if it wasn't called before.
 
         :param prop: property name
         :param new_value: new value
         """
+        if not self._dirty:
+            self._before_change()
         super().__setattr__(prop, new_value)
         self._dirty = True
 
     def begin_update(self) -> None:
         """Start throttling calls to ._after_change() method.
 
-        Useful for batch object updates - rather than having .after_change()
-        method called after every change to the instance properties, it's
-        getting called only once, on .end_update().
+        Useful for batch object updates - rather than having .before_change()
+        and .after_change() methods called after every change to the instance
+        properties, they're getting called only once, on .begin_update() and
+        .end_update(), and only if there was a change to the class properties.
         """
         self._setattr_impl = self._setattr_throttled
 
@@ -125,6 +129,12 @@ class ObservableObject:
             self._after_change()
         self._setattr_impl = self._setattr_normal
         self._dirty = False
+
+    def _before_change(self) -> None:
+        """Meant to be overriden by the user.
+
+        Called before class properties have changed.
+        """
 
     def _after_change(self) -> None:
         """Meant to be overriden by the user.
