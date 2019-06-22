@@ -305,11 +305,18 @@ class AudioPreview(BaseLocalAudioWidget):
             else []
         )
 
-        for x in range(pixels.shape[0]):
+        min_pts = self.pts_from_x(0)
+        max_pts = self.pts_from_x(self.width() - 1)
+
+        pts_range = np.linspace(min_pts, max_pts, self.width())
+        block_idx_range = np.round(
+            pts_range * self._api.audio.sample_rate / 1000.0
+        ).astype(dtype=np.int) // (2 ** DERIVATION_DISTANCE)
+
+        for x, block_idx in enumerate(block_idx_range):
             column = zero_column
 
             if self._spectrum_worker:
-                block_idx = self.block_idx_from_x(x)
                 column = self._spectrum_worker.cache.get(
                     block_idx, zero_column
                 )
