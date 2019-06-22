@@ -81,9 +81,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.video.layout().setContentsMargins(0, 0, 2, 0)
         self.editor_splitter.setContentsMargins(2, 0, 0, 0)
-        self.main_splitter.setContentsMargins(8, 8, 8, 8)
 
-        self.setCentralWidget(self.main_splitter)
+        self.main_wrapper = QtWidgets.QWidget(self)
+        layout = QtWidgets.QHBoxLayout(self.main_wrapper)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.addWidget(self.main_splitter)
+
+        self.setCentralWidget(self.main_wrapper)
         self.setStatusBar(self.status_bar)
 
         self.subs_grid.setFocus()
