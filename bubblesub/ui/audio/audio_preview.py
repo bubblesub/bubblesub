@@ -14,11 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import bisect
 import typing as T
 
 import ffms2
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
+from sortedcontainers import SortedDict
 
 from bubblesub.api import Api
 from bubblesub.api.audio import AudioApi, AudioState
@@ -50,7 +52,7 @@ class SpectrumWorker(QueueWorker):
         self.signals = SpectrumWorkerSignals()
         self._audio_api = audio_api
 
-        self.cache: T.Dict[int, T.List[int]] = {}
+        self.cache: T.Dict[int, T.List[int]] = SortedDict()
 
         self._input = pyfftw.empty_aligned(
             2 << DERIVATION_SIZE, dtype=np.float32
@@ -295,17 +297,31 @@ class AudioPreview(BaseLocalAudioWidget):
 
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
         pixels = self._pixels.transpose()
-        prev_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
+        zero_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
+
+        cached_blocks = (
+            list(self._spectrum_worker.cache.keys())
+            if self._spectrum_worker
+            else []
+        )
+
         for x in range(pixels.shape[0]):
-            block_idx = self.block_idx_from_x(x)
+            column = zero_column
+
             if self._spectrum_worker:
+                block_idx = self.block_idx_from_x(x)
                 column = self._spectrum_worker.cache.get(
-                    block_idx, prev_column
+                    block_idx, zero_column
                 )
-            else:
-                column = prev_column
+
+                if cached_blocks and column is zero_column:
+                    tmp = bisect.bisect_left(cached_blocks, block_idx)
+                    if tmp == len(cached_blocks):
+                        tmp -= 1
+                    nearest_block_idx = cached_blocks[tmp]
+                    column = self._spectrum_worker.cache[nearest_block_idx]
+
             pixels[x] = column
-            prev_column = column
 
         image = QtGui.QImage(
             self._pixels.data,

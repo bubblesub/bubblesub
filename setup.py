@@ -285,6 +285,7 @@ install_packages = [
     "parsimonious",
     "pluginbase",
     "lazy_import",
+    "sortedcontainers",
 ]
 
 if os.name == "nt":
