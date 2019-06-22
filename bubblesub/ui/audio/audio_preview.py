@@ -298,12 +298,14 @@ class AudioPreview(BaseLocalAudioWidget):
         prev_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
         for x in range(pixels.shape[0]):
             block_idx = self.block_idx_from_x(x)
-            column = prev_column
             if self._spectrum_worker:
                 column = self._spectrum_worker.cache.get(
                     block_idx, prev_column
                 )
+            else:
+                column = prev_column
             pixels[x] = column
+            prev_column = column
 
         image = QtGui.QImage(
             self._pixels.data,
