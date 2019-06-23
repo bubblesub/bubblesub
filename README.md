@@ -9,6 +9,9 @@
     <a href="https://travis-ci.org/rr-/bubblesub">
         <img src="https://travis-ci.org/rr-/bubblesub.svg?branch=master">
     </a>
+    <a href="https://qchat.rizon.net/?channels=%23bubblesub&uio=d4">
+        <img src="https://img.shields.io/badge/irc-%23bubblesub-blue.svg">
+    </a>
 </p>
 
 
