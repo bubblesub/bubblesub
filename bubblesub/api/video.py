@@ -56,7 +56,7 @@ def _load_video_source(
     :param path: path to the video file
     :return: input path and resulting video source
     """
-    log_api.info(f"started loading video... ({path})")
+    log_api.info(f"started loading video ({path})")
 
     if not path.exists():
         log_api.error(f"video file {path} not found")
