@@ -97,9 +97,10 @@ class AudioSlider(BaseGlobalAudioWidget):
 
     def _draw_slider(self, painter: QtGui.QPainter) -> None:
         h = self.height()
+        band_size = h // 4
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(self.palette().highlight()))
         x1 = round(self.pts_to_x(self._view.view_start))
         x2 = round(self.pts_to_x(self._view.view_end))
-        painter.drawRect(x1, 0, x2 - x1, h / 4)
-        painter.drawRect(x1, h - 1 - h / 4, x2 - x1, h / 4)
+        painter.drawRect(x1, 0, x2 - x1, band_size)
+        painter.drawRect(x1, h - band_size, x2 - x1, band_size)
