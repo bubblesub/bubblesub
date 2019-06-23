@@ -239,7 +239,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
     def _on_mpv_load(self) -> None:
         self._api.playback.state = PlaybackFrontendState.Ready
-        self._refresh_subs()
+        self._need_subs_refresh = True
 
     def _mpv_event_handler(self) -> None:
         while self._mpv:
