@@ -26,10 +26,11 @@ from bubblesub.api.threading import QueueWorker
 from bubblesub.api.video import VideoApi, VideoState
 from bubblesub.cache import load_cache, save_cache
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget
-from bubblesub.util import sanitize_file_name
+from bubblesub.util import chunks, sanitize_file_name
 
 _CACHE_LOCK = threading.Lock()
-_BAND_Y_RESOLUTION = 30
+BAND_Y_RESOLUTION = 30
+CHUNK_SIZE = 50
 
 
 class VideoBandWorkerSignals(QtCore.QObject):
@@ -49,15 +50,18 @@ class VideoBandWorker(QueueWorker):
         video_api.state_changed.connect(self._on_video_state_change)
 
     def _process_task(self, task: T.Any) -> None:
-        frame_idx = T.cast(int, task)
-        frame = self._video_api.get_frame(frame_idx, 1, _BAND_Y_RESOLUTION)
-        if frame is None:
-            return
-        frame = frame.reshape(_BAND_Y_RESOLUTION, 3)
-        with _CACHE_LOCK:
-            self.cache[frame_idx] = frame.copy()
-        self._anything_to_save = True
-        self.signals.cache_updated.emit()
+        anything_changed = False
+        for frame_idx in task:
+            frame = self._video_api.get_frame(frame_idx, 1, BAND_Y_RESOLUTION)
+            if frame is None:
+                continue
+            frame = frame.reshape(BAND_Y_RESOLUTION, 3)
+            with _CACHE_LOCK:
+                self.cache[frame_idx] = frame.copy()
+                self._anything_to_save = True
+            anything_changed = True
+        if anything_changed:
+            self.signals.cache_updated.emit()
 
     def _queue_cleared(self) -> None:
         with _CACHE_LOCK:
@@ -86,9 +90,13 @@ class VideoBandWorker(QueueWorker):
 
         elif state == VideoState.Loaded:
             with _CACHE_LOCK:
-                for frame_idx in range(len(self._video_api.timecodes)):
-                    if frame_idx not in self.cache:
-                        self._queue.put(frame_idx)
+                not_cached_frames = [
+                    frame_idx
+                    for frame_idx in range(len(self._video_api.timecodes))
+                    if frame_idx not in self.cache
+                ]
+                for chunk in chunks(not_cached_frames, CHUNK_SIZE):
+                    self._queue.put(chunk)
 
     def _load_from_cache(self) -> T.Dict[int, np.array]:
         if self._cache_name is None:
@@ -139,7 +147,7 @@ class VideoPreview(BaseLocalAudioWidget):
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         self._pixels = np.zeros(
-            [_BAND_Y_RESOLUTION, self.width(), 3], dtype=np.uint8
+            [BAND_Y_RESOLUTION, self.width(), 3], dtype=np.uint8
         )
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
@@ -176,8 +184,6 @@ class VideoPreview(BaseLocalAudioWidget):
             QtGui.QImage.Format_RGB888,
         )
         painter.save()
-        painter.scale(
-            1, painter.viewport().height() / (_BAND_Y_RESOLUTION - 1)
-        )
+        painter.scale(1, painter.viewport().height() / (BAND_Y_RESOLUTION - 1))
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
