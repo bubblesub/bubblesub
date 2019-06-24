@@ -92,9 +92,8 @@ plugin](docs/example_plugin.py))
 
 4. Windows builds?
 
-    This is a hobby project and wrestling with Windows to have it compile a
-    single C dependency library isn't my idea of a well-spent afternoon.
-    It should be possible with MSYS2.
+    You can find a Windows build for bubblesub [here](https://github.com/Luni-4/bubblesub/tree/windows).  
+    I don't maintain it, so please contact the current developer if you find some issue.
 
 5. Versioning? PyPI?
 
