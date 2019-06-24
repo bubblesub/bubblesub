@@ -66,6 +66,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             "vo": "null" if api.args.no_video else "libmpv",
             "pause": True,
             "idle": True,
+            "blend-subtitles": "video",
             "video-sync": "display-vdrop",
             "keepaspect": True,
             "stop-playback-on-init-failure": False,
