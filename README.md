@@ -103,8 +103,7 @@ plugin](docs/example_plugin.py))
 
 ## Contact
 
-* **Issue tracker**: [GitHub issues](https://github.com/rr-/bubblesub)
-* **IRC channel**: `#bubblesub` on `irc.rizon.net`
+**Issue tracker**: [GitHub issues](https://github.com/rr-/bubblesub)
 
 ## Acknowledgments
 
