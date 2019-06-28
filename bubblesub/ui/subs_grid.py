@@ -128,7 +128,12 @@ class SubtitlesGrid(QtWidgets.QTableView):
             self.fontMetrics().height() + MAGIC_MARGIN
         )
 
+        self._scheduled_seek: T.Optional[int] = None
         self._last_seek = datetime.datetime.min
+
+        self._timer = QtCore.QTimer(self)
+        self._timer.setInterval(SEEK_THRESHOLD.total_seconds())
+        self._timer.timeout.connect(self._execute_scheduled_seek)
 
         self._subs_grid_delegate = SubtitlesGridDelegate(self._api, self)
         for col_idx in {AssEventsModelColumn.Text, AssEventsModelColumn.Note}:
@@ -287,8 +292,20 @@ class SubtitlesGrid(QtWidgets.QTableView):
             len(rows) == 1
             and self._api.cfg.opt["video"]["sync_pos_to_selection"]
             and self._api.playback.is_ready
-            and (datetime.datetime.now() - self._last_seek) >= SEEK_THRESHOLD
         ):
-            self._api.playback.is_paused = True
-            self._api.playback.seek(self._api.subs.events[rows[0]].start)
-            self._last_seek = datetime.datetime.now()
+            pts = self._api.subs.events[rows[0]].start
+            if (datetime.datetime.now() - self._last_seek) >= SEEK_THRESHOLD:
+                self._seek(pts)
+            else:
+                self._timer.start()
+                self._scheduled_seek = pts
+
+    def _execute_scheduled_seek(self) -> None:
+        self._api.playback.seek(self._scheduled_seek)
+        self._scheduled_seek = None
+        self._timer.stop()
+
+    def _seek(self, pts: int) -> None:
+        self._api.playback.is_paused = True
+        self._api.playback.seek(pts)
+        self._last_seek = datetime.datetime.now()
