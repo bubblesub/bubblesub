@@ -239,6 +239,7 @@ class _FilePropertiesDialog(Dialog):
         self.accepted.connect(self._commit)
 
         self._load()
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
         self.setWindowTitle("File properties")
         self.resize(600, 600)
 
