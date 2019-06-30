@@ -28,7 +28,7 @@ class AssEvent(ObservableObject):
         self,
         start: int = 0,
         end: int = 0,
-        style: str = "Default",
+        style: str = "",
         actor: str = "",
         text: str = "",
         note: str = "",
