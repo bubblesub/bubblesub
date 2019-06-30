@@ -285,18 +285,12 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         self,
         model: QtCore.QAbstractItemModel,
         signal_map: T.Optional[T.Dict[QtWidgets.QWidget, str]] = None,
-        submit_wrapper: T.Optional[
-            T.Callable[[], T.ContextManager[None]]
-        ] = None,
     ) -> None:
         super().__init__()
         self._model = model
         self._mappings: T.List[T.Tuple[QtWidgets.QWidget, int]] = []
         self._row_idx: T.Optional[int] = None
         self._item_delegate = QtWidgets.QItemDelegate(self)
-        self._submit_wrapper: T.Callable[
-            [], T.ContextManager[None]
-        ] = submit_wrapper or contextlib.nullcontext
         self._ignoring = 0
 
         self._signal_map: T.Dict[QtWidgets.QWidget, str] = {
@@ -377,12 +371,11 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
             self._model.index(row_idx, col_idx), QtCore.Qt.EditRole
         )
         if cur_value != prev_value:
-            with self._submit_wrapper():
-                self._model.setData(
-                    self._model.index(row_idx, col_idx),
-                    cur_value,
-                    QtCore.Qt.EditRole,
-                )
+            self._model.setData(
+                self._model.index(row_idx, col_idx),
+                cur_value,
+                QtCore.Qt.EditRole,
+            )
 
     @contextlib.contextmanager
     def _ignore_signals(self) -> T.Any:

@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import contextlib
 import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -189,7 +188,6 @@ class Editor(QtWidgets.QWidget):
         self._data_widget_mapper = ImmediateDataWidgetMapper(
             model=AssEventsModel(self, api),
             signal_map={TextEdit: "textChanged"},
-            submit_wrapper=self._submit_wrapper,
         )
         for column, widget in {
             (AssEventsModelColumn.Start, self.start_time_edit),
@@ -209,10 +207,17 @@ class Editor(QtWidgets.QWidget):
 
         api.subs.selection_changed.connect(self._on_selection_change)
 
-    @contextlib.contextmanager
-    def _submit_wrapper(self) -> T.Iterator[None]:
-        with self._api.undo.capture():
-            yield
+        QtWidgets.QApplication.instance().installEventFilter(self)
+
+    def eventFilter(
+        self, source: QtCore.QObject, event: QtCore.QEvent
+    ) -> bool:
+        if isinstance(source, QtWidgets.QWidget) and self.isAncestorOf(source):
+            if event.type() == QtCore.QEvent.FocusIn:
+                self._api.undo.begin_capture()
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._api.undo.end_capture()
+        return False
 
     def _on_selection_change(
         self, selected: T.List[int], _changed: bool
