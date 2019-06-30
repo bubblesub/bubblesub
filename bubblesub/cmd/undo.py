@@ -26,6 +26,7 @@ class UndoCommand(BaseCommand):
         return self.api.undo.has_undo
 
     async def run(self) -> None:
+        self.api.undo.end_capture(recursive=True)
         self.api.undo.undo()
 
 
@@ -38,6 +39,7 @@ class RedoCommand(BaseCommand):
         return self.api.undo.has_redo
 
     async def run(self) -> None:
+        self.api.undo.end_capture(recursive=True)
         self.api.undo.redo()
 
 

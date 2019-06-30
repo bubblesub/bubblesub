@@ -199,13 +199,19 @@ class UndoApi:
         self._prev_state = cur_state
         self._capture_nesting += 1
 
-    def end_capture(self) -> None:
-        """End undo capture."""
-        cur_state = self._make_state()
-        if self._prev_state != cur_state:
-            self._push(cur_state)
-        self._capture_nesting -= 1
-        self._prev_state = cur_state if self._capture_nesting else None
+    def end_capture(self, recursive=False) -> None:
+        """End undo capture.
+
+        :param recursive: whether to finish also parent captures
+        """
+        while self._capture_nesting:
+            cur_state = self._make_state()
+            if self._prev_state != cur_state:
+                self._push(cur_state)
+            self._capture_nesting -= 1
+            self._prev_state = cur_state if self._capture_nesting else None
+            if not recursive:
+                break
 
     def undo(self) -> None:
         """Restore previous application state."""

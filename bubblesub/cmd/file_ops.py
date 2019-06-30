@@ -96,6 +96,7 @@ class SaveCommand(BaseCommand):
             if not path:
                 raise CommandCanceled
 
+        self.api.undo.end_capture(recursive=True)
         self.api.subs.save_ass(path, remember_path=True)
         self.api.log.info(f"saved subtitles to {path}")
 
@@ -117,6 +118,7 @@ class SaveAsCommand(BaseCommand):
             ),
         )
 
+        self.api.undo.end_capture(recursive=True)
         self.api.subs.save_ass(path, remember_path=True)
         self.api.log.info(f"saved subtitles to {path}")
 
