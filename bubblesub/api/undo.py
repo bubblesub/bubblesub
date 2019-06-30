@@ -135,7 +135,7 @@ class UndoApi:
         """
         self._cfg = cfg
         self._subs_api = subs_api
-        self._stack: T.List[T.Tuple[T.Optional[UndoState], UndoState]] = []
+        self._stack: T.List[T.Optional[UndoState]] = []
         self._stack_pos = -1
         self._dirty = False
         self._prev_state: T.Optional[UndoState] = None
@@ -194,15 +194,16 @@ class UndoApi:
         # if called recursively, split recorded changes into separate
         # undo point at the entrance point
         cur_state = self._make_state()
-        if self._capture_nesting > 0:
-            self._push(self._prev_state, cur_state)
+        if self._capture_nesting > 0 and self._prev_state != cur_state:
+            self._push(cur_state)
         self._prev_state = cur_state
         self._capture_nesting += 1
 
     def end_capture(self) -> None:
         """End undo capture."""
         cur_state = self._make_state()
-        self._push(self._prev_state, cur_state)
+        if self._prev_state != cur_state:
+            self._push(cur_state)
         self._capture_nesting -= 1
         self._prev_state = cur_state if self._capture_nesting else None
 
@@ -212,8 +213,8 @@ class UndoApi:
             raise RuntimeError("no more undo")
 
         self._ignore = True
-        old_state, _new_state = self._stack[self._stack_pos]
         self._stack_pos -= 1
+        old_state = self._stack[self._stack_pos]
         self._dirty = True
         assert old_state
         self._apply_state(old_state)
@@ -226,8 +227,8 @@ class UndoApi:
 
         self._ignore = True
         self._stack_pos += 1
+        new_state = self._stack[self._stack_pos]
         self._dirty = True
-        _old_state, new_state = self._stack[self._stack_pos]
         self._apply_state(new_state)
         self._ignore = False
 
@@ -243,25 +244,20 @@ class UndoApi:
         self._stack = self._stack[-max_undo + 1 :]
         self._stack_pos = len(self._stack) - 1
 
-    def _push(
-        self, old_state: T.Optional[UndoState], new_state: UndoState
-    ) -> None:
+    def _push(self, state: UndoState) -> None:
         """Discard any redo information and push given state.
 
-        :param old_state: state before change
-        :param new_state: state after change
+        :param state: state to push onto the undo stack
         """
-        if old_state == new_state:
-            return
         self._discard_redo()
-        self._stack.append((old_state, new_state))
+        self._stack.append(state)
         self._stack_pos = len(self._stack) - 1
         self._dirty = True
         self._discard_old_undo()
 
     def _on_subtitles_load(self) -> None:
         state = self._make_state()
-        self._stack = [(state, state)]
+        self._stack = [state]
         self._stack_pos = 0
         self._dirty = False
 
