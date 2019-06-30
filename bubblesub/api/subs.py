@@ -48,10 +48,8 @@ class SubtitlesApi(QtCore.QObject):
         self._path: T.Optional[Path] = None
 
         self.ass_file = AssFile()
-        self.ass_file.styles.append(AssStyle(name=self.default_style_name))
 
         self.meta_changed = self.ass_file.meta.changed
-
         self.events.items_removed.connect(self._on_items_removed)
 
     @property

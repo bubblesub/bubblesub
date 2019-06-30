@@ -70,6 +70,9 @@ class Api:
         self.gui.terminated.connect(self.cmd.unload)
         self.subs.loaded.connect(self._on_subs_load)
 
+        # load empty file
+        self.subs.unload()
+
     def _on_subs_load(self) -> None:
         if self.subs.remembered_video_path:
             self.video.load(self.subs.remembered_video_path)
