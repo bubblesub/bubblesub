@@ -297,6 +297,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
         self._submit_wrapper: T.Callable[
             [], T.ContextManager[None]
         ] = submit_wrapper or contextlib.nullcontext
+        self._ignoring = 0
 
         self._signal_map: T.Dict[QtWidgets.QWidget, str] = {
             QtWidgets.QCheckBox: "clicked",
@@ -332,12 +333,13 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
             return
         for widget, col_idx in self._mappings:
             if sender_col_idx == col_idx:
-                self._write_to_model(widget, self._row_idx, col_idx)
+                with self._ignore_signals():
+                    self._write_to_model(widget, self._row_idx, col_idx)
 
     def _model_data_change(
         self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex
     ) -> None:
-        if self._row_idx is None:
+        if self._row_idx is None or self._ignoring:
             return
         for widget, col_idx in self._mappings:
             if (
@@ -349,6 +351,8 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
     def _write_to_widget(
         self, widget: QtWidgets.QWidget, row_idx: T.Optional[int], col_idx: int
     ) -> None:
+        if self._ignoring:
+            return
         name = widget.metaObject().userProperty().name()
         cur_value = (
             QtCore.QVariant()
@@ -379,3 +383,11 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
                     cur_value,
                     QtCore.Qt.EditRole,
                 )
+
+    @contextlib.contextmanager
+    def _ignore_signals(self) -> T.Any:
+        self._ignoring += 1
+        try:
+            yield
+        finally:
+            self._ignoring -= 1
