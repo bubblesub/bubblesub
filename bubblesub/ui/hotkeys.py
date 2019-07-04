@@ -17,7 +17,7 @@
 import functools
 import typing as T
 
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError
@@ -96,6 +96,7 @@ class HotkeyManager:
                 widget = widget.parent()
 
         qt_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(shortcut), widget)
+        qt_shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
         qt_shortcut.activatedAmbiguously.connect(qt_shortcut.activated.emit)
         qt_shortcut.activated.connect(
             functools.partial(_on_activate, shortcut)
