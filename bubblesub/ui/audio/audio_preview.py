@@ -416,7 +416,7 @@ class AudioPreview(BaseLocalAudioWidget):
                     )
                 )
             )
-            painter.drawRect(x1, 0, x2 - x1, h - 1)
+            painter.drawRect(x1, 0, x2 - x1, h)
 
             if label.is_visible:
                 painter.setPen(
@@ -451,7 +451,7 @@ class AudioPreview(BaseLocalAudioWidget):
         )
         x1 = round(self.pts_to_x(self._view.selection_start))
         x2 = round(self.pts_to_x(self._view.selection_end))
-        painter.drawRect(x1, 0, x2 - x1, h - 1)
+        painter.drawRect(x1, 0, x2 - x1, h)
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
         if not self._api.playback.current_pts:
