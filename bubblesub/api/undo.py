@@ -189,8 +189,13 @@ class UndoApi:
         """Begin undo capture."""
         if self._ignore:
             return
+
+        old_state = self._stack[self._stack_pos]
+        old_state.selected_indexes = self._subs_api.selected_indexes
+
         if self._capture_nesting > 0:
             self._push()
+
         self._capture_nesting += 1
 
     def end_capture(self, recursive=False) -> None:
