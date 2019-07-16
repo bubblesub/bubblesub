@@ -159,7 +159,7 @@ class SubtitlesPasteIntoCommand(BaseCommand):
             self.api.log.error("clipboard is empty, aborting")
             return
 
-        lines = text.split("\n")
+        lines = text.rstrip("\n").split("\n")
         subs = await self.args.target.get_subtitles()
         if not subs:
             raise CommandUnavailable("nothing to paste into")
