@@ -56,6 +56,10 @@ class SubtitlesCopyCommand(BaseCommand):
             QtWidgets.QApplication.clipboard().setText(
                 "\n".join(sub.text for sub in subs)
             )
+        elif self.args.subject == "notes":
+            QtWidgets.QApplication.clipboard().setText(
+                "\n".join(sub.note for sub in subs)
+            )
         elif self.args.subject == "times":
             QtWidgets.QApplication.clipboard().setText(
                 "\n".join(
@@ -81,7 +85,7 @@ class SubtitlesCopyCommand(BaseCommand):
             "-s",
             "--subject",
             help="subject to copy",
-            choices=("text", "times", "all"),
+            choices=("text", "notes", "times", "all"),
             default="all",
         )
 
@@ -174,6 +178,10 @@ class SubtitlesPasteIntoCommand(BaseCommand):
                 for line, sub in zip(lines, subs):
                     sub.text = line
 
+            elif self.args.subject == "notes":
+                for line, sub in zip(lines, subs):
+                    sub.note = line
+
             elif self.args.subject == "times":
                 times: T.List[T.Tuple[int, int]] = []
                 for line in lines:
@@ -205,7 +213,7 @@ class SubtitlesPasteIntoCommand(BaseCommand):
             "-s",
             "--subject",
             help="subject to copy",
-            choices=("text", "times"),
+            choices=("text", "notes", "times"),
             required=True,
         )
 

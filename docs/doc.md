@@ -292,7 +292,7 @@ Copies given subtitles to clipboard.
 
 Usage: `sub‑copy [-t|--target=selected] [-s|--subject=all]`
 * `-t`, `--target`: subtitles to paste into
-* `-s`, `--subject`: subject to copy (can be `text`, `times`, `all`)
+* `-s`, `--subject`: subject to copy (can be `text`, `notes`, `times`, `all`)
 
 ### <a name="cmd-sub-delete"></a>`sub‑delete`
 Deletes given subtitles.
@@ -349,7 +349,7 @@ Pastes text or times into the given subtitles.
 
 Usage: `sub‑paste‑into [-t|--target=selected] -s|--subject=…`
 * `-t`, `--target`: subtitles to paste the subject into
-* `-s`, `--subject`: subject to copy (can be `text`, `times`)
+* `-s`, `--subject`: subject to copy (can be `text`, `notes`, `times`)
 
 ### <a name="cmd-sub-select"></a>`sub‑select`
 Selects given subtitles.
