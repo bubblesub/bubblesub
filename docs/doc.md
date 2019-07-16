@@ -33,6 +33,7 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
 |<kbd>Ctrl+F</kbd> | global | <code><a href="#user-content-cmd-search">search</a> </code> |
 |<kbd>Ctrl+H</kbd> | global | <code><a href="#user-content-cmd-search-and-replace">search-and-replace</a> </code> |
+|<kbd>Ctrl+Shift+Return</kbd> | global | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
 |<kbd>Ctrl+Return</kbd> | global | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
 |<kbd>Ctrl+Delete</kbd> | global | <code><a href="#user-content-cmd-sub-delete">sub-delete</a> </code> |
 |<kbd>Ctrl+Shift+1</kbd> | global | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=-10f</code> |
@@ -70,8 +71,10 @@ Context refers to the currently focused widget.
 |<kbd>3</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=-1f</code> |
 |<kbd>4</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=+1f</code> |
 |<kbd>C</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-set">sub-set</a> --start=a.s --end=a.e</code> |
-|<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
-|<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
+|<kbd>K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
+|<kbd>J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
+|<kbd>Shift+Return</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
+|<kbd>Return</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
 |<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
 |<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-play-region">play-region</a> -s=cs.s -e=cs.e</code> |
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
@@ -84,6 +87,8 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-view">audio-zoom-view</a> -d=0.9</code> |
 |<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f</code> |
 |<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f</code> |
+|<kbd>;</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s</code> |
+|<kbd>'</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.e</code> |
 |<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1500ms</code> |
 |<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1500ms</code> |
 |<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms</code> |
