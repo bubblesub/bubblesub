@@ -286,6 +286,7 @@ install_packages = [
     "pluginbase",
     "lazy_import",
     "sortedcontainers",
+    "dataclasses",
 ]
 
 if os.name == "nt":
