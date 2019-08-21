@@ -22,9 +22,10 @@ from bubblesub.ui.audio.audio_preview import AudioPreview
 from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.audio_timeline import AudioTimeline
 from bubblesub.ui.audio.video_preview import VideoPreview
+from bubblesub.ui.util import build_splitter
 
 
-class Audio(QtWidgets.QWidget):
+class Audio(QtWidgets.QSplitter):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
@@ -36,13 +37,26 @@ class Audio(QtWidgets.QWidget):
         self.setObjectName("spectrogram")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._audio_timeline)
-        layout.addWidget(self._audio_preview)
-        layout.addWidget(self._video_preview)
-        layout.addWidget(self._slider)
+        top_part = QtWidgets.QWidget(self)
+        top_part_layout = QtWidgets.QVBoxLayout(top_part)
+        top_part_layout.setSpacing(0)
+        top_part_layout.setContentsMargins(0, 0, 0, 0)
+        top_part_layout.addWidget(self._audio_timeline)
+        top_part_layout.addWidget(self._audio_preview)
+
+        bottom_part = QtWidgets.QWidget(self)
+        bottom_part_layout = QtWidgets.QVBoxLayout(bottom_part)
+        bottom_part_layout.setSpacing(0)
+        bottom_part_layout.setContentsMargins(0, 0, 0, 0)
+        bottom_part_layout.addWidget(self._video_preview)
+        bottom_part_layout.addWidget(self._slider)
+
+        self.addWidget(top_part)
+        self.addWidget(bottom_part)
+        self.setStretchFactor(0, 3)
+        self.setStretchFactor(1, 1)
+        self.setHandleWidth(0)
+        self.setOrientation(QtCore.Qt.Vertical)
 
         api.audio.state_changed.connect(self._on_audio_state_change)
 

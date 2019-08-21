@@ -31,6 +31,7 @@ from bubblesub.util import chunks, sanitize_file_name
 _CACHE_LOCK = threading.Lock()
 BAND_Y_RESOLUTION = 30
 CHUNK_SIZE = 50
+VIDEO_BAND_SIZE = 10
 
 
 class VideoBandWorkerSignals(QtCore.QObject):
@@ -117,9 +118,8 @@ class VideoBandWorker(QueueWorker):
 class VideoPreview(BaseLocalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
-        self.setMinimumHeight(SLIDER_SIZE * 3)
         self.setSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum
+            QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Preferred
         )
 
         self._pixels: np.array = np.zeros([0, 0, 3], dtype=np.uint8)
@@ -130,6 +130,9 @@ class VideoPreview(BaseLocalAudioWidget):
 
         api.video.state_changed.connect(self.repaint_if_needed)
         api.audio.view.view_changed.connect(self.repaint_if_needed)
+
+    def sizeHint(self) -> QtCore.QSize:
+        return QtCore.QSize(0, VIDEO_BAND_SIZE)
 
     def _get_paint_cache_key(self) -> int:
         return hash(

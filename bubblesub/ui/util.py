@@ -384,3 +384,16 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
             yield
         finally:
             self._ignoring -= 1
+
+
+def build_splitter(
+    parent: QtWidgets.QWidget,
+    widgets: T.List[T.Tuple[int, QtWidgets.QWidget]],
+    orientation: int,
+) -> QtWidgets.QSplitter:
+    splitter = QtWidgets.QSplitter(parent, orientation=orientation)
+    for i, item in enumerate(widgets):
+        stretch_factor, widget = item
+        splitter.addWidget(widget)
+        splitter.setStretchFactor(i, stretch_factor)
+    return splitter

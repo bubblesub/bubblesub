@@ -36,6 +36,7 @@ from bubblesub.ui.hotkeys import HotkeyManager
 from bubblesub.ui.menu import setup_cmd_menu
 from bubblesub.ui.statusbar import StatusBar
 from bubblesub.ui.subs_grid import SubtitlesGrid
+from bubblesub.ui.util import build_splitter
 from bubblesub.ui.video import Video
 
 
@@ -60,21 +61,26 @@ class MainWindow(QtWidgets.QMainWindow):
         self.status_bar = StatusBar(api, self)
         self.console = Console(api, self)
 
-        self.editor_splitter = self._build_splitter(
-            [(4, self.audio), (1, self.editor)], orientation=QtCore.Qt.Vertical
+        self.editor_splitter = build_splitter(
+            self,
+            [(4, self.audio), (1, self.editor)],
+            orientation=QtCore.Qt.Vertical,
         )
 
-        self.top_bar = self._build_splitter(
+        self.top_bar = build_splitter(
+            self,
             [(1, self.video), (1, self.editor_splitter)],
             orientation=QtCore.Qt.Horizontal,
         )
 
-        self.console_splitter = self._build_splitter(
+        self.console_splitter = build_splitter(
+            self,
             [(2, self.subs_grid), (1, self.console)],
             orientation=QtCore.Qt.Horizontal,
         )
 
-        self.main_splitter = self._build_splitter(
+        self.main_splitter = build_splitter(
+            self,
             [(1, self.top_bar), (5, self.console_splitter)],
             orientation=QtCore.Qt.Vertical,
         )
@@ -183,18 +189,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.update()
 
-    def _build_splitter(
-        self,
-        widgets: T.List[T.Tuple[int, QtWidgets.QWidget]],
-        orientation: int,
-    ) -> QtWidgets.QSplitter:
-        splitter = QtWidgets.QSplitter(self, orientation=orientation)
-        for i, item in enumerate(widgets):
-            stretch_factor, widget = item
-            splitter.addWidget(widget)
-            splitter.setStretchFactor(i, stretch_factor)
-        return splitter
-
     def _setup_menu(self) -> None:
         plugin_menu = self._api.cmd.get_plugin_menu_items()
         if not plugin_menu:
@@ -218,6 +212,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if data:
                 widget.restoreState(data)
 
+        _load(self.audio, "audio")
         _load(self.top_bar, "top")
         _load(self.editor_splitter, "editor")
         _load(self.main_splitter, "main")
@@ -225,6 +220,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _store_splitters(self) -> None:
         self._api.cfg.opt["gui"]["splitters"] = {
+            "audio": bytes(self.audio.saveState()),
             "top": bytes(self.top_bar.saveState()),
             "editor": bytes(self.editor_splitter.saveState()),
             "main": bytes(self.main_splitter.saveState()),
