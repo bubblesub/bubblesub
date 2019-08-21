@@ -93,6 +93,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
         self.apply_theme(api.cfg.opt["gui"]["current_theme"])
+        self._restore_fonts()
         self._restore_splitters()
         self._setup_menu()
 
@@ -106,6 +107,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         api.gui.terminated.connect(self._store_splitters)
+        api.gui.terminated.connect(self._store_fonts)
         api.gui.request_quit.connect(self.close)
         api.gui.request_begin_update.connect(
             lambda: self.setUpdatesEnabled(False)
@@ -228,6 +230,18 @@ class MainWindow(QtWidgets.QMainWindow):
             "main": bytes(self.main_splitter.saveState()),
             "console": bytes(self.console_splitter.saveState()),
         }
+
+    def _restore_fonts(self) -> None:
+        try:
+            font_def = self._api.cfg.opt["gui"]["fonts"]["main"]
+        except KeyError:
+            return
+        font = QtGui.QFont()
+        font.fromString(font_def)
+        self.setFont(font)
+
+    def _store_fonts(self) -> None:
+        self._api.cfg.opt["gui"]["fonts"]["main"] = self.font().toString()
 
     def _update_title(self) -> None:
         self.setWindowTitle(
