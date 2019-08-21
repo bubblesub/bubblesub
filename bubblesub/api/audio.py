@@ -30,6 +30,7 @@ from PyQt5 import QtCore
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
+from bubblesub.compat import nullcontext
 from bubblesub.fmt.wav import write_wav
 
 _LOADING = object()
@@ -283,7 +284,7 @@ class AudioApi(QtCore.QObject):
         if samples.dtype.name in ("float32", "float64"):
             samples = (samples * (1 << 31)).astype(np.int32)
 
-        ctx = contextlib.nullcontext(path_or_handle)
+        ctx = nullcontext(path_or_handle)
         if isinstance(path_or_handle, Path):
             ctx = path_or_handle.open("wb")
 

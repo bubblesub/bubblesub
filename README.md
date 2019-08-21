@@ -38,7 +38,7 @@
 ## Installation
 
 - Install system dependencies
-    - Python 3.7
+    - Python 3.6
     - [`libmpv`](https://github.com/mpv-player/mpv.git)
     - [`ffms`](https://github.com/FFMS/ffms2)
     - [`fftw`](https://github.com/FFTW/fftw3)
