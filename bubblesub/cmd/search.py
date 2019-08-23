@@ -339,6 +339,7 @@ class _SearchDialog(Dialog):
         strip = QtWidgets.QDialogButtonBox(self)
         strip.setOrientation(QtCore.Qt.Vertical)
         self.find_next_btn = strip.addButton("Find next", strip.ActionRole)
+        self.find_next_btn.setDefault(True)
         self.find_prev_btn = strip.addButton("Find previous", strip.ActionRole)
         self.count_btn = strip.addButton("Count occurences", strip.ActionRole)
         self.replace_sel_btn = strip.addButton(
