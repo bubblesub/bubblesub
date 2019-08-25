@@ -75,12 +75,23 @@ class Audio(QtWidgets.QSplitter):
             self._api.audio.view.reset_view()
 
     def _sync_selection(self) -> None:
-        if len(self._api.subs.selected_indexes) >= 1:
-            first_sub = self._api.subs.selected_events[0]
-            last_sub = self._api.subs.selected_events[-1]
-            self._api.audio.view.view(
-                first_sub.start - 10000, last_sub.end + 10000
-            )
-            self._api.audio.view.select(first_sub.start, last_sub.end)
-        else:
+        if not self._api.subs.selected_indexes:
             self._api.audio.view.unselect()
+            return
+
+        auto_sel_lead_in = self._api.cfg.opt["audio"]["auto_sel_lead_in"]
+        auto_sel_lead_out = self._api.cfg.opt["audio"]["auto_sel_lead_out"]
+        auto_sel_max = self._api.cfg.opt["audio"]["auto_sel_max"]
+
+        first_sub = self._api.subs.selected_events[0]
+        last_sub = self._api.subs.selected_events[-1]
+        sel_start = first_sub.start - auto_sel_lead_in
+        sel_end = last_sub.end + auto_sel_lead_out
+
+        if sel_end - sel_start > auto_sel_max:
+            center = (sel_start + sel_end) / 2
+            sel_start = center - auto_sel_max / 2
+            sel_end = center + auto_sel_max / 2
+
+        self._api.audio.view.view(sel_start, sel_end)
+        self._api.audio.view.select(first_sub.start, last_sub.end)

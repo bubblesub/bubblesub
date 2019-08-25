@@ -4,6 +4,11 @@ basic:
     max_undo: 1000
     log_levels: ["error","warning","info","cmd-echo"]
 
+audio:
+    auto_sel_lead_in: 10000
+    auto_sel_lead_out: 10000
+    auto_sel_max: 60000
+
 video:
     subs_sync_interval: 65
     sync_pos_to_selection: true
