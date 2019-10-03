@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import bisect
 import enum
 import typing as T
 from dataclasses import dataclass
@@ -44,28 +45,92 @@ class DragData:
     selected_events: T.List[AssEvent]
 
 
-def _create_new_subtitle(api: Api, pts: int, before: bool) -> None:
-    pts = api.video.align_pts_to_near_frame(pts)
+@dataclass
+class InsertionPoint:
+    idx: int
+    start: int
+    end: int
 
-    if before:
-        if not api.subs.selected_indexes:
-            return
-        end = api.subs.selected_events[0].start
-        idx = api.subs.selected_indexes[0]
-        start = pts
+
+def get_subtitle_insertion_point(
+    api: Api, pts: int, by_end: bool
+) -> InsertionPoint:
+    # legend:
+    # |---| subtitle
+    #   *   pts (where the user clicked)
+
+    default_duration = api.cfg.opt["subs"]["default_duration"]
+
+    if not api.subs.selected_indexes:
+        if by_end:
+            return InsertionPoint(
+                idx=0, start=max(0, pts - default_duration), end=pts
+            )
+        return InsertionPoint(idx=0, start=pts, end=pts + default_duration)
+
+    sel_start = api.subs.selected_events[0].start
+    sel_end = api.subs.selected_events[-1].end
+
+    if by_end:
+        # right-click
+        if pts >= sel_end:
+            # before: |----|  *
+            # after:  |----|--|
+            return InsertionPoint(
+                idx=api.subs.selected_indexes[-1] + 1, start=sel_end, end=pts
+            )
+        elif pts <= sel_start:
+            # before:      *  |----|
+            # after:  |----|  |----|
+            return InsertionPoint(
+                idx=api.subs.selected_indexes[0],
+                start=pts - default_duration,
+                end=pts,
+            )
     else:
-        if api.subs.selected_indexes:
-            start = api.subs.selected_events[-1].end
-            idx = api.subs.selected_indexes[-1] + 1
-        else:
-            start = 0
-            idx = 0
-        end = pts
+        # left-click
+        if pts >= sel_end:
+            # before: |----|  *
+            # after:  |----|  |----|
+            return InsertionPoint(
+                idx=api.subs.selected_indexes[-1] + 1,
+                start=pts,
+                end=pts + default_duration,
+            )
+        elif pts <= sel_start:
+            # before: *  |----|
+            # after:  |--|=|--|
+            return InsertionPoint(
+                idx=api.subs.selected_indexes[0],
+                start=pts,
+                end=pts + default_duration,
+            )
+    # before: |--*--|
+    # after:  |--|==|-|
+    return InsertionPoint(
+        idx=api.subs.selected_indexes[0], start=pts, end=pts + default_duration
+    )
+
+
+def _create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
+    pts = api.video.align_pts_to_near_frame(pts)
+    insertion_point = get_subtitle_insertion_point(api, pts, by_end)
+    insertion_point.start = api.video.align_pts_to_near_frame(
+        insertion_point.start
+    )
+    insertion_point.end = api.video.align_pts_to_near_frame(
+        insertion_point.end
+    )
 
     api.subs.events.insert(
-        idx, AssEvent(start=start, end=end, style=api.subs.default_style_name)
+        insertion_point.idx,
+        AssEvent(
+            start=insertion_point.start,
+            end=insertion_point.end,
+            style=api.subs.default_style_name,
+        ),
     )
-    api.subs.selected_indexes = [idx]
+    api.subs.selected_indexes = [insertion_point.idx]
 
 
 class BaseAudioWidget(QtWidgets.QWidget):
@@ -116,7 +181,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
         if drag_mode in {DragMode.NewSubtitleStart, DragMode.NewSubtitleEnd}:
             pts = self.pts_from_x(event.x())
             _create_new_subtitle(
-                self._api, pts, before=drag_mode == DragMode.NewSubtitleStart
+                self._api, pts, by_end=drag_mode == DragMode.NewSubtitleEnd
             )
         else:
             self._drag_data = DragData(
