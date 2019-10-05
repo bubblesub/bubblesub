@@ -147,7 +147,7 @@ class ObservableObject:
 
 class _ObservableListSignals(QtCore.QObject):
     # QObject doesn't play nice with multiple inheritance, hence composition
-    item_changed = QtCore.pyqtSignal([int])
+    item_modified = QtCore.pyqtSignal([int])
     items_about_to_be_inserted = QtCore.pyqtSignal([int, int])
     items_about_to_be_removed = QtCore.pyqtSignal([int, int])
     items_about_to_be_moved = QtCore.pyqtSignal([int, int, int])
@@ -159,7 +159,7 @@ class _ObservableListSignals(QtCore.QObject):
 class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
     """Alternative to QtCore.QAbstractListModel that simplifies indexing."""
 
-    item_changed = property(lambda self: self._signals.item_changed)
+    item_modified = property(lambda self: self._signals.item_modified)
     items_about_to_be_inserted = property(
         lambda self: self._signals.items_about_to_be_inserted
     )
@@ -249,8 +249,11 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
             self.items_removed.emit(start, stop - start)
             self.items_inserted.emit(start, len(value))
         else:
+            self.items_about_to_be_removed.emit(idx, 1)
+            self.items_about_to_be_inserted.emit(idx, 1)
             self._items[idx] = value
-            self.item_changed.emit(idx)
+            self.items_removed.emit(idx, 1)
+            self.items_inserted.emit(idx, 1)
 
     def __iter__(self) -> T.Iterator[TItem]:
         """Iterate directly over the collection values.

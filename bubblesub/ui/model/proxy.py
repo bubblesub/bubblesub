@@ -34,7 +34,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         """
         super().__init__(parent)
         self._list = list_
-        self._list.item_changed.connect(self._proxy_data_changed)
+        self._list.item_modified.connect(self._proxy_data_changed)
         self._list.items_about_to_be_inserted.connect(
             self._proxy_items_about_to_be_inserted
         )

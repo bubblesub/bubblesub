@@ -89,11 +89,11 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
         api.subs.meta_changed.connect(self._on_subs_change)
-        api.subs.events.item_changed.connect(self._on_subs_change)
+        api.subs.events.item_modified.connect(self._on_subs_change)
         api.subs.events.items_inserted.connect(self._on_subs_change)
         api.subs.events.items_removed.connect(self._on_subs_change)
         api.subs.events.items_moved.connect(self._on_subs_change)
-        api.subs.styles.item_changed.connect(self._on_subs_change)
+        api.subs.styles.item_modified.connect(self._on_subs_change)
         api.subs.styles.items_inserted.connect(self._on_subs_change)
         api.subs.styles.items_removed.connect(self._on_subs_change)
         api.subs.styles.items_moved.connect(self._on_subs_change)

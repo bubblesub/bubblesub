@@ -34,7 +34,7 @@ class AudioSlider(BaseGlobalAudioWidget):
         api.playback.current_pts_changed.connect(
             self.repaint, QtCore.Qt.DirectConnection
         )
-        api.subs.events.item_changed.connect(self.repaint_if_needed)
+        api.subs.events.item_modified.connect(self.repaint_if_needed)
         api.subs.events.items_inserted.connect(self.repaint_if_needed)
         api.subs.events.items_moved.connect(self.repaint_if_needed)
         api.subs.events.items_removed.connect(self.repaint_if_needed)

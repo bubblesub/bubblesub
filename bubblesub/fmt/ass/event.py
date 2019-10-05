@@ -180,7 +180,7 @@ class AssEvent(ObservableObject):
         """Emit item changed event in the parent subtitle list."""
         index = self.index
         if index is not None and self.event_list is not None:
-            self.event_list.item_changed.emit(index)
+            self.event_list.item_modified.emit(index)
 
         self._hash = hash(
             (
@@ -237,23 +237,17 @@ class AssEvent(ObservableObject):
 class AssEventList(ObservableList[AssEvent]):
     """ASS event list."""
 
-    def insert(self, idx: int, *items: AssEvent) -> None:
-        """Insert events at the specified position.
+    def __init__(self) -> None:
+        """Initialize self."""
+        super().__init__()
+        self.items_inserted.connect(self._on_items_insertion)
+        self.items_about_to_be_removed.connect(self._on_items_removal)
 
-        :param idx: index to add the new events at
-        :param items: events to add
-        """
-        for item in items:
+    def _on_items_insertion(self, idx: int, count: int) -> None:
+        for item in self._items[idx : idx + count]:
             assert item.event_list is None, "AssEvent belongs to another list"
             item.event_list = self
-        super().insert(idx, *items)
 
-    def remove(self, idx: int, count: int) -> None:
-        """Remove events at the specified position.
-
-        :param idx: where to start the removal
-        :param count: how many elements to remove
-        """
+    def _on_items_removal(self, idx: int, count: int) -> None:
         for item in self._items[idx : idx + count]:
             item.event_list = None
-        super().remove(idx, count)

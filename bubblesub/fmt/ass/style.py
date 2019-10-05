@@ -164,7 +164,7 @@ class AssStyle(ObservableObject):
         """Emit item changed event in the parent style list."""
         index = self.index
         if index is not None and self.style_list is not None:
-            self.style_list.item_changed.emit(self.index)
+            self.style_list.item_modified.emit(self.index)
 
         self._hash = hash(
             (
@@ -232,26 +232,11 @@ class AssStyle(ObservableObject):
 class AssStyleList(ObservableList[AssStyle]):
     """ASS style list."""
 
-    def insert(self, idx: int, *items: AssStyle) -> None:
-        """Insert styles at the specified position.
-
-        :param idx: index to add the new styles at
-        :param items: styles to add
-        """
-        for item in items:
-            assert item.style_list is None, "AssStyle belongs to another list"
-            item.style_list = self
-        super().insert(idx, *items)
-
-    def remove(self, idx: int, count: int) -> None:
-        """Remove styles at the specified position.
-
-        :param idx: where to start the removal
-        :param count: how many elements to remove
-        """
-        for item in self._items[idx : idx + count]:
-            item.style_list = None
-        super().remove(idx, count)
+    def __init__(self) -> None:
+        """Initialize self."""
+        super().__init__()
+        self.items_inserted.connect(self._on_items_insertion)
+        self.items_about_to_be_removed.connect(self._on_items_removal)
 
     def get_by_name(self, name: str) -> T.Optional[AssStyle]:
         """Retrieve style by its name.
@@ -263,3 +248,12 @@ class AssStyleList(ObservableList[AssStyle]):
             if style.name == name:
                 return style
         return None
+
+    def _on_items_insertion(self, idx: int, count: int) -> None:
+        for item in self._items[idx : idx + count]:
+            assert item.style_list is None, "AssStyle belongs to another list"
+            item.style_list = self
+
+    def _on_items_removal(self, idx: int, count: int) -> None:
+        for item in self._items[idx : idx + count]:
+            item.event_list = None

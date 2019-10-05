@@ -60,7 +60,7 @@ class AudioViewApi(QtCore.QObject):
         subs_api.events.items_inserted.connect(self._extend_view)
         subs_api.events.items_removed.connect(self._extend_view)
         subs_api.events.items_moved.connect(self._extend_view)
-        subs_api.events.item_changed.connect(self._extend_view)
+        subs_api.events.item_modified.connect(self._extend_view)
 
         self.reset_view()
 
