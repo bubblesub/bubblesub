@@ -48,12 +48,20 @@ def ass_to_plaintext(text: str) -> str:
     :param text: input ASS line
     :return: plain text
     """
-    return str(
-        regex.sub("{[^}]*}", "", text)
-        .replace("\\h", " ")
-        .replace("\\n", " ")
-        .replace("\\N", "\n")
-    )
+    try:
+        ass_line = ass_tag_parser.parse_ass(text)
+    except ass_tag_parser.ParseError as ex:
+        return str(
+            regex.sub("{[^}]*}", "", text)
+            .replace("\\h", " ")
+            .replace("\\n", " ")
+            .replace("\\N", "\n")
+        )
+    ret = ''
+    for item in ass_line:
+        if isinstance(item, ass_tag_parser.AssText):
+            ret += item.text
+    return ret
 
 
 def character_count(text: str) -> int:
