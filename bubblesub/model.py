@@ -20,6 +20,8 @@ import typing as T
 
 from PyQt5 import QtCore
 
+from bubblesub.util import make_ranges
+
 TItem = T.TypeVar("TItem")  # pylint: disable=invalid-name
 
 
@@ -231,9 +233,24 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         :param value: new value
         """
         if isinstance(idx, slice):
-            raise RuntimeError("slice assignment is not supported")
-        self._items[idx] = value
-        self.item_changed.emit(idx)
+            start, stop, step = idx.indices(len(self._items))
+            if step != 1:
+                raise RuntimeError(
+                    "slice assignment with variable steps is not supported"
+                )
+            if start < 0 or stop < 0:
+                raise RuntimeError(
+                    "slice assignment with negative steps is not supported"
+                )
+
+            self.items_about_to_be_removed.emit(start, stop - start)
+            self.items_about_to_be_inserted.emit(start, len(value))
+            self._items[start:stop] = value
+            self.items_removed.emit(start, stop - start)
+            self.items_inserted.emit(start, len(value))
+        else:
+            self._items[idx] = value
+            self.item_changed.emit(idx)
 
     def __iter__(self) -> T.Iterator[TItem]:
         """Iterate directly over the collection values.
