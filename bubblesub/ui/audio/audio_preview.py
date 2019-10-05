@@ -47,10 +47,10 @@ class SpectrumWorkerSignals(QtCore.QObject):
 
 
 class SpectrumWorker(QueueWorker):
-    def __init__(self, log_api: LogApi, audio_api: AudioApi) -> None:
-        super().__init__(log_api)
+    def __init__(self, api: AudioApi) -> None:
+        super().__init__(api.log)
         self.signals = SpectrumWorkerSignals()
-        self._audio_api = audio_api
+        self._api = api
 
         self.cache: T.Dict[int, T.List[int]] = SortedDict()
 
@@ -78,9 +78,16 @@ class SpectrumWorker(QueueWorker):
         first_sample = block_idx << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
-        samples = self._audio_api.get_samples(first_sample, sample_count)
+        shift = (
+            self._api.video.timecodes[0] if self._api.video.timecodes else 0
+        ) * self._api.audio.sample_rate // 1000
+        first_sample -= shift
+        if first_sample < 0:
+            first_sample = 0
+
+        samples = self._api.audio.get_samples(first_sample, sample_count)
         samples = np.mean(samples, axis=1)
-        sample_fmt = self._audio_api.sample_format
+        sample_fmt = self._api.audio.sample_format
         if sample_fmt is None:
             return None
 
@@ -289,9 +296,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 self._spectrum_worker = None
 
         elif state == AudioState.Loading and pyfftw:
-            self._spectrum_worker = SpectrumWorker(
-                self._api.log, self._api.audio
-            )
+            self._spectrum_worker = SpectrumWorker(self._api)
             self._spectrum_worker.signals.finished.connect(self.repaint)
             self._api.threading.schedule_runnable(self._spectrum_worker)
 
