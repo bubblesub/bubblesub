@@ -17,6 +17,7 @@
 """Various ASS utilities."""
 
 import typing as T
+from functools import lru_cache
 
 import ass_tag_parser
 import regex
@@ -42,6 +43,7 @@ def unescape_ass_tag(text: str) -> str:
     return text.replace(r"\\", "\\").replace(r"\[", "{").replace(r"\]", "}")
 
 
+@lru_cache(maxsize=5000)
 def ass_to_plaintext(text: str) -> str:
     """Strip ASS tags from an ASS line.
 
@@ -64,6 +66,7 @@ def ass_to_plaintext(text: str) -> str:
     return ret
 
 
+@lru_cache(maxsize=5000)
 def character_count(text: str) -> int:
     """Count how many characters an ASS line contains.
 
@@ -97,6 +100,7 @@ def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
     )
 
 
+@lru_cache(maxsize=500)
 def spell_check_ass_line(
     spell_checker: SpellChecker, text: str
 ) -> T.Iterable[T.Tuple[int, int, str]]:
