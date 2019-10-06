@@ -53,17 +53,13 @@ def ass_to_plaintext(text: str) -> str:
     try:
         ass_line = ass_tag_parser.parse_ass(text)
     except ass_tag_parser.ParseError as ex:
-        return str(
-            regex.sub("{[^}]*}", "", text)
-            .replace("\\h", " ")
-            .replace("\\n", " ")
-            .replace("\\N", "\n")
-        )
-    ret = ''
-    for item in ass_line:
-        if isinstance(item, ass_tag_parser.AssText):
-            ret += item.text
-    return ret
+        ret = str(regex.sub("{[^}]*}", "", text))
+    else:
+        ret = ""
+        for item in ass_line:
+            if isinstance(item, ass_tag_parser.AssText):
+                ret += item.text
+    return ret.replace("\\h", " ").replace("\\n", " ").replace("\\N", "\n")
 
 
 @lru_cache(maxsize=5000)
