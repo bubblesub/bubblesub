@@ -33,7 +33,9 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
     def __init__(self, api: Api, *args: T.Any) -> None:
         super().__init__(*args)
 
-        spell_check_lang = api.cfg.opt["gui"]["spell_check"]
+        spell_check_lang = (
+            api.subs.language or api.cfg.opt["gui"]["spell_check"]
+        )
         try:
             self._spell_checker = (
                 SpellChecker(spell_check_lang) if spell_check_lang else None
@@ -137,9 +139,6 @@ class Editor(QtWidgets.QWidget):
         self.text_edit = TextEdit(
             api, self, tabChangesFocus=True, objectName="text-editor"
         )
-        self.text_edit.highlighter = SpellCheckHighlighter(
-            api, self.text_edit.document()
-        )
 
         self.note_edit = TextEdit(
             api,
@@ -205,7 +204,9 @@ class Editor(QtWidgets.QWidget):
         }:
             self._data_widget_mapper.add_mapping(widget, column)
 
+        api.subs.meta_changed.connect(self._on_meta_change)
         api.subs.selection_changed.connect(self._on_selection_change)
+        self._reset_highlighter()
 
         QtWidgets.QApplication.instance().installEventFilter(self)
 
@@ -218,6 +219,14 @@ class Editor(QtWidgets.QWidget):
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._api.undo.end_capture()
         return False
+
+    def _reset_highlighter(self) -> None:
+        self.text_edit.highlighter = SpellCheckHighlighter(
+            self._api, self.text_edit.document()
+        )
+
+    def _on_meta_change(self) -> None:
+        self._reset_highlighter()
 
     def _on_selection_change(
         self, selected: T.List[int], _changed: bool

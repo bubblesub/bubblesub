@@ -21,6 +21,7 @@ from pathlib import Path
 
 from PyQt5 import QtCore
 
+from bubblesub.cfg import Config
 from bubblesub.fmt.ass.event import AssEvent, AssEventList
 from bubblesub.fmt.ass.file import AssFile
 from bubblesub.fmt.ass.meta import AssMeta
@@ -40,9 +41,13 @@ class SubtitlesApi(QtCore.QObject):
     saved = QtCore.pyqtSignal()
     selection_changed = QtCore.pyqtSignal(list, bool)
 
-    def __init__(self) -> None:
-        """Initialize self."""
+    def __init__(self, cfg: Config) -> None:
+        """Initialize self.
+
+        :param cfg: program configuration
+        """
         super().__init__()
+        self._cfg = cfg
         self._loaded_video_path: T.Optional[Path] = None
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
@@ -121,6 +126,22 @@ class SubtitlesApi(QtCore.QObject):
         self.meta.update({"Audio File": None if path is None else str(path)})
 
     @property
+    def language(self) -> T.Optional[str]:
+        """Return the language of the subtitles, in ISO 639-1 form.
+
+        :return: language
+        """
+        return T.cast(str, self.meta.get("Language", "")) or None
+
+    @language.setter
+    def language(self, language: T.Optional[str]) -> None:
+        """Set the language of the subtitles, in ISO 639-1 form.
+
+        :param language: language
+        """
+        self.meta.update({"Language": langauge or None})
+
+    @property
     def path(self) -> T.Optional[Path]:
         """Return path of the currently loaded ASS file.
 
@@ -182,6 +203,9 @@ class SubtitlesApi(QtCore.QObject):
         self.ass_file.events.clear()
         self.ass_file.styles.clear()
         self.ass_file.styles.append(AssStyle(name=self.default_style_name))
+        self.ass_file.meta.update(
+            {"Language": self._cfg.opt["gui"]["spell_check"]}
+        )
         self.loaded.emit()
 
     def load_ass(self, path: T.Union[str, Path]) -> None:

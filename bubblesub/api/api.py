@@ -48,7 +48,7 @@ class Api:
 
         self.cfg = Config()
         self.log = LogApi(self.cfg)
-        self.subs = SubtitlesApi()
+        self.subs = SubtitlesApi(self.cfg)
         self.undo = UndoApi(self.cfg, self.subs)
 
         self.threading = ThreadingApi(self.log)
