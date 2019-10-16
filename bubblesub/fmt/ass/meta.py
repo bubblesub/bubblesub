@@ -42,9 +42,8 @@ class AssMeta(QtCore.QObject):
 
         :param new_content: content to update with
         """
-        if self._data != new_content:
-            self._data.update(new_content)
-            self.changed.emit()
+        self._data.update(new_content)
+        self.changed.emit()
 
     def get(self, key: str, fallback: T.Any = None) -> T.Optional[str]:
         """Get value under given key.
