@@ -128,6 +128,9 @@ class Application:
         except ConfigError as ex:
             api.log.error(str(ex))
 
+        # load empty file
+        api.subs.unload()
+
         if self._splash:
             self._splash.showMessage("Loading commands...")
         api.cmd.reload_commands()
