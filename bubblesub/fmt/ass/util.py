@@ -128,4 +128,4 @@ def spell_check_ass_line(
                         )
                     )
 
-    yield from results
+    return results
