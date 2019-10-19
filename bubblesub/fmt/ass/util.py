@@ -111,7 +111,7 @@ def spell_check_ass_line(
     try:
         ass_line = ass_tag_parser.parse_ass(text)
     except ass_tag_parser.ParseError:
-        return
+        return []
 
     results: T.List[T.Tuple[int, int, str]] = []
 
