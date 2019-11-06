@@ -300,7 +300,7 @@ setup(
     name="bubblesub",
     long_description="ASS subtitle editor",
     version="0.0",
-    url="https://github.com/rr-/bubblesub",
+    url="https://github.com/bubblesub/bubblesub",
     packages=find_packages(),
     entry_points={"console_scripts": ["bubblesub = bubblesub.__main__:main"]},
     package_dir={"bubblesub": "bubblesub"},

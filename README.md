@@ -6,8 +6,8 @@
     Simple extensible ASS subtitle editor for Linux
     <br />
     <br />
-    <a href="https://github.com/rr-/bubblesub/actions">
-        <img src="https://github.com/rr-/bubblesub/workflows/bubblesub/badge.svg">
+    <a href="https://github.com/bubblesub/bubblesub/actions">
+        <img src="https://github.com/bubblesub/bubblesub/workflows/bubblesub/badge.svg">
     </a>
 </p>
 
@@ -43,7 +43,7 @@
     - [`ffms`](https://github.com/FFMS/ffms2)
     - [`fftw`](https://github.com/FFTW/fftw3)
     - `Qt5` bindings
-- Clone the repository: `git clone https://github.com/rr-/bubblesub`
+- Clone the repository: `git clone https://github.com/bubblesub/bubblesub`
 - Enter its directory: `cd bubblesub`
 - Install `bubblesub`: `pip install --user .`
 - Run bubblesub: `python3 -m bubblesub` or simply `bubblesub`
@@ -102,11 +102,11 @@ plugin](docs/example_plugin.py))
 
 ## Contact
 
-**Issue tracker**: [GitHub issues](https://github.com/rr-/bubblesub)
+**Issue tracker**: [GitHub issues](https://github.com/bubblesub/bubblesub)
 
 ## Acknowledgments
 
 I'd like to thank all
-[contributors](https://github.com/rr-/bubblesub/graphs/contributors) for the
+[contributors](https://github.com/bubblesub/bubblesub/graphs/contributors) for the
 help on this project.  
 The lovely logo was donated by fri. Thanks :)
