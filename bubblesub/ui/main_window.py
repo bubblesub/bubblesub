@@ -39,6 +39,8 @@ from bubblesub.ui.subs_grid import SubtitlesGrid
 from bubblesub.ui.util import build_splitter
 from bubblesub.ui.video import Video
 
+from bubblesub.data import ROOT_DIR
+
 
 class ClosingState(enum.IntEnum):
     Ready = 1
@@ -95,6 +97,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setCentralWidget(self.main_wrapper)
         self.setStatusBar(self.status_bar)
+
+        self.setWindowIcon(
+            QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon.png"))
+        )
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
