@@ -22,7 +22,6 @@ import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore, QtOpenGL, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.audio import AudioState
 from bubblesub.api.playback import PlaybackFrontendState
 from bubblesub.api.video import VideoState
 from bubblesub.fmt.ass.writer import write_ass
@@ -125,11 +124,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._sync_media()
         self._need_subs_refresh = True
 
-    def _on_audio_state_change(self, state: AudioState) -> None:
-        if state == AudioState.NotLoaded:
-            self._sync_media()
-        elif state == AudioState.Loading:
-            self._sync_media()
+    def _on_audio_state_change(self) -> None:
+        self._sync_media()
 
     def _sync_media(self) -> None:
         self._mpv.set_property("pause", True)
@@ -137,8 +133,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         external_files: T.Set[str] = set()
         if self._api.video.path:
             external_files.add(str(self._api.video.path))
-        if self._api.audio.path:
-            external_files.add(str(self._api.audio.path))
+        for stream in self._api.audio.streams:
+            external_files.add(str(stream.path))
         self._mpv.set_property("external-files", list(external_files))
         if not external_files:
             self._api.playback.state = PlaybackFrontendState.NotReady
@@ -272,8 +268,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
             if (
                 track_type == "audio"
-                and self._api.audio.path
-                and self._api.audio.path.samefile(track_path)
+                and self._api.audio.current_stream
+                and self._api.audio.current_stream.path.samefile(track_path)
             ):
                 aid = track["id"]
 

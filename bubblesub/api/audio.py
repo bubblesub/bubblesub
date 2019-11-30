@@ -16,76 +16,25 @@
 
 """Audio API."""
 
-import contextlib
-import enum
 import threading
-import time
 import typing as T
+from functools import partial
 from pathlib import Path
 
-import ffms2
-import numpy as np
 from PyQt5 import QtCore
 
+from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
-from bubblesub.api.threading import ThreadingApi
-from bubblesub.compat import nullcontext
-from bubblesub.fmt.wav import write_wav
+from bubblesub.api.threading import ThreadingApi, synchronized
 
-_LOADING = object()
-_SAMPLER_LOCK = threading.Lock()
-
-
-class AudioState(enum.Enum):
-    """Audio source state."""
-
-    NotLoaded = enum.auto()
-    Loading = enum.auto()
-    Loaded = enum.auto()
-
-
-def _load_audio_source(
-    log_api: LogApi, path: T.Any
-) -> T.Tuple[Path, T.Optional[ffms2.AudioSource]]:
-    """Create audio source.
-
-    :param log_api: logging API
-    :param path: path to the audio file
-    :return: input path and resulting audio source
-    """
-    log_api.info(f"started loading audio ({path})")
-
-    if not path.exists():
-        log_api.error(f"audio file {path} not found")
-        return (path, None)
-
-    try:
-        indexer = ffms2.Indexer(str(path))
-        for track in indexer.track_info_list:
-            indexer.track_index_settings(track.num, 1, 0)
-        index = indexer.do_indexing2()
-    except ffms2.Error as ex:
-        log_api.error(f"audio couldn't be loaded: {ex}")
-        return (path, None)
-
-    try:
-        track_number = index.get_first_indexed_track_of_type(
-            ffms2.FFMS_TYPE_AUDIO
-        )
-        source = ffms2.AudioSource(str(path), track_number, index)
-    except ffms2.Error as ex:
-        log_api.error(f"audio couldn't be loaded: {ex}")
-        return (path, None)
-    else:
-        log_api.info("audio finished loading")
-        return (path, source)
+_STREAMS_LOCK = threading.RLock()
 
 
 class AudioApi(QtCore.QObject):
     """The audio API."""
 
-    state_changed = QtCore.pyqtSignal(AudioState)
+    state_changed = QtCore.pyqtSignal()
 
     def __init__(
         self,
@@ -104,250 +53,104 @@ class AudioApi(QtCore.QObject):
         self._log_api = log_api
         self._subs_api = subs_api
 
-        self._state = AudioState.NotLoaded
-        self._min_time = 0
-        self._max_time = 0
-        self._channel_count = 0
-        self._bits_per_sample = 0
-        self._sample_count = 0
-        self._sample_rate = 0
-        self._sample_format = None
-        self._path: T.Optional[Path] = None
+        self._streams: T.List[AudioStream] = []
+        self._current_stream_index: T.Optional[int] = None
 
-        self._source: T.Union[None, ffms2.AudioSource] = None
+    @synchronized(lock=_STREAMS_LOCK)
+    def unload_all_streams(self) -> None:
+        """Unload all loaded audio streams."""
+        self._streams = []
+        self._current_stream_index = None
+        self.state_changed.emit()
 
-    def unload(self) -> None:
-        """Unload currently loaded audio source."""
-        self._source = None
-        self._min_time = 0
-        self._max_time = 0
-        self._channel_count = 0
-        self._bits_per_sample = 0
-        self._sample_count = 0
-        self._sample_format = None
-        self._sample_rate = 0
-        self._path = None
-        self.state = AudioState.NotLoaded
-
-    def load(self, path: T.Union[str, Path]) -> None:
-        """Load audio from specified file.
+    @synchronized(lock=_STREAMS_LOCK)
+    def load_stream(
+        self, path: T.Union[str, Path], switch: bool = True
+    ) -> None:
+        """Load audio stream from specified file.
 
         :param path: path to load the audio from
+        :param switch: whether to switch to that stream immediately
         """
-        self.unload()
-        self._path = Path(path)
+        # TODO: switch to stream when trying to load an already loaded source
 
-        self._log_api.info(f"audio: loading {path}")
-        self.state = AudioState.Loading
-        if (
-            self._subs_api.remembered_audio_path is None
-            or not self._path.samefile(self._subs_api.remembered_audio_path)
-        ):
-            self._subs_api.remembered_audio_path = self._path
-        self._threading_api.schedule_task(
-            lambda: _load_audio_source(self._log_api, self._path),
-            self._got_source,
-        )
+        new_index = len(self._streams)
+        stream = AudioStream(self._threading_api, self._log_api, path)
+        stream.loaded.connect(partial(self._audio_stream_loaded, new_index))
+        stream.errored.connect(partial(self._audio_stream_errored, new_index))
+        self._streams.append(stream)
+
+        if switch:
+            self._current_stream_index = new_index
+
+        self.state_changed.emit()
+
+    @synchronized(lock=_STREAMS_LOCK)
+    def unload_stream(self, index: int) -> None:
+        """Unload audio stream at the given index.
+
+        :param index: stream to unload
+        """
+        if index < 0 or index >= len(self._streams):
+            raise ValueError("stream index out of range")
+        self._streams = self._streams[:index] + self._streams[index + 1 :]
+        if self._current_stream_index >= index:
+            self._current_stream_index -= 1
+            if self._current_stream_index == -1:
+                self._current_stream_index = None
+        self.state_changed.emit()
+
+    @synchronized(lock=_STREAMS_LOCK)
+    def switch_stream(self, index: int) -> None:
+        """Switches streams.
+
+        :param index: stream to switch to
+        """
+        if index < 0 or index >= len(self._streams):
+            raise ValueError("stream index out of range")
+        self._current_stream_index = index
+        self.state_changed.emit()
+
+    @synchronized(lock=_STREAMS_LOCK)
+    def unload_current_stream(self) -> None:
+        """Unload currently loaded audio source."""
+        if self._current_stream_index is not None:
+            self.unload_stream(self._current_stream_index)
 
     @property
-    def path(self) -> T.Optional[Path]:
-        """Return current audio source path.
+    @synchronized(lock=_STREAMS_LOCK)
+    def current_stream_index(self) -> T.Optional[int]:
+        """Return currently loaded stream index.
 
-        :return: path
+        :return: stream index
         """
-        return self._path
+        return self._current_stream_index
 
     @property
-    def state(self) -> AudioState:
-        """Return current audio state.
+    @synchronized(lock=_STREAMS_LOCK)
+    def current_stream(self) -> T.Optional[AudioStream]:
+        """Return currently loaded stream.
 
-        :return: audio state
+        :return: stream
         """
-        return self._state
-
-    @state.setter
-    def state(self, value: AudioState) -> None:
-        """Set current audio state.
-
-        :param value: new audio state
-        """
-        if value != self._state:
-            self._log_api.debug(f"audio: changed state to {value}")
-            self._state = value
-            self.state_changed.emit(self._state)
+        if self._current_stream_index is None:
+            return None
+        return self._streams[self._current_stream_index]
 
     @property
-    def is_ready(self) -> bool:
-        """Return whether if the audio is loaded.
+    @synchronized(lock=_STREAMS_LOCK)
+    def streams(self) -> T.Iterable[AudioStream]:
+        """Return all loaded streams.
 
-        :return: whether if the audio is loaded
+        :return: list of streams
         """
-        return self._state == AudioState.Loaded
+        return self._streams[:]
 
-    @property
-    def channel_count(self) -> int:
-        """Return channel count for currently loaded audio source.
+    @synchronized(lock=_STREAMS_LOCK)
+    def _audio_stream_loaded(self, index: int) -> None:
+        self.state_changed.emit()
+        self._subs_api.remember_audio_path_if_needed(self._streams[index].path)
 
-        :return: channel count or 0 if no audio source
-        """
-        return self._channel_count
-
-    @property
-    def bits_per_sample(self) -> int:
-        """Return bits per sample for currently loaded audio source.
-
-        :return: bits per sample or 0 if no audio source
-        """
-        return self._bits_per_sample
-
-    @property
-    def sample_rate(self) -> int:
-        """Return sample rate for currently loaded audio source.
-
-        :return: sample rate or 0 if no audio source
-        """
-        return self._sample_rate
-
-    @property
-    def sample_format(self) -> T.Optional[int]:
-        """Return sample format for currently loaded audio source.
-
-        :return: sample format or None if no audio source
-        """
-        return self._sample_format
-
-    @property
-    def sample_count(self) -> int:
-        """Return sample count for currently loaded audio source.
-
-        :return: sample count or 0 if no audio source
-        """
-        return self._sample_count
-
-    @property
-    def min_time(self) -> int:
-        """Return minimum time in milliseconds (generally 0).
-
-        :return: audio start or 0 if no audio source
-        """
-        return self._min_time
-
-    @property
-    def max_time(self) -> int:
-        """Return maximum time in milliseconds.
-
-        :return: audio end or 0 if no audio source
-        """
-        return self._max_time
-
-    def get_samples(self, start_frame: int, count: int) -> np.array:
-        """Get raw audio samples from the currently loaded audio source.
-
-        :param start_frame: start frame (not PTS)
-        :param count: how many samples to get
-        :return: numpy array of samples
-        """
-        with _SAMPLER_LOCK:
-            self._wait_for_source()
-            if not self._source:
-                channel_count = max(1, self.channel_count)
-                return np.zeros(count * channel_count).reshape(
-                    (count, channel_count)
-                )
-            if start_frame + count > self.sample_count:
-                count = max(0, self.sample_count - start_frame)
-            if not count:
-                return self._create_empty_sample_buffer()
-            self._source.init_buffer(count)
-            return self._source.get_audio(start_frame)
-
-    def save_wav(
-        self,
-        path_or_handle: T.Union[Path, T.IO[bytes]],
-        start_pts: int,
-        end_pts: int,
-    ) -> None:
-        """Save samples for the currently loaded audio source as WAV file.
-
-        :param path_or_handle: where to put the result WAV file in
-        :param start_pts: start PTS
-        :param end_pts: end PTS
-        """
-        start_frame = int(start_pts * self.sample_rate / 1000)
-        end_frame = int(end_pts * self.sample_rate / 1000)
-        frame_count = end_frame - start_frame
-        if frame_count < 0:
-            raise ValueError("negative number of frames")
-        samples = self.get_samples(start_frame, frame_count)
-
-        # increase compatibility with external programs
-        if samples.dtype.name in ("float32", "float64"):
-            samples = (samples * (1 << 31)).astype(np.int32)
-
-        ctx = nullcontext(path_or_handle)
-        if isinstance(path_or_handle, Path):
-            ctx = path_or_handle.open("wb")
-
-        with ctx as handle:
-            write_wav(handle, self.sample_rate, samples)
-
-    def _create_empty_sample_buffer(self) -> np.array:
-        return np.zeros(
-            0,
-            dtype={
-                ffms2.FFMS_FMT_U8: np.uint8,
-                ffms2.FFMS_FMT_S16: np.int16,
-                ffms2.FFMS_FMT_S32: np.int32,
-                ffms2.FFMS_FMT_FLT: np.float32,
-                ffms2.FFMS_FMT_DBL: np.float64,
-            }[self.sample_format],
-        ).reshape(0, max(1, self.channel_count))
-
-    def _got_source(
-        self, result: T.Optional[T.Tuple[Path, ffms2.AudioSource]]
-    ) -> None:
-        path, source = result
-        if path != self._path:
-            return
-
-        self._source = source
-        if source is None:
-
-            self._min_time = 0
-            self._max_time = 0
-            self._channel_count = 0
-            self._bits_per_sample = 0
-            self._sample_count = 0
-            self._sample_rate = 0
-            self._sample_format = None
-
-            self.state = AudioState.NotLoaded
-        else:
-            self._min_time = round(
-                T.cast(float, self._source.properties.FirstTime) * 1000
-            )
-            self._max_time = round(
-                T.cast(float, self._source.properties.LastTime) * 1000
-            )
-            self._channel_count = T.cast(int, self._source.properties.Channels)
-            self._bits_per_sample = T.cast(
-                int, self._source.properties.BitsPerSample
-            )
-            self._sample_count = T.cast(
-                int, self._source.properties.NumSamples
-            )
-            self._sample_rate = T.cast(int, self._source.properties.SampleRate)
-            self._sample_format = T.cast(
-                T.Optional[int], self._source.properties.SampleFormat
-            )
-
-            self.state = AudioState.Loaded
-
-    def _wait_for_source(self) -> bool:
-        if self._source is None:
-            return False
-        while self._source is _LOADING:
-            time.sleep(0.01)
-        if self._source is None:
-            return False
-        return True
+    @synchronized(lock=_STREAMS_LOCK)
+    def _audio_stream_errored(self, index: int) -> None:
+        self.unload_stream(index)

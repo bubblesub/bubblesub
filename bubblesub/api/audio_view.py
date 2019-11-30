@@ -20,7 +20,7 @@ import typing as T
 
 from PyQt5 import QtCore
 
-from bubblesub.api.audio import AudioApi, AudioState
+from bubblesub.api.audio import AudioApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.video import VideoApi, VideoState
 
@@ -204,13 +204,18 @@ class AudioViewApi(QtCore.QObject):
     def _extend_view(self) -> None:
         self._min = 0
         self._max = max(
-            [self._max, self._audio_api.max_time, self._video_api.max_pts]
+            [self._max, self._video_api.max_pts]
+            + [
+                self._audio_api.current_stream.max_time
+                if self._audio_api.current_stream
+                else 0
+            ]
             + [sub.start for sub in self._subs_api.events]
             + [sub.end for sub in self._subs_api.events]
         )
 
-    def _on_audio_state_change(self, state: AudioState) -> None:
-        if self._need_reset_after_audio and state == AudioState.Loaded:
+    def _on_audio_state_change(self) -> None:
+        if self._need_reset_after_audio:
             self._extend_view()
             self.reset_view()
             self._need_reset_after_audio = False

@@ -142,6 +142,9 @@ Zooms the spectrogram in or out by the specified factor.
 Usage: `audio‑zoom‑view -d|--delta=…`
 * `-d`, `--delta`: factor to zoom the viewport by
 
+### <a name="cmd-cycle-audio"></a>`cycle‑audio`
+Switches to the next loaded audio stream.
+
 ### <a name="cmd-file-properties"></a>`file‑properties`
 Opens up the metadata editor dialog.
 
@@ -151,6 +154,9 @@ Focuses given widget.
 Usage: `focus‑widget target [-s|--select]`
 * `target`: which widget to focus (can be `text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
 * `-s`, `--select`: whether to select the text
+
+### <a name="cmd-list-audio"></a>`list‑audio`
+Lists loaded audio streams in the console.
 
 ### <a name="cmd-load-audio"></a>`load‑audio`
 Loads an audio file for audio playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
@@ -404,6 +410,12 @@ Usage: `sub‑stretch [-t|--target=selected] [--no-align] -s|--start=… -e|--en
 * `--no-align`: don't realign subtitles to video frames
 * `-s`, `--start`: starting subtitle new start timestamp
 * `-e`, `--end`: ending subtitle new start timestamp
+
+### <a name="cmd-switch-audio"></a>`switch‑audio`
+Switches to the chosen loaded audio stream.
+
+Usage: `switch‑audio index`
+* `index`: index of the stream to switch to
 
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.

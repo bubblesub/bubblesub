@@ -159,7 +159,7 @@ class LoadVideoCommand(BaseCommand):
 
         self.api.video.load(path)
         if load_audio:
-            self.api.audio.load(path)
+            self.api.audio.load_stream(path)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
@@ -186,7 +186,7 @@ class LoadAudioCommand(BaseCommand):
             directory=self.api.gui.get_dialog_dir(),
         )
 
-        self.api.audio.load(path)
+        self.api.audio.load_stream(path)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
@@ -197,6 +197,49 @@ class LoadAudioCommand(BaseCommand):
             type=lambda value: FancyPath(api, value),
             default="",
         )
+
+
+class CycleAudioCommand(BaseCommand):
+    names = ["cycle-audio"]
+    help_text = "Switches to the next loaded audio stream."
+
+    async def run(self) -> None:
+        index = self.api.audio.current_stream_index
+        if index is None:
+            return
+        index += 1
+        index %= len(self.api.audio.streams)
+        self.api.audio.switch_stream(index)
+
+
+class SwitchAudioCommand(BaseCommand):
+    names = ["switch-audio"]
+    help_text = "Switches to the chosen loaded audio stream."
+
+    async def run(self) -> None:
+        self.api.audio.switch_stream(self.args.index)
+
+    @staticmethod
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "index", help="index of the stream to switch to", type=int
+        )
+
+
+class ListAudioCommand(BaseCommand):
+    names = ["list-audio"]
+    help_text = "Lists loaded audio streams in the console."
+
+    async def run(self) -> None:
+        if not self.api.audio.streams:
+            self.api.log.warn("no loaded audio streams")
+            return
+
+        for index, stream in enumerate(self.api.audio.streams):
+            marker = (
+                "X" if index == self.api.audio.current_stream_index else " "
+            )
+            self.api.log.info(f"{marker} {stream.path}")
 
 
 class UnloadVideoCommand(BaseCommand):
@@ -212,7 +255,7 @@ class UnloadAudioCommand(BaseCommand):
     help_text = "Unloads currently loaded audio file."
 
     async def run(self) -> None:
-        self.api.audio.unload()
+        self.api.audio.unload_current_stream()
 
 
 COMMANDS = [
@@ -222,6 +265,9 @@ COMMANDS = [
     SaveAsCommand,
     LoadVideoCommand,
     LoadAudioCommand,
+    CycleAudioCommand,
+    SwitchAudioCommand,
+    ListAudioCommand,
     UnloadVideoCommand,
     UnloadAudioCommand,
 ]

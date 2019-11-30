@@ -23,7 +23,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from sortedcontainers import SortedDict
 
 from bubblesub.api import Api
-from bubblesub.api.audio import AudioApi, AudioState
+from bubblesub.api.audio import AudioApi
 from bubblesub.api.threading import QueueWorker
 from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
@@ -74,23 +74,25 @@ class SpectrumWorker(QueueWorker):
             self.signals.finished.emit()
 
     def _get_spectrogram_for_block_idx(self, block_idx: int) -> np.array:
+        stream = self._api.audio.current_stream
+        if not stream or not stream.is_ready:
+            return None
+
         first_sample = block_idx << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
         shift = (
             (self._api.video.timecodes[0] if self._api.video.timecodes else 0)
-            * self._api.audio.sample_rate
+            * stream.sample_rate
             // 1000
         )
         first_sample -= shift
         if first_sample < 0:
             first_sample = 0
 
-        samples = self._api.audio.get_samples(first_sample, sample_count)
+        samples = stream.get_samples(first_sample, sample_count)
         samples = np.mean(samples, axis=1)
-        sample_fmt = self._api.audio.sample_format
-        if sample_fmt is None:
-            return None
+        sample_fmt = stream.sample_format
 
         if sample_fmt == ffms2.FFMS_FMT_S16:
             samples /= 32768.0
@@ -149,7 +151,6 @@ class AudioPreview(BaseLocalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setMinimumHeight(int(SLIDER_SIZE * 1.5))
-        self._spectrum_worker: T.Optional[SpectrumWorker] = None
         self._labels: T.List[SubtitleLabel] = []
 
         self._mouse_pos: T.Optional[QtCore.QPoint] = None
@@ -175,9 +176,12 @@ class AudioPreview(BaseLocalAudioWidget):
         api.playback.volume_changed.connect(self._on_volume_change)
         api.gui.terminated.connect(self.shutdown)
 
+        self._spectrum_worker = SpectrumWorker(self._api)
+        self._api.threading.schedule_runnable(self._spectrum_worker)
+        self._spectrum_worker.signals.finished.connect(self.repaint)
+
     def shutdown(self) -> None:
-        if self._spectrum_worker:
-            self._spectrum_worker.stop()
+        self._spectrum_worker.stop()
 
     def _get_paint_cache_key(self) -> int:
         return hash(
@@ -275,22 +279,21 @@ class AudioPreview(BaseLocalAudioWidget):
         self._mouse_color = self._api.gui.get_color("spectrogram/mouse-marker")
 
     def _on_volume_change(self) -> None:
-        if self._spectrum_worker:
-            self._spectrum_worker.cache.clear()
+        self._spectrum_worker.cache.clear()
         self._schedule_current_audio_view()
 
     def _on_audio_view_change(self) -> None:
         self._schedule_current_audio_view()
 
     def _schedule_current_audio_view(self) -> None:
-        self.repaint_if_needed()
-
-        if not self._spectrum_worker:
+        stream = self._api.audio.current_stream
+        if not stream:
             return
 
+        self.repaint_if_needed()
         self._spectrum_worker.clear_tasks()
 
-        max_block_idx = self._api.audio.sample_count >> DERIVATION_DISTANCE
+        max_block_idx = stream.sample_count >> DERIVATION_DISTANCE
 
         blocks_to_update = set()
         for x in range(self.width() * 2):
@@ -303,17 +306,8 @@ class AudioPreview(BaseLocalAudioWidget):
         for chunk in chunks(list(sorted(blocks_to_update)), CHUNK_SIZE):
             self._spectrum_worker.schedule_task(reversed(chunk))
 
-    def _on_audio_state_change(self, state: AudioState) -> None:
-        if state == AudioState.NotLoaded:
-            if self._spectrum_worker:
-                self._spectrum_worker.stop()
-                self._spectrum_worker = None
-
-        elif state == AudioState.Loading and pyfftw:
-            self._spectrum_worker = SpectrumWorker(self._api)
-            self._spectrum_worker.signals.finished.connect(self.repaint)
-            self._api.threading.schedule_runnable(self._spectrum_worker)
-
+    def _on_audio_state_change(self) -> None:
+        self._spectrum_worker.cache.clear()
         self._schedule_current_audio_view()
 
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
@@ -330,24 +324,22 @@ class AudioPreview(BaseLocalAudioWidget):
         max_pts = self.pts_from_x(self.width() - 1)
 
         pts_range = np.linspace(min_pts, max_pts, self.width())
+        stream = self._api.audio.current_stream
         block_idx_range = np.round(
-            pts_range * self._api.audio.sample_rate / 1000.0
+            pts_range * (stream.sample_rate if stream else 0) / 1000.0
         ).astype(dtype=np.int) // (2 ** DERIVATION_DISTANCE)
 
         for x, block_idx in enumerate(block_idx_range):
             column = zero_column
 
-            if self._spectrum_worker:
-                column = self._spectrum_worker.cache.get(
-                    block_idx, zero_column
-                )
+            column = self._spectrum_worker.cache.get(block_idx, zero_column)
 
-                if cached_blocks and column is zero_column:
-                    tmp = bisect.bisect_left(cached_blocks, block_idx)
-                    if tmp == len(cached_blocks):
-                        tmp -= 1
-                    nearest_block_idx = cached_blocks[tmp]
-                    column = self._spectrum_worker.cache[nearest_block_idx]
+            if cached_blocks and column is zero_column:
+                tmp = bisect.bisect_left(cached_blocks, block_idx)
+                if tmp == len(cached_blocks):
+                    tmp -= 1
+                nearest_block_idx = cached_blocks[tmp]
+                column = self._spectrum_worker.cache[nearest_block_idx]
 
             pixels[x] = column
 
@@ -367,7 +359,7 @@ class AudioPreview(BaseLocalAudioWidget):
     def block_idx_from_x(self, x) -> int:
         pts = self.pts_from_x(x)
         return (
-            int(pts * self._api.audio.sample_rate / 1000.0)
+            int(pts * self._api.audio.current_stream.sample_rate / 1000.0)
             >> DERIVATION_DISTANCE
         )
 

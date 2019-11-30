@@ -105,25 +105,27 @@ class SubtitlesApi(QtCore.QObject):
         self.meta.update({"Video File": None if path is None else str(path)})
 
     @property
-    def remembered_audio_path(self) -> T.Optional[Path]:
-        """Return path of the associated audio file.
+    def remembered_audio_paths(self) -> T.Iterable[Path]:
+        """Return path of the associated audio files.
 
-        :return: path of the associated audio file or None if no audio
+        :return: paths of the associated audio files or empty list if none
         """
-        path: str = T.cast(str, self.meta.get("Audio File", ""))
-        if not path:
-            return None
-        if not self._path:
-            return None
-        return self._path.parent / path
+        for segment in self.meta.get("Audio File", "").split("|"):
+            if segment:
+                path = Path(segment)
+                yield self._path.parent / path if self._path else path
 
-    @remembered_audio_path.setter
-    def remembered_audio_path(self, path: T.Optional[Path]) -> None:
-        """Set path of the associated audio file, updating meta dict.
+    def remember_audio_path_if_needed(self, path: Path) -> None:
+        """Add given path to associated audio files if it's not there yet.
 
-        :param path: path to the audio file
+        :param path: path to remember
         """
-        self.meta.update({"Audio File": None if path is None else str(path)})
+        paths = list(self.remembered_audio_paths)
+        if not paths or not any(
+            remembered_path.samefile(path) for remembered_path in paths
+        ):
+            paths.append(path)
+            self.meta.update({"Audio File": "|".join(map(str, paths))})
 
     @property
     def language(self) -> T.Optional[str]:

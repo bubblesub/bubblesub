@@ -206,7 +206,12 @@ class PlaybackApi(QtCore.QObject):
 
         :return: maximum video position, 0 if no video
         """
-        return max(self._audio_api.max_time, self._video_api.max_pts)
+        return max(
+            self._audio_api.current_stream.max_time
+            if self._audio_api.current_stream
+            else 0,
+            self._video_api.max_pts,
+        )
 
     @property
     def is_paused(self) -> bool:

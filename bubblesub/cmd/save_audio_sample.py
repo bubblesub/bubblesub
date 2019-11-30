@@ -32,21 +32,26 @@ class SaveAudioSampleCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.audio.is_ready
+        return (
+            self.api.audio.current_stream
+            and self.api.audio.current_stream.is_ready
+        )
 
     async def run(self) -> None:
         start = await self.args.start.get(align_to_near_frame=False)
         end = await self.args.end.get(align_to_near_frame=False)
 
-        assert self.api.audio.path
+        assert self.api.audio.current_stream.path
         path = await self.args.path.get_save_path(
             file_filter="Waveform Audio File (*.wav)",
             default_file_name="audio-{}-{}..{}.wav".format(
-                self.api.audio.path.name, ms_to_str(start), ms_to_str(end)
+                self.api.audio.current_stream.path.name,
+                ms_to_str(start),
+                ms_to_str(end),
             ),
         )
 
-        self.api.audio.save_wav(path, start, end)
+        self.api.audio.current_stream.save_wav(path, start, end)
         self.api.log.info(f"saved audio sample to {path}")
 
     @staticmethod

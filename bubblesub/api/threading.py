@@ -16,13 +16,38 @@
 
 """Threading API."""
 
+import functools
 import queue
+import threading
 import time
 import typing as T
 
 from PyQt5 import QtCore
 
 from bubblesub.api.log import LogApi
+
+
+def synchronized(wrapped: T.Any = None, lock: T.Any = None) -> T.Any:
+    """A decorator that lets the passed function run only when given lock is
+    active. If there is no lock passed, the function uses its own internal
+    lock.
+
+    :param wrapped: function to decorate
+    :param lock: lock to use
+    :return: decorated function
+    """
+    if wrapped is None:
+        return functools.partial(synchronized, lock=lock)
+
+    if lock is None:
+        lock = threading.RLock()
+
+    @functools.wraps(wrapped)
+    def _wrapper(*args, **kwargs):
+        with lock:
+            return wrapped(*args, **kwargs)
+
+    return _wrapper
 
 
 class _WorkerSignals(QtCore.QObject):
