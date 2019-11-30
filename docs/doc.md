@@ -264,6 +264,12 @@ Usage: `seek -p|--pos=… [--precise]`
 * `-p`, `--pos`: where to seek
 * `--precise`: whether to use precise seeking at the expense of performance
 
+### <a name="cmd-set-audio-delay"></a>`set‑audio‑delay`
+Sets a delay to the currently loaded audio stream. Positive delay values will cause the audio to play later, while negative ones will cause it to play earlier.
+
+Usage: `set‑audio‑delay delay`
+* `delay`: amount to dealy the stream
+
 ### <a name="cmd-set-playback-speed"></a>`set‑playback‑speed`
 Adjusts the video playback speed.
 

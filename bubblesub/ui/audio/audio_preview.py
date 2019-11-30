@@ -313,6 +313,7 @@ class AudioPreview(BaseLocalAudioWidget):
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
         pixels = self._pixels.transpose()
         zero_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
+        stream = self._api.audio.current_stream
 
         cached_blocks = (
             list(self._spectrum_worker.cache.keys())
@@ -322,9 +323,11 @@ class AudioPreview(BaseLocalAudioWidget):
 
         min_pts = self.pts_from_x(0)
         max_pts = self.pts_from_x(self.width() - 1)
+        if stream:
+            min_pts -= stream.delay
+            max_pts -= stream.delay
 
         pts_range = np.linspace(min_pts, max_pts, self.width())
-        stream = self._api.audio.current_stream
         block_idx_range = np.round(
             pts_range * (stream.sample_rate if stream else 0) / 1000.0
         ).astype(dtype=np.int) // (2 ** DERIVATION_DISTANCE)
@@ -357,7 +360,9 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.restore()
 
     def block_idx_from_x(self, x) -> int:
+        stream = self._api.audio.current_stream
         pts = self.pts_from_x(x)
+        pts -= stream.delay if stream else 0
         return (
             int(pts * self._api.audio.current_stream.sample_rate / 1000.0)
             >> DERIVATION_DISTANCE

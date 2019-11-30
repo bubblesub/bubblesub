@@ -78,6 +78,7 @@ class AudioStream(QtCore.QObject):
     """The audio source."""
 
     errored = QtCore.pyqtSignal()
+    changed = QtCore.pyqtSignal()
     loaded = QtCore.pyqtSignal()
 
     def __init__(
@@ -101,6 +102,7 @@ class AudioStream(QtCore.QObject):
         self._sample_rate = 0
         self._sample_format = None
         self._path: Path = Path(path)
+        self._delay = 0
 
         self._source: T.Union[None, ffms2.AudioSource] = None
 
@@ -182,8 +184,26 @@ class AudioStream(QtCore.QObject):
         """
         return self._max_time
 
+    @property
+    def delay(self) -> int:
+        """Return user-configured stream delay in milliseconds.
+
+        :return: stream delay
+        """
+        return self._delay
+
+    @delay.setter
+    def delay(self, value: int) -> None:
+        """Set new stream delay in milliseconds.
+
+        :param value: new stream delay
+        """
+        self._delay = value
+        self.changed.emit()
+
     def get_samples(self, start_frame: int, count: int) -> np.array:
         """Get raw audio samples from the currently loaded audio source.
+        Doesn't take delay into account.
 
         :param start_frame: start frame (not PTS)
         :param count: how many samples to get
@@ -210,11 +230,14 @@ class AudioStream(QtCore.QObject):
         end_pts: int,
     ) -> None:
         """Save samples for the currently loaded audio source as WAV file.
+        Takes user-configured delay into account.
 
         :param path_or_handle: where to put the result WAV file in
         :param start_pts: start PTS
         :param end_pts: end PTS
         """
+        start_pts -= self.delay
+        end_pts -= self.delay
         start_frame = int(start_pts * self.sample_rate / 1000)
         end_frame = int(end_pts * self.sample_rate / 1000)
         frame_count = end_frame - start_frame

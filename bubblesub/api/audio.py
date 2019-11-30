@@ -78,6 +78,7 @@ class AudioApi(QtCore.QObject):
         stream = AudioStream(self._threading_api, self._log_api, path)
         stream.loaded.connect(partial(self._audio_stream_loaded, new_index))
         stream.errored.connect(partial(self._audio_stream_errored, new_index))
+        stream.changed.connect(partial(self._audio_stream_changed, new_index))
         self._streams.append(stream)
 
         if switch:
@@ -154,3 +155,7 @@ class AudioApi(QtCore.QObject):
     @synchronized(lock=_STREAMS_LOCK)
     def _audio_stream_errored(self, index: int) -> None:
         self.unload_stream(index)
+
+    @synchronized(lock=_STREAMS_LOCK)
+    def _audio_stream_changed(self, index: int) -> None:
+        self.state_changed.emit()

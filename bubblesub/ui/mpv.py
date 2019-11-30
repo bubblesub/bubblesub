@@ -281,6 +281,14 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._mpv.set_property("aid", aid if aid is not None else "no")
             self._api.log.debug(f"playback: changing aid to {aid}")
 
+        delay = (
+            self._api.audio.current_stream.delay
+            if self._api.audio.current_stream
+            else 0
+        ) / 1000.0
+        if self._mpv.get_property("audio-delay") != delay:
+            self._mpv.set_property("audio-delay", delay)
+
         if vid is not None or aid is not None:
             self._api.playback.state = PlaybackFrontendState.Ready
         else:

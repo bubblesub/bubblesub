@@ -239,7 +239,31 @@ class ListAudioCommand(BaseCommand):
             marker = (
                 "X" if index == self.api.audio.current_stream_index else " "
             )
-            self.api.log.info(f"{marker} {stream.path}")
+            self.api.log.info(
+                f"{marker} {stream.path} (delay: {stream.delay} ms)"
+            )
+
+
+class SetAudioDelayCommand(BaseCommand):
+    names = ["set-audio-delay"]
+    help_text = (
+        "Sets a delay to the currently loaded audio stream. "
+        "Positive delay values will cause the audio to play later, "
+        "while negative ones will cause it to play earlier."
+    )
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.audio.current_stream
+
+    async def run(self) -> None:
+        self.api.audio.current_stream.delay = self.args.delay
+
+    @staticmethod
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "delay", help="amount to dealy the stream", type=int
+        )
 
 
 class UnloadVideoCommand(BaseCommand):
@@ -270,4 +294,5 @@ COMMANDS = [
     ListAudioCommand,
     UnloadVideoCommand,
     UnloadAudioCommand,
+    SetAudioDelayCommand,
 ]

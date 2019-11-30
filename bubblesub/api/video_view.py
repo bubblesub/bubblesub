@@ -52,7 +52,7 @@ class VideoViewApi(QtCore.QObject):
 
     @zoom.setter
     def zoom(self, value: T.Union[fractions.Fraction, int, float]) -> None:
-        """Sets new zoom factor.
+        """Set new zoom factor.
 
         :param value: new zoom factor
         """
