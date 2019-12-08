@@ -19,6 +19,7 @@ import argparse
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
+from bubblesub.api.audio import STREAMS_LOCK
 from bubblesub.api.cmd import BaseCommand, CommandCanceled
 from bubblesub.cmd.common import FancyPath
 from bubblesub.ui.util import (
@@ -204,12 +205,15 @@ class CycleAudioCommand(BaseCommand):
     help_text = "Switches to the next loaded audio stream."
 
     async def run(self) -> None:
-        index = self.api.audio.current_stream_index
-        if index is None:
-            return
-        index += 1
-        index %= len(self.api.audio.streams)
-        self.api.audio.switch_stream(index)
+        with STREAMS_LOCK:
+            if not self.api.audio.current_stream:
+                return
+            uid = self.api.audio.current_stream.uid
+            idx = self.api.audio.get_stream_index(uid)
+            idx += 1
+            idx %= len(self.api.audio.streams)
+            uid = self.api.audio.streams[idx].uid
+            self.api.audio.switch_stream(uid)
 
 
 class SwitchAudioCommand(BaseCommand):
@@ -217,7 +221,9 @@ class SwitchAudioCommand(BaseCommand):
     help_text = "Switches to the chosen loaded audio stream."
 
     async def run(self) -> None:
-        self.api.audio.switch_stream(self.args.index)
+        idx = self.args.index
+        uid = self.api.audio.streams[idx].uid
+        self.api.audio.switch_stream(uid)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
@@ -235,12 +241,10 @@ class ListAudioCommand(BaseCommand):
             self.api.log.warn("no loaded audio streams")
             return
 
-        for index, stream in enumerate(self.api.audio.streams):
-            marker = (
-                "X" if index == self.api.audio.current_stream_index else " "
-            )
+        for idx, stream in enumerate(self.api.audio.streams):
+            marker = "X" if stream == self.api.audio.current_stream else " "
             self.api.log.info(
-                f"{marker} {stream.path} (delay: {stream.delay} ms)"
+                f"{marker} {idx}. {stream.uid} {stream.path} (delay: {stream.delay} ms)"
             )
 
 

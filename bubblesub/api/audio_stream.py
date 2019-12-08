@@ -21,6 +21,7 @@ import enum
 import threading
 import time
 import typing as T
+import uuid
 from pathlib import Path
 
 import ffms2
@@ -38,18 +39,19 @@ _SAMPLER_LOCK = threading.Lock()
 
 
 def _load_audio_source(
-    log_api: LogApi, path: T.Any
+    log_api: LogApi, uid: uuid.UUID, path: T.Any
 ) -> T.Optional[ffms2.AudioSource]:
-    """Create audio source.
+    """Create FFMS audio source.
 
     :param log_api: logging API
+    :param uid: uid of the stream (for logging)
     :param path: path to the audio file
-    :return: resulting audio source
+    :return: resulting FFMS audio source or None if failed to create
     """
-    log_api.info(f"started loading audio ({path})")
+    log_api.info(f"audio {uid} started loading ({path})")
 
     if not path.exists():
-        log_api.error(f"audio file {path} not found")
+        log_api.error(f"error loading audio {uid} (file {path} not found)")
         return None
 
     try:
@@ -58,7 +60,7 @@ def _load_audio_source(
             indexer.track_index_settings(track.num, 1, 0)
         index = indexer.do_indexing2()
     except ffms2.Error as ex:
-        log_api.error(f"audio couldn't be loaded: {ex}")
+        log_api.error(f"error loading audio {uid} ({ex})")
         return None
 
     try:
@@ -67,10 +69,10 @@ def _load_audio_source(
         )
         source = ffms2.AudioSource(str(path), track_number, index)
     except ffms2.Error as ex:
-        log_api.error(f"audio couldn't be loaded: {ex}")
+        log_api.error(f"error loading audio {uid} ({ex})")
         return None
     else:
-        log_api.info("audio finished loading")
+        log_api.info(f"audio {uid} finished loading")
         return source
 
 
@@ -94,6 +96,8 @@ class AudioStream(QtCore.QObject):
         self._threading_api = threading_api
         self._log_api = log_api
 
+        self.uid = uuid.uuid4()
+
         self._min_time = 0
         self._max_time = 0
         self._channel_count = 0
@@ -108,7 +112,7 @@ class AudioStream(QtCore.QObject):
 
         self._log_api.info(f"audio: loading {path}")
         self._threading_api.schedule_task(
-            lambda: _load_audio_source(self._log_api, self._path),
+            lambda: _load_audio_source(self._log_api, self.uid, self._path),
             self._got_source,
         )
 

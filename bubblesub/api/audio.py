@@ -16,6 +16,7 @@
 
 """Audio API."""
 
+import uuid
 import threading
 import typing as T
 from functools import partial
@@ -28,7 +29,7 @@ from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi, synchronized
 
-_STREAMS_LOCK = threading.RLock()
+STREAMS_LOCK = threading.RLock()
 
 
 class AudioApi(QtCore.QObject):
@@ -54,16 +55,16 @@ class AudioApi(QtCore.QObject):
         self._subs_api = subs_api
 
         self._streams: T.List[AudioStream] = []
-        self._current_stream_index: T.Optional[int] = None
+        self._current_stream: T.Optional[AudioStream] = None
 
-    @synchronized(lock=_STREAMS_LOCK)
+    @synchronized(lock=STREAMS_LOCK)
     def unload_all_streams(self) -> None:
         """Unload all loaded audio streams."""
         self._streams = []
-        self._current_stream_index = None
+        self._current_stream = None
         self.state_changed.emit()
 
-    @synchronized(lock=_STREAMS_LOCK)
+    @synchronized(lock=STREAMS_LOCK)
     def load_stream(
         self, path: T.Union[str, Path], switch: bool = True
     ) -> None:
@@ -74,72 +75,78 @@ class AudioApi(QtCore.QObject):
         """
         # TODO: switch to stream when trying to load an already loaded source
 
-        new_index = len(self._streams)
         stream = AudioStream(self._threading_api, self._log_api, path)
-        stream.loaded.connect(partial(self._audio_stream_loaded, new_index))
-        stream.errored.connect(partial(self._audio_stream_errored, new_index))
-        stream.changed.connect(partial(self._audio_stream_changed, new_index))
+        stream.loaded.connect(partial(self._audio_stream_loaded, stream))
+        stream.errored.connect(partial(self._audio_stream_errored, stream))
+        stream.changed.connect(partial(self._audio_stream_changed, stream))
         self._streams.append(stream)
 
         if switch:
-            self._current_stream_index = new_index
+            self._current_stream = stream
 
         self.state_changed.emit()
 
-    @synchronized(lock=_STREAMS_LOCK)
-    def unload_stream(self, index: int) -> None:
-        """Unload audio stream at the given index.
+    def get_stream_index(self, uid: uuid.UUID) -> T.Optional[int]:
+        """Returns index of the given stream uid.
 
-        :param index: stream to unload
-        """
-        if index < 0 or index >= len(self._streams):
-            raise ValueError("stream index out of range")
-        self._streams = self._streams[:index] + self._streams[index + 1 :]
-        if self._current_stream_index >= index:
-            self._current_stream_index -= 1
-            if self._current_stream_index == -1:
-                self._current_stream_index = None
-        self.state_changed.emit()
-
-    @synchronized(lock=_STREAMS_LOCK)
-    def switch_stream(self, index: int) -> None:
-        """Switches streams.
-
-        :param index: stream to switch to
-        """
-        if index < 0 or index >= len(self._streams):
-            raise ValueError("stream index out of range")
-        self._current_stream_index = index
-        self.state_changed.emit()
-
-    @synchronized(lock=_STREAMS_LOCK)
-    def unload_current_stream(self) -> None:
-        """Unload currently loaded audio source."""
-        if self._current_stream_index is not None:
-            self.unload_stream(self._current_stream_index)
-
-    @property
-    @synchronized(lock=_STREAMS_LOCK)
-    def current_stream_index(self) -> T.Optional[int]:
-        """Return currently loaded stream index.
-
+        :param uid: stream to get the index of
         :return: stream index
         """
-        return self._current_stream_index
+        uids = [stream.uid for stream in self._streams]
+        try:
+            return uids.index(uid)
+        except ValueError:
+            return None
+
+    @synchronized(lock=STREAMS_LOCK)
+    def unload_stream(self, uid: uuid.UUID) -> None:
+        """Unload audio stream with the given uid.
+
+        :param uid: stream to unload
+        """
+        index = self.get_stream_index(uid)
+        self._streams = [
+            stream for stream in self._streams if stream.uid != uuid
+        ]
+        if index is not None and index < len(self._streams):
+            self._current_stream = self._streams[index]
+        else:
+            self._current_stream = None
+        self.state_changed.emit()
+
+    @synchronized(lock=STREAMS_LOCK)
+    def switch_stream(self, uid: uuid.UUID) -> None:
+        """Switches streams.
+
+        :param uid: stream to switch to
+        """
+        for stream in self._streams:
+            if stream.uid == uid:
+                break
+        else:
+            stream = None
+        if not stream:
+            raise ValueError(f"stream {uid} is not loaded")
+        self._current_stream = stream
+        self.state_changed.emit()
+
+    @synchronized(lock=STREAMS_LOCK)
+    def unload_current_stream(self) -> None:
+        """Unload currently loaded audio source."""
+        if self._current_stream is not None:
+            self.unload_stream(self._current_stream.uid)
 
     @property
-    @synchronized(lock=_STREAMS_LOCK)
+    @synchronized(lock=STREAMS_LOCK)
     def current_stream(self) -> T.Optional[AudioStream]:
         """Return currently loaded stream.
 
         :return: stream
         """
-        if self._current_stream_index is None:
-            return None
-        return self._streams[self._current_stream_index]
+        return self._current_stream
 
     @property
-    @synchronized(lock=_STREAMS_LOCK)
+    @synchronized(lock=STREAMS_LOCK)
     def streams(self) -> T.Iterable[AudioStream]:
         """Return all loaded streams.
 
@@ -147,15 +154,15 @@ class AudioApi(QtCore.QObject):
         """
         return self._streams[:]
 
-    @synchronized(lock=_STREAMS_LOCK)
-    def _audio_stream_loaded(self, index: int) -> None:
+    @synchronized(lock=STREAMS_LOCK)
+    def _audio_stream_loaded(self, stream: AudioStream) -> None:
         self.state_changed.emit()
-        self._subs_api.remember_audio_path_if_needed(self._streams[index].path)
+        self._subs_api.remember_audio_path_if_needed(stream.path)
 
-    @synchronized(lock=_STREAMS_LOCK)
-    def _audio_stream_errored(self, index: int) -> None:
-        self.unload_stream(index)
+    @synchronized(lock=STREAMS_LOCK)
+    def _audio_stream_errored(self, stream: AudioStream) -> None:
+        self.unload_stream(stream)
 
-    @synchronized(lock=_STREAMS_LOCK)
-    def _audio_stream_changed(self, index: int) -> None:
+    @synchronized(lock=STREAMS_LOCK)
+    def _audio_stream_changed(self, stream: AudioStream) -> None:
         self.state_changed.emit()
