@@ -379,6 +379,9 @@ Usage: `sub‑shift [-t|--target=selected] [--no-align]`
 * `-t`, `--target`: subtitles to shift
 * `--no-align`: don't realign subtitles to video frames
 
+### <a name="cmd-sub-sort"></a>`sub‑sort`
+Sorts all subtitles by their start time.
+
 ### <a name="cmd-sub-split"></a>`sub‑split`
 Splits given subtitles at specified time.
 
@@ -392,6 +395,15 @@ Splits given subtitles according to the karaoke tags inside.
 
 Usage: `sub‑split‑karaoke [-t|--target=selected]`
 * `-t`, `--target`: subtitles to split
+
+### <a name="cmd-sub-stretch"></a>`sub‑stretch`
+Stretches given subtitles to fit between new timestamp range.
+
+Usage: `sub‑stretch [-t|--target=selected] [--no-align] -s|--start=… -e|--end=…`
+* `-t`, `--target`: subtitles to stretch
+* `--no-align`: don't realign subtitles to video frames
+* `-s`, `--start`: starting subtitle new start timestamp
+* `-e`, `--end`: ending subtitle new start timestamp
 
 ### <a name="cmd-undo"></a>`undo`
 Undoes last edit operation.
