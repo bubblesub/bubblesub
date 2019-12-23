@@ -139,7 +139,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :param language: language
         """
-        self.meta.update({"Language": langauge or None})
+        self.meta.update({"Language": language or None})
 
     @property
     def path(self) -> T.Optional[Path]:
