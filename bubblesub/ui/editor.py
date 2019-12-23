@@ -22,6 +22,7 @@ from bubblesub.api import Api
 from bubblesub.fmt.ass.util import spell_check_ass_line
 from bubblesub.spell_check import SpellCheckerError, create_spell_checker
 from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
+from bubblesub.ui.themes import ThemeManager
 from bubblesub.ui.time_edit import TimeEdit
 from bubblesub.ui.util import (
     ImmediateDataWidgetMapper,
@@ -101,10 +102,15 @@ class TextEdit(VimTextEdit):
 
 
 class Editor(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(
+        self,
+        api: Api,
+        theme_mgr: ThemeManager,
+        parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(parent)
-
         self._api = api
+        self._theme_mgr = theme_mgr
 
         self.style_edit = QtWidgets.QComboBox(
             self,
@@ -197,7 +203,7 @@ class Editor(QtWidgets.QWidget):
         self.setEnabled(False)
 
         self._data_widget_mapper = ImmediateDataWidgetMapper(
-            model=AssEventsModel(self, api),
+            model=AssEventsModel(api, self._theme_mgr, self),
             signal_map={TextEdit: "textChanged"},
         )
         for column, widget in {

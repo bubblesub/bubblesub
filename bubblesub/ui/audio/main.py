@@ -23,6 +23,7 @@ from bubblesub.ui.audio.audio_preview import AudioPreview
 from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.audio_timeline import AudioTimeline
 from bubblesub.ui.audio.video_preview import VideoPreview
+from bubblesub.ui.themes import ThemeManager
 
 
 class AutoSelectionStyle(enum.Enum):
@@ -35,13 +36,18 @@ class AutoSelectionStyle(enum.Enum):
 
 
 class Audio(QtWidgets.QSplitter):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(
+        self,
+        api: Api,
+        theme_mgr: ThemeManager,
+        parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(parent)
         self._api = api
-        self._audio_timeline = AudioTimeline(self._api, self)
-        self._audio_preview = AudioPreview(self._api, self)
+        self._audio_timeline = AudioTimeline(self._api, theme_mgr, self)
+        self._audio_preview = AudioPreview(self._api, theme_mgr, self)
         self._video_preview = VideoPreview(self._api, self)
-        self._slider = AudioSlider(self._api, self)
+        self._slider = AudioSlider(self._api, theme_mgr, self)
 
         self.setObjectName("spectrogram")
         self.setFocusPolicy(QtCore.Qt.StrongFocus)

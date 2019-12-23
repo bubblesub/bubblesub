@@ -26,6 +26,7 @@ from bubblesub.cfg.hotkeys import HotkeyContext
 from bubblesub.cfg.menu import MenuContext
 from bubblesub.ui.menu import setup_menu
 from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
+from bubblesub.ui.themes import ThemeManager
 
 MAGIC_MARGIN = 2  # ????
 HIGHLIGHTABLE_CHUNKS = {"\N{FULLWIDTH ASTERISK}", "\\N", "\\h", "\\n"}
@@ -33,9 +34,15 @@ SEEK_THRESHOLD = datetime.timedelta(seconds=0.2)
 
 
 class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(
+        self,
+        api: Api,
+        theme_mgr: ThemeManager,
+        parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(parent)
         self._api = api
+        self._theme_mgr = theme_mgr
         self._format = self._create_format()
 
     def on_theme_change(self) -> None:
@@ -43,7 +50,7 @@ class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
 
     def _create_format(self) -> QtGui.QTextCharFormat:
         fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(self._api.gui.get_color("grid/ass-mark"))
+        fmt.setForeground(self._theme_mgr.get_color("grid/ass-mark"))
         return fmt
 
     def paint(
@@ -102,7 +109,7 @@ class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
 
         for chunk in re.split(regex, text):
             painter.setPen(
-                self._api.gui.get_color("grid/ass-mark")
+                self._theme_mgr.get_color("grid/ass-mark")
                 if chunk in HIGHLIGHTABLE_CHUNKS
                 else option.palette.color(QtGui.QPalette.Text)
             )
@@ -116,11 +123,16 @@ class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class SubtitlesGrid(QtWidgets.QTableView):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(
+        self,
+        api: Api,
+        theme_mgr: ThemeManager,
+        parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(parent)
         self._api = api
         self.setObjectName("subtitles-grid")
-        self.setModel(AssEventsModel(self, api))
+        self.setModel(AssEventsModel(api, theme_mgr, self))
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
         self.horizontalHeader().setSectionsMovable(True)
@@ -135,7 +147,9 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self._timer.setInterval(SEEK_THRESHOLD.total_seconds())
         self._timer.timeout.connect(self._execute_scheduled_seek)
 
-        self._subs_grid_delegate = SubtitlesGridDelegate(self._api, self)
+        self._subs_grid_delegate = SubtitlesGridDelegate(
+            self._api, theme_mgr, self
+        )
         for col_idx in {AssEventsModelColumn.Text, AssEventsModelColumn.Note}:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(

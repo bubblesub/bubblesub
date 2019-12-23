@@ -30,6 +30,7 @@ from bubblesub.ui.hotkeys import HotkeyManager
 from bubblesub.ui.menu import setup_menu
 from bubblesub.ui.statusbar import StatusBar
 from bubblesub.ui.subs_grid import SubtitlesGrid
+from bubblesub.ui.themes import ThemeManager
 from bubblesub.ui.util import build_splitter
 from bubblesub.ui.video import Video
 from bubblesub.ui.views import ViewManager
@@ -49,12 +50,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self._api = api
         self._update_title()
 
+        self.theme_mgr = ThemeManager(api, self)
+
         self.video = Video(api, self)
-        self.audio = Audio(api, self)
-        self.editor = Editor(api, self)
-        self.subs_grid = SubtitlesGrid(api, self)
+        self.audio = Audio(api, self.theme_mgr, self)
+        self.editor = Editor(api, self.theme_mgr, self)
+        self.subs_grid = SubtitlesGrid(api, self.theme_mgr, self)
         self.status_bar = StatusBar(api, self)
-        self.console = Console(api, self)
+        self.console = Console(api, self.theme_mgr, self)
 
         self.view_manager = ViewManager(api, self)
 
@@ -99,7 +102,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
-        self.apply_theme(api.cfg.opt["gui"]["current_theme"])
         self.view_manager.restore_view()
         self._restore_fonts()
         self._restore_splitters()
@@ -141,9 +143,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self._api.playback.is_paused = True
         return False
 
-    def changeEvent(self, event: QtCore.QEvent) -> None:
-        self._api.gui.get_color.cache_clear()
-
     def closeEvent(self, event: QtCore.QEvent) -> None:
         if self._closing_state == ClosingState.Confirmed:
             self._api.gui.terminated.emit()
@@ -165,35 +164,6 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             task.add_done_callback(on_close)
             event.ignore()
-
-    def apply_theme(self, theme_name: str) -> None:
-        try:
-            theme_def = self._api.cfg.opt["gui"]["themes"][theme_name]
-        except KeyError:
-            self._api.log.error(f'unknown theme: "{theme_name}"')
-            return
-
-        self._api.cfg.opt["gui"]["current_theme"] = theme_name
-
-        self._api.gui.get_color.cache_clear()
-        palette = QtGui.QPalette()
-        for color_type in theme_def["palette"].keys():
-            color = self._api.gui.get_color(color_type)
-            if "+" in color_type:
-                group_name, role_name = color_type.split("+")
-            else:
-                group_name = ""
-                role_name = color_type
-            target_group = getattr(QtGui.QPalette, group_name, None)
-            target_role = getattr(QtGui.QPalette, role_name, None)
-            if target_group is not None and target_role is not None:
-                palette.setColor(target_group, target_role, color)
-            elif target_role is not None:
-                palette.setColor(target_role, color)
-        QtWidgets.QApplication.setPalette(palette)
-        self.setStyleSheet(theme_def["stylesheet"])
-
-        self.update()
 
     def _setup_menu(self) -> None:
         setup_menu(

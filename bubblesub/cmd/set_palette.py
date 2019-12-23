@@ -20,6 +20,7 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ui.themes import BaseTheme
 
 
 class SetThemeCommand(BaseCommand):
@@ -30,7 +31,7 @@ class SetThemeCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        main_window.apply_theme(self.args.theme_name)
+        main_window.theme_mgr.apply_theme(self.args.theme_name)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
@@ -38,7 +39,9 @@ class SetThemeCommand(BaseCommand):
             "theme_name",
             help="name of the theme to change to",
             type=str,
-            choices=list(api.cfg.opt["gui"]["themes"]),
+            choices=list(
+                sorted(cls.name for cls in BaseTheme.__subclasses__())
+            ),
         )
 
 

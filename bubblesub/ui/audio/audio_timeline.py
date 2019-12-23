@@ -14,15 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import typing as T
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
+from bubblesub.ui.themes import ThemeManager
 
 
 class AudioTimeline(BaseLocalAudioWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(
+        self,
+        api: Api,
+        theme_mgr: ThemeManager,
+        parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(api, parent)
+        self._theme_mgr = theme_mgr
         self.setFixedHeight(SLIDER_SIZE)
 
         api.audio.stream_loaded.connect(self.repaint_if_needed)
@@ -113,7 +122,7 @@ class AudioTimeline(BaseLocalAudioWidget):
 
     def _draw_keyframes(self, painter: QtGui.QPainter) -> None:
         h = painter.viewport().height()
-        color = self._api.gui.get_color("spectrogram/keyframe")
+        color = self._theme_mgr.get_color("spectrogram/keyframe")
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         if self._api.video.current_stream:
             for keyframe in self._api.video.current_stream.keyframes:
@@ -126,7 +135,7 @@ class AudioTimeline(BaseLocalAudioWidget):
             return
         x = round(self.pts_to_x(self._api.playback.current_pts))
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
+        painter.setBrush(self._theme_mgr.get_color("spectrogram/video-marker"))
 
         width = 7
         polygon = QtGui.QPolygonF()

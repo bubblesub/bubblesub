@@ -24,6 +24,7 @@ from bubblesub.api import Api
 from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.fmt.ass.util import character_count
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
+from bubblesub.ui.themes import ThemeManager
 from bubblesub.ui.util import blend_colors
 from bubblesub.util import ms_to_str
 
@@ -186,11 +187,16 @@ _COLUMNS: T.Dict[AssEventsModelColumn, _Column] = {
 
 class AssEventsModel(ObservableListTableAdapter):
     def __init__(
-        self, parent: QtCore.QObject, api: Api, **kwargs: T.Any
+        self,
+        api: Api,
+        theme_mgr: ThemeManager,
+        parent: QtCore.QObject,
+        **kwargs: T.Any,
     ) -> None:
         super().__init__(parent, api.subs.events)
-        self._options = AssEventsModelOptions(**kwargs)
         self._api = api
+        self._theme_mgr = theme_mgr
+        self._options = AssEventsModelOptions(**kwargs)
 
     def headerData(
         self, idx: int, orientation: int, role: int = QtCore.Qt.DisplayRole
@@ -233,7 +239,7 @@ class AssEventsModel(ObservableListTableAdapter):
 
         if role == QtCore.Qt.BackgroundRole:
             if subtitle.is_comment:
-                return self._api.gui.get_color("grid/comment")
+                return self._theme_mgr.get_color("grid/comment")
             if col_idx == AssEventsModelColumn.CharsPerSec:
                 return self._get_background_cps(subtitle)
 

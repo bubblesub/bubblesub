@@ -17,12 +17,10 @@
 """GUI API."""
 
 import contextlib
-import functools
-import re
 import typing as T
 from pathlib import Path
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 import bubblesub.api  # pylint: disable=unused-import
 from bubblesub.ui.util import SUBS_FILE_FILTER, async_dialog_exec, save_dialog
@@ -115,28 +113,6 @@ class GuiApi(QtCore.QObject):
             return True
         assert response in {box.Cancel, box.NoButton}
         return False
-
-    @functools.lru_cache(maxsize=None)
-    def get_color(self, color_name: str) -> QtGui.QColor:
-        """Receive a color from the current color scheme.
-
-        :param color_name: color name to retrieve
-        :return: color
-        """
-        current_theme = self._api.cfg.opt["gui"]["current_theme"]
-        try:
-            theme_def = self._api.cfg.opt["gui"]["themes"][current_theme]
-            palette_def = theme_def["palette"]
-            color_name = palette_def[color_name]
-            color_value = tuple(
-                int(match.group(1), 16)
-                for match in re.finditer(
-                    "([0-9a-fA-F]{2})", color_name.lstrip("#")
-                )
-            )
-        except KeyError:
-            return QtGui.QColor()
-        return QtGui.QColor(*color_value)
 
     def get_dialog_dir(self) -> T.Optional[Path]:
         """Retrieve default dialog path.

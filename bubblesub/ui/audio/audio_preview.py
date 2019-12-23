@@ -27,6 +27,7 @@ from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.threading import QueueWorker
 from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
+from bubblesub.ui.themes import ThemeManager
 from bubblesub.ui.util import blend_colors
 from bubblesub.util import chunks
 
@@ -154,8 +155,15 @@ class SubtitleLabel:
 
 
 class AudioPreview(BaseLocalAudioWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(
+        self,
+        api: Api,
+        theme_mgr: ThemeManager,
+        parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(api, parent)
+        self._theme_mgr = theme_mgr
+
         self.setMinimumHeight(int(SLIDER_SIZE * 1.5))
         self._labels: T.List[SubtitleLabel] = []
 
@@ -305,7 +313,9 @@ class AudioPreview(BaseLocalAudioWidget):
             )
             for i in range(256)
         ]
-        self._mouse_color = self._api.gui.get_color("spectrogram/mouse-marker")
+        self._mouse_color = self._theme_mgr.get_color(
+            "spectrogram/mouse-marker"
+        )
 
     def _on_volume_change(self) -> None:
         self._spectrum_worker.cache.clear()
@@ -401,7 +411,7 @@ class AudioPreview(BaseLocalAudioWidget):
 
     def _draw_keyframes(self, painter: QtGui.QPainter) -> None:
         h = painter.viewport().height()
-        color = self._api.gui.get_color("spectrogram/keyframe")
+        color = self._theme_mgr.get_color("spectrogram/keyframe")
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
         if self._api.video.current_stream:
             for keyframe in self._api.video.current_stream.keyframes:
@@ -432,7 +442,7 @@ class AudioPreview(BaseLocalAudioWidget):
 
             painter.setPen(
                 QtGui.QPen(
-                    self._api.gui.get_color(
+                    self._theme_mgr.get_color(
                         f"spectrogram/{color_key}-sub-line"
                     ),
                     1,
@@ -443,7 +453,7 @@ class AudioPreview(BaseLocalAudioWidget):
             if label.is_visible or is_selected:
                 painter.setBrush(
                     QtGui.QBrush(
-                        self._api.gui.get_color(
+                        self._theme_mgr.get_color(
                             f"spectrogram/{color_key}-sub-line"
                         )
                         if is_selected
@@ -459,7 +469,7 @@ class AudioPreview(BaseLocalAudioWidget):
 
             painter.setBrush(
                 QtGui.QBrush(
-                    self._api.gui.get_color(
+                    self._theme_mgr.get_color(
                         f"spectrogram/{color_key}-sub-fill"
                     )
                 )
@@ -469,7 +479,7 @@ class AudioPreview(BaseLocalAudioWidget):
             if label.is_visible:
                 painter.setPen(
                     QtGui.QPen(
-                        self._api.gui.get_color(
+                        self._theme_mgr.get_color(
                             f"spectrogram/{color_key}-sub-text"
                         ),
                         1,
@@ -489,13 +499,13 @@ class AudioPreview(BaseLocalAudioWidget):
         )
         painter.setPen(
             QtGui.QPen(
-                self._api.gui.get_color(f"{color_key}-line"),
+                self._theme_mgr.get_color(f"{color_key}-line"),
                 1,
                 QtCore.Qt.SolidLine,
             )
         )
         painter.setBrush(
-            QtGui.QBrush(self._api.gui.get_color(f"{color_key}-fill"))
+            QtGui.QBrush(self._theme_mgr.get_color(f"{color_key}-fill"))
         )
         x1 = round(self.pts_to_x(self._view.selection_start))
         x2 = round(self.pts_to_x(self._view.selection_end))
@@ -506,7 +516,7 @@ class AudioPreview(BaseLocalAudioWidget):
             return
         x = round(self.pts_to_x(self._api.playback.current_pts))
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(self._api.gui.get_color("spectrogram/video-marker"))
+        painter.setBrush(self._theme_mgr.get_color("spectrogram/video-marker"))
 
         width = 7
         polygon = QtGui.QPolygonF()

@@ -22,11 +22,19 @@ from bubblesub.ui.audio.base import (
     BaseGlobalAudioWidget,
     DragMode,
 )
+from bubblesub.ui.themes import ThemeManager
 
 
 class AudioSlider(BaseGlobalAudioWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(
+        self,
+        api: Api,
+        theme_mgr: ThemeManager,
+        parent: QtWidgets.QWidget = None,
+    ) -> None:
         super().__init__(api, parent)
+        self._theme_mgr = theme_mgr
+
         self.setFixedHeight(SLIDER_SIZE)
 
         api.audio.view.selection_changed.connect(self.repaint_if_needed)
@@ -78,7 +86,7 @@ class AudioSlider(BaseGlobalAudioWidget):
         x = round(self.pts_to_x(self._api.playback.current_pts))
         painter.setPen(
             QtGui.QPen(
-                self._api.gui.get_color("spectrogram/video-marker"),
+                self._theme_mgr.get_color("spectrogram/video-marker"),
                 1,
                 QtCore.Qt.SolidLine,
             )

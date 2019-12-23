@@ -25,6 +25,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogLevel
+from bubblesub.ui.themes import ThemeManager
 
 MAX_HISTORY_ENTRIES = 100
 
@@ -72,9 +73,12 @@ def collect_command_arguments(compl: Completion, api: Api) -> None:
 
 
 class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
-    def __init__(self, api: Api, parent: QtCore.QObject) -> None:
+    def __init__(
+        self, api: Api, theme_mgr: ThemeManager, parent: QtCore.QObject
+    ) -> None:
         super().__init__(parent)
         self._api = api
+        self._theme_mgr = theme_mgr
 
         self._font = QtGui.QFontDatabase.systemFont(
             QtGui.QFontDatabase.FixedFont
@@ -141,7 +145,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
 
     def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
         fmt = QtGui.QTextCharFormat()
-        fmt.setForeground(self._api.gui.get_color(color_name))
+        fmt.setForeground(self._theme_mgr.get_color(color_name))
         fmt.setFont(self._font)
         return fmt
 
@@ -149,13 +153,15 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
 class ConsoleLogWindow(QtWidgets.QTextEdit):
     scroll_lock_changed = QtCore.pyqtSignal()
 
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+    ) -> None:
         super().__init__(parent)
         self._api = api
         self._scroll_lock = False
         self._empty = True
 
-        self._syntax_highlight = ConsoleSyntaxHighlight(api, self)
+        self._syntax_highlight = ConsoleSyntaxHighlight(api, theme_mgr, self)
         self.setObjectName("console-window")
         self.setReadOnly(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
@@ -337,13 +343,15 @@ class ConsoleInput(QtWidgets.QLineEdit):
 
 
 class Console(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+    ) -> None:
         super().__init__(parent)
         self._api = api
 
         self.setObjectName("console-container")
 
-        self.log_window = ConsoleLogWindow(api, self)
+        self.log_window = ConsoleLogWindow(api, theme_mgr, self)
 
         strip = QtWidgets.QWidget(self)
         self.input = ConsoleInput(api, strip)
