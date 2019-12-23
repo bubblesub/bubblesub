@@ -32,7 +32,10 @@ class SubtitlesSortCommand(BaseCommand):
 
     async def run(self) -> None:
         with self.api.undo.capture(), self.api.gui.throttle_updates():
-            events = sorted(self.api.subs.events, key=lambda event: event.start)
+            events = sorted(
+                self.api.subs.events, key=lambda event: event.start
+            )
             self.api.subs.events[:] = events
+
 
 COMMANDS = [SubtitlesSortCommand]

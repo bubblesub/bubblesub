@@ -29,6 +29,7 @@ from bubblesub.cfg.menu import (
     MenuSeparator,
     SubMenu,
 )
+from bubblesub.data import ROOT_DIR
 from bubblesub.ui.audio import Audio
 from bubblesub.ui.console import Console
 from bubblesub.ui.editor import Editor
@@ -38,8 +39,6 @@ from bubblesub.ui.statusbar import StatusBar
 from bubblesub.ui.subs_grid import SubtitlesGrid
 from bubblesub.ui.util import build_splitter
 from bubblesub.ui.video import Video
-
-from bubblesub.data import ROOT_DIR
 
 
 class ClosingState(enum.IntEnum):
@@ -98,9 +97,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.main_wrapper)
         self.setStatusBar(self.status_bar)
 
-        self.setWindowIcon(
-            QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon.png"))
-        )
+        self.setWindowIcon(QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon.png")))
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
