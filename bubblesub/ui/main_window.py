@@ -170,7 +170,8 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             theme_def = self._api.cfg.opt["gui"]["themes"][theme_name]
         except KeyError:
-            raise ValueError(f'unknown theme: "{theme_name}"')
+            self._api.log.error(f'unknown theme: "{theme_name}"')
+            return
 
         self._api.cfg.opt["gui"]["current_theme"] = theme_name
 
