@@ -286,7 +286,7 @@ install_packages = [
     "pluginbase",
     "lazy_import",
     "sortedcontainers",
-    "dataclasses",
+    "dataclasses;python_version<'3.7'",
 ]
 
 if os.name == "nt":
