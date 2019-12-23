@@ -79,8 +79,10 @@ class SpectrumWorker(QueueWorker):
         sample_count = 2 << DERIVATION_SIZE
 
         shift = (
-            self._api.video.timecodes[0] if self._api.video.timecodes else 0
-        ) * self._api.audio.sample_rate // 1000
+            (self._api.video.timecodes[0] if self._api.video.timecodes else 0)
+            * self._api.audio.sample_rate
+            // 1000
+        )
         first_sample -= shift
         if first_sample < 0:
             first_sample = 0
@@ -109,7 +111,7 @@ class SpectrumWorker(QueueWorker):
             + 1
         )
 
-        out *= 255
+        out *= int(255 * self._api.playback.volume / 100)
         out = np.clip(out, 0, 255)
         out = np.flip(out, axis=0)
         out = out.astype(dtype=np.uint8)
@@ -171,6 +173,7 @@ class AudioPreview(BaseLocalAudioWidget):
         api.subs.events.items_inserted.connect(self.repaint_if_needed)
         api.subs.events.items_moved.connect(self.repaint_if_needed)
         api.subs.events.items_removed.connect(self.repaint_if_needed)
+        api.playback.volume_changed.connect(self._on_volume_change)
 
     def _get_paint_cache_key(self) -> int:
         return hash(
@@ -188,6 +191,8 @@ class AudioPreview(BaseLocalAudioWidget):
                     self._api.audio.view.selection_end,
                     # video position
                     self._api.playback.current_pts,
+                    # volume
+                    self._api.playback.volume,
                 ]
             )
         )
@@ -264,6 +269,11 @@ class AudioPreview(BaseLocalAudioWidget):
             for i in range(256)
         ]
         self._mouse_color = self._api.gui.get_color("spectrogram/mouse-marker")
+
+    def _on_volume_change(self) -> None:
+        if self._spectrum_worker:
+            self._spectrum_worker.cache = {}
+        self._schedule_current_audio_view()
 
     def _on_audio_view_change(self) -> None:
         self._schedule_current_audio_view()
