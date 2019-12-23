@@ -19,7 +19,6 @@ import argparse
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.audio import STREAMS_LOCK
 from bubblesub.api.cmd import BaseCommand, CommandCanceled
 from bubblesub.cmd.common import FancyPath
 from bubblesub.ui.util import (
@@ -205,7 +204,7 @@ class CycleAudioCommand(BaseCommand):
     help_text = "Switches to the next loaded audio stream."
 
     async def run(self) -> None:
-        with STREAMS_LOCK:
+        with self.api.audio.stream_lock:
             if not self.api.audio.current_stream:
                 return
             uid = self.api.audio.current_stream.uid
@@ -244,7 +243,8 @@ class ListAudioCommand(BaseCommand):
         for idx, stream in enumerate(self.api.audio.streams):
             marker = "X" if stream == self.api.audio.current_stream else " "
             self.api.log.info(
-                f"{marker} {idx}. {stream.uid} {stream.path} (delay: {stream.delay} ms)"
+                f"{marker} {idx}. {stream.uid} {stream.path} "
+                f"(delay: {stream.delay} ms)"
             )
 
 

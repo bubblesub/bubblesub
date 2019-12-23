@@ -16,8 +16,6 @@
 
 """Audio stream."""
 
-import contextlib
-import enum
 import threading
 import time
 import typing as T
@@ -29,7 +27,6 @@ import numpy as np
 from PyQt5 import QtCore
 
 from bubblesub.api.log import LogApi
-from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
 from bubblesub.compat import nullcontext
 from bubblesub.fmt.wav import write_wav
@@ -117,7 +114,7 @@ class AudioStream(QtCore.QObject):
         )
 
     @property
-    def path(self) -> T.Optional[Path]:
+    def path(self) -> Path:
         """Return current audio source path.
 
         :return: path
