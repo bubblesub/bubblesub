@@ -102,6 +102,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
+        self.system_palette = QtGui.QPalette(self.palette())
         self.apply_theme(api.cfg.opt["gui"]["current_theme"])
         self._restore_fonts()
         self._restore_splitters()
@@ -166,6 +167,12 @@ class MainWindow(QtWidgets.QMainWindow):
             event.ignore()
 
     def apply_theme(self, theme_name: str) -> None:
+        if theme_name == "system":
+            self._api.cfg.opt["gui"]["current_theme"] = theme_name
+            QtWidgets.QApplication.setPalette(self.system_palette)
+            self.setStyleSheet("")
+            return
+
         try:
             theme_def = self._api.cfg.opt["gui"]["themes"][theme_name]
         except KeyError:

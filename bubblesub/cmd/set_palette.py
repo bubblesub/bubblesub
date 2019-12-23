@@ -38,7 +38,7 @@ class SetThemeCommand(BaseCommand):
             "theme_name",
             help="name of the theme to change to",
             type=str,
-            choices=list(api.cfg.opt["gui"]["themes"]),
+            choices=list(api.cfg.opt["gui"]["themes"]) + ["system"],
         )
 
 
