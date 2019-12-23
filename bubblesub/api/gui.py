@@ -113,18 +113,24 @@ class GuiApi(QtCore.QObject):
         :return: color
         """
         current_theme = self._api.cfg.opt["gui"]["current_theme"]
+        theme_defs = self._api.cfg.opt["gui"]["themes"]
+        if current_theme in theme_defs:
+            theme_def = theme_defs[current_theme]
+        elif "light" in theme_defs:
+            theme_def = theme_defs["light"]
+        else:
+            return QtGui.QColor()
         try:
-            theme_def = self._api.cfg.opt["gui"]["themes"][current_theme]
             palette_def = theme_def["palette"]
             color_name = palette_def[color_name]
-            color_value = tuple(
-                int(match.group(1), 16)
-                for match in re.finditer(
-                    "([0-9a-fA-F]{2})", color_name.lstrip("#")
-                )
-            )
         except KeyError:
             return QtGui.QColor()
+        color_value = tuple(
+            int(match.group(1), 16)
+            for match in re.finditer(
+                "([0-9a-fA-F]{2})", color_name.lstrip("#")
+            )
+        )
         return QtGui.QColor(*color_value)
 
     def get_dialog_dir(self) -> T.Optional[Path]:
