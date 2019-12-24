@@ -130,6 +130,7 @@ class VideoPreview(BaseLocalAudioWidget):
 
         api.video.state_changed.connect(self.repaint_if_needed)
         api.audio.view.view_changed.connect(self.repaint_if_needed)
+        api.gui.terminated.connect(self.shutdown)
 
     def sizeHint(self) -> QtCore.QSize:
         return QtCore.QSize(0, VIDEO_BAND_SIZE)

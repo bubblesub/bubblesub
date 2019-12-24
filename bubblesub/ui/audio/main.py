@@ -22,7 +22,6 @@ from bubblesub.ui.audio.audio_preview import AudioPreview
 from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.audio_timeline import AudioTimeline
 from bubblesub.ui.audio.video_preview import VideoPreview
-from bubblesub.ui.util import build_splitter
 
 
 class Audio(QtWidgets.QSplitter):
@@ -66,9 +65,6 @@ class Audio(QtWidgets.QSplitter):
         api.subs.selection_changed.connect(
             lambda _rows, _changed: self._sync_selection()
         )
-
-    def shutdown(self) -> None:
-        self._video_preview.shutdown()
 
     def _on_audio_state_change(self, state: AudioState) -> None:
         if state == AudioState.Loaded:

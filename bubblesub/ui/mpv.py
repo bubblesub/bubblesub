@@ -48,6 +48,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         locale.setlocale(locale.LC_NUMERIC, "C")
 
+        self._destroyed = False
         self._need_subs_refresh = False
         self._mpv = mpv.Context()
         self._mpv.set_log_level("error")
@@ -112,6 +113,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         api.playback.pause_changed.connect(self._on_pause_change)
         api.video.view.zoom_changed.connect(self._on_video_zoom_change)
         self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
+        api.gui.terminated.connect(self.shutdown)
         self._schedule_update.connect(self.update)
 
         self._timer.start()
@@ -144,6 +146,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._api.playback.state = PlaybackFrontendState.Loading
 
     def shutdown(self) -> None:
+        self._destroyed = True
         self.makeCurrent()
         if self._opengl:
             self._opengl.set_update_callback(lambda: None)
@@ -169,6 +172,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._opengl.report_flip(0)
 
     def maybe_update(self) -> None:
+        if self._destroyed:
+            return
         self._schedule_update.emit()
 
     def _refresh_subs_if_needed(self) -> None:
@@ -286,6 +291,9 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self._api.playback.state = PlaybackFrontendState.NotReady
 
     def _handle_event(self, event: mpv.Event) -> bool:
+        if self._destroyed:
+            return False
+
         if event.id in {mpv.Events.none, mpv.Events.shutdown}:
             return True
 

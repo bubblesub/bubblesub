@@ -231,6 +231,3 @@ class Video(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._volume_control)
         layout.addLayout(right_layout)
-
-    def shutdown(self) -> None:
-        self._video_preview.shutdown()

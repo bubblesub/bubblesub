@@ -174,6 +174,11 @@ class AudioPreview(BaseLocalAudioWidget):
         api.subs.events.items_moved.connect(self.repaint_if_needed)
         api.subs.events.items_removed.connect(self.repaint_if_needed)
         api.playback.volume_changed.connect(self._on_volume_change)
+        api.gui.terminated.connect(self.shutdown)
+
+    def shutdown(self) -> None:
+        if self._spectrum_worker:
+            self._spectrum_worker.stop()
 
     def _get_paint_cache_key(self) -> int:
         return hash(
