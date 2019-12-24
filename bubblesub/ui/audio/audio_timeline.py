@@ -29,7 +29,10 @@ class AudioTimeline(BaseLocalAudioWidget):
 
         self._spectrum_cache: T.Dict[int, T.List[int]] = {}
 
-        api.audio.state_changed.connect(self.repaint_if_needed)
+        api.audio.stream_loaded.connect(self.repaint_if_needed)
+        api.audio.stream_unloaded.connect(self.repaint_if_needed)
+        api.audio.current_stream_switched.connect(self.repaint_if_needed)
+
         api.audio.view.view_changed.connect(self.repaint_if_needed)
         api.playback.current_pts_changed.connect(
             self.repaint, QtCore.Qt.DirectConnection

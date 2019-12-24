@@ -49,9 +49,6 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
     stream_lock = threading.RLock()
 
-    # TODO: remove this event
-    state_changed = QtCore.pyqtSignal()
-
     current_stream_switched = QtCore.pyqtSignal(object)
 
     stream_created = QtCore.pyqtSignal(object)
@@ -72,7 +69,6 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
             self.stream_unloaded.emit(stream)
         self._streams = []
         self.switch_stream(None)
-        self.state_changed.emit()
 
     @synchronized(lock=stream_lock)
     def load_stream(self, path: Path, switch: bool = True) -> None:
@@ -92,8 +88,6 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
         if switch:
             self.switch_stream(stream.uid)
-
-        self.state_changed.emit()
 
     def get_stream_index(self, uid: uuid.UUID) -> T.Optional[int]:
         """Returns index of the given stream uid.
@@ -124,7 +118,6 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
             self.switch_stream(self._streams[index])
         else:
             self.switch_stream(None)
-        self.state_changed.emit()
         self.stream_unloaded.emit(old_stream)
 
     @synchronized(lock=stream_lock)
@@ -174,12 +167,10 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
         if stream != self._current_stream:
             self._current_stream = stream
             self.current_stream_switched.emit(self._current_stream)
-            self.state_changed.emit()
 
     @synchronized(lock=stream_lock)
     def _on_stream_load(self, stream: TStream) -> None:
         self.stream_loaded.emit(stream)
-        self.state_changed.emit()
 
     @synchronized(lock=stream_lock)
     def _on_stream_error(self, stream: TStream) -> None:
@@ -188,7 +179,6 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
     @synchronized(lock=stream_lock)
     def _on_stream_change(self, stream: TStream) -> None:
         self.stream_changed.emit(stream)
-        self.state_changed.emit()
 
     def _create_stream(self, path: Path) -> TStream:
         raise NotImplementedError

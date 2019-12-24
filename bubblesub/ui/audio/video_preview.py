@@ -109,7 +109,9 @@ class VideoPreview(BaseLocalAudioWidget):
         self._worker.signals.cache_updated.connect(self.repaint)
         self._api.threading.schedule_runnable(self._worker)
 
-        api.video.state_changed.connect(self.repaint_if_needed)
+        api.video.stream_loaded.connect(self.repaint_if_needed)
+        api.video.stream_unloaded.connect(self.repaint_if_needed)
+        api.video.current_stream_switched.connect(self.repaint_if_needed)
         api.audio.view.view_changed.connect(self.repaint_if_needed)
         api.gui.terminated.connect(self.shutdown)
 

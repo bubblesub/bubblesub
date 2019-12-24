@@ -22,7 +22,9 @@ import mpv  # pylint: disable=wrong-import-order
 from PyQt5 import QtCore, QtOpenGL, QtWidgets
 
 from bubblesub.api import Api
+from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.playback import PlaybackFrontendState
+from bubblesub.api.video_stream import VideoStream
 from bubblesub.fmt.ass.writer import write_ass
 from bubblesub.util import ms_to_str
 
@@ -97,8 +99,12 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         api.subs.styles.items_removed.connect(self._on_subs_change)
         api.subs.styles.items_moved.connect(self._on_subs_change)
 
-        api.video.state_changed.connect(self._on_video_state_change)
-        api.audio.state_changed.connect(self._on_audio_state_change)
+        api.video.stream_created.connect(self._on_video_state_change)
+        api.video.stream_unloaded.connect(self._on_video_state_change)
+        api.video.current_stream_switched.connect(self._on_video_state_change)
+        api.audio.stream_created.connect(self._on_audio_state_change)
+        api.audio.stream_unloaded.connect(self._on_audio_state_change)
+        api.audio.current_stream_switched.connect(self._on_audio_state_change)
         api.playback.request_seek.connect(
             self._on_request_seek, QtCore.Qt.DirectConnection
         )
@@ -116,11 +122,11 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         self._timer.start()
 
-    def _on_video_state_change(self) -> None:
+    def _on_video_state_change(self, stream: VideoStream) -> None:
         self._sync_media()
         self._need_subs_refresh = True
 
-    def _on_audio_state_change(self) -> None:
+    def _on_audio_state_change(self, stream: AudioStream) -> None:
         self._sync_media()
 
     def _sync_media(self) -> None:

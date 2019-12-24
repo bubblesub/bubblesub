@@ -24,6 +24,7 @@ from sortedcontainers import SortedDict
 
 from bubblesub.api import Api
 from bubblesub.api.audio import AudioApi
+from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.threading import QueueWorker
 from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
@@ -161,7 +162,8 @@ class AudioPreview(BaseLocalAudioWidget):
         self.setMouseTracking(True)
         QtWidgets.QApplication.instance().installEventFilter(self)
 
-        api.audio.state_changed.connect(self._on_audio_state_change)
+        api.audio.stream_loaded.connect(self._on_audio_state_change)
+        api.audio.current_stream_switched.connect(self._on_audio_state_change)
         api.audio.view.view_changed.connect(self._on_audio_view_change)
 
         api.audio.view.selection_changed.connect(self.repaint_if_needed)
@@ -313,7 +315,7 @@ class AudioPreview(BaseLocalAudioWidget):
         for chunk in chunks(list(sorted(blocks_to_update)), CHUNK_SIZE):
             self._spectrum_worker.schedule_task(reversed(chunk))
 
-    def _on_audio_state_change(self) -> None:
+    def _on_audio_state_change(self, stream: AudioStream) -> None:
         self._spectrum_worker.cache.clear()
         self._schedule_current_audio_view()
 
