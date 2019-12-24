@@ -24,14 +24,11 @@ import typing as T
 import quamash
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from bubblesub.api import Api
+from bubblesub.api.log import LogLevel
+from bubblesub.cfg import ConfigError
 from bubblesub.data import ROOT_DIR
-
-if T.TYPE_CHECKING:
-    from bubblesub.api import Api  # pylint: disable=unused-import
-    from bubblesub.api.log import LogLevel  # pylint: disable=unused-import
-    from bubblesub.ui.main_window import (  # pylint: disable=unused-import
-        MainWindow,
-    )
+from bubblesub.ui.main_window import MainWindow
 
 
 class MySplashScreen(QtWidgets.QSplashScreen):
@@ -63,21 +60,21 @@ class MySplashScreen(QtWidgets.QSplashScreen):
 
 
 class Logger:
-    def __init__(self, api: "Api") -> None:
+    def __init__(self, api: Api) -> None:
         self._api = api
-        self._main_window: T.Optional["MainWindow"] = None
+        self._main_window: T.Optional[MainWindow] = None
         self._queued_logs: T.List[T.Tuple["LogLevel", str]] = []
 
         sys.excepthook = self._on_error
         api.log.logged.connect(self._on_log)
 
-    def set_main_window(self, main_window: "MainWindow") -> None:
+    def set_main_window(self, main_window: MainWindow) -> None:
         self._main_window = main_window
         for log_level, text in self._queued_logs:
             self._on_log(log_level, text)
         self._queued_logs.clear()
 
-    def _on_log(self, level: "LogLevel", text: str) -> None:
+    def _on_log(self, level: LogLevel, text: str) -> None:
         if self._main_window:
             self._main_window.console.log_window.log(level, text)
         else:
@@ -114,10 +111,7 @@ class Application:
         self._splash.show()
         self._splash.showMessage("Loading API...")
 
-    def run(self, api: "Api") -> None:
-        from bubblesub.cfg import ConfigError
-        from bubblesub.ui.main_window import MainWindow
-
+    def run(self, api: Api) -> None:
         logger = Logger(api)
 
         try:
