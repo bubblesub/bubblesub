@@ -90,8 +90,6 @@ class QueueWorker(QtCore.QRunnable):
             with self._log_api.exception_guard():
                 self._process_task(task)
             self._queue.task_done()
-            if self._queue.empty():
-                self._queue_cleared()
         with self._log_api.exception_guard():
             self._finished()
 
@@ -133,9 +131,6 @@ class QueueWorker(QtCore.QRunnable):
 
     def _finished(self) -> None:
         """Called when the thread finishes."""
-
-    def _queue_cleared(self) -> None:
-        """Called when the last task in the queue gets finished."""
 
 
 class OneShotWorker(QtCore.QRunnable):

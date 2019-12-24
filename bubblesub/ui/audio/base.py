@@ -14,11 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import bisect
 import enum
 import typing as T
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
@@ -79,7 +78,8 @@ def get_subtitle_insertion_point(
             return InsertionPoint(
                 idx=api.subs.selected_indexes[-1] + 1, start=sel_end, end=pts
             )
-        elif pts <= sel_start:
+
+        if pts <= sel_start:
             # before:      *  |----|
             # after:  |----|  |----|
             return InsertionPoint(
@@ -97,7 +97,8 @@ def get_subtitle_insertion_point(
                 start=pts,
                 end=pts + default_duration,
             )
-        elif pts <= sel_start:
+
+        if pts <= sel_start:
             # before: *  |----|
             # after:  |--|=|--|
             return InsertionPoint(
@@ -105,6 +106,7 @@ def get_subtitle_insertion_point(
                 start=pts,
                 end=pts + default_duration,
             )
+
     # before: |--*--|
     # after:  |--|==|-|
     return InsertionPoint(
@@ -113,14 +115,16 @@ def get_subtitle_insertion_point(
 
 
 def _create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
-    pts = api.video.align_pts_to_near_frame(pts)
+    if api.video.current_stream:
+        pts = api.video.current_stream.align_pts_to_near_frame(pts)
     insertion_point = get_subtitle_insertion_point(api, pts, by_end)
-    insertion_point.start = api.video.align_pts_to_near_frame(
-        insertion_point.start
-    )
-    insertion_point.end = api.video.align_pts_to_near_frame(
-        insertion_point.end
-    )
+    if api.video.current_stream:
+        insertion_point.start = api.video.current_stream.align_pts_to_near_frame(
+            insertion_point.start
+        )
+        insertion_point.end = api.video.current_stream.align_pts_to_near_frame(
+            insertion_point.end
+        )
 
     api.subs.events.insert(
         insertion_point.idx,
@@ -218,7 +222,10 @@ class BaseAudioWidget(QtWidgets.QWidget):
             self._view.move_view(int(distance))
 
         elif self._drag_data.mode == DragMode.SubtitleStart:
-            pts = self._api.video.align_pts_to_near_frame(pts)
+            if self._api.video.current_stream:
+                pts = self._api.video.current_stream.align_pts_to_near_frame(
+                    pts
+                )
             for ass_event in self._drag_data.selected_events:
                 ass_event.start = pts
                 if ass_event.start > ass_event.end:
@@ -229,7 +236,10 @@ class BaseAudioWidget(QtWidgets.QWidget):
             self._view.select(pts, self._view.selection_end)
 
         elif self._drag_data.mode == DragMode.SubtitleEnd:
-            pts = self._api.video.align_pts_to_near_frame(pts)
+            if self._api.video.current_stream:
+                pts = self._api.video.current_stream.align_pts_to_near_frame(
+                    pts
+                )
             for ass_event in self._drag_data.selected_events:
                 ass_event.end = pts
                 if ass_event.start > ass_event.end:

@@ -15,15 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import typing as T
-
-from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
+from bubblesub.api.cmd import BaseCommand, CommandUnavailable
 from bubblesub.cmd.common import Pts, SubtitlesSelection
-from bubblesub.fmt.ass.event import AssEvent
-from bubblesub.ui.util import time_jump_dialog
 
 
 class SubtitlesStretchCommand(BaseCommand):
@@ -60,8 +55,10 @@ class SubtitlesStretchCommand(BaseCommand):
                 start
                 + (pts - old_start) * (end - start) / (old_end - old_start)
             )
-            if not self.args.no_align:
-                pts = self.api.video.align_pts_to_near_frame(pts)
+            if not self.args.no_align and self.api.video.current_stream:
+                pts = self.api.video.current_stream.align_pts_to_near_frame(
+                    pts
+                )
             return pts
 
         with self.api.undo.capture():

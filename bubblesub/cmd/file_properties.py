@@ -141,8 +141,12 @@ class _OptionsGropuBox(QtWidgets.QGroupBox):
         layout.addWidget(self.scale_check_box, 3, 1)
 
     def _on_get_resolution_button_click(self) -> None:
-        self.res_x_edit.setValue(self._api.video.width)
-        self.res_y_edit.setValue(self._api.video.height)
+        if self._api.video.current_stream:
+            self.res_x_edit.setValue(self._api.video.current_stream.width)
+            self.res_y_edit.setValue(self._api.video.current_stream.height)
+        else:
+            self.res_x_edit.setValue(0)
+            self.res_y_edit.setValue(0)
 
 
 class _MetadataGroupBox(QtWidgets.QGroupBox):

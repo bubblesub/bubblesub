@@ -48,7 +48,16 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
     """Common functions for audio and video stream manager APIs."""
 
     stream_lock = threading.RLock()
+
+    # TODO: remove this event
     state_changed = QtCore.pyqtSignal()
+
+    current_stream_switched = QtCore.pyqtSignal(object)
+
+    stream_created = QtCore.pyqtSignal(object)
+    stream_changed = QtCore.pyqtSignal(object)
+    stream_loaded = QtCore.pyqtSignal(object)
+    stream_unloaded = QtCore.pyqtSignal(object)
 
     def __init__(self) -> None:
         """Initialize self."""
@@ -59,8 +68,10 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
     @synchronized(lock=stream_lock)
     def unload_all_streams(self) -> None:
         """Unload all loaded streams."""
+        for stream in self._streams:
+            self.stream_unloaded.emit(stream)
         self._streams = []
-        self._current_stream = None
+        self.switch_stream(None)
         self.state_changed.emit()
 
     @synchronized(lock=stream_lock)
@@ -73,13 +84,14 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
         # TODO: switch to stream when trying to load an already loaded source
 
         stream = self._create_stream(path)
-        stream.loaded.connect(partial(self._stream_loaded, stream))
-        stream.errored.connect(partial(self._stream_errored, stream))
-        stream.changed.connect(partial(self._stream_changed, stream))
+        stream.loaded.connect(partial(self._on_stream_load, stream))
+        stream.errored.connect(partial(self._on_stream_error, stream))
+        stream.changed.connect(partial(self._on_stream_change, stream))
         self._streams.append(stream)
+        self.stream_created.emit(stream)
 
         if switch:
-            self._current_stream = stream
+            self.switch_stream(stream.uid)
 
         self.state_changed.emit()
 
@@ -102,31 +114,37 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
         :param uid: stream to unload
         """
         index = self.get_stream_index(uid)
+        if index is None:
+            return
+        old_stream = self._streams[index]
         self._streams = [
             stream for stream in self._streams if stream.uid != uuid
         ]
-        if index is not None and index < len(self._streams):
-            self._current_stream = self._streams[index]
+        if index < len(self._streams):
+            self.switch_stream(self._streams[index])
         else:
-            self._current_stream = None
+            self.switch_stream(None)
         self.state_changed.emit()
+        self.stream_unloaded.emit(old_stream)
 
     @synchronized(lock=stream_lock)
-    def switch_stream(self, uid: uuid.UUID) -> None:
+    def switch_stream(self, uid: T.Optional[uuid.UUID]) -> None:
         """Switches streams.
 
         :param uid: stream to switch to
         """
-        stream: T.Optional[TStream]
-        for stream in self._streams:
-            if stream.uid == uid:
-                break
+        if uid is None:
+            self._set_current_stream(None)
         else:
-            stream = None
-        if not stream:
-            raise ValueError(f"stream {uid} is not loaded")
-        self._current_stream = stream
-        self.state_changed.emit()
+            stream: T.Optional[TStream]
+            for stream in self._streams:
+                if stream.uid == uid:
+                    break
+            else:
+                stream = None
+            if not stream:
+                raise ValueError(f"stream {uid} is not loaded")
+            self._set_current_stream(stream)
 
     @synchronized(lock=stream_lock)
     def unload_current_stream(self) -> None:
@@ -152,17 +170,41 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
         """
         return self._streams[:]
 
+    def _set_current_stream(self, stream: T.Optional[TStream]) -> None:
+        if stream != self._current_stream:
+            self._current_stream = stream
+            self.current_stream_switched.emit(self._current_stream)
+            self.state_changed.emit()
+
     @synchronized(lock=stream_lock)
-    def _stream_loaded(self, stream: TStream) -> None:
+    def _on_stream_load(self, stream: TStream) -> None:
+        self.stream_loaded.emit(stream)
         self.state_changed.emit()
 
     @synchronized(lock=stream_lock)
-    def _stream_errored(self, stream: TStream) -> None:
+    def _on_stream_error(self, stream: TStream) -> None:
         self.unload_stream(stream)
 
     @synchronized(lock=stream_lock)
-    def _stream_changed(self, stream: TStream) -> None:
+    def _on_stream_change(self, stream: TStream) -> None:
+        self.stream_changed.emit(stream)
         self.state_changed.emit()
 
     def _create_stream(self, path: Path) -> TStream:
         raise NotImplementedError
+
+    @synchronized(lock=stream_lock)
+    def cycle_streams(self) -> None:
+        """Cycle to next available stream.
+
+        Does nothing if there are no loaded streams.
+        """
+        if not self.current_stream:
+            return
+        uid = self.current_stream.uid
+        idx = self.get_stream_index(uid)
+        assert idx is not None
+        idx += 1
+        idx %= len(self.streams)
+        uid = self.streams[idx].uid
+        self.switch_stream(uid)

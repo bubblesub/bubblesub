@@ -157,7 +157,7 @@ class LoadVideoCommand(BaseCommand):
             main_window,
         )
 
-        self.api.video.load(path)
+        self.api.video.load_stream(path)
         if load_audio:
             self.api.audio.load_stream(path)
 
@@ -170,6 +170,44 @@ class LoadVideoCommand(BaseCommand):
             type=lambda value: FancyPath(api, value),
             default="",
         )
+
+
+class CycleVideoCommand(BaseCommand):
+    names = ["cycle-video"]
+    help_text = "Switches to the next loaded video stream."
+
+    async def run(self) -> None:
+        self.api.video.cycle_streams()
+
+
+class SwitchVideoCommand(BaseCommand):
+    names = ["switch-video"]
+    help_text = "Switches to the chosen loaded video stream."
+
+    async def run(self) -> None:
+        idx = self.args.index
+        uid = self.api.video.streams[idx].uid
+        self.api.video.switch_stream(uid)
+
+    @staticmethod
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "index", help="index of the stream to switch to", type=int
+        )
+
+
+class ListVideoCommand(BaseCommand):
+    names = ["list-video"]
+    help_text = "Lists loaded video streams in the console."
+
+    async def run(self) -> None:
+        if not self.api.video.streams:
+            self.api.log.warn("no loaded video streams")
+            return
+
+        for idx, stream in enumerate(self.api.video.streams):
+            marker = "X" if stream == self.api.video.current_stream else " "
+            self.api.log.info(f"{marker} {idx}. {stream.uid} {stream.path} ")
 
 
 class LoadAudioCommand(BaseCommand):
@@ -204,15 +242,7 @@ class CycleAudioCommand(BaseCommand):
     help_text = "Switches to the next loaded audio stream."
 
     async def run(self) -> None:
-        with self.api.audio.stream_lock:
-            if not self.api.audio.current_stream:
-                return
-            uid = self.api.audio.current_stream.uid
-            idx = self.api.audio.get_stream_index(uid)
-            idx += 1
-            idx %= len(self.api.audio.streams)
-            uid = self.api.audio.streams[idx].uid
-            self.api.audio.switch_stream(uid)
+        self.api.audio.cycle_streams()
 
 
 class SwitchAudioCommand(BaseCommand):
@@ -275,7 +305,7 @@ class UnloadVideoCommand(BaseCommand):
     help_text = "Unloads currently loaded video file."
 
     async def run(self) -> None:
-        self.api.video.unload()
+        self.api.video.unload_current_stream()
 
 
 class UnloadAudioCommand(BaseCommand):
@@ -292,6 +322,9 @@ COMMANDS = [
     SaveCommand,
     SaveAsCommand,
     LoadVideoCommand,
+    CycleVideoCommand,
+    SwitchVideoCommand,
+    ListVideoCommand,
     LoadAudioCommand,
     CycleAudioCommand,
     SwitchAudioCommand,

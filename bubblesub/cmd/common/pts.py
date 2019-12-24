@@ -19,9 +19,9 @@
 import bisect
 import enum
 import typing as T
-from dataclasses import dataclass
 
 import parsimonious
+from dataclasses import dataclass
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandError
@@ -218,16 +218,17 @@ class _Time:
         :param api: core API
         :return: resolved pts
         """
+        current_stream = api.video.current_stream
         if self.unit == _TimeUnit.frame:
-            if not api.video.timecodes:
+            if not current_stream or not current_stream.timecodes:
                 raise CommandError("timecode information is not available")
-            idx = max(1, min(self.value, len(api.video.timecodes))) - 1
-            return api.video.timecodes[idx]
+            idx = max(1, min(self.value, len(current_stream.timecodes))) - 1
+            return current_stream.timecodes[idx]
         if self.unit == _TimeUnit.keyframe:
-            if not api.video.timecodes:
+            if not current_stream or not current_stream.timecodes:
                 raise CommandError("keyframe information is not available")
-            idx = max(1, min(self.value, len(api.video.keyframes))) - 1
-            return api.video.timecodes[api.video.keyframes[idx]]
+            idx = max(1, min(self.value, len(current_stream.keyframes))) - 1
+            return current_stream.timecodes[current_stream.keyframes[idx]]
         if self.unit == _TimeUnit.ms:
             return self.value
         raise NotImplementedError(f"unknown unit: {self.unit}")
@@ -259,15 +260,18 @@ def _bisect(source: T.List[int], origin: int, delta: int) -> int:
 
 
 def _apply_frame(api: Api, origin: int, delta: int) -> int:
-    if not api.video.timecodes:
+    if not api.video.current_stream or not api.video.current_stream.timecodes:
         raise CommandError("timecode information is not available")
-    return _bisect(api.video.timecodes, origin, delta)
+    return _bisect(api.video.current_stream.timecodes, origin, delta)
 
 
 def _apply_keyframe(api: Api, origin: int, delta: int) -> int:
-    if not api.video.keyframes:
+    if not api.video.current_stream or not api.video.current_stream.keyframes:
         raise CommandError("keyframe information is not available")
-    possible_pts = [api.video.timecodes[i] for i in api.video.keyframes]
+    possible_pts = [
+        api.video.current_stream.timecodes[i]
+        for i in api.video.current_stream.keyframes
+    ]
     return _bisect(possible_pts, origin, delta)
 
 
@@ -416,7 +420,9 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         if direction == _Token.first:
             return _Time(1, _TimeUnit.frame)
         if direction == _Token.last:
-            return _Time(len(self._api.video.timecodes), _TimeUnit.frame)
+            return _Time(
+                len(self._api.video.current_stream.timecodes), _TimeUnit.frame
+            )
         if direction == _Token.current:
             return _Time(origin)
         delta = _Token.delta_from_direction(direction)
@@ -430,7 +436,10 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         if direction == _Token.first:
             return _Time(1, _TimeUnit.keyframe)
         if direction == _Token.last:
-            return _Time(len(self._api.video.keyframes), _TimeUnit.keyframe)
+            return _Time(
+                len(self._api.video.current_stream.keyframes),
+                _TimeUnit.keyframe,
+            )
         delta = _Token.delta_from_direction(direction)
         return _Time(_apply_keyframe(self._api, origin, delta))
 
@@ -491,8 +500,8 @@ class Pts:
         self, origin: T.Optional[int] = None, align_to_near_frame: bool = False
     ) -> int:
         ret = await self._get(origin)
-        if align_to_near_frame:
-            ret = self._api.video.align_pts_to_near_frame(ret)
+        if align_to_near_frame and self._api.video.current_stream:
+            ret = self._api.video.current_stream.align_pts_to_near_frame(ret)
         return ret
 
     async def _get(self, origin: T.Optional[int]) -> int:

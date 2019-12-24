@@ -22,7 +22,7 @@ from PyQt5 import QtCore
 
 from bubblesub.api.audio import AudioApi
 from bubblesub.api.subs import SubtitlesApi
-from bubblesub.api.video import VideoApi, VideoState
+from bubblesub.api.video import VideoApi
 
 
 class AudioViewApi(QtCore.QObject):
@@ -204,7 +204,12 @@ class AudioViewApi(QtCore.QObject):
     def _extend_view(self) -> None:
         self._min = 0
         self._max = max(
-            [self._max, self._video_api.max_pts]
+            [self._max]
+            + [
+                self._video_api.current_stream.max_pts
+                if self._video_api.current_stream
+                else 0
+            ]
             + [
                 self._audio_api.current_stream.max_time
                 if self._audio_api.current_stream
@@ -220,9 +225,11 @@ class AudioViewApi(QtCore.QObject):
             self.reset_view()
             self._need_reset_after_audio = False
 
-    def _on_video_state_change(self, state: VideoState) -> None:
-        if state == VideoState.Loaded:
+    def _on_video_state_change(self) -> None:
+        if self._need_reset_after_audio:
             self._extend_view()
+            self.reset_view()
+            self._need_reset_after_audio = False
 
     def _on_subs_load(self) -> None:
         self._need_reset_after_audio = True

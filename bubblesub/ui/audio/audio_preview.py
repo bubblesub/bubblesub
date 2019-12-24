@@ -74,25 +74,24 @@ class SpectrumWorker(QueueWorker):
             self.signals.finished.emit()
 
     def _get_spectrogram_for_block_idx(self, block_idx: int) -> np.array:
-        stream = self._api.audio.current_stream
-        if not stream or not stream.is_ready:
+        audio_stream = self._api.audio.current_stream
+        video_stream = self._api.video.current_stream
+        if not audio_stream or not audio_stream.is_ready:
             return None
 
         first_sample = block_idx << DERIVATION_DISTANCE
         sample_count = 2 << DERIVATION_SIZE
 
-        shift = (
-            (self._api.video.timecodes[0] if self._api.video.timecodes else 0)
-            * stream.sample_rate
-            // 1000
-        )
-        first_sample -= shift
+        if video_stream and video_stream.timecodes:
+            first_sample -= (
+                video_stream.timecodes[0] * audio_stream.sample_rate // 1000
+            )
         if first_sample < 0:
             first_sample = 0
 
-        samples = stream.get_samples(first_sample, sample_count)
+        samples = audio_stream.get_samples(first_sample, sample_count)
         samples = np.mean(samples, axis=1)
-        sample_fmt = stream.sample_format
+        sample_fmt = audio_stream.sample_format
 
         if sample_fmt == ffms2.FFMS_FMT_S16:
             samples /= 32768.0
@@ -184,26 +183,34 @@ class AudioPreview(BaseLocalAudioWidget):
         self._spectrum_worker.stop()
 
     def _get_paint_cache_key(self) -> int:
-        return hash(
-            tuple(
-                # subtitle rectangles
-                [(event.start, event.end) for event in self._api.subs.events]
-                + [
-                    # frames, keyframes
-                    self._api.video.state,
-                    # audio view
-                    self._api.audio.view.view_start,
-                    self._api.audio.view.view_end,
-                    # audio selection
-                    self._api.audio.view.selection_start,
-                    self._api.audio.view.selection_end,
-                    # video position
-                    self._api.playback.current_pts,
-                    # volume
-                    self._api.playback.volume,
-                ]
+        with self._api.video.stream_lock:
+            return hash(
+                tuple(
+                    # subtitle rectangles
+                    [
+                        (event.start, event.end)
+                        for event in self._api.subs.events
+                    ]
+                    + [
+                        # frames, keyframes
+                        (
+                            self._api.video.current_stream.uid
+                            if self._api.video.current_stream
+                            else None
+                        ),
+                        # audio view
+                        self._api.audio.view.view_start,
+                        self._api.audio.view.view_end,
+                        # audio selection
+                        self._api.audio.view.selection_start,
+                        self._api.audio.view.selection_end,
+                        # video position
+                        self._api.playback.current_pts,
+                        # volume
+                        self._api.playback.volume,
+                    ]
+                )
             )
-        )
 
     def eventFilter(
         self, source: QtCore.QObject, event: QtCore.QEvent
@@ -286,14 +293,14 @@ class AudioPreview(BaseLocalAudioWidget):
         self._schedule_current_audio_view()
 
     def _schedule_current_audio_view(self) -> None:
-        stream = self._api.audio.current_stream
-        if not stream:
+        audio_stream = self._api.audio.current_stream
+        if not audio_stream:
             return
 
         self.repaint_if_needed()
         self._spectrum_worker.clear_tasks()
 
-        max_block_idx = stream.sample_count >> DERIVATION_DISTANCE
+        max_block_idx = audio_stream.sample_count >> DERIVATION_DISTANCE
 
         blocks_to_update = set()
         for x in range(self.width() * 2):
@@ -313,7 +320,7 @@ class AudioPreview(BaseLocalAudioWidget):
     def _draw_spectrogram(self, painter: QtGui.QPainter) -> None:
         pixels = self._pixels.transpose()
         zero_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
-        stream = self._api.audio.current_stream
+        audio_stream = self._api.audio.current_stream
 
         cached_blocks = (
             list(self._spectrum_worker.cache.keys())
@@ -323,13 +330,15 @@ class AudioPreview(BaseLocalAudioWidget):
 
         min_pts = self.pts_from_x(0)
         max_pts = self.pts_from_x(self.width() - 1)
-        if stream:
-            min_pts -= stream.delay
-            max_pts -= stream.delay
+        if audio_stream:
+            min_pts -= audio_stream.delay
+            max_pts -= audio_stream.delay
 
         pts_range = np.linspace(min_pts, max_pts, self.width())
         block_idx_range = np.round(
-            pts_range * (stream.sample_rate if stream else 0) / 1000.0
+            pts_range
+            * (audio_stream.sample_rate if audio_stream else 0)
+            / 1000.0
         ).astype(dtype=np.int) // (2 ** DERIVATION_DISTANCE)
 
         for x, block_idx in enumerate(block_idx_range):
@@ -360,9 +369,9 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.restore()
 
     def block_idx_from_x(self, x) -> int:
-        stream = self._api.audio.current_stream
+        audio_stream = self._api.audio.current_stream
         pts = self.pts_from_x(x)
-        pts -= stream.delay if stream else 0
+        pts -= audio_stream.delay if audio_stream else 0
         return (
             int(pts * self._api.audio.current_stream.sample_rate / 1000.0)
             >> DERIVATION_DISTANCE
@@ -372,10 +381,11 @@ class AudioPreview(BaseLocalAudioWidget):
         h = painter.viewport().height()
         color = self._api.gui.get_color("spectrogram/keyframe")
         painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
-        for keyframe in self._api.video.keyframes:
-            timecode = self._api.video.timecodes[keyframe]
-            x = round(self.pts_to_x(timecode))
-            painter.drawLine(x, 0, x, h)
+        if self._api.video.current_stream:
+            for keyframe in self._api.video.current_stream.keyframes:
+                timecode = self._api.video.current_stream.timecodes[keyframe]
+                x = round(self.pts_to_x(timecode))
+                painter.drawLine(x, 0, x, h)
 
     def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
         self._labels[:] = []
@@ -495,7 +505,8 @@ class AudioPreview(BaseLocalAudioWidget):
         if not self._mouse_pos:
             return
         pts = self.pts_from_x(self._mouse_pos.x())
-        pts = self._api.video.align_pts_to_near_frame(pts)
+        if self._api.video.current_stream:
+            pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
         x = round(self.pts_to_x(pts))
 
         painter.setPen(self._mouse_color)
@@ -509,7 +520,10 @@ class AudioPreview(BaseLocalAudioWidget):
 
         if self._mouse_pos:
             pts = self.pts_from_x(self._mouse_pos.x())
-            pts = self._api.video.align_pts_to_near_frame(pts)
+            if self._api.video.current_stream:
+                pts = self._api.video.current_stream.align_pts_to_near_frame(
+                    pts
+                )
             x = self.pts_to_x(pts)
             self.update(x, 0, x, self.height())
 
@@ -517,7 +531,10 @@ class AudioPreview(BaseLocalAudioWidget):
 
         if self._mouse_pos:
             pts = self.pts_from_x(self._mouse_pos.x())
-            pts = self._api.video.align_pts_to_near_frame(pts)
+            if self._api.video.current_stream:
+                pts = self._api.video.current_stream.align_pts_to_near_frame(
+                    pts
+                )
             x = self.pts_to_x(pts)
             self.update(x, 0, x, self.height())
 

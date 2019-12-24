@@ -210,7 +210,9 @@ class PlaybackApi(QtCore.QObject):
             self._audio_api.current_stream.max_time
             if self._audio_api.current_stream
             else 0,
-            self._video_api.max_pts,
+            self._video_api.current_stream.max_pts
+            if self._video_api.current_stream
+            else 0,
         )
 
     @property

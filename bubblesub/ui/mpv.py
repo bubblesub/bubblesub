@@ -23,7 +23,6 @@ from PyQt5 import QtCore, QtOpenGL, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.playback import PlaybackFrontendState
-from bubblesub.api.video import VideoState
 from bubblesub.fmt.ass.writer import write_ass
 from bubblesub.util import ms_to_str
 
@@ -117,11 +116,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         self._timer.start()
 
-    def _on_video_state_change(self, state: VideoState) -> None:
-        if state == VideoState.NotLoaded:
-            self._sync_media()
-        elif state == VideoState.Loading:
-            self._sync_media()
+    def _on_video_state_change(self) -> None:
+        self._sync_media()
         self._need_subs_refresh = True
 
     def _on_audio_state_change(self) -> None:
@@ -131,8 +127,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._mpv.set_property("pause", True)
         self._mpv.command("loadfile", "null://")
         external_files: T.Set[str] = set()
-        if self._api.video.path:
-            external_files.add(str(self._api.video.path))
+        for stream in self._api.video.streams:
+            external_files.add(str(stream.path))
         for stream in self._api.audio.streams:
             external_files.add(str(stream.path))
         self._mpv.set_property("external-files", list(external_files))
@@ -261,8 +257,8 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
             if (
                 track_type == "video"
-                and self._api.video.path
-                and self._api.video.path.samefile(track_path)
+                and self._api.video.current_stream
+                and self._api.video.current_stream.path.samefile(track_path)
             ):
                 vid = track["id"]
 

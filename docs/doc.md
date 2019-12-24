@@ -145,6 +145,9 @@ Usage: `audio‑zoom‑view -d|--delta=…`
 ### <a name="cmd-cycle-audio"></a>`cycle‑audio`
 Switches to the next loaded audio stream.
 
+### <a name="cmd-cycle-video"></a>`cycle‑video`
+Switches to the next loaded video stream.
+
 ### <a name="cmd-file-properties"></a>`file‑properties`
 Opens up the metadata editor dialog.
 
@@ -157,6 +160,9 @@ Usage: `focus‑widget target [-s|--select]`
 
 ### <a name="cmd-list-audio"></a>`list‑audio`
 Lists loaded audio streams in the console.
+
+### <a name="cmd-list-video"></a>`list‑video`
+Lists loaded video streams in the console.
 
 ### <a name="cmd-load-audio"></a>`load‑audio`
 Loads an audio file for audio playback. Prompts user to choose where to load the file from if the path wasn't specified in the command arguments.
@@ -421,6 +427,12 @@ Usage: `sub‑stretch [-t|--target=selected] [--no-align] -s|--start=… -e|--en
 Switches to the chosen loaded audio stream.
 
 Usage: `switch‑audio index`
+* `index`: index of the stream to switch to
+
+### <a name="cmd-switch-video"></a>`switch‑video`
+Switches to the chosen loaded video stream.
+
+Usage: `switch‑video index`
 * `index`: index of the stream to switch to
 
 ### <a name="cmd-undo"></a>`undo`

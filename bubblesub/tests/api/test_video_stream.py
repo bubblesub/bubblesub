@@ -17,18 +17,19 @@
 """Tests for bubblesub.api.video module."""
 
 import typing as T
+from pathlib import Path
 
 import mock
 import numpy as np
 import pytest
 
-from bubblesub.api.video import VideoApi
+from bubblesub.api.video import VideoStream
 
 
 def _test_align_pts_to_frame(
     origin: int,
     expected: int,
-    align_func: T.Callable[[VideoApi], T.Callable[[int], int]],
+    align_func: T.Callable[[VideoStream], T.Callable[[int], int]],
 ) -> None:
     """Test aligning PTS to frames using a few mocked frames.
 
@@ -41,11 +42,13 @@ def _test_align_pts_to_frame(
     subs_api = mock.MagicMock()
 
     with mock.patch(
-        VideoApi.__module__ + "." + VideoApi.__name__ + ".timecodes",
+        VideoStream.__module__ + "." + VideoStream.__name__ + ".timecodes",
         new_callable=mock.PropertyMock,
         return_value=[0, 10, 20],
     ) as video_api_mock:
-        video_api = VideoApi(threading_api, log_api, subs_api)
+        video_api = VideoStream(
+            threading_api, log_api, subs_api, Path("dummy")
+        )
         actual = align_func(video_api)(origin)
         assert actual == expected
 
@@ -189,11 +192,13 @@ def test_frame_idx_from_pts(
     subs_api = mock.MagicMock()
 
     with mock.patch(
-        VideoApi.__module__ + "." + VideoApi.__name__ + ".timecodes",
+        VideoStream.__module__ + "." + VideoStream.__name__ + ".timecodes",
         new_callable=mock.PropertyMock,
         return_value=timecodes,
     ) as video_api_mock:
-        video_api = VideoApi(threading_api, log_api, subs_api)
+        video_api = VideoStream(
+            threading_api, log_api, subs_api, Path("dummy")
+        )
         if isinstance(pts, np.ndarray):
             np.testing.assert_array_equal(
                 video_api.frame_idx_from_pts(pts), expected

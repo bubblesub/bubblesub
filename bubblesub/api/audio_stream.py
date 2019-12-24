@@ -36,7 +36,7 @@ _SAMPLER_LOCK = threading.Lock()
 
 
 def _load_audio_source(
-    log_api: LogApi, uid: uuid.UUID, path: T.Any
+    log_api: LogApi, uid: uuid.UUID, path: Path
 ) -> T.Optional[ffms2.AudioSource]:
     """Create FFMS audio source.
 
@@ -102,7 +102,7 @@ class AudioStream(QtCore.QObject):
         self._sample_count = 0
         self._sample_rate = 0
         self._sample_format = None
-        self._path: Path = Path(path)
+        self._path = path
         self._delay = 0
 
         self._source: T.Union[None, ffms2.AudioSource] = None
@@ -115,7 +115,7 @@ class AudioStream(QtCore.QObject):
 
     @property
     def path(self) -> Path:
-        """Return current audio source path.
+        """Return audio source path.
 
         :return: path
         """

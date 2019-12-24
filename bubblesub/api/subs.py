@@ -48,7 +48,6 @@ class SubtitlesApi(QtCore.QObject):
         """
         super().__init__()
         self._cfg = cfg
-        self._loaded_video_path: T.Optional[Path] = None
         self._selected_indexes: T.List[int] = []
         self._path: T.Optional[Path] = None
 
@@ -84,25 +83,15 @@ class SubtitlesApi(QtCore.QObject):
         return self.ass_file.meta
 
     @property
-    def remembered_video_path(self) -> T.Optional[Path]:
-        """Return path of the associated video file.
+    def remembered_video_paths(self) -> T.Iterable[Path]:
+        """Return path of the associated video files.
 
-        :return: path of the associated video file or None if no video
+        :return: paths of the associated video files or empty list if none
         """
-        path: str = T.cast(str, self.meta.get("Video File", ""))
-        if not path:
-            return None
-        if not self._path:
-            return None
-        return self._path.parent / path
-
-    @remembered_video_path.setter
-    def remembered_video_path(self, path: T.Optional[Path]) -> None:
-        """Set path of the associated video file, updating meta dict.
-
-        :param path: path to the video file
-        """
-        self.meta.update({"Video File": None if path is None else str(path)})
+        for segment in self.meta.get("Video File", "").split("|"):
+            if segment:
+                path = Path(segment)
+                yield self._path.parent / path if self._path else path
 
     @property
     def remembered_audio_paths(self) -> T.Iterable[Path]:
@@ -114,6 +103,18 @@ class SubtitlesApi(QtCore.QObject):
             if segment:
                 path = Path(segment)
                 yield self._path.parent / path if self._path else path
+
+    def remember_video_path_if_needed(self, path: Path) -> None:
+        """Add given path to associated video files if it's not there yet.
+
+        :param path: path to remember
+        """
+        paths = list(self.remembered_video_paths)
+        if not paths or not any(
+            remembered_path.samefile(path) for remembered_path in paths
+        ):
+            paths.append(path)
+            self.meta.update({"Video File": "|".join(map(str, paths))})
 
     def remember_audio_path_if_needed(self, path: Path) -> None:
         """Add given path to associated audio files if it's not there yet.

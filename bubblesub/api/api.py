@@ -66,16 +66,14 @@ class Api:
         self.cmd = bubblesub.api.cmd.CommandApi(self)
 
         self.gui.terminated.connect(self.audio.unload_all_streams)
-        self.gui.terminated.connect(self.video.unload)
+        self.gui.terminated.connect(self.video.unload_all_streams)
         self.gui.terminated.connect(self.cmd.unload)
         self.subs.loaded.connect(self._on_subs_load)
 
     def _on_subs_load(self) -> None:
-        if self.subs.remembered_video_path:
-            self.video.load(self.subs.remembered_video_path)
-        else:
-            self.video.unload()
-
+        self.video.unload_all_streams()
         self.audio.unload_all_streams()
+        for i, path in enumerate(self.subs.remembered_video_paths):
+            self.video.load_stream(path, switch=i == 0)
         for i, path in enumerate(self.subs.remembered_audio_paths):
             self.audio.load_stream(path, switch=i == 0)

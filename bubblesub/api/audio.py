@@ -51,8 +51,8 @@ class AudioApi(AudioApiBaseClass):
         self._log_api = log_api
         self._subs_api = subs_api
 
-    def _stream_loaded(self, stream: AudioStream) -> None:
-        super()._stream_loaded(stream)
+    def _on_stream_load(self, stream: AudioStream) -> None:
+        super()._on_stream_load(stream)
         self._subs_api.remember_audio_path_if_needed(stream.path)
 
     def _create_stream(self, path: Path) -> TStream:

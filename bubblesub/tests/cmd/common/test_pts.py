@@ -257,8 +257,8 @@ def test_frames(
     :param expected_value: expected PTS
     """
     api = MagicMock()
-    api.video.timecodes = frame_times
-    api.video.keyframes = keyframe_indexes
+    api.video.current_stream.timecodes = frame_times
+    api.video.current_stream.keyframes = keyframe_indexes
     if cur_frame_idx is Ellipsis:
         api.playback.current_pts = 0
     else:

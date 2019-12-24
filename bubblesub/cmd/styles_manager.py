@@ -129,8 +129,13 @@ class _StylePreview(QtWidgets.QGroupBox):
 
         fake_style = copy(selected_style)
         fake_style.name = "Default"
-        if self._api.video.is_ready:
-            fake_style.scale(resolution[1] / self._api.video.height)
+        if (
+            self._api.video.current_stream
+            and self._api.video.current_stream.is_ready
+        ):
+            fake_style.scale(
+                resolution[1] / self._api.video.current_stream.height
+            )
         fake_style_list = AssStyleList()
         fake_style_list.append(fake_style)
 
@@ -158,7 +163,12 @@ class _StylePreview(QtWidgets.QGroupBox):
             fake_style_list, fake_event_list, fake_meta, resolution
         )
         subs_image = self._renderer.render(
-            time=0, aspect_ratio=self._api.video.aspect_ratio
+            time=0,
+            aspect_ratio=(
+                self._api.video.current_stream.aspect_ratio
+                if self._api.video.current_stream
+                else 1
+            ),
         )
         image = PIL.Image.composite(subs_image, image, subs_image)
 
