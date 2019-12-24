@@ -99,7 +99,7 @@ class Application:
 
         QtCore.pyqtRemoveInputHook()
 
-        self._app = QtWidgets.QApplication(sys.argv + ["--name", "bubblesub"])
+        self._app = QtWidgets.QApplication(sys.argv)
         self._app.setApplicationName("bubblesub")
         self._loop = quamash.QEventLoop(self._app)
         asyncio.set_event_loop(self._loop)
