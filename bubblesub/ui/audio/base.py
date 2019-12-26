@@ -201,6 +201,8 @@ class BaseAudioWidget(QtWidgets.QWidget):
     def _apply_drag(self, event: QtGui.QMouseEvent) -> None:
         pts = self.pts_from_x(event.x())
 
+        assert self._drag_data
+
         if self._drag_data.mode == DragMode.SelectionStart:
             self._view.select(
                 min(self._view.selection_end, pts), self._view.selection_end
@@ -287,9 +289,9 @@ class BaseLocalAudioWidget(BaseAudioWidget):
         scale = self.width() / max(1, self._view.view_size)
         return (pts - self._view.view_start) * scale
 
-    def pts_from_x(self, x: float) -> float:
+    def pts_from_x(self, x: float) -> int:
         scale = self._view.view_size / self.width()
-        return x * scale + self._view.view_start
+        return int(x * scale + self._view.view_start)
 
 
 class BaseGlobalAudioWidget(BaseAudioWidget):
@@ -297,6 +299,6 @@ class BaseGlobalAudioWidget(BaseAudioWidget):
         scale = T.cast(int, self.width()) / max(1, self._view.size)
         return (pts - self._view.min) * scale
 
-    def pts_from_x(self, x: float) -> float:
+    def pts_from_x(self, x: float) -> int:
         scale = self._view.size / self.width()
         return int(x * scale + self._view.min)

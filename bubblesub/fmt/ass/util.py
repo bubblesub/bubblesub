@@ -22,7 +22,7 @@ from functools import lru_cache
 import ass_tag_parser
 import regex
 
-from bubblesub.spell_check import SpellChecker
+from bubblesub.spell_check import BaseSpellChecker
 
 
 def escape_ass_tag(text: str) -> str:
@@ -98,7 +98,7 @@ def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
 
 @lru_cache(maxsize=500)
 def spell_check_ass_line(
-    spell_checker: SpellChecker, text: str
+    spell_checker: BaseSpellChecker, text: str
 ) -> T.Iterable[T.Tuple[int, int, str]]:
     """Iterate over badly spelled words within an ASS line.
 

@@ -23,14 +23,20 @@ import ctypes
 import ctypes.util
 import typing as T
 
-import bubblesub.fmt.ass
+import bubblesub.fmt.ass.event
+import bubblesub.fmt.ass.style
 
-_libass = ctypes.cdll.LoadLibrary(
-    ctypes.util.find_library("ass") or ctypes.util.find_library("libass")
+_libass_path = ctypes.util.find_library("ass") or ctypes.util.find_library(
+    "libass"
 )
-_libc = ctypes.cdll.LoadLibrary(
-    ctypes.util.find_library("c") or ctypes.util.find_library("msvcrt")
+assert _libass_path, "libass was not found"
+_libass = ctypes.cdll.LoadLibrary(_libass_path)
+
+_libc_path = ctypes.util.find_library("c") or ctypes.util.find_library(
+    "msvcrt"
 )
+assert _libc_path, "libc was not found"
+_libc = ctypes.cdll.LoadLibrary(_libc_path)
 
 
 def _encode_str(text: T.Optional[str]) -> T.Optional[bytes]:
@@ -88,7 +94,7 @@ AssImage._fields_ = [
 
 def _make_libass_setter(
     name: str, types: T.List[T.Any]
-) -> T.Callable[[T.Any], T.Any]:
+) -> T.Callable[[T.Any, T.Any], T.Any]:
     fun = _libass[name]
     fun.argtypes = [ctypes.c_void_p] + types
 

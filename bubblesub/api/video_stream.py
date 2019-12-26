@@ -145,25 +145,33 @@ class VideoStream(QtCore.QObject):
         :param height: optional height to render to
         """
 
-        if not width and not height:
-            width = self.width
-            height = self.height
-        if not width:
-            width = int(self.width * height / self.height)
-        if not height:
-            height = int(self.height * width / self.width)
+        if width and height:
+            grab_width = width
+            grab_height = height
+        elif height:
+            grab_width = int(self.width * height / self.height)
+            grab_height = height
+        elif width:
+            grab_height = int(self.height * width / self.width)
+            grab_width = width
+        else:
+            grab_width = self.width
+            grab_height = self.height
+
+        if grab_width <= 0 or grab_height <= 0:
+            raise ValueError("cannot take a screenshot at negative resolution")
 
         pts = self.align_pts_to_prev_frame(pts)
         idx = self.timecodes.index(pts)
-        frame = self.get_frame(idx, width, height)
-        image = PIL.Image.frombytes("RGB", (width, height), frame)
+        frame = self.get_frame(idx, grab_width, grab_height)
+        image = PIL.Image.frombytes("RGB", (grab_width, grab_height), frame)
 
         if include_subtitles:
             self._ass_renderer.set_source(
                 self._subs_api.styles,
                 self._subs_api.events,
                 self._subs_api.meta,
-                (width, height),
+                (grab_width, grab_height),
             )
             subs_image = self._ass_renderer.render(
                 time=pts, aspect_ratio=self._aspect_ratio

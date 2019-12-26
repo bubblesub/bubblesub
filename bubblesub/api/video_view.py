@@ -64,4 +64,4 @@ class VideoViewApi(QtCore.QObject):
 
     def reset_view(self) -> None:
         """Resets the view to the defaults."""
-        self.zoom = 0
+        self.zoom = fractions.Fraction(0, 1)

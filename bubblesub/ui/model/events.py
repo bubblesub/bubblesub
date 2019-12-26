@@ -16,8 +16,8 @@
 
 import enum
 import typing as T
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from PyQt5 import QtCore, QtGui
 
 from bubblesub.api import Api
@@ -66,9 +66,9 @@ class _Column:
         raise NotImplementedError("not implemented")
 
 
-class _PropertyColumn:
+class _PropertyColumn(_Column):
     def __init__(self, header: str, property_name: str) -> None:
-        self.header = header
+        super().__init__(header)
         self._property_name = property_name
 
     def display(self, sub: AssEvent) -> T.Any:
@@ -148,7 +148,7 @@ class _LongDurationColumn(_IntPropertyColumn):
         return ms_to_str(sub.duration)
 
 
-_COLUMNS = {
+_COLUMNS: T.Dict[AssEventsModelColumn, _Column] = {
     AssEventsModelColumn.Start: _TimePropertyColumn("Start", "start"),
     AssEventsModelColumn.End: _TimePropertyColumn("End", "end"),
     AssEventsModelColumn.AssStyle: _TextPropertyColumn("Style", "style"),

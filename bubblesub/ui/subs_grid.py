@@ -301,8 +301,10 @@ class SubtitlesGrid(QtWidgets.QTableView):
                 self._scheduled_seek = pts
 
     def _execute_scheduled_seek(self) -> None:
-        self._api.playback.seek(self._scheduled_seek)
-        self._scheduled_seek = None
+        pts = self._scheduled_seek
+        if pts is not None:
+            self._api.playback.seek(pts)
+            self._scheduled_seek = None
         self._timer.stop()
 
     def _seek(self, pts: int) -> None:

@@ -26,6 +26,7 @@ from PyQt5 import QtCore
 
 from bubblesub.api.threading import synchronized
 
+# TODO: remove this condition when switching to Python 3.7
 if T.TYPE_CHECKING:
 
     class TStream(T.Protocol):
@@ -40,6 +41,7 @@ if T.TYPE_CHECKING:
 
     BaseStreamsApiTypeHint: T.Any = T.Generic[_TStream]
 else:
+    # Python 3.6 compatibility
     BaseStreamsApiTypeHint = object
     TStream = object
 

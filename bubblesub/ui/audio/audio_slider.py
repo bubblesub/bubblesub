@@ -42,19 +42,17 @@ class AudioSlider(BaseGlobalAudioWidget):
     def _get_paint_cache_key(self) -> int:
         with self._api.video.stream_lock:
             return hash(
-                tuple(
+                (
                     # subtitle rectangles
-                    [
+                    tuple(
                         (event.start, event.end)
                         for event in self._api.subs.events
-                    ]
-                    + [
-                        # audio view
-                        self._api.audio.view.view_start,
-                        self._api.audio.view.view_end,
-                        # video position
-                        self._api.playback.current_pts,
-                    ]
+                    ),
+                    # audio view
+                    self._api.audio.view.view_start,
+                    self._api.audio.view.view_end,
+                    # video position
+                    self._api.playback.current_pts,
                 )
             )
 

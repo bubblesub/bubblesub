@@ -44,7 +44,7 @@ def async_slot(*args):
 
 
 def async_dialog_exec(dialog: QtWidgets.QDialog) -> T.Any:
-    future = asyncio.Future()
+    future: "asyncio.Future" = asyncio.Future()
     dialog.finished.connect(future.set_result)
     dialog.open()
     return future

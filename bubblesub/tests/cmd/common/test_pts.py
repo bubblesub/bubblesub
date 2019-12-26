@@ -24,7 +24,6 @@ import pytest
 
 from bubblesub.api.cmd import CommandError
 from bubblesub.cmd.common import Pts
-from bubblesub.fmt.ass.event import AssEvent, AssEventList
 
 
 def _assert_pts_value(
@@ -41,6 +40,34 @@ def _assert_pts_value(
         actual_value = type(ex)
 
     assert actual_value == expected_value
+
+
+def _mock_subs_api(sub_times, sub_selection) -> MagicMock:
+    events = []
+    for start, end in sub_times:
+        events.append(MagicMock(start=start, end=end))
+    for i, event in enumerate(events):
+        event.prev = events[i - 1] if i > 0 else None
+        event.next = events[i + 1] if i + 1 < len(events) else None
+
+    def _mock_get(idx):
+        try:
+            return events[idx]
+        except IndexError:
+            return None
+
+    def _mock_getitem(cls, idx):
+        return events[idx]
+
+    def _mock_len(cls):
+        return len(events)
+
+    subs_api = MagicMock()
+    subs_api.events.get = _mock_get
+    subs_api.events.__getitem__ = _mock_getitem
+    subs_api.events.__len__ = _mock_len
+    subs_api.selected_events = [events[idx] for idx in sub_selection]
+    return subs_api
 
 
 @pytest.mark.parametrize(
@@ -161,16 +188,8 @@ def test_subtitles(
     :param expected_value: expected PTS
     """
     api = MagicMock()
-    api.subs.events = AssEventList()
-    for start, end in sub_times:
-        api.subs.events.append(AssEvent(start=start, end=end))
-    for i, event in enumerate(api.subs.events):
-        event.prev = api.subs.events[i - 1] if i > 0 else None
-        try:
-            event.next = api.subs.events[i + 1]
-        except LookupError:
-            event.next = None
-    api.subs.selected_events = [api.subs.events[idx] for idx in sub_selection]
+    api.subs = _mock_subs_api(sub_times, sub_selection)
+
     pts = Pts(api, expr)
 
     _assert_pts_value(pts, expected_value)
@@ -293,7 +312,7 @@ def test_audio_selection(
     "expr,view,expected_value", [("av.s", (1, 2), 1), ("av.e", (1, 2), 2)]
 )
 def test_audio_view(
-    expr: str, view: T.Optional[T.Tuple[int, int]], expected_value: int
+    expr: str, view: T.Tuple[int, int], expected_value: int
 ) -> None:
     """Test spectrogram viewport magic strings.
 

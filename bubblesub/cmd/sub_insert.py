@@ -54,6 +54,8 @@ class SubtitleInsertCommand(BaseCommand):
             self.api.subs.selected_indexes = [idx]
 
     def _insert_before(self, indexes: T.List[int]) -> T.Tuple[int, int, int]:
+        cur_sub: T.Optional[AssEvent]
+        prev_sub: T.Optional[AssEvent]
         if indexes:
             idx = indexes[0]
             cur_sub = self.api.subs.events[idx]
@@ -70,6 +72,8 @@ class SubtitleInsertCommand(BaseCommand):
         return idx, start, end
 
     def _insert_after(self, indexes: T.List[int]) -> T.Tuple[int, int, int]:
+        cur_sub: T.Optional[AssEvent]
+        next_sub: T.Optional[AssEvent]
         if indexes:
             idx = indexes[-1]
             cur_sub = self.api.subs.events[idx]

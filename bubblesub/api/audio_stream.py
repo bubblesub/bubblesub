@@ -101,7 +101,7 @@ class AudioStream(QtCore.QObject):
         self._bits_per_sample = 0
         self._sample_count = 0
         self._sample_rate = 0
-        self._sample_format = None
+        self._sample_format: T.Optional[int] = None
         self._path = path
         self._delay = 0
 
@@ -250,9 +250,11 @@ class AudioStream(QtCore.QObject):
         if samples.dtype.name in ("float32", "float64"):
             samples = (samples * (1 << 31)).astype(np.int32)
 
-        ctx = nullcontext(path_or_handle)
+        ctx: T.ContextManager[T.IO[bytes]]
         if isinstance(path_or_handle, Path):
             ctx = path_or_handle.open("wb")
+        else:
+            ctx = nullcontext(path_or_handle)
 
         with ctx as handle:
             write_wav(handle, self.sample_rate, samples)
@@ -277,19 +279,17 @@ class AudioStream(QtCore.QObject):
             return
 
         self._min_time = round(
-            T.cast(float, self._source.properties.FirstTime) * 1000
+            T.cast(float, source.properties.FirstTime) * 1000
         )
         self._max_time = round(
-            T.cast(float, self._source.properties.LastTime) * 1000
+            T.cast(float, source.properties.LastTime) * 1000
         )
-        self._channel_count = T.cast(int, self._source.properties.Channels)
-        self._bits_per_sample = T.cast(
-            int, self._source.properties.BitsPerSample
-        )
-        self._sample_count = T.cast(int, self._source.properties.NumSamples)
-        self._sample_rate = T.cast(int, self._source.properties.SampleRate)
+        self._channel_count = T.cast(int, source.properties.Channels)
+        self._bits_per_sample = T.cast(int, source.properties.BitsPerSample)
+        self._sample_count = T.cast(int, source.properties.NumSamples)
+        self._sample_rate = T.cast(int, source.properties.SampleRate)
         self._sample_format = T.cast(
-            T.Optional[int], self._source.properties.SampleFormat
+            T.Optional[int], source.properties.SampleFormat
         )
         self.loaded.emit()
 

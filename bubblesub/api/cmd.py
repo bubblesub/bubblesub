@@ -23,10 +23,10 @@ interesting, complex ways.
 import abc
 import argparse
 import asyncio
-import importlib
 import io
 import time
 import traceback
+import types
 import typing as T
 from pathlib import Path
 
@@ -35,7 +35,6 @@ from PyQt5 import QtCore
 
 import bubblesub.api  # pylint: disable=unused-import
 from bubblesub.cfg.menu import MenuItem
-from bubblesub.model import classproperty
 
 
 class CommandError(RuntimeError):
@@ -135,6 +134,13 @@ class BaseCommand(abc.ABC):
     """Base class for all commands."""
 
     silent = False
+    """Whether to echo the command invocation."""
+
+    names: T.List[str] = NotImplemented
+    """Command names. Must be globally unique and should be human readable."""
+
+    help_text: str = NotImplemented
+    """Command description shown in help."""
 
     def __init__(
         self,
@@ -151,29 +157,6 @@ class BaseCommand(abc.ABC):
         self.api = api
         self.args = args
         self.invocation = invocation
-
-    @classproperty
-    @abc.abstractproperty
-    def names(  # pylint: disable=no-self-argument
-        cls: T.Type["BaseCommand"]
-    ) -> T.List[str]:
-        """Return command names.
-
-        Must be globally unique and should be human readable.
-
-        :param cls: type inheriting from BaseCommand
-        :return: command names
-        """
-        raise NotImplementedError("command has no name")
-
-    @classproperty
-    @abc.abstractproperty
-    def help_text(self) -> str:
-        """Return command description shown in help.
-
-        :return: description
-        """
-        raise NotImplementedError("command has no help text")
 
     @property
     def is_enabled(self) -> bool:
@@ -369,31 +352,22 @@ class CommandApi(QtCore.QObject):
                 self._load_module(mod)
         self._plugin_sources[identifier] = plugin_source
 
-    def _load_module(self, mod: importlib.types.ModuleType) -> None:
+    def _load_module(self, mod: types.ModuleType) -> None:
         # commands
-        try:
-            commands = mod.COMMANDS
-        except AttributeError:
-            pass
-        else:
-            for cls in commands:
-                for name in cls.names:
-                    self._api.log.debug(f"registering {cls} as {name}")
-                    self._cmd_registry[name] = cls
+        commands = getattr(mod, "COMMANDS", [])
+        for cls in commands:
+            for name in cls.names:
+                self._api.log.debug(f"registering {cls} as {name}")
+                self._cmd_registry[name] = cls
 
         # menu
-        try:
-            menu = mod.MENU
-        except AttributeError:
-            pass
-        else:
-            self._plugin_menu += menu
+        menu = getattr(mod, "MENU", [])
+        self._plugin_menu += menu
 
         # load hook
-        try:
-            mod.on_load(self._api)
-        except AttributeError:
-            pass
+        cb = getattr(mod, "on_load", None)
+        if cb:
+            cb(self._api)
 
         self._plugin_modules.append(mod)
 

@@ -67,7 +67,7 @@ def _info_section_handler(
         key, value = line.split(":", 1)
         ass_file.meta.set(key, value.lstrip())
     except ValueError:
-        ass_file.meta.set(line, None)
+        ass_file.meta.set(line, "")
 
 
 def _styles_section_handler(

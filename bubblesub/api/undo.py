@@ -135,7 +135,7 @@ class UndoApi:
         """
         self._cfg = cfg
         self._subs_api = subs_api
-        self._stack: T.List[T.Optional[UndoState]] = []
+        self._stack: T.List[UndoState] = []
         self._stack_pos = -1
         self._dirty = False
         self._capture_nesting = 0

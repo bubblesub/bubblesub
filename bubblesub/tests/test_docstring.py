@@ -37,7 +37,9 @@ IGNORED_ARGUMENTS = {
 }
 
 
-def get_nodes() -> T.Iterable[T.Tuple[Path, ast.AST, str]]:
+def get_nodes() -> T.Iterable[
+    T.Tuple[Path, T.Union[ast.FunctionDef, ast.ClassDef, ast.Module], str]
+]:
     """List AST nodes and their docstrings.
 
     :return: generator of (path, node, docstring) tuples
@@ -171,7 +173,7 @@ def test_docstrings_validity(
     ),
 )
 def test_function_docstrings_validity(
-    path: Path, node: ast.AST, docstring: str
+    path: Path, node: ast.FunctionDef, docstring: str
 ) -> None:
     """Test whether functions have valid docstrings.
 

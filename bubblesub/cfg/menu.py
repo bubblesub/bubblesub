@@ -154,7 +154,9 @@ class MenuConfig(SubConfig):
                 if not last_line:
                     break
 
-                current_depth = len(re.search("^ *", last_line).group(0))
+                match = re.search("^ *", last_line)
+                assert match
+                current_depth = len(match.group(0))
                 if current_depth <= parent_depth:
                     break
 

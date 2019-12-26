@@ -14,18 +14,39 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Spell checker class.
+"""Spell checker utilities."""
 
-Loads lazily first spell checker available.
-DummySpellChecker is always available.
-"""
+import typing as T
 
-from .common import DictNotFound, SpellCheckerError, SpellCheckerNotFound
+from .common import (
+    BaseSpellChecker,
+    DictNotFound,
+    SpellCheckerError,
+    SpellCheckerNotFound,
+)
 
-try:
-    from .enchant import EnchantSpellChecker as SpellChecker
-except ImportError:
+
+def create_spell_checker(language: str) -> BaseSpellChecker:
+    """Create a new spell checker instance.
+
+    If no spell checker libraries are installed in the system, raises
+    SpellCheckerNotFound.
+
+    :param language: language to check spelling with
+    :return: a spell checker instance
+    """
     try:
-        from .pyspellchecker import PySpellCheckerSpellChecker as SpellChecker
+        from .enchant import EnchantSpellChecker
+
+        return EnchantSpellChecker(language)
     except ImportError:
-        from .dummy import DummySpellChecker as SpellChecker
+        pass
+
+    try:
+        from .pyspellchecker import PySpellCheckerSpellChecker
+
+        return PySpellCheckerSpellChecker(language)
+    except ImportError:
+        pass
+
+    raise SpellCheckerNotFound

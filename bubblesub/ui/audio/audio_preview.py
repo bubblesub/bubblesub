@@ -23,7 +23,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from sortedcontainers import SortedDict
 
 from bubblesub.api import Api
-from bubblesub.api.audio import AudioApi
 from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.threading import QueueWorker
 from bubblesub.fmt.ass.event import AssEvent
@@ -47,7 +46,7 @@ class SpectrumWorkerSignals(QtCore.QObject):
 
 
 class SpectrumWorker(QueueWorker):
-    def __init__(self, api: AudioApi) -> None:
+    def __init__(self, api: Api) -> None:
         super().__init__(api.log)
         self.signals = SpectrumWorkerSignals()
         self._api = api
@@ -187,30 +186,28 @@ class AudioPreview(BaseLocalAudioWidget):
     def _get_paint_cache_key(self) -> int:
         with self._api.video.stream_lock:
             return hash(
-                tuple(
+                (
                     # subtitle rectangles
-                    [
+                    tuple(
                         (event.start, event.end)
                         for event in self._api.subs.events
-                    ]
-                    + [
-                        # frames, keyframes
-                        (
-                            self._api.video.current_stream.uid
-                            if self._api.video.current_stream
-                            else None
-                        ),
-                        # audio view
-                        self._api.audio.view.view_start,
-                        self._api.audio.view.view_end,
-                        # audio selection
-                        self._api.audio.view.selection_start,
-                        self._api.audio.view.selection_end,
-                        # video position
-                        self._api.playback.current_pts,
-                        # volume
-                        self._api.playback.volume,
-                    ]
+                    ),
+                    # frames, keyframes
+                    (
+                        self._api.video.current_stream.uid
+                        if self._api.video.current_stream
+                        else None
+                    ),
+                    # audio view
+                    self._api.audio.view.view_start,
+                    self._api.audio.view.view_end,
+                    # audio selection
+                    self._api.audio.view.selection_start,
+                    self._api.audio.view.selection_end,
+                    # video position
+                    self._api.playback.current_pts,
+                    # volume
+                    self._api.playback.volume,
                 )
             )
 
@@ -257,7 +254,11 @@ class AudioPreview(BaseLocalAudioWidget):
                         label.x1 <= event.x() <= label.x2
                         and label.y1 <= event.y() <= label.y2
                     ):
-                        self._api.subs.selected_indexes = [label.event.index]
+                        self._api.subs.selected_indexes = (
+                            [label.event.index]
+                            if label.event.index is not None
+                            else []
+                        )
                         break
                 else:
                     self.begin_drag_mode(DragMode.SelectionStart, event)

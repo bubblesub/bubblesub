@@ -20,7 +20,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.fmt.ass.util import spell_check_ass_line
-from bubblesub.spell_check import SpellChecker, SpellCheckerError
+from bubblesub.spell_check import (
+    BaseSpellChecker,
+    SpellCheckerError,
+    create_spell_checker,
+)
 from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
 from bubblesub.ui.time_edit import TimeEdit
 from bubblesub.ui.util import (
@@ -48,7 +52,9 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
         )
         try:
             self._spell_checker = (
-                SpellChecker(spell_check_lang) if spell_check_lang else None
+                create_spell_checker(spell_check_lang)
+                if spell_check_lang
+                else None
             )
         except SpellCheckerError as ex:
             self._spell_checker = None

@@ -41,7 +41,7 @@ class SubtitlesDeleteCommand(BaseCommand):
             )
 
             self.api.subs.selected_indexes = [
-                sub.index for sub in new_selection
+                sub.index for sub in new_selection if sub.index is not None
             ]
             for start_idx, count in make_ranges(indexes, reverse=True):
                 self.api.subs.events.remove(start_idx, count)

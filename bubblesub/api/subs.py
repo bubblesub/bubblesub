@@ -88,7 +88,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: paths of the associated video files or empty list if none
         """
-        for segment in self.meta.get("Video File", "").split("|"):
+        for segment in (self.meta.get("Video File") or "").split("|"):
             if segment:
                 path = Path(segment)
                 yield self._path.parent / path if self._path else path
@@ -99,7 +99,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: paths of the associated audio files or empty list if none
         """
-        for segment in self.meta.get("Audio File", "").split("|"):
+        for segment in (self.meta.get("Audio File") or "").split("|"):
             if segment:
                 path = Path(segment)
                 yield self._path.parent / path if self._path else path
@@ -134,7 +134,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: language
         """
-        return T.cast(str, self.meta.get("Language", "")) or None
+        return T.cast(str, self.meta.get("Language") or "") or None
 
     @language.setter
     def language(self, language: T.Optional[str]) -> None:
@@ -142,7 +142,10 @@ class SubtitlesApi(QtCore.QObject):
 
         :param language: language
         """
-        self.meta.update({"Language": language or None})
+        if language:
+            self.meta.set("Language", language)
+        else:
+            self.meta.remove("Language")
 
     @property
     def path(self) -> T.Optional[Path]:

@@ -21,7 +21,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.fmt.ass.util import spell_check_ass_line
-from bubblesub.spell_check import SpellChecker, SpellCheckerError
+from bubblesub.spell_check import (
+    BaseSpellChecker,
+    SpellCheckerError,
+    create_spell_checker,
+)
 from bubblesub.ui.util import (
     Dialog,
     async_dialog_exec,
@@ -37,7 +41,7 @@ class _SpellCheckDialog(Dialog):
         self,
         api: Api,
         main_window: QtWidgets.QMainWindow,
-        spell_checker: SpellChecker,
+        spell_checker: BaseSpellChecker,
     ) -> None:
         super().__init__(main_window)
         self._main_window = main_window
@@ -189,12 +193,12 @@ class SpellCheckCommand(BaseCommand):
             return
 
         try:
-            dictionary = SpellChecker(spell_check_lang)
+            spell_checker = create_spell_checker(spell_check_lang)
         except SpellCheckerError as ex:
             await show_error(ucfirst(str(ex)) + ".", main_window)
             return
 
-        dialog = _SpellCheckDialog(self.api, main_window, dictionary)
+        dialog = _SpellCheckDialog(self.api, main_window, spell_checker)
         if await dialog.next():
             await async_dialog_exec(dialog)
 

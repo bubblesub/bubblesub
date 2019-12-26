@@ -66,9 +66,13 @@ class AssRenderer:
         self._track = self._ctx.make_track()
         self._track.populate(style_list, event_list)
 
-        self._track.play_res_x = int(meta.get("PlayResX", video_resolution[0]))
-        self._track.play_res_y = int(meta.get("PlayResY", video_resolution[1]))
-        self._track.wrap_style = int(meta.get("WrapStyle", 1))
+        self._track.play_res_x = int(
+            meta.get("PlayResX") or video_resolution[0]
+        )
+        self._track.play_res_y = int(
+            meta.get("PlayResY") or video_resolution[1]
+        )
+        self._track.wrap_style = int(meta.get("WrapStyle") or 1)
         self._track.scaled_border_and_shadow = (
             meta.get("ScaledBorderAndShadow", "yes") == "yes"
         )

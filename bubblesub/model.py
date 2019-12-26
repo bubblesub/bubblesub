@@ -20,40 +20,7 @@ import typing as T
 
 from PyQt5 import QtCore
 
-from bubblesub.util import make_ranges
-
 TItem = T.TypeVar("TItem")  # pylint: disable=invalid-name
-
-
-class classproperty(property):
-    """Combine @property and @classmethod.
-
-    >>> class foo:
-    ...     @classproperty
-    ...     def number(cls):
-    ...         return 5
-    ...
-    >>> foo.number
-    5
-    """
-
-    def __init__(self, func: T.Callable[[type], TItem]) -> None:
-        """Initialize self.
-
-        :param func: getter function, which accepts class type as
-            its only argument
-        """
-        super().__init__()
-        self.func = func
-
-    def __get__(self, cls: object, owner: type) -> TItem:
-        """Invoke the getter function.
-
-        :param cls: (unused)
-        :param owner: parent object
-        :return: getter's result
-        """
-        return self.func(owner)
 
 
 class ObservableObject:

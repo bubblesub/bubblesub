@@ -20,6 +20,7 @@ import re
 import typing as T
 
 from bubblesub.api import Api
+from bubblesub.api.cmd import BaseCommand
 from bubblesub.tests.common import api  # pylint: disable=unused-import
 
 
@@ -93,3 +94,24 @@ def test_command_naming(  # pylint: disable=redefined-outer-name
     assert len(api.cmd.get_all()) >= 1
     for cls in api.cmd.get_all():
         verify_name(cls.__name__, cls.names[0])
+
+    api.cmd.unload()
+
+
+def test_commands_have_names(  # pylint: disable=redefined-outer-name
+    api: Api
+) -> None:
+    """Checks that commands have names.
+
+    :param api: core API
+    """
+    api.cmd.reload_commands()
+
+    assert len(api.cmd.get_all()) >= 1
+    classes = BaseCommand.__subclasses__()
+    assert len(classes) >= 1
+    for cls in classes:
+        assert isinstance(cls.names, list)
+        assert len(cls.names) > 0
+
+    api.cmd.unload()
