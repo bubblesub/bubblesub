@@ -397,3 +397,7 @@ def build_splitter(
         splitter.addWidget(widget)
         splitter.setStretchFactor(i, stretch_factor)
     return splitter
+
+
+def get_icon(name: str) -> QtGui.QIcon:
+    return QtGui.QIcon(str(ROOT_DIR / f"icon-{name}.png"))

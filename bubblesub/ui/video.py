@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import enum
+import fractions
+import typing as T
 from math import floor
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -26,22 +29,126 @@ from bubblesub.api.playback import (
     MIN_VOLUME,
 )
 from bubblesub.ui.mpv import MpvWidget
+from bubblesub.ui.util import get_icon
 
 
-class _VideoPreview(MpvWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+class VideoInteractionMode(enum.IntEnum):
+    Zoom = 1
+    Pan = 2
+
+
+class VideoController(QtCore.QObject):
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+        super().__init__(parent)
+        self._api = api
+
+        self.mode: T.Optional[VideoInteractionMode] = None
+
+    def on_wheel_turn(self, x: float, y: float) -> None:
+        if self.mode == VideoInteractionMode.Zoom:
+            self._api.video.view.zoom += y / 15 / 100
+        elif self.mode == VideoInteractionMode.Pan:
+            self._api.video.view.pan_x += x / 15 / 100
+            self._api.video.view.pan_y += y / 15 / 100
+
+
+class VideoPreview(MpvWidget):
+    def __init__(
+        self, api: Api, controller: VideoController, parent: QtWidgets.QWidget
+    ) -> None:
         super().__init__(api, parent)
+        self._controller = controller
 
     def sizeHint(self) -> QtCore.QSize:
         return QtCore.QSize(400, 300)
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        multiplier = 1 if event.angleDelta().y() > 0 else -1
-        self._api.video.view.zoom += multiplier * 0.1
+        self._controller.on_wheel_turn(
+            event.angleDelta().x(), event.angleDelta().y()
+        )
 
 
-class _VideoButtons(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+class VideoModeButtons(QtWidgets.QToolBar):
+    def __init__(
+        self, api: Api, controller: VideoController, parent: QtWidgets.QWidget
+    ) -> None:
+        super().__init__(parent)
+        self._api = api
+        self._controller = controller
+
+        self.setOrientation(QtCore.Qt.Vertical)
+
+        self._btn_group = QtWidgets.QButtonGroup(self)
+        self._btn_group.setExclusive(True)
+        self._btn_group.buttonToggled.connect(self._on_mode_btn_toggle)
+
+        self._add_action_btn(
+            "reset", "Reset video view", self._on_reset_btn_click
+        )
+        self._add_mode_btn("zoom-in", "Zoom video", VideoInteractionMode.Zoom)
+        self._add_mode_btn("move", "Pan video", VideoInteractionMode.Pan)
+
+    def _add_action_btn(
+        self, icon_name: str, tooltip: str, callback: T.Callable[[], T.Any]
+    ) -> None:
+        btn = QtWidgets.QToolButton(self)
+        btn.setToolTip(tooltip)
+        btn.setIcon(get_icon(icon_name))
+        btn.pressed.connect(self._reset_mode)
+        btn.pressed.connect(callback)
+        self.addWidget(btn)
+
+    def _add_mode_btn(
+        self, icon_name: str, tooltip: str, mode: VideoInteractionMode
+    ) -> None:
+        btn = QtWidgets.QToolButton(self)
+        btn.setToolTip(tooltip)
+        btn.setIcon(get_icon(icon_name))
+        btn.setProperty("mode", mode)
+        btn.setCheckable(True)
+        btn.pressed.connect(self._on_mode_btn_press)
+        btn.released.connect(self._on_mode_btn_release)
+        self.addWidget(btn)
+        self._btn_group.addButton(btn)
+
+    def _on_mode_btn_press(self):
+        btn = self.sender()
+        checked_btn = self._btn_group.checkedButton()
+        if checked_btn is not None and checked_btn == btn:
+            self._btn_group.setExclusive(False)
+
+    def _on_mode_btn_release(self):
+        btn = self.sender()
+        if self._btn_group.exclusive() is False:
+            btn.setChecked(False)
+            self._btn_group.setExclusive(True)
+
+    def _on_mode_btn_toggle(
+        self, btn: QtWidgets.QToolButton, checked: bool
+    ) -> None:
+        if checked:
+            mode: VideoInteractionMode = btn.property("mode")
+            self._controller.mode = mode
+        else:
+            self._controller.mode = None
+
+    def _reset_mode(self) -> None:
+        btn = self._btn_group.button(self._btn_group.checkedId())
+        if btn is not None:
+            self._btn_group.setExclusive(False)
+            btn.setChecked(False)
+            self._btn_group.setExclusive(True)
+
+    def _on_reset_btn_click(self) -> None:
+        self._api.video.view.zoom = fractions.Fraction(0, 1)
+        self._api.video.view.pan = (
+            fractions.Fraction(0, 1),
+            fractions.Fraction(0, 1),
+        )
+
+
+class VideoPlaybackButtons(QtWidgets.QWidget):
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._api = api
 
@@ -145,8 +252,8 @@ class _VideoButtons(QtWidgets.QWidget):
         ] = self._sync_video_pos_checkbox.isChecked()
 
 
-class _VideoVolumeControl(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+class VideoVolumeControl(QtWidgets.QWidget):
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._api = api
 
@@ -214,20 +321,25 @@ class _VideoVolumeControl(QtWidgets.QWidget):
 
 
 class Video(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
-        self._api = api
+        self._controller = VideoController(api, self)
 
-        self._video_preview = _VideoPreview(api, self)
-        self._volume_control = _VideoVolumeControl(api, self)
-        self._buttons = _VideoButtons(api, self)
+        self._video_preview = VideoPreview(api, self._controller, self)
+        self._volume_control = VideoVolumeControl(api, self)
+        self._mode_btns = VideoModeButtons(api, self._controller, self)
+        self._playback_btns = VideoPlaybackButtons(api, self)
+
+        left_layout = QtWidgets.QVBoxLayout()
+        left_layout.addWidget(self._mode_btns)
+        left_layout.addWidget(self._volume_control)
 
         right_layout = QtWidgets.QVBoxLayout()
         right_layout.addWidget(self._video_preview)
-        right_layout.addWidget(self._buttons)
+        right_layout.addWidget(self._playback_btns)
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setSpacing(4)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._volume_control)
+        layout.addLayout(left_layout)
         layout.addLayout(right_layout)
