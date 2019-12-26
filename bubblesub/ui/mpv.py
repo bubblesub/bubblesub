@@ -234,15 +234,25 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._mpv.set_property("pause", self._api.playback.is_paused)
 
     def _on_video_zoom_change(self) -> None:
-        self._mpv.set_property("video-zoom", float(self._api.video.view.zoom))
+        # ignore errors coming from setting extreme values
+        try:
+            self._mpv.set_property(
+                "video-zoom", float(self._api.video.view.zoom)
+            )
+        except mpv.MPVError:
+            pass
 
     def _on_video_pan_change(self) -> None:
-        self._mpv.set_property(
-            "video-pan-x", float(self._api.video.view.pan_x)
-        )
-        self._mpv.set_property(
-            "video-pan-y", float(self._api.video.view.pan_y)
-        )
+        # ignore errors coming from setting extreme values
+        try:
+            self._mpv.set_property(
+                "video-pan-x", float(self._api.video.view.pan_x)
+            )
+            self._mpv.set_property(
+                "video-pan-y", float(self._api.video.view.pan_y)
+            )
+        except mpv.MPVError:
+            pass
 
     def _on_subs_change(self) -> None:
         self._need_subs_refresh = True
