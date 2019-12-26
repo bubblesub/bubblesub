@@ -444,6 +444,13 @@ Unloads currently loaded audio file.
 ### <a name="cmd-unload-video"></a>`unload‑video`
 Unloads currently loaded video file.
 
+### <a name="cmd-video-pan"></a>`video‑pan`
+Pans the video to specific position.
+
+Usage: `video‑pan expr_x expr_y`
+* `expr_x`: expr to calculate new pan x position
+* `expr_y`: expr to calculate new pan y position
+
 ### <a name="cmd-video-zoom"></a>`video‑zoom`
 Zooms the video in or out by the specified factor.
 

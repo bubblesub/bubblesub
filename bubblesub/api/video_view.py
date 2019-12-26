@@ -28,6 +28,7 @@ class VideoViewApi(QtCore.QObject):
     """API for video preview."""
 
     zoom_changed = QtCore.pyqtSignal()
+    pan_changed = QtCore.pyqtSignal()
 
     def __init__(self, subs_api: SubtitlesApi) -> None:
         """Initialize self.
@@ -37,6 +38,7 @@ class VideoViewApi(QtCore.QObject):
         super().__init__()
 
         self._zoom = fractions.Fraction(0, 1)
+        self._pan = (fractions.Fraction(0, 1), fractions.Fraction(0, 1))
 
         subs_api.loaded.connect(self.reset_view)
 
@@ -62,6 +64,59 @@ class VideoViewApi(QtCore.QObject):
             self._zoom = value
             self.zoom_changed.emit()
 
+    @property
+    def pan(self) -> T.Tuple[fractions.Fraction, fractions.Fraction]:
+        """Return pan.
+
+        :return: pan
+        """
+        return self._pan
+
+    @pan.setter
+    def pan(
+        self, value: T.Tuple[fractions.Fraction, fractions.Fraction]
+    ) -> None:
+        """Set new pan.
+
+        :param value: new pan
+        """
+        if value != self._pan:
+            self._pan = value
+            self.pan_changed.emit()
+
+    @property
+    def pan_x(self) -> fractions.Fraction:
+        """Return x pan position.
+
+        :return: x pan position
+        """
+        return self._pan[0]
+
+    @pan_x.setter
+    def pan_x(self, value: fractions.Fraction) -> None:
+        """Set new x pan position.
+
+        :param value: new x pan position
+        """
+        self.pan = (value, self.pan[1])
+
+    @property
+    def pan_y(self) -> fractions.Fraction:
+        """Return y pan position.
+
+        :return: y pan position
+        """
+        return self._pan[1]
+
+    @pan_y.setter
+    def pan_y(self, value: fractions.Fraction) -> None:
+        """Set new y pan position.
+
+        :param value: new y pan position
+        """
+        self.pan = (self.pan[0], value)
+
     def reset_view(self) -> None:
         """Resets the view to the defaults."""
         self.zoom = fractions.Fraction(0, 1)
+        self.pan = (fractions.Fraction(0, 1), fractions.Fraction(0, 1))

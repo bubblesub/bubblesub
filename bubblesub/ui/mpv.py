@@ -116,6 +116,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         api.playback.mute_changed.connect(self._on_mute_change)
         api.playback.pause_changed.connect(self._on_pause_change)
         api.video.view.zoom_changed.connect(self._on_video_zoom_change)
+        api.video.view.pan_changed.connect(self._on_video_pan_change)
         self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
         api.gui.terminated.connect(self.shutdown)
         self._schedule_update.connect(self.update)
@@ -234,6 +235,14 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
     def _on_video_zoom_change(self) -> None:
         self._mpv.set_property("video-zoom", float(self._api.video.view.zoom))
+
+    def _on_video_pan_change(self) -> None:
+        self._mpv.set_property(
+            "video-pan-x", float(self._api.video.view.pan_x)
+        )
+        self._mpv.set_property(
+            "video-pan-y", float(self._api.video.view.pan_y)
+        )
 
     def _on_subs_change(self) -> None:
         self._need_subs_refresh = True
