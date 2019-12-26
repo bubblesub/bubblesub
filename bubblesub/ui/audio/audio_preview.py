@@ -24,7 +24,6 @@ from sortedcontainers import SortedDict
 
 from bubblesub.api import Api
 from bubblesub.api.audio import AudioApi, AudioState
-from bubblesub.api.log import LogApi
 from bubblesub.api.threading import QueueWorker
 from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
@@ -277,7 +276,7 @@ class AudioPreview(BaseLocalAudioWidget):
 
     def _on_volume_change(self) -> None:
         if self._spectrum_worker:
-            self._spectrum_worker.cache = {}
+            self._spectrum_worker.cache.clear()
         self._schedule_current_audio_view()
 
     def _on_audio_view_change(self) -> None:
