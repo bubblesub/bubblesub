@@ -152,13 +152,9 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
         super().__init__(parent)
         self._api = api
 
-        self._play_btn = QtWidgets.QPushButton("Play", self)
-        self._play_btn.setIcon(get_icon("play"))
-        self._play_btn.setCheckable(True)
-
-        self._pause_btn = QtWidgets.QPushButton("Pause", self)
-        self._pause_btn.setIcon(get_icon("pause"))
-        self._pause_btn.setCheckable(True)
+        self._play_pause_btn = QtWidgets.QPushButton("Play", self)
+        self._play_pause_btn.setIcon(get_icon("play"))
+        self._play_pause_btn.setCheckable(True)
 
         self._sync_video_pos_checkbox = QtWidgets.QCheckBox(
             "Seek to selected subtitles", self
@@ -174,8 +170,7 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
 
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self._play_btn)
-        layout.addWidget(self._pause_btn)
+        layout.addWidget(self._play_pause_btn)
         layout.addStretch()
         layout.addWidget(self._sync_video_pos_checkbox)
         layout.addWidget(QtWidgets.QLabel("Playback speed:", self))
@@ -196,8 +191,7 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
         self._on_video_playback_speed_change()
 
     def _connect_ui_signals(self) -> None:
-        self._play_btn.clicked.connect(self._on_play_btn_click)
-        self._pause_btn.clicked.connect(self._on_pause_btn_click)
+        self._play_pause_btn.toggled.connect(self._on_play_pause_btn_toggle)
         self._playback_speed_spinbox.valueChanged.connect(
             self._on_playback_speed_spinbox_change
         )
@@ -206,8 +200,7 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
         )
 
     def _disconnect_ui_signals(self) -> None:
-        self._play_btn.clicked.disconnect(self._on_play_btn_click)
-        self._pause_btn.clicked.disconnect(self._on_pause_btn_click)
+        self._play_pause_btn.toggled.disconnect(self._on_play_pause_btn_toggle)
         self._playback_speed_spinbox.valueChanged.disconnect(
             self._on_playback_speed_spinbox_change
         )
@@ -215,12 +208,8 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
             self._on_sync_video_pos_checkbox_click
         )
 
-    def _on_play_btn_click(self) -> None:
-        self._api.playback.is_paused = False
-        self._on_video_pause_change()
-
-    def _on_pause_btn_click(self) -> None:
-        self._api.playback.is_paused = True
+    def _on_play_pause_btn_toggle(self, checked: bool) -> None:
+        self._api.playback.is_paused = not checked
         self._on_video_pause_change()
 
     def _on_playback_speed_spinbox_change(self) -> None:
@@ -231,8 +220,13 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
 
     def _on_video_pause_change(self) -> None:
         self._disconnect_ui_signals()
-        self._play_btn.setChecked(not self._api.playback.is_paused)
-        self._pause_btn.setChecked(self._api.playback.is_paused)
+        self._play_pause_btn.setChecked(not self._api.playback.is_paused)
+        self._play_pause_btn.setText(
+            "Paused" if self._api.playback.is_paused else "Playing"
+        )
+        self._play_pause_btn.setIcon(
+            get_icon("pause" if self._api.playback.is_paused else "play")
+        )
         self._connect_ui_signals()
 
     def _on_video_playback_speed_change(self) -> None:
