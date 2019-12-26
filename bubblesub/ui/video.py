@@ -153,15 +153,11 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
         self._api = api
 
         self._play_btn = QtWidgets.QPushButton("Play", self)
-        self._play_btn.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.SP_MediaPlay)
-        )
+        self._play_btn.setIcon(get_icon("play"))
         self._play_btn.setCheckable(True)
 
         self._pause_btn = QtWidgets.QPushButton("Pause", self)
-        self._pause_btn.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.SP_MediaPause)
-        )
+        self._pause_btn.setIcon(get_icon("pause"))
         self._pause_btn.setCheckable(True)
 
         self._sync_video_pos_checkbox = QtWidgets.QCheckBox(
@@ -311,11 +307,7 @@ class VideoVolumeControl(QtWidgets.QWidget):
         self._disconnect_ui_signals()
         self._mute_btn.setChecked(self._api.playback.is_muted)
         self._mute_btn.setIcon(
-            self.style().standardIcon(
-                QtWidgets.QStyle.SP_MediaVolumeMuted
-                if self._mute_btn.isChecked()
-                else QtWidgets.QStyle.SP_MediaVolume
-            )
+            get_icon("muted" if self._mute_btn.isChecked() else "unmuted")
         )
         self._connect_ui_signals()
 
