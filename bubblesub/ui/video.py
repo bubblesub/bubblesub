@@ -314,9 +314,9 @@ class VideoMouseModeController(QtCore.QObject):
         self.mouse_pos_calc = MousePosCalculator(api)
         self._api = api
 
-        self._dragging = False
+        self._dragging: T.Optional[QtCore.Qt.MouseButton] = None
         self._mode: T.Optional[VideoInteractionMode] = None
-        self._mode_handlers = {
+        self._handlers = {
             cls.mode: cls(api, self.mouse_pos_calc)
             for cls in VideoMouseHandler.__subclasses__()
         }
@@ -333,7 +333,7 @@ class VideoMouseModeController(QtCore.QObject):
 
     @property
     def current_handler(self) -> T.Optional[VideoMouseHandler]:
-        return None if self._mode is None else self._mode_handlers[self._mode]
+        return None if self._mode is None else self._handlers[self._mode]
 
     def on_wheel_turn(self, event: QtGui.QWheelEvent) -> None:
         if event.modifiers() & PAN_X_MODIFIER:
@@ -344,21 +344,26 @@ class VideoMouseModeController(QtCore.QObject):
             self._api.video.view.zoom += event.angleDelta().y() / 15 / 100
 
     def on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
-        if event.button() == QtCore.Qt.LeftButton:
-            self._dragging = True
-            if self.current_handler:
-                self.current_handler.on_drag_start(event)
-                self.current_handler.on_drag_move(event)
+        self._dragging = event.button()
+        if event.button() == QtCore.Qt.LeftButton and self.current_handler:
+            self.current_handler.on_drag_start(event)
+            self.current_handler.on_drag_move(event)
+        if self._dragging == QtCore.Qt.RightButton:
+            self._handlers[VideoInteractionMode.Pan].on_drag_start(event)
+            self._handlers[VideoInteractionMode.Pan].on_drag_move(event)
 
     def on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
-        if self._dragging and self.current_handler:
+        if self._dragging == QtCore.Qt.LeftButton and self.current_handler:
             self.current_handler.on_drag_move(event)
+        if self._dragging == QtCore.Qt.RightButton:
+            self._handlers[VideoInteractionMode.Pan].on_drag_move(event)
 
     def on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
-        if self._dragging:
-            self._dragging = False
-            if self.current_handler:
-                self.current_handler.on_drag_release(event)
+        if self._dragging == QtCore.Qt.LeftButton and self.current_handler:
+            self.current_handler.on_drag_release(event)
+        if self._dragging == QtCore.Qt.RightButton:
+            self._handlers[VideoInteractionMode.Pan].on_drag_release(event)
+        self._dragging = None
 
 
 class VideoPreview(MpvWidget):
