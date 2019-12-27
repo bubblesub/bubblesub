@@ -180,6 +180,7 @@ class PanModeHandler(BaseModeHandler):
 
 class SubMoveModeHandler(BaseModeHandler):
     mode = VideoInteractionMode.SubMove
+    regex = re.compile(r"\\pos\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
     def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
         super()._on_mouse_press(event)
@@ -196,8 +197,19 @@ class SubMoveModeHandler(BaseModeHandler):
             return
         for sub in sel:
             text = sub.text
-            text = re.sub(r"\\pos\(-?[0-9\.]+,-?[0-9\.]+\)", "", text)
-            text = f"{{\\pos({video_pos.x():.2f},{video_pos.y():.2f})}}" + text
+
+            match = self.regex.search(text)
+            sub_x = float(match.group("x")) if match else 0.0
+            sub_y = float(match.group("y")) if match else 0.0
+            new_x = video_pos.x()
+            new_y = video_pos.y()
+            if event.modifiers() & QtCore.Qt.ControlModifier:
+                new_y = sub_y
+            elif event.modifiers() & QtCore.Qt.ShiftModifier:
+                new_x = sub_x
+
+            text = self.regex.sub("", text)
+            text = f"{{\\pos({new_x:.2f},{new_y:.2f})}}" + text
             text = re.sub("}{", "", text)
             text = re.sub("{}", "", text)
             sub.text = text
