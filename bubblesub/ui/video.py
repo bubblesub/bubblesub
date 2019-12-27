@@ -132,16 +132,18 @@ class ZoomVideoMouseHandler(VideoMouseHandler):
     def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
         super().__init__(api, mouse_pos_calc)
         self._initial_zoom = 0.0
-        self._start_display_pos = QtCore.QPointF(0, 0)
+        self._initial_display_pos = QtCore.QPointF(0, 0)
 
     def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._initial_zoom = self._api.video.view.zoom
-        self._start_display_pos = self._mouse_pos_calc.get_display_pos(event)
+        self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
 
     def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         display_pos = self._mouse_pos_calc.get_display_pos(event)
         self._api.video.view.zoom = (
-            self._initial_zoom + display_pos.x() - self._start_display_pos.x()
+            self._initial_zoom
+            + display_pos.x()
+            - self._initial_display_pos.x()
         )
 
     def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
@@ -155,20 +157,24 @@ class PanVideoMouseHandler(VideoMouseHandler):
         super().__init__(api, mouse_pos_calc)
         self._initial_pan_x = 0.0
         self._initial_pan_y = 0.0
-        self._start_display_pos = QtCore.QPointF(0, 0)
+        self._initial_display_pos = QtCore.QPointF(0, 0)
 
     def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._initial_pan_x = self._api.video.view.pan_x
         self._initial_pan_y = self._api.video.view.pan_y
-        self._start_display_pos = self._mouse_pos_calc.get_display_pos(event)
+        self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
 
     def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         display_pos = self._mouse_pos_calc.get_display_pos(event)
         self._api.video.view.pan_x = (
-            self._initial_pan_x + display_pos.x() - self._start_display_pos.x()
+            self._initial_pan_x
+            + display_pos.x()
+            - self._initial_display_pos.x()
         )
         self._api.video.view.pan_y = (
-            self._initial_pan_y + display_pos.y() - self._start_display_pos.y()
+            self._initial_pan_y
+            + display_pos.y()
+            - self._initial_display_pos.y()
         )
 
     def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
@@ -223,7 +229,7 @@ class SubRotateMouseHandler(VideoMouseHandler):
     def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
         super().__init__(api, mouse_pos_calc)
         self._initial_angle = 0.0
-        self._start_display_pos = QtCore.QPointF(0, 0)
+        self._initial_display_pos = QtCore.QPointF(0, 0)
 
     def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.begin_capture()
@@ -236,7 +242,7 @@ class SubRotateMouseHandler(VideoMouseHandler):
             if match:
                 self._initial_angle = float(match.group("value"))
 
-        self._start_display_pos = self._mouse_pos_calc.get_display_pos(event)
+        self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
 
     def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.end_capture()
@@ -249,7 +255,7 @@ class SubRotateMouseHandler(VideoMouseHandler):
         display_pos = self._mouse_pos_calc.get_display_pos(event)
         angle = (
             self._initial_angle
-            + (display_pos.x() - self._start_display_pos.x()) * 360
+            + (display_pos.x() - self._initial_display_pos.x()) * 360
         )
         for sub in sel:
             text = sub.text
@@ -284,7 +290,7 @@ class SubShearVideoMouseHandler(VideoMouseHandler):
         super().__init__(api, mouse_pos_calc)
         self._initial_value_x = 0.0
         self._initial_value_y = 0.0
-        self._start_display_pos = QtCore.QPointF(0, 0)
+        self._initial_display_pos = QtCore.QPointF(0, 0)
 
     def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.begin_capture()
@@ -300,7 +306,7 @@ class SubShearVideoMouseHandler(VideoMouseHandler):
             if match:
                 self._initial_value_y = float(match.group("value"))
 
-        self._start_display_pos = self._mouse_pos_calc.get_display_pos(event)
+        self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
 
     def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.end_capture()
@@ -312,11 +318,11 @@ class SubShearVideoMouseHandler(VideoMouseHandler):
         display_pos = self._mouse_pos_calc.get_display_pos(event)
         value_x = (
             self._initial_value_x
-            + (display_pos.x() - self._start_display_pos.x()) * 4
+            + (display_pos.x() - self._initial_display_pos.x()) * 4
         )
         value_y = (
             self._initial_value_y
-            + (display_pos.y() - self._start_display_pos.y()) * 4
+            + (display_pos.y() - self._initial_display_pos.y()) * 4
         )
 
         for sub in sel:
