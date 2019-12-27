@@ -39,6 +39,7 @@ class VideoInteractionMode(enum.IntEnum):
     Zoom = 1
     Pan = 2
     SubMove = 3
+    SubRotate = 4
 
 
 class BaseModeHandler:
@@ -193,6 +194,30 @@ class SubMoveModeHandler(BaseModeHandler):
                 sub.text = text
 
 
+class SubRotateModeHandler(BaseModeHandler):
+    mode = VideoInteractionMode.SubRotate
+
+    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+        sel = self._api.subs.selected_events
+        if not sel:
+            return
+        axis = "z"
+        if event.modifiers() & QtCore.Qt.ShiftModifier:
+            axis = "y"
+        elif event.modifiers() & QtCore.Qt.ControlModifier:
+            axis = "x"
+        display_pos = self._get_mouse_display_pos(event)
+        angle = (display_pos.x() - 0.5) * 360
+        with self._api.undo.capture():
+            for sub in sel:
+                text = sub.text
+                text = re.sub(rf"\\fr{axis}-?[0-9\.]+", "", text)
+                text = f"{{\\fr{axis}{angle:.1f}}}" + text
+                text = re.sub("}{", "", text)
+                text = re.sub("{}", "", text)
+                sub.text = text
+
+
 class VideoController(QtCore.QObject):
     mode_changed = QtCore.pyqtSignal(object)
 
@@ -280,6 +305,11 @@ class VideoModeButtons(QtWidgets.QToolBar):
 
         self._add_mode_btn(
             "sub-move", "Move selected subtitles", VideoInteractionMode.SubMove
+        )
+        self._add_mode_btn(
+            "sub-rotate",
+            "Rotate selected subtitles",
+            VideoInteractionMode.SubRotate,
         )
 
     def _add_action_btn(
