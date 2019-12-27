@@ -52,7 +52,7 @@ def ass_to_plaintext(text: str) -> str:
     """
     try:
         ass_line = ass_tag_parser.parse_ass(text)
-    except ass_tag_parser.ParseError as ex:
+    except ass_tag_parser.ParseError:
         ret = str(regex.sub("{[^}]*}", "", text))
     else:
         ret = ""

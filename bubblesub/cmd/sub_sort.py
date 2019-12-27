@@ -14,12 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import argparse
-from copy import copy
-
-from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand, CommandUnavailable
-from bubblesub.cmd.common import Pts, SubtitlesSelection
+from bubblesub.api.cmd import BaseCommand
 
 
 class SubtitlesSortCommand(BaseCommand):

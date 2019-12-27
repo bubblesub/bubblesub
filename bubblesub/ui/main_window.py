@@ -16,7 +16,6 @@
 
 import asyncio
 import enum
-import typing as T
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 

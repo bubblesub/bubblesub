@@ -20,11 +20,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.fmt.ass.util import spell_check_ass_line
-from bubblesub.spell_check import (
-    BaseSpellChecker,
-    SpellCheckerError,
-    create_spell_checker,
-)
+from bubblesub.spell_check import SpellCheckerError, create_spell_checker
 from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
 from bubblesub.ui.time_edit import TimeEdit
 from bubblesub.ui.util import (

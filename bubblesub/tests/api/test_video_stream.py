@@ -45,11 +45,9 @@ def _test_align_pts_to_frame(
         VideoStream.__module__ + "." + VideoStream.__name__ + ".timecodes",
         new_callable=mock.PropertyMock,
         return_value=[0, 10, 20],
-    ) as video_api_mock:
-        video_api = VideoStream(
-            threading_api, log_api, subs_api, Path("dummy")
-        )
-        actual = align_func(video_api)(origin)
+    ):
+        stream = VideoStream(threading_api, log_api, subs_api, Path("dummy"))
+        actual = align_func(stream)(origin)
         assert actual == expected
 
 
@@ -76,7 +74,7 @@ def test_align_pts_to_prev_frame(origin: int, expected: int) -> None:
     :param expected: expected PTS
     """
     _test_align_pts_to_frame(
-        origin, expected, lambda video_api: video_api.align_pts_to_prev_frame
+        origin, expected, lambda stream: stream.align_pts_to_prev_frame
     )
 
 
@@ -103,7 +101,7 @@ def test_align_pts_to_next_frame(origin: int, expected: int) -> None:
     :param expected: expected PTS
     """
     _test_align_pts_to_frame(
-        origin, expected, lambda video_api: video_api.align_pts_to_next_frame
+        origin, expected, lambda stream: stream.align_pts_to_next_frame
     )
 
 
@@ -134,7 +132,7 @@ def test_align_pts_to_near_frame(origin: int, expected: int) -> None:
     :param expected: expected PTS
     """
     _test_align_pts_to_frame(
-        origin, expected, lambda video_api: video_api.align_pts_to_near_frame
+        origin, expected, lambda stream: stream.align_pts_to_near_frame
     )
 
 
@@ -195,13 +193,11 @@ def test_frame_idx_from_pts(
         VideoStream.__module__ + "." + VideoStream.__name__ + ".timecodes",
         new_callable=mock.PropertyMock,
         return_value=timecodes,
-    ) as video_api_mock:
-        video_api = VideoStream(
-            threading_api, log_api, subs_api, Path("dummy")
-        )
+    ):
+        stream = VideoStream(threading_api, log_api, subs_api, Path("dummy"))
         if isinstance(pts, np.ndarray):
             np.testing.assert_array_equal(
-                video_api.frame_idx_from_pts(pts), expected
+                stream.frame_idx_from_pts(pts), expected
             )
         else:
-            assert video_api.frame_idx_from_pts(pts) == expected
+            assert stream.frame_idx_from_pts(pts) == expected
