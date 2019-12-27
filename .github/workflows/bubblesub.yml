@@ -3,6 +3,23 @@ name: bubblesub
 on: [push, pull_request]
 
 jobs:
+  style:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Update packages
+      run: sudo apt-get update
+    - name: Install Python3 packages
+      run: sudo apt-get install python3-setuptools python3-wheel
+    - name: Install black and isort
+      run: sudo pip3 install black isort
+    - name: Run black
+      run: black --check --diff .
+    - name: Run isort
+      run: isort -rc --diff .
+
   build:
 
     runs-on: ubuntu-latest
