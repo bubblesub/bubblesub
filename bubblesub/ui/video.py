@@ -16,6 +16,7 @@
 
 import enum
 import fractions
+import re
 import typing as T
 from math import floor
 
@@ -37,6 +38,7 @@ EPSILON = 1e-7
 class VideoInteractionMode(enum.IntEnum):
     Zoom = 1
     Pan = 2
+    SubMove = 3
 
 
 class BaseModeHandler:
@@ -60,6 +62,7 @@ class BaseModeHandler:
         self._start_video_pos = video_pos
         self._dragging = True
         self._on_mouse_press(display_pos, video_pos)
+        self._on_mouse_move(display_pos, video_pos)
 
     def on_mouse_move(
         self,
@@ -153,6 +156,30 @@ class PanModeHandler(BaseModeHandler):
         self._api.video.view.pan_y = (
             self._initial_pan_y + display_pos.y() - self._start_display_pos.y()
         )
+
+
+class SubMoveModeHandler(BaseModeHandler):
+    mode = VideoInteractionMode.SubMove
+
+    def _on_mouse_move(
+        self,
+        display_pos: QtCore.QPointF,
+        video_pos: T.Optional[QtCore.QPointF],
+    ) -> None:
+        sel = self._api.subs.selected_events
+        if not sel or not video_pos:
+            return
+        with self._api.undo.capture():
+            for sub in sel:
+                text = sub.text
+                text = re.sub(r"\\pos\(-?[0-9\.]+,-?[0-9\.]+\)", "", text)
+                text = (
+                    f"{{\\pos({video_pos.x():.2f},{video_pos.y():.2f})}}"
+                    + text
+                )
+                text = re.sub("}{", "", text)
+                text = re.sub("{}", "", text)
+                sub.text = text
 
 
 class VideoController(QtCore.QObject):
@@ -297,6 +324,12 @@ class VideoModeButtons(QtWidgets.QToolBar):
         )
         self._add_mode_btn("zoom-in", "Zoom video", VideoInteractionMode.Zoom)
         self._add_mode_btn("move", "Pan video", VideoInteractionMode.Pan)
+
+        self.addSeparator()
+
+        self._add_mode_btn(
+            "sub-move", "Move selected subtitles", VideoInteractionMode.SubMove
+        )
 
     def _add_action_btn(
         self, icon_name: str, tooltip: str, callback: T.Callable[[], T.Any]
