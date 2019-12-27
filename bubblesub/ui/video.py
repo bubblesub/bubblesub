@@ -70,11 +70,15 @@ class BaseModeHandler:
 
     def on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
         self._dragging = False
+        self._on_mouse_release(event)
 
     def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
         pass
 
     def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+        pass
+
+    def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
         pass
 
     def _get_mouse_display_pos(
@@ -177,26 +181,38 @@ class PanModeHandler(BaseModeHandler):
 class SubMoveModeHandler(BaseModeHandler):
     mode = VideoInteractionMode.SubMove
 
+    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
+        super()._on_mouse_press(event)
+        self._api.undo.begin_capture()
+
+    def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
+        super()._on_mouse_release(event)
+        self._api.undo.end_capture()
+
     def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
         video_pos = self._get_mouse_video_pos(event)
         if not sel or not video_pos:
             return
-        with self._api.undo.capture():
-            for sub in sel:
-                text = sub.text
-                text = re.sub(r"\\pos\(-?[0-9\.]+,-?[0-9\.]+\)", "", text)
-                text = (
-                    f"{{\\pos({video_pos.x():.2f},{video_pos.y():.2f})}}"
-                    + text
-                )
-                text = re.sub("}{", "", text)
-                text = re.sub("{}", "", text)
-                sub.text = text
+        for sub in sel:
+            text = sub.text
+            text = re.sub(r"\\pos\(-?[0-9\.]+,-?[0-9\.]+\)", "", text)
+            text = f"{{\\pos({video_pos.x():.2f},{video_pos.y():.2f})}}" + text
+            text = re.sub("}{", "", text)
+            text = re.sub("{}", "", text)
+            sub.text = text
 
 
 class SubRotateModeHandler(BaseModeHandler):
     mode = VideoInteractionMode.SubRotate
+
+    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
+        super()._on_mouse_press(event)
+        self._api.undo.begin_capture()
+
+    def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
+        super()._on_mouse_release(event)
+        self._api.undo.end_capture()
 
     def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
@@ -209,18 +225,25 @@ class SubRotateModeHandler(BaseModeHandler):
             axis = "x"
         display_pos = self._get_mouse_display_pos(event)
         angle = (display_pos.x() - 0.5) * 360
-        with self._api.undo.capture():
-            for sub in sel:
-                text = sub.text
-                text = re.sub(rf"\\fr{axis}-?[0-9\.]+", "", text)
-                text = f"{{\\fr{axis}{angle:.1f}}}" + text
-                text = re.sub("}{", "", text)
-                text = re.sub("{}", "", text)
-                sub.text = text
+        for sub in sel:
+            text = sub.text
+            text = re.sub(rf"\\fr{axis}-?[0-9\.]+", "", text)
+            text = f"{{\\fr{axis}{angle:.1f}}}" + text
+            text = re.sub("}{", "", text)
+            text = re.sub("{}", "", text)
+            sub.text = text
 
 
 class SubShearModeHandler(BaseModeHandler):
     mode = VideoInteractionMode.SubShear
+
+    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
+        super()._on_mouse_press(event)
+        self._api.undo.begin_capture()
+
+    def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
+        super()._on_mouse_release(event)
+        self._api.undo.end_capture()
 
     def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
@@ -234,14 +257,13 @@ class SubShearModeHandler(BaseModeHandler):
             axis = "y"
         display_pos = self._get_mouse_display_pos(event)
         value = (display_pos.x() - 0.5) * 4
-        with self._api.undo.capture():
-            for sub in sel:
-                text = sub.text
-                text = re.sub(rf"\\fa{axis}-?[0-9\.]+", "", text)
-                text = f"{{\\fa{axis}{value:.2f}}}" + text
-                text = re.sub("}{", "", text)
-                text = re.sub("{}", "", text)
-                sub.text = text
+        for sub in sel:
+            text = sub.text
+            text = re.sub(rf"\\fa{axis}-?[0-9\.]+", "", text)
+            text = f"{{\\fa{axis}{value:.2f}}}" + text
+            text = re.sub("}{", "", text)
+            text = re.sub("{}", "", text)
+            sub.text = text
 
 
 class VideoController(QtCore.QObject):
