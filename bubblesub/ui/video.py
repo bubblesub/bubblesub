@@ -40,6 +40,7 @@ class VideoInteractionMode(enum.IntEnum):
     Pan = 2
     SubMove = 3
     SubRotate = 4
+    SubShear = 5
 
 
 class BaseModeHandler:
@@ -218,6 +219,31 @@ class SubRotateModeHandler(BaseModeHandler):
                 sub.text = text
 
 
+class SubShearModeHandler(BaseModeHandler):
+    mode = VideoInteractionMode.SubShear
+
+    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+        sel = self._api.subs.selected_events
+        if not sel:
+            return
+        axis = "x"
+        if (
+            event.modifiers() & QtCore.Qt.ShiftModifier
+            or event.modifiers() & QtCore.Qt.ControlModifier
+        ):
+            axis = "y"
+        display_pos = self._get_mouse_display_pos(event)
+        value = (display_pos.x() - 0.5) * 4
+        with self._api.undo.capture():
+            for sub in sel:
+                text = sub.text
+                text = re.sub(rf"\\fa{axis}-?[0-9\.]+", "", text)
+                text = f"{{\\fa{axis}{value:.2f}}}" + text
+                text = re.sub("}{", "", text)
+                text = re.sub("{}", "", text)
+                sub.text = text
+
+
 class VideoController(QtCore.QObject):
     mode_changed = QtCore.pyqtSignal(object)
 
@@ -310,6 +336,11 @@ class VideoModeButtons(QtWidgets.QToolBar):
             "sub-rotate",
             "Rotate selected subtitles",
             VideoInteractionMode.SubRotate,
+        )
+        self._add_mode_btn(
+            "sub-shear",
+            "Shear selected subtitles",
+            VideoInteractionMode.SubShear,
         )
 
     def _add_action_btn(
