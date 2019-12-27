@@ -436,9 +436,10 @@ class _SearchDialog(Dialog):
         )
 
     def _update_replacement_enabled(self) -> None:
-        selection_start, selection_end = (
-            self._handler.get_selection_from_widget()
-        )
+        (
+            selection_start,
+            selection_end,
+        ) = self._handler.get_selection_from_widget()
         self.replace_sel_btn.setEnabled(selection_start != selection_end)
 
     def _push_search_history(self) -> None:

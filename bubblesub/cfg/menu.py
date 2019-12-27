@@ -186,7 +186,7 @@ class MenuConfig(SubConfig):
         return self._menu[context]
 
     def __iter__(
-        self
+        self,
     ) -> T.Iterator[T.Tuple[MenuContext, T.MutableSequence[MenuItem]]]:
         """Let users iterate directly over this config.
 

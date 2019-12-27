@@ -83,7 +83,7 @@ def verify_name(cls_name: str, cmd_name: str) -> None:
 
 
 def test_command_naming(  # pylint: disable=redefined-outer-name
-    api: Api
+    api: Api,
 ) -> None:
     """Checks class names for accordance with the command names they define.
 
@@ -99,7 +99,7 @@ def test_command_naming(  # pylint: disable=redefined-outer-name
 
 
 def test_commands_have_names(  # pylint: disable=redefined-outer-name
-    api: Api
+    api: Api,
 ) -> None:
     """Checks that commands have names.
 

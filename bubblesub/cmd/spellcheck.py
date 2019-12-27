@@ -130,7 +130,7 @@ class _SpellCheckDialog(Dialog):
         return True
 
     def _iter_to_next_mispelt_match(
-        self
+        self,
     ) -> T.Optional[T.Tuple[int, int, int, str]]:
         cursor = self.text_edit.textCursor()
         while self._lines_to_spellcheck:
