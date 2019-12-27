@@ -62,25 +62,27 @@ class BaseModeHandler:
     def on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
         self._start_display_pos = self._get_mouse_display_pos(event)
         self._start_video_pos = self._get_mouse_video_pos(event)
-        self._dragging = True
-        self._on_mouse_press(event)
-        self._on_mouse_move(event)
+        if event.button() == QtCore.Qt.LeftButton:
+            self._dragging = True
+            self._on_drag_start(event)
+            self._on_drag_move(event)
 
     def on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
         if self._dragging:
-            self._on_mouse_move(event)
+            self._on_drag_move(event)
 
     def on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
-        self._dragging = False
-        self._on_mouse_release(event)
+        if self._dragging:
+            self._dragging = False
+            self._on_drag_release(event)
 
-    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
+    def _on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         pass
 
-    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+    def _on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         pass
 
-    def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
+    def _on_drag_release(self, event: QtGui.QMouseEvent) -> None:
         pass
 
     def _get_mouse_display_pos(
@@ -142,11 +144,10 @@ class ZoomModeHandler(BaseModeHandler):
     def on_wheel_turn(self, event: QtGui.QWheelEvent) -> None:
         self._api.video.view.zoom += event.angleDelta().y() / 15 / 100
 
-    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
-        super()._on_mouse_press(event)
+    def _on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._initial_zoom = self._api.video.view.zoom
 
-    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+    def _on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         display_pos = self._get_mouse_display_pos(event)
         self._api.video.view.zoom = (
             self._initial_zoom + display_pos.x() - self._start_display_pos.x()
@@ -165,12 +166,11 @@ class PanModeHandler(BaseModeHandler):
         self._api.video.view.pan_x += event.angleDelta().x() / 15 / 100
         self._api.video.view.pan_y += event.angleDelta().y() / 15 / 100
 
-    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
-        super()._on_mouse_press(event)
+    def _on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._initial_pan_x = self._api.video.view.pan_x
         self._initial_pan_y = self._api.video.view.pan_y
 
-    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+    def _on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         display_pos = self._get_mouse_display_pos(event)
         self._api.video.view.pan_x = (
             self._initial_pan_x + display_pos.x() - self._start_display_pos.x()
@@ -184,15 +184,13 @@ class SubMoveModeHandler(BaseModeHandler):
     mode = VideoInteractionMode.SubMove
     regex = re.compile(r"\\pos\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
-    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
-        super()._on_mouse_press(event)
+    def _on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.begin_capture()
 
-    def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
-        super()._on_mouse_release(event)
+    def _on_drag_release(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.end_capture()
 
-    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+    def _on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
         video_pos = self._get_mouse_video_pos(event)
         if not sel or not video_pos:
@@ -224,8 +222,7 @@ class SubRotateModeHandler(BaseModeHandler):
         super().__init__(api)
         self._initial_angle = 0.0
 
-    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
-        super()._on_mouse_press(event)
+    def _on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.begin_capture()
 
         self._initial_angle = 0.0
@@ -236,11 +233,10 @@ class SubRotateModeHandler(BaseModeHandler):
             if match:
                 self._initial_angle = float(match.group("value"))
 
-    def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
-        super()._on_mouse_release(event)
+    def _on_drag_release(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.end_capture()
 
-    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+    def _on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
         if not sel:
             return
@@ -277,8 +273,7 @@ class SubShearModeHandler(BaseModeHandler):
         self._initial_value_x = 0.0
         self._initial_value_y = 0.0
 
-    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
-        super()._on_mouse_press(event)
+    def _on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.begin_capture()
 
         self._initial_value_x = 0.0
@@ -292,11 +287,10 @@ class SubShearModeHandler(BaseModeHandler):
             if match:
                 self._initial_value_y = float(match.group("value"))
 
-    def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
-        super()._on_mouse_release(event)
+    def _on_drag_release(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.end_capture()
 
-    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+    def _on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
         if not sel:
             return
