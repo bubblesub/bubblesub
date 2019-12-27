@@ -49,51 +49,79 @@ class BaseModeHandler:
         self._dragging = False
         self._start_display_pos: QtCore.QPointF
         self._start_video_pos: QtCore.QPointF
+        self.display_width = 1
+        self.display_height = 1
 
-    def on_wheel_turn(self, x: float, y: float) -> None:
+    def on_wheel_turn(self, event: QtGui.QWheelEvent) -> None:
         pass
 
-    def on_mouse_press(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
-        self._start_display_pos = display_pos
-        self._start_video_pos = video_pos
+    def on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
+        self._start_display_pos = self._get_mouse_display_pos(event)
+        self._start_video_pos = self._get_mouse_video_pos(event)
         self._dragging = True
-        self._on_mouse_press(display_pos, video_pos)
-        self._on_mouse_move(display_pos, video_pos)
+        self._on_mouse_press(event)
+        self._on_mouse_move(event)
 
-    def on_mouse_move(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
-        if not self._dragging:
-            return
+    def on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+        if self._dragging:
+            self._on_mouse_move(event)
 
-        self._on_mouse_move(display_pos, video_pos)
-
-    def on_mouse_release(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
+    def on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
         self._dragging = False
 
-    def _on_mouse_press(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
+    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
         pass
 
-    def _on_mouse_move(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
+    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
         pass
+
+    def _get_mouse_display_pos(
+        self, event: QtGui.QMouseEvent
+    ) -> QtCore.QPointF:
+        return QtCore.QPointF(
+            event.pos().x() / self.display_width,
+            event.pos().y() / self.display_height,
+        )
+
+    def _get_mouse_video_pos(
+        self, event: QtGui.QMouseEvent
+    ) -> T.Optional[QtCore.QPointF]:
+        if not self._api.video.current_stream:
+            return None
+
+        zoom = self._api.video.view.zoom
+        pan_x = self._api.video.view.pan_x
+        pan_y = self._api.video.view.pan_y
+
+        display_w = self.display_width
+        display_h = self.display_height
+        display_ar = display_w / display_h
+        video_w = self._api.video.current_stream.width
+        video_h = self._api.video.current_stream.height
+        video_ar = video_w / video_h
+
+        if display_ar > video_ar:
+            scale = display_h / video_h
+        else:
+            scale = display_w / video_w
+
+        # coordinates of the video frame
+        scaled_video_w = video_w * scale
+        scaled_video_h = video_h * scale
+        scaled_video_w *= 2 ** zoom
+        scaled_video_h *= 2 ** zoom
+        scaled_video_x = (display_w - scaled_video_w) / 2
+        scaled_video_y = (display_h - scaled_video_h) / 2
+        scaled_video_x += pan_x * scaled_video_w
+        scaled_video_y += pan_y * scaled_video_h
+
+        if scaled_video_w < EPSILON or scaled_video_h < EPSILON:
+            return None
+
+        return QtCore.QPointF(
+            (event.pos().x() - scaled_video_x) * video_w / scaled_video_w,
+            (event.pos().y() - scaled_video_y) * video_h / scaled_video_h,
+        )
 
 
 class ZoomModeHandler(BaseModeHandler):
@@ -103,22 +131,15 @@ class ZoomModeHandler(BaseModeHandler):
         super().__init__(api)
         self._initial_zoom = 0.0
 
-    def on_wheel_turn(self, x: float, y: float) -> None:
-        self._api.video.view.zoom += y / 15 / 100
+    def on_wheel_turn(self, event: QtGui.QWheelEvent) -> None:
+        self._api.video.view.zoom += event.angleDelta().y() / 15 / 100
 
-    def _on_mouse_press(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
-        super()._on_mouse_press(display_pos, video_pos)
+    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
+        super()._on_mouse_press(event)
         self._initial_zoom = self._api.video.view.zoom
 
-    def _on_mouse_move(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
+    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+        display_pos = self._get_mouse_display_pos(event)
         self._api.video.view.zoom = (
             self._initial_zoom + display_pos.x() - self._start_display_pos.x()
         )
@@ -132,24 +153,17 @@ class PanModeHandler(BaseModeHandler):
         self._initial_pan_x = 0.0
         self._initial_pan_y = 0.0
 
-    def on_wheel_turn(self, x: float, y: float) -> None:
-        self._api.video.view.pan_x += x / 15 / 100
-        self._api.video.view.pan_y += y / 15 / 100
+    def on_wheel_turn(self, event: QtGui.QWheelEvent) -> None:
+        self._api.video.view.pan_x += event.angleDelta().x() / 15 / 100
+        self._api.video.view.pan_y += event.angleDelta().y() / 15 / 100
 
-    def _on_mouse_press(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
-        super()._on_mouse_press(display_pos, video_pos)
+    def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
+        super()._on_mouse_press(event)
         self._initial_pan_x = self._api.video.view.pan_x
         self._initial_pan_y = self._api.video.view.pan_y
 
-    def _on_mouse_move(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
+    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
+        display_pos = self._get_mouse_display_pos(event)
         self._api.video.view.pan_x = (
             self._initial_pan_x + display_pos.x() - self._start_display_pos.x()
         )
@@ -161,12 +175,9 @@ class PanModeHandler(BaseModeHandler):
 class SubMoveModeHandler(BaseModeHandler):
     mode = VideoInteractionMode.SubMove
 
-    def _on_mouse_move(
-        self,
-        display_pos: QtCore.QPointF,
-        video_pos: T.Optional[QtCore.QPointF],
-    ) -> None:
+    def _on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
+        video_pos = self._get_mouse_video_pos(event)
         if not sel or not video_pos:
             return
         with self._api.undo.capture():
@@ -187,6 +198,8 @@ class VideoController(QtCore.QObject):
 
     def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
+        self.display_width = 0
+        self.display_height = 0
         self._mode: T.Optional[VideoInteractionMode] = None
         self._mode_handlers = {
             cls.mode: cls(api) for cls in BaseModeHandler.__subclasses__()
@@ -220,89 +233,27 @@ class VideoPreview(MpvWidget):
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if self._controller.current_handler:
-            self._controller.current_handler.on_wheel_turn(
-                event.angleDelta().x(), event.angleDelta().y()
-            )
+            self._controller.current_handler.on_wheel_turn(event)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if self._controller.current_handler:
-            self._controller.current_handler.on_mouse_press(
-                *self._get_mouse_args(event)
-            )
+            self._controller.current_handler.on_mouse_press(event)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         if self._controller.current_handler:
-            self._controller.current_handler.on_mouse_move(
-                *self._get_mouse_args(event)
-            )
+            self._controller.current_handler.on_mouse_move(event)
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         if self._controller.current_handler:
-            self._controller.current_handler.on_mouse_release(
-                *self._get_mouse_args(event)
-            )
-
-    def _get_mouse_args(
-        self, event: QtGui.QMouseEvent
-    ) -> T.Tuple[QtCore.QPointF, T.Optional[QtCore.QPointF]]:
-        mouse_display_pos = event.pos()
-
-        # mouse position in video coordinates (may be outside of video bounds)
-        mouse_video_pos: T.Optional[QtCore.QPointF] = None
-
-        if self._api.video.current_stream:
-            zoom = self._api.video.view.zoom
-            pan_x = self._api.video.view.pan_x
-            pan_y = self._api.video.view.pan_y
-
-            display_w = self.width()
-            display_h = self.height()
-            display_ar = display_w / display_h
-            video_w = self._api.video.current_stream.width
-            video_h = self._api.video.current_stream.height
-            video_ar = video_w / video_h
-
-            if display_ar > video_ar:
-                scale = display_h / video_h
-            else:
-                scale = display_w / video_w
-
-            # coordinates of the video frame
-            scaled_video_w = video_w * scale
-            scaled_video_h = video_h * scale
-            scaled_video_w *= 2 ** zoom
-            scaled_video_h *= 2 ** zoom
-            scaled_video_x = (display_w - scaled_video_w) / 2
-            scaled_video_y = (display_h - scaled_video_h) / 2
-            scaled_video_x += pan_x * scaled_video_w
-            scaled_video_y += pan_y * scaled_video_h
-
-            if scaled_video_w >= EPSILON and scaled_video_h >= EPSILON:
-                mouse_video_pos = QtCore.QPointF(
-                    (
-                        (mouse_display_pos.x() - scaled_video_x)
-                        * video_w
-                        / scaled_video_w
-                    ),
-                    (
-                        (mouse_display_pos.y() - scaled_video_y)
-                        * video_h
-                        / scaled_video_h
-                    ),
-                )
-
-        return (
-            QtCore.QPointF(
-                mouse_display_pos.x() / self.width(),
-                mouse_display_pos.y() / self.height(),
-            ),
-            mouse_video_pos,
-        )
+            self._controller.current_handler.on_mouse_release(event)
 
     def _on_mode_change(self, mode: T.Optional[VideoInteractionMode]) -> None:
         self.setCursor(
             QtCore.Qt.ArrowCursor if mode is None else QtCore.Qt.CrossCursor
         )
+        if self._controller.current_handler:
+            self._controller.current_handler.display_width = self.width()
+            self._controller.current_handler.display_height = self.height()
 
 
 class VideoModeButtons(QtWidgets.QToolBar):
