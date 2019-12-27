@@ -166,16 +166,12 @@ class PanVideoMouseHandler(VideoMouseHandler):
 
     def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         display_pos = self._mouse_pos_calc.get_display_pos(event)
-        self._api.video.view.pan_x = (
-            self._initial_pan_x
-            + display_pos.x()
-            - self._initial_display_pos.x()
-        )
-        self._api.video.view.pan_y = (
-            self._initial_pan_y
-            + display_pos.y()
-            - self._initial_display_pos.y()
-        )
+        self._api.video.view.pan_x = self._initial_pan_x + (
+            display_pos.x() - self._initial_display_pos.x()
+        ) / (2 ** self._api.video.view.zoom)
+        self._api.video.view.pan_y = self._initial_pan_y + (
+            display_pos.y() - self._initial_display_pos.y()
+        ) / (2 ** self._api.video.view.zoom)
 
     def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
         self._api.video.view.pan = (
@@ -253,10 +249,9 @@ class SubRotateMouseHandler(VideoMouseHandler):
             return
         axis = self._get_axis(event)
         display_pos = self._mouse_pos_calc.get_display_pos(event)
-        angle = (
-            self._initial_angle
-            + (display_pos.x() - self._initial_display_pos.x()) * 360
-        )
+        angle = self._initial_angle + (
+            display_pos.x() - self._initial_display_pos.x()
+        ) * 360 / (2 ** self._api.video.view.zoom)
         for sub in sel:
             text = sub.text
             text = self._get_regex(axis).sub("", text)
@@ -316,14 +311,12 @@ class SubShearVideoMouseHandler(VideoMouseHandler):
         if not sel:
             return
         display_pos = self._mouse_pos_calc.get_display_pos(event)
-        value_x = (
-            self._initial_value_x
-            + (display_pos.x() - self._initial_display_pos.x()) * 4
-        )
-        value_y = (
-            self._initial_value_y
-            + (display_pos.y() - self._initial_display_pos.y()) * 4
-        )
+        value_x = self._initial_value_x + (
+            display_pos.x() - self._initial_display_pos.x()
+        ) * 4 / (2 ** self._api.video.view.zoom)
+        value_y = self._initial_value_y + (
+            display_pos.y() - self._initial_display_pos.y()
+        ) * 4 / (2 ** self._api.video.view.zoom)
 
         for sub in sel:
             text = sub.text
