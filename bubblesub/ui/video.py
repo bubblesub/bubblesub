@@ -206,9 +206,21 @@ class SubMoveModeHandler(BaseModeHandler):
 class SubRotateModeHandler(BaseModeHandler):
     mode = VideoInteractionMode.SubRotate
 
+    def __init__(self, api: Api) -> None:
+        super().__init__(api)
+        self._initial_angle = 0.0
+
     def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
         super()._on_mouse_press(event)
         self._api.undo.begin_capture()
+
+        self._initial_angle = 0.0
+        sel = self._api.subs.selected_events
+        if sel:
+            axis = self._get_axis(event)
+            match = self._get_regex(axis).search(sel[0].text)
+            if match:
+                self._initial_angle = float(match.group("value"))
 
     def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
         super()._on_mouse_release(event)
@@ -218,28 +230,49 @@ class SubRotateModeHandler(BaseModeHandler):
         sel = self._api.subs.selected_events
         if not sel:
             return
-        axis = "z"
-        if event.modifiers() & QtCore.Qt.ShiftModifier:
-            axis = "y"
-        elif event.modifiers() & QtCore.Qt.ControlModifier:
-            axis = "x"
+        axis = self._get_axis(event)
         display_pos = self._get_mouse_display_pos(event)
-        angle = (display_pos.x() - 0.5) * 360
+        angle = (
+            self._initial_angle
+            + (display_pos.x() - self._start_display_pos.x()) * 360
+        )
         for sub in sel:
             text = sub.text
-            text = re.sub(rf"\\fr{axis}-?[0-9\.]+", "", text)
+            text = self._get_regex(axis).sub("", text)
             text = f"{{\\fr{axis}{angle:.1f}}}" + text
             text = re.sub("}{", "", text)
             text = re.sub("{}", "", text)
             sub.text = text
 
+    def _get_axis(self, event: QtGui.QMouseEvent) -> str:
+        if event.modifiers() & QtCore.Qt.ShiftModifier:
+            return "y"
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            return "x"
+        return "z"
+
+    def _get_regex(self, axis: str) -> T.Pattern:
+        return re.compile(rf"\\fr{axis}(?P<value>-?[0-9\.]+)")
+
 
 class SubShearModeHandler(BaseModeHandler):
     mode = VideoInteractionMode.SubShear
 
+    def __init__(self, api: Api) -> None:
+        super().__init__(api)
+        self._initial_value = 0.0
+
     def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
         super()._on_mouse_press(event)
         self._api.undo.begin_capture()
+
+        self._initial_value = 0.0
+        sel = self._api.subs.selected_events
+        if sel:
+            axis = self._get_axis(event)
+            match = self._get_regex(axis).search(sel[0].text)
+            if match:
+                self._initial_value = float(match.group("value"))
 
     def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
         super()._on_mouse_release(event)
@@ -249,21 +282,30 @@ class SubShearModeHandler(BaseModeHandler):
         sel = self._api.subs.selected_events
         if not sel:
             return
-        axis = "x"
-        if (
-            event.modifiers() & QtCore.Qt.ShiftModifier
-            or event.modifiers() & QtCore.Qt.ControlModifier
-        ):
-            axis = "y"
+        axis = self._get_axis(event)
         display_pos = self._get_mouse_display_pos(event)
-        value = (display_pos.x() - 0.5) * 4
+        value = (
+            self._initial_value
+            + (display_pos.x() - self._start_display_pos.x()) * 4
+        )
         for sub in sel:
             text = sub.text
-            text = re.sub(rf"\\fa{axis}-?[0-9\.]+", "", text)
+            text = self._get_regex(axis).sub("", text)
             text = f"{{\\fa{axis}{value:.2f}}}" + text
             text = re.sub("}{", "", text)
             text = re.sub("{}", "", text)
             sub.text = text
+
+    def _get_axis(self, event: QtGui.QMouseEvent) -> str:
+        if (
+            event.modifiers() & QtCore.Qt.ShiftModifier
+            or event.modifiers() & QtCore.Qt.ControlModifier
+        ):
+            return "y"
+        return "x"
+
+    def _get_regex(self, axis: str) -> T.Pattern:
+        return re.compile(rf"\\fa{axis}(?P<value>-?[0-9\.]+)")
 
 
 class VideoController(QtCore.QObject):
