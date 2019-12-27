@@ -18,8 +18,8 @@ import argparse
 import datetime
 import re
 import typing as T
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
