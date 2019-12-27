@@ -47,9 +47,6 @@ class AudioViewApi(QtCore.QObject):
         self._audio_api = audio_api
         self._video_api = video_api
 
-        self._need_reset_after_audio = False
-        self._need_reset_after_video = False
-
         self._min = 0
         self._max = 0
         self._view_start = 0
@@ -223,20 +220,16 @@ class AudioViewApi(QtCore.QObject):
         )
 
     def _on_audio_state_change(self, stream: AudioStream) -> None:
-        if self._need_reset_after_audio:
+        if stream == self._audio_api.current_stream:
             self._extend_view()
             self.reset_view()
-            self._need_reset_after_audio = False
 
     def _on_video_state_change(self, stream: VideoStream) -> None:
-        if self._need_reset_after_video:
+        if stream == self._video_api.current_stream:
             self._extend_view()
             self.reset_view()
-            self._need_reset_after_video = False
 
     def _on_subs_load(self) -> None:
-        self._need_reset_after_audio = True
-        self._need_reset_after_video = True
         self.reset_view()
 
     def _clip(self, value: T.Union[int, float]) -> int:
