@@ -39,6 +39,12 @@ PAN_X_MODIFIER = LOCK_Y_AXIS_MODIFIER
 PAN_Y_MODIFIER = LOCK_X_AXIS_MODIFIER
 
 
+def clean_ass_tags(text: str) -> str:
+    text = text.replace("}{", "")
+    text = text.replace("{}", "")
+    return text
+
+
 class VideoInteractionMode(enum.IntEnum):
     Zoom = 1
     Pan = 2
@@ -116,6 +122,9 @@ class VideoMouseHandler:
     def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
         pass
 
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        pass
+
 
 class ZoomVideoMouseHandler(VideoMouseHandler):
     mode = VideoInteractionMode.Zoom
@@ -134,6 +143,9 @@ class ZoomVideoMouseHandler(VideoMouseHandler):
         self._api.video.view.zoom = (
             self._initial_zoom + display_pos.x() - self._start_display_pos.x()
         )
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        self._api.video.view.zoom = fractions.Fraction(0, 1)
 
 
 class PanVideoMouseHandler(VideoMouseHandler):
@@ -157,6 +169,12 @@ class PanVideoMouseHandler(VideoMouseHandler):
         )
         self._api.video.view.pan_y = (
             self._initial_pan_y + display_pos.y() - self._start_display_pos.y()
+        )
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        self._api.video.view.pan = (
+            fractions.Fraction(0, 1),
+            fractions.Fraction(0, 1),
         )
 
 
@@ -190,9 +208,13 @@ class SubMoveVideoMouseHandler(VideoMouseHandler):
 
             text = self.regex.sub("", text)
             text = f"{{\\pos({new_x:.2f},{new_y:.2f})}}" + text
-            text = re.sub("}{", "", text)
-            text = re.sub("{}", "", text)
+            text = clean_ass_tags(text)
             sub.text = text
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        with self._api.undo.capture():
+            for sub in self._api.subs.selected_events:
+                sub.text = clean_ass_tags(self.regex.sub("", sub.text))
 
 
 class SubRotateMouseHandler(VideoMouseHandler):
@@ -233,9 +255,16 @@ class SubRotateMouseHandler(VideoMouseHandler):
             text = sub.text
             text = self._get_regex(axis).sub("", text)
             text = f"{{\\fr{axis}{angle:.1f}}}" + text
-            text = re.sub("}{", "", text)
-            text = re.sub("{}", "", text)
+            text = clean_ass_tags(text)
             sub.text = text
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        axis = self._get_axis(event)
+        with self._api.undo.capture():
+            for sub in self._api.subs.selected_events:
+                sub.text = clean_ass_tags(
+                    self._get_regex(axis).sub("", sub.text)
+                )
 
     def _get_axis(self, event: QtGui.QMouseEvent) -> str:
         if event.modifiers() & QtCore.Qt.ShiftModifier:
@@ -298,9 +327,17 @@ class SubShearVideoMouseHandler(VideoMouseHandler):
             if not event.modifiers() & LOCK_Y_AXIS_MODIFIER:
                 text = self._get_regex("y").sub("", text)
                 text = f"{{\\fay{value_y:.2f}}}" + text
-            text = re.sub("}{", "", text)
-            text = re.sub("{}", "", text)
+            text = clean_ass_tags(text)
             sub.text = text
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        with self._api.undo.capture():
+            for sub in self._api.subs.selected_events:
+                text = sub.text
+                text = self._get_regex("x").sub("", text)
+                text = self._get_regex("y").sub("", text)
+                text = clean_ass_tags(text)
+                sub.text = text
 
     def _get_regex(self, axis: str) -> T.Pattern:
         return re.compile(rf"\\fa{axis}(?P<value>-?[0-9\.]+)")
@@ -344,11 +381,15 @@ class VideoMouseModeController(QtCore.QObject):
             self._api.video.view.zoom += event.angleDelta().y() / 15 / 100
 
     def on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
+        if event.button() == QtCore.Qt.MiddleButton:
+            if self.current_handler:
+                self.current_handler.on_middle_click(event)
+            return
         self._dragging = event.button()
         if event.button() == QtCore.Qt.LeftButton and self.current_handler:
             self.current_handler.on_drag_start(event)
             self.current_handler.on_drag_move(event)
-        if self._dragging == QtCore.Qt.RightButton:
+        if event.button() == QtCore.Qt.RightButton:
             self._handlers[VideoInteractionMode.Pan].on_drag_start(event)
             self._handlers[VideoInteractionMode.Pan].on_drag_move(event)
 
