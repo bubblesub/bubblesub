@@ -33,6 +33,8 @@ from bubblesub.ui.mpv import MpvWidget
 from bubblesub.ui.util import get_icon
 
 EPSILON = 1e-7
+LOCK_X_AXIS_MODIFIER = QtCore.Qt.ShiftModifier
+LOCK_Y_AXIS_MODIFIER = QtCore.Qt.ControlModifier
 
 
 class VideoInteractionMode(enum.IntEnum):
@@ -203,10 +205,10 @@ class SubMoveModeHandler(BaseModeHandler):
             sub_y = float(match.group("y")) if match else 0.0
             new_x = video_pos.x()
             new_y = video_pos.y()
-            if event.modifiers() & QtCore.Qt.ControlModifier:
-                new_y = sub_y
-            elif event.modifiers() & QtCore.Qt.ShiftModifier:
+            if event.modifiers() & LOCK_X_AXIS_MODIFIER:
                 new_x = sub_x
+            elif event.modifiers() & LOCK_Y_AXIS_MODIFIER:
+                new_y = sub_y
 
             text = self.regex.sub("", text)
             text = f"{{\\pos({new_x:.2f},{new_y:.2f})}}" + text
@@ -272,19 +274,23 @@ class SubShearModeHandler(BaseModeHandler):
 
     def __init__(self, api: Api) -> None:
         super().__init__(api)
-        self._initial_value = 0.0
+        self._initial_value_x = 0.0
+        self._initial_value_y = 0.0
 
     def _on_mouse_press(self, event: QtGui.QMouseEvent) -> None:
         super()._on_mouse_press(event)
         self._api.undo.begin_capture()
 
-        self._initial_value = 0.0
+        self._initial_value_x = 0.0
+        self._initial_value_y = 0.0
         sel = self._api.subs.selected_events
         if sel:
-            axis = self._get_axis(event)
-            match = self._get_regex(axis).search(sel[0].text)
+            match = self._get_regex("x").search(sel[0].text)
             if match:
-                self._initial_value = float(match.group("value"))
+                self._initial_value_x = float(match.group("value"))
+            match = self._get_regex("y").search(sel[0].text)
+            if match:
+                self._initial_value_y = float(match.group("value"))
 
     def _on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
         super()._on_mouse_release(event)
@@ -294,27 +300,27 @@ class SubShearModeHandler(BaseModeHandler):
         sel = self._api.subs.selected_events
         if not sel:
             return
-        axis = self._get_axis(event)
         display_pos = self._get_mouse_display_pos(event)
-        value = (
-            self._initial_value
+        value_x = (
+            self._initial_value_x
             + (display_pos.x() - self._start_display_pos.x()) * 4
         )
+        value_y = (
+            self._initial_value_y
+            + (display_pos.y() - self._start_display_pos.y()) * 4
+        )
+
         for sub in sel:
             text = sub.text
-            text = self._get_regex(axis).sub("", text)
-            text = f"{{\\fa{axis}{value:.2f}}}" + text
+            if not event.modifiers() & LOCK_X_AXIS_MODIFIER:
+                text = self._get_regex("x").sub("", text)
+                text = f"{{\\fax{value_x:.2f}}}" + text
+            if not event.modifiers() & LOCK_Y_AXIS_MODIFIER:
+                text = self._get_regex("y").sub("", text)
+                text = f"{{\\fay{value_y:.2f}}}" + text
             text = re.sub("}{", "", text)
             text = re.sub("{}", "", text)
             sub.text = text
-
-    def _get_axis(self, event: QtGui.QMouseEvent) -> str:
-        if (
-            event.modifiers() & QtCore.Qt.ShiftModifier
-            or event.modifiers() & QtCore.Qt.ControlModifier
-        ):
-            return "y"
-        return "x"
 
     def _get_regex(self, axis: str) -> T.Pattern:
         return re.compile(rf"\\fa{axis}(?P<value>-?[0-9\.]+)")
