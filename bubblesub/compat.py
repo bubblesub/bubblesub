@@ -19,7 +19,7 @@
 import typing as T
 
 try:
-    from contextlib import nullcontext
+    from contextlib import nullcontext  # pylint: disable=unused-import
 except ImportError:
     from contextlib import contextmanager
 

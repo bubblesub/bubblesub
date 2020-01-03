@@ -356,7 +356,7 @@ class VideoStream(QtCore.QObject):
             self._timecodes = [
                 int(round(pts)) for pts in source.track.timecodes
             ]
-            self._keyframes = [idx for idx in source.track.keyframes]
+            self._keyframes = source.track.keyframes[:]
             self._timecodes.sort()
             self._keyframes.sort()
 

@@ -14,11 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=no-member
+
 import io
 import locale
 import typing as T
 
-import mpv  # pylint: disable=wrong-import-order
+import mpv
 from PyQt5 import QtCore, QtOpenGL, QtWidgets
 
 from bubblesub.api import Api
@@ -51,6 +53,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._destroyed = False
         self._need_subs_refresh = False
         self._mpv = mpv.Context()
+
         self._mpv.set_log_level("error")
         for key, value in {
             "config": False,

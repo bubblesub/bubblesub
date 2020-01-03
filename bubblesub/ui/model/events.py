@@ -131,6 +131,12 @@ class _CpsColumn(_Column):
             else "-"
         )
 
+    def read(self, sub: AssEvent) -> T.Any:
+        raise NotImplementedError("not implemented")
+
+    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
+        raise NotImplementedError("not implemented")
+
 
 class _ShortDurationColumn(_IntPropertyColumn):
     def __init__(self) -> None:

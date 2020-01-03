@@ -95,7 +95,7 @@ class SubtitlesSelection:
             "ask-time",
             "ask-number",
         }:
-            return len(self.api.subs.events) > 0
+            return bool(self.api.subs.events)
 
         if self.target == "selected":
             return self.api.subs.has_selection
@@ -103,7 +103,7 @@ class SubtitlesSelection:
         indexes = _match_indexes(self.target)
         if indexes is not None:
             indexes = list(_filter_indexes(self.api, indexes))
-            return len(indexes) > 0
+            return bool(indexes)
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
@@ -180,14 +180,14 @@ class SubtitlesSelection:
         return self.api.subs.selected_indexes
 
     async def _get_first(self) -> T.List[int]:
-        return [0] if len(self.api.subs.events) else []
+        return [0] if self.api.subs.events else []
 
     async def _get_last(self) -> T.List[int]:
         length = len(self.api.subs.events)
         return [length - 1] if length else []
 
     async def _get_ask_number(self) -> T.List[int]:
-        if not len(self.api.subs.events):
+        if not self.api.subs.events:
             return []
         value = await self.api.gui.exec(self._show_number_dialog)
         if value is None:
@@ -195,7 +195,7 @@ class SubtitlesSelection:
         return [value - 1]
 
     async def _get_ask_time(self) -> T.List[int]:
-        if not len(self.api.subs.events):
+        if not self.api.subs.events:
             return []
         value = await self.api.gui.exec(self._show_time_dialog)
         if value is None:

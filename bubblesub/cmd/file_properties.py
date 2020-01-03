@@ -293,22 +293,20 @@ class _FilePropertiesDialog(Dialog):
 
         self._api.subs.meta.clear()
 
+        play_res_x = str(self._options_group_box.res_x_edit.value())
+        play_res_y = str(self._options_group_box.res_y_edit.value())
+        ycbcr = self._options_group_box.ycbcr_matrix_combo_box.currentData()
+        wrap_style = self._options_group_box.wrap_mode_combo_box.currentData()
+        border_and_shadow = self._options_group_box.scale_check_box.isChecked()
+
         self._api.subs.meta.update(
             {
                 "ScriptType": "v4.00+",
-                "PlayResX": str(self._options_group_box.res_x_edit.value()),
-                "PlayResY": str(self._options_group_box.res_y_edit.value()),
-                "YCbCr Matrix": (
-                    self._options_group_box.ycbcr_matrix_combo_box.currentData()
-                ),
-                "WrapStyle": (
-                    self._options_group_box.wrap_mode_combo_box.currentData()
-                ),
-                "ScaledBorderAndShadow": (
-                    ["no", "yes"][
-                        self._options_group_box.scale_check_box.isChecked()
-                    ]
-                ),
+                "PlayResX": play_res_x,
+                "PlayResY": play_res_y,
+                "YCbCr Matrix": ycbcr,
+                "WrapStyle": wrap_style,
+                "ScaledBorderAndShadow": ["no", "yes"][border_and_shadow],
             }
         )
 
@@ -320,10 +318,8 @@ class _FilePropertiesDialog(Dialog):
         )
         if (
             old_res != new_res
-            and old_res[0]
-            and old_res[1]
-            and new_res[0]
-            and new_res[1]
+            and all(old_res)
+            and all(new_res)
             and await show_prompt(
                 "The resolution was changed. "
                 "Do you want to rescale all the styles now?",

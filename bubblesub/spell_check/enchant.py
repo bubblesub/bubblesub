@@ -16,6 +16,8 @@
 
 """Spell checker based on the pyenchant library."""
 
+# pylint: disable=no-member
+
 import typing as T
 
 import enchant
