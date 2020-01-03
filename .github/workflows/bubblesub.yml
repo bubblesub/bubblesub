@@ -13,12 +13,21 @@ jobs:
       run: sudo apt-get update
     - name: Install Python3 packages
       run: sudo apt-get install python3-setuptools python3-wheel
-    - name: Install black and isort
-      run: sudo pip3 install black isort
+    - name: Setup python
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+        architecture: x64
+    - name: Update pip
+      run: python -m pip install --upgrade pip
+    - name: Install black, isort and pylint
+      run: pip install black isort pylint
     - name: Run black
       run: black --check --diff .
     - name: Run isort
       run: isort -rc --diff .
+    - name: Run pylint
+      run: pylint --rcfile=.pylintrc --verbose --disable=fixme bubblesub
 
   build:
 
