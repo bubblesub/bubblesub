@@ -66,7 +66,9 @@ class QueueWorker(QtCore.QRunnable):
         self._log_api = log_api
         self._running = False
         self._clearing = False
-        self._queue: queue.Queue[T.Any] = queue.Queue()
+        self._queue: queue.Queue[  # pylint: disable=unsubscriptable-object
+            T.Any
+        ] = queue.Queue()
 
     def run(self) -> None:
         """Run the thread.

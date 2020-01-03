@@ -20,7 +20,7 @@ import typing as T
 
 from PyQt5 import QtCore
 
-TItem = T.TypeVar("TItem")  # pylint: disable=invalid-name
+TItem = T.TypeVar("TItem")
 
 
 class ObservableObject:
@@ -123,7 +123,7 @@ class _ObservableListSignals(QtCore.QObject):
     items_moved = QtCore.pyqtSignal([int, int, int])
 
 
-class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
+class ObservableList(T.Generic[TItem]):
     """Alternative to QtCore.QAbstractListModel that simplifies indexing."""
 
     item_modified = property(lambda self: self._signals.item_modified)
@@ -167,6 +167,13 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         """
         return len(self._items)
 
+    def __bool__(self) -> bool:
+        """Return if the collection is empty.
+
+        :return: True, if the collection is empty, False otherwise
+        """
+        return bool(self._items)
+
     @T.overload
     def __getitem__(self, idx: slice) -> T.List[TItem]:
         """Retrieve item at given position.
@@ -174,18 +181,18 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         :param idx: item position
         :return: value at given position
         """
-        ...  # pylint: disable=pointless-statement
+        ...
 
-    @T.overload
+    @T.overload  # pylint: disable=function-redefined
     def __getitem__(self, idx: int) -> TItem:
         """Retrieve item at given position.
 
         :param idx: item position
         :return: value at given position
         """
-        ...  # pylint: disable=pointless-statement
+        ...
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx):  # pylint: disable=function-redefined
         """Retrieve item at given position.
 
         :param idx: item position
@@ -228,6 +235,13 @@ class ObservableList(T.Generic[TItem]):  # pylint: disable=E1136
         :return: iterator
         """
         yield from self._items
+
+    def __reversed__(self) -> T.Iterator[TItem]:
+        """Iterate over the collection values in a reverse order.
+
+        :return: iterator
+        """
+        yield from self._items[::-1]
 
     def get(
         self, idx: int, default: T.Optional[TItem] = None

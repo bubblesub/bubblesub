@@ -16,8 +16,10 @@
 
 """Miscellaneous functions and classes for general purpose usage."""
 
+import ast
 import fractions
 import itertools
+import operator
 import re
 import typing as T
 from pathlib import Path
@@ -87,8 +89,6 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
     :param expr: expression to evaluate
     :return: scalar result
     """
-    import ast
-    import operator
 
     op_map = {
         ast.Add: operator.add,

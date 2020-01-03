@@ -115,14 +115,15 @@ def get_subtitle_insertion_point(
 
 
 def _create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
-    if api.video.current_stream:
-        pts = api.video.current_stream.align_pts_to_near_frame(pts)
+    current_video_stream = api.video.current_stream
+    if current_video_stream:
+        pts = current_video_stream.align_pts_to_near_frame(pts)
     insertion_point = get_subtitle_insertion_point(api, pts, by_end)
-    if api.video.current_stream:
-        insertion_point.start = api.video.current_stream.align_pts_to_near_frame(
+    if current_video_stream:
+        insertion_point.start = current_video_stream.align_pts_to_near_frame(
             insertion_point.start
         )
-        insertion_point.end = api.video.current_stream.align_pts_to_near_frame(
+        insertion_point.end = current_video_stream.align_pts_to_near_frame(
             insertion_point.end
         )
 
@@ -293,6 +294,9 @@ class BaseLocalAudioWidget(BaseAudioWidget):
         scale = self._view.view_size / self.width()
         return int(x * scale + self._view.view_start)
 
+    def _get_paint_cache_key(self) -> int:
+        raise NotImplementedError("not implemented")
+
 
 class BaseGlobalAudioWidget(BaseAudioWidget):
     def pts_to_x(self, pts: int) -> float:
@@ -302,3 +306,6 @@ class BaseGlobalAudioWidget(BaseAudioWidget):
     def pts_from_x(self, x: float) -> int:
         scale = self._view.size / self.width()
         return int(x * scale + self._view.min)
+
+    def _get_paint_cache_key(self) -> int:
+        raise NotImplementedError("not implemented")

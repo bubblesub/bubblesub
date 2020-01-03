@@ -84,7 +84,6 @@ class UndoState:
         :return: bool or NotImplemented to fall back to default implementation
         """
         if isinstance(other, UndoState):
-            # pylint: disable=protected-access
             return (
                 self._events == other._events
                 and self._styles == other._styles

@@ -28,15 +28,18 @@ from bubblesub.ui.time_edit import TimeEdit
 
 SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
 VIDEO_FILE_FILTER = "Video filters (*.avi *.mkv *.webm *.mp4);;All files (*.*)"
-AUDIO_FILE_FILTER = "Audio filters (*.wav *.mp3 *.flac *.avi *.mkv *.webm *.mp4);;All files (*.*)"
+AUDIO_FILE_FILTER = (
+    "Audio filters (*.wav *.mp3 *.flac *.avi *.mkv *.webm *.mp4);;"
+    "All files (*.*)"
+)
 
 
 def async_slot(*args):
-    def real_decorator(fn):
+    def real_decorator(func):
         @QtCore.pyqtSlot(*args)
-        @functools.wraps(fn)
+        @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            asyncio.ensure_future(fn(*args, **kwargs))
+            asyncio.ensure_future(func(*args, **kwargs))
 
         return wrapper
 

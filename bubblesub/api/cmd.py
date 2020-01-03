@@ -261,7 +261,7 @@ class CommandApi(QtCore.QObject):
             if not cmd.silent:
                 self._api.log.warn(str(ex))
             return False
-        except CommandError as ex:  # pylint: disable=broad-except
+        except CommandError as ex:
             self._api.log.error(f"problem running {cmd.invocation}:")
             self._api.log.error(f"{ex}")
             return False
@@ -365,9 +365,9 @@ class CommandApi(QtCore.QObject):
         self._plugin_menu += menu
 
         # load hook
-        cb = getattr(mod, "on_load", None)
-        if cb:
-            cb(self._api)
+        callback = getattr(mod, "on_load", None)
+        if callback:
+            callback(self._api)
 
         self._plugin_modules.append(mod)
 

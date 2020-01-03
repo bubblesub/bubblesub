@@ -61,7 +61,7 @@ def collect_command_arguments(compl: Completion, api: Api) -> None:
 
     parser = argparse.ArgumentParser(add_help=False)
     cls.decorate_parser(api, parser)
-    for action in parser._actions:  # pylint: disable=W0212
+    for action in parser._actions:  # pylint: disable=protected-access
         if any(
             opt.startswith(match.group("arg")) for opt in action.option_strings
         ):

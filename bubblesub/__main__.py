@@ -20,6 +20,7 @@
 
 import argparse
 
+from bubblesub.api import Api
 from bubblesub.cache import wipe_cache
 from bubblesub.ui import ui
 
@@ -46,8 +47,6 @@ def main() -> None:
 
     app = ui.Application(args)
     app.splash_screen()
-
-    from bubblesub.api import Api
 
     api = Api(args)
     app.run(api)

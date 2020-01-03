@@ -29,7 +29,7 @@ from bubblesub.api.threading import synchronized
 # TODO: remove this condition when switching to Python 3.7
 if T.TYPE_CHECKING:
 
-    class TStream(T.Protocol):
+    class TStream(T.Protocol):  # pylint: disable=no-member
         """Base stream protocol."""
 
         uid: uuid.UUID
