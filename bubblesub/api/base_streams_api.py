@@ -114,10 +114,10 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
             return
         old_stream = self._streams[index]
         self._streams = [
-            stream for stream in self._streams if stream.uid != uuid
+            stream for stream in self._streams if stream.uid != uid
         ]
         if index < len(self._streams):
-            self.switch_stream(self._streams[index])
+            self.switch_stream(self._streams[index].uid)
         else:
             self.switch_stream(None)
         self.stream_unloaded.emit(old_stream)
@@ -176,7 +176,7 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
     @synchronized(lock=stream_lock)
     def _on_stream_error(self, stream: TStream) -> None:
-        self.unload_stream(stream)
+        self.unload_stream(stream.uid)
 
     @synchronized(lock=stream_lock)
     def _on_stream_change(self, stream: TStream) -> None:
