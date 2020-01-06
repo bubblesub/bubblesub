@@ -108,72 +108,20 @@ class SubtitlesSelection:
         raise ValueError(f'unknown selection target: "{self.target}"')
 
     async def get_all_indexes(self) -> T.List[int]:
-        if self.target == "all":
-            return list(range(len(self.api.subs.events)))
+        func = {
+            "all": self._get_all,
+            "none": self._get_none,
+            "one-above": self._get_one_above,
+            "one-below": self._get_one_below,
+            "selected": self._get_selected,
+            "first": self._get_first,
+            "last": self._get_last,
+            "ask-number": self._get_ask_number,
+            "ask-time": self._get_ask_time,
+        }.get(self.target)
 
-        if self.target == "none":
-            return []
-
-        if self.target == "one-above":
-            if not self.api.subs.selected_indexes:
-                target_sub = first(
-                    sub
-                    for sub in sorted(
-                        self.api.subs.events,
-                        key=lambda sub: sub.start,
-                        reverse=True,
-                    )
-                    if sub.start <= self.api.playback.current_pts
-                )
-                return [
-                    target_sub.index
-                    if target_sub
-                    else len(self.api.subs.events) - 1
-                ]
-            return [max(0, self.api.subs.selected_indexes[0] - 1)]
-
-        if self.target == "one-below":
-            if not self.api.subs.selected_indexes:
-                target_sub = first(
-                    sub
-                    for sub in sorted(
-                        self.api.subs.events, key=lambda sub: sub.start
-                    )
-                    if sub.start >= self.api.playback.current_pts
-                )
-                return [target_sub.index if target_sub else 0]
-            return [
-                min(
-                    self.api.subs.selected_indexes[-1] + 1,
-                    len(self.api.subs.events) - 1,
-                )
-            ]
-
-        if self.target == "selected":
-            return self.api.subs.selected_indexes
-
-        if self.target == "first":
-            return [0] if len(self.api.subs.events) else []
-
-        if self.target == "last":
-            length = len(self.api.subs.events)
-            return [length - 1] if length else []
-
-        if self.target == "ask-number":
-            if not len(self.api.subs.events):
-                return []
-            value = await self.api.gui.exec(self._show_number_dialog)
-            if value is None:
-                raise CommandCanceled
-            return [value - 1]
-
-        if self.target == "ask-time":
-            if not len(self.api.subs.events):
-                return []
-            value = await self.api.gui.exec(self._show_time_dialog)
-            if value is None:
-                raise CommandCanceled
-            return [value - 1]
+        if func is not None:
+            return await func()
 
         indexes = _match_indexes(self.target)
         if indexes is not None:
@@ -185,11 +133,74 @@ class SubtitlesSelection:
         return [
             idx
             for idx in await self.get_all_indexes()
-            if idx in range(0, len(self.api.subs.events))
+            if idx in range(len(self.api.subs.events))
         ]
 
     async def get_subtitles(self) -> T.List[AssEvent]:
         return [self.api.subs.events[idx] for idx in await self.get_indexes()]
+
+    async def _get_all(self) -> T.List[int]:
+        return list(range(len(self.api.subs.events)))
+
+    async def _get_none(self) -> T.List[int]:
+        return []
+
+    async def _get_one_above(self) -> T.List[int]:
+        if self.api.subs.selected_indexes:
+            return [max(0, self.api.subs.selected_indexes[0] - 1)]
+        target_sub = first(
+            sub
+            for sub in sorted(
+                self.api.subs.events, key=lambda sub: sub.start, reverse=True
+            )
+            if sub.start <= self.api.playback.current_pts
+        )
+        if target_sub:
+            return [target_sub.index]
+        return [len(self.api.subs.events) - 1]
+
+    async def _get_one_below(self) -> T.List[int]:
+        if self.api.subs.selected_indexes:
+            return [
+                min(
+                    self.api.subs.selected_indexes[-1] + 1,
+                    len(self.api.subs.events) - 1,
+                )
+            ]
+        target_sub = first(
+            sub
+            for sub in sorted(self.api.subs.events, key=lambda sub: sub.start)
+            if sub.start >= self.api.playback.current_pts
+        )
+        if target_sub:
+            return [target_sub.index]
+        return [0]
+
+    async def _get_selected(self) -> T.List[int]:
+        return self.api.subs.selected_indexes
+
+    async def _get_first(self) -> T.List[int]:
+        return [0] if len(self.api.subs.events) else []
+
+    async def _get_last(self) -> T.List[int]:
+        length = len(self.api.subs.events)
+        return [length - 1] if length else []
+
+    async def _get_ask_number(self) -> T.List[int]:
+        if not len(self.api.subs.events):
+            return []
+        value = await self.api.gui.exec(self._show_number_dialog)
+        if value is None:
+            raise CommandCanceled
+        return [value - 1]
+
+    async def _get_ask_time(self) -> T.List[int]:
+        if not len(self.api.subs.events):
+            return []
+        value = await self.api.gui.exec(self._show_time_dialog)
+        if value is None:
+            raise CommandCanceled
+        return [value - 1]
 
     async def _show_number_dialog(
         self, main_window: QtWidgets.QMainWindow
