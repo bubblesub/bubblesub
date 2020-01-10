@@ -222,6 +222,14 @@ Redoes last edit operation.
 ### <a name="cmd-reload-cmds"></a>`reload‑cmds`
 Rescans filesystem for commands.
 
+### <a name="cmd-reopen"></a>`reopen`
+Aliases: `reload`
+
+Reloads the currently loaded subtitles file from disk. Prompts user to save the current file if there are unsaved changes. Resets undo stack.
+
+Usage: `reopen [-p|--path=…]`
+* `-p`, `--path`: path to load the subtitles from
+
 ### <a name="cmd-save"></a>`save`
 Saves the current subtitles to an ASS file. If the currently loaded subtitles weren't ever saved, prompts user to choose where to save the file to.
 

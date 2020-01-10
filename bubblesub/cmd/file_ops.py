@@ -74,6 +74,36 @@ class OpenCommand(BaseCommand):
         )
 
 
+class ReopenCommand(BaseCommand):
+    names = ["reopen", "reload"]
+    help_text = (
+        "Reloads the currently loaded subtitles file from disk. "
+        "Prompts user to save the current file if there are unsaved changes. "
+        "Resets undo stack."
+    )
+
+    @property
+    def is_enabled(self) -> bool:
+        return bool(self.api.subs.path)
+
+    async def run(self) -> None:
+        if not await self.api.gui.confirm_unsaved_changes():
+            return
+
+        self.api.subs.load_ass(self.api.subs.path)
+        self.api.log.info(f"reloaded {self.api.subs.path}")
+
+    @staticmethod
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "-p",
+            "--path",
+            help="path to load the subtitles from",
+            type=lambda value: FancyPath(api, value),
+            default="",
+        )
+
+
 class SaveCommand(BaseCommand):
     names = ["save"]
     help_text = (
@@ -319,6 +349,7 @@ class UnloadAudioCommand(BaseCommand):
 COMMANDS = [
     NewCommand,
     OpenCommand,
+    ReopenCommand,
     SaveCommand,
     SaveAsCommand,
     LoadVideoCommand,
