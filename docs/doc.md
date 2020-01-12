@@ -62,6 +62,7 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --above</code> |
 |<kbd>Alt+Down</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --below</code> |
 |<kbd>Alt+Return</kbd> | global | <code><a href="#user-content-cmd-file-properties">file-properties</a> </code> |
+|<kbd>Ctrl+F5</kbd> | global | <code><a href="#user-content-cmd-reload">reload</a> </code> |
 |<kbd>Ctrl+F10</kbd> | global | <code><a href="#user-content-cmd-reload-cmds">reload-cmds</a> </code> |
 |<kbd>Shift+1</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=-10f</code> |
 |<kbd>Shift+2</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=+10f</code> |
