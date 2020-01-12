@@ -96,7 +96,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.main_wrapper)
         self.setStatusBar(self.status_bar)
 
-        self.setWindowIcon(QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon.png")))
+        icon = QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon.png"))
+        for mipmap in {16, 32, 64}:
+            icon.addFile(
+                str(ROOT_DIR / f"bubblesub-icon-{mipmap}.png"),
+                QtCore.QSize(mipmap, mipmap),
+            )
+        self.setWindowIcon(icon)
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
