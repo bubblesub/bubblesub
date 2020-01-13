@@ -97,11 +97,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setStatusBar(self.status_bar)
 
         icon = QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon-64.png"))
-        for mipmap in (64, 32, 16, 256):
-            icon.addFile(
-                str(ROOT_DIR / f"bubblesub-icon-{mipmap}.png"),
-                QtCore.QSize(mipmap, mipmap),
-            )
         self.setWindowIcon(icon)
 
         self.subs_grid.setFocus()
