@@ -96,8 +96,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.main_wrapper)
         self.setStatusBar(self.status_bar)
 
-        icon = QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon.png"))
-        for mipmap in {16, 32, 64}:
+        icon = QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon-64.png"))
+        for mipmap in (64, 32, 16, 256):
             icon.addFile(
                 str(ROOT_DIR / f"bubblesub-icon-{mipmap}.png"),
                 QtCore.QSize(mipmap, mipmap),
