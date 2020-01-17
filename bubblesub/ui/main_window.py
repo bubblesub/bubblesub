@@ -97,7 +97,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setStatusBar(self.status_bar)
 
         self.setWindowIcon(
-            QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon-256.png"))
+            QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon-64.png"))
         )
 
         self.subs_grid.setFocus()
