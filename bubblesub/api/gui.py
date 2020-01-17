@@ -102,7 +102,7 @@ class GuiApi(QtCore.QObject):
             return True
         if response == box.Discard:
             return True
-        assert response == box.Cancel
+        assert response in {box.Cancel, box.NoButton}
         return False
 
     @functools.lru_cache(maxsize=None)
