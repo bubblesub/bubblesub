@@ -96,7 +96,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.main_wrapper)
         self.setStatusBar(self.status_bar)
 
-        self.setWindowIcon(QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon.png")))
+        self.setWindowIcon(
+            QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon-256.png"))
+        )
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
