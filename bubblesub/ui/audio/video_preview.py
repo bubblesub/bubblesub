@@ -67,7 +67,11 @@ class VideoBandWorker(QueueWorker):
             save_cache(cache_name, self.cache[stream.uid])
 
     def _get_cache_name(self, stream: VideoStream) -> str:
-        return sanitize_file_name(stream.path) + "-video-band"
+        try:
+            size = stream.path.stat().st_size
+        except FileNotFoundError:
+            size = 0
+        return sanitize_file_name(stream.path) + f"-{size}-video-band"
 
     def _on_video_stream_unload(self, stream: VideoStream) -> None:
         with _CACHE_LOCK:
