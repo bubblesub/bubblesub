@@ -31,6 +31,7 @@ from bubblesub.api.playback import (
 )
 from bubblesub.ui.mpv import MpvWidget
 from bubblesub.ui.util import get_icon
+from bubblesub.util import all_subclasses
 
 EPSILON = 1e-7
 LOCK_X_AXIS_MODIFIER = QtCore.Qt.ShiftModifier
@@ -128,6 +129,119 @@ class VideoMouseHandler:
         pass
 
 
+class AbsolutePositionVideoMouseHandler(VideoMouseHandler):
+    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
+        self._api.undo.begin_capture()
+
+    def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
+        self._api.undo.end_capture()
+
+    def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
+        sel = self._api.subs.selected_events
+        video_pos = self._mouse_pos_calc.get_video_pos(event)
+        if not sel or not video_pos:
+            return
+        for sub in sel:
+            text = sub.text
+
+            match = self._get_regex().search(text)
+            sub_x = float(match.group("x")) if match else 0.0
+            sub_y = float(match.group("y")) if match else 0.0
+            new_x = video_pos.x()
+            new_y = video_pos.y()
+            if event.modifiers() & LOCK_X_AXIS_MODIFIER:
+                new_x = sub_x
+            elif event.modifiers() & LOCK_Y_AXIS_MODIFIER:
+                new_y = sub_y
+
+            text = self._get_regex().sub("", text)
+            text = self._get_ass_tag(new_x, new_y) + text
+            text = clean_ass_tags(text)
+            sub.text = text
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        with self._api.undo.capture():
+            for sub in self._api.subs.selected_events:
+                sub.text = clean_ass_tags(self._get_regex().sub("", sub.text))
+
+    def _get_ass_tag(self, x: float, y: float) -> str:
+        raise NotImplementedError("not implemented")
+
+    def _get_regex(self) -> T.Pattern:
+        raise NotImplementedError("not implemented")
+
+
+class RelativeAxisVideoMouseHandler(VideoMouseHandler):
+    default_scale = 1
+
+    def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
+        super().__init__(api, mouse_pos_calc)
+        self._initial_value_x = 0.0
+        self._initial_value_y = 0.0
+        self._initial_display_pos = QtCore.QPointF(0, 0)
+
+    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
+        self._api.undo.begin_capture()
+
+        self._initial_value_x = 0.0
+        self._initial_value_y = 0.0
+        sel = self._api.subs.selected_events
+        if sel:
+            match = self._get_regex("x").search(sel[0].text)
+            if match:
+                self._initial_value_x = float(match.group("value"))
+            match = self._get_regex("y").search(sel[0].text)
+            if match:
+                self._initial_value_y = float(match.group("value"))
+
+        self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
+
+    def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
+        self._api.undo.end_capture()
+
+    def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
+        sel = self._api.subs.selected_events
+        if not sel:
+            return
+        display_pos = self._mouse_pos_calc.get_display_pos(event)
+        value_x = self._initial_value_x + (
+            display_pos.x() - self._initial_display_pos.x()
+        ) * 2 * self.default_scale / (
+            self.default_scale ** self._api.video.view.zoom
+        )
+        value_y = self._initial_value_y + (
+            display_pos.y() - self._initial_display_pos.y()
+        ) * 2 * self.default_scale / (
+            self.default_scale ** self._api.video.view.zoom
+        )
+
+        for sub in sel:
+            text = sub.text
+            if not event.modifiers() & LOCK_X_AXIS_MODIFIER:
+                text = self._get_regex("x").sub("", text)
+                text = self._get_ass_tag("x", value_x) + text
+            if not event.modifiers() & LOCK_Y_AXIS_MODIFIER:
+                text = self._get_regex("y").sub("", text)
+                text = self._get_ass_tag("y", value_y) + text
+            text = clean_ass_tags(text)
+            sub.text = text
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        with self._api.undo.capture():
+            for sub in self._api.subs.selected_events:
+                text = sub.text
+                text = self._get_regex("x").sub("", text)
+                text = self._get_regex("y").sub("", text)
+                text = clean_ass_tags(text)
+                sub.text = text
+
+    def _get_ass_tag(self, axis: str, value: float) -> str:
+        raise NotImplementedError("not implemented")
+
+    def _get_regex(self, axis: str) -> T.Pattern:
+        raise NotImplementedError("not implemented")
+
+
 class ZoomVideoMouseHandler(VideoMouseHandler):
     mode = VideoInteractionMode.Zoom
 
@@ -182,46 +296,17 @@ class PanVideoMouseHandler(VideoMouseHandler):
         )
 
 
-class SubPositionVideoMouseHandler(VideoMouseHandler):
+class SubPositionVideoMouseHandler(AbsolutePositionVideoMouseHandler):
     mode = VideoInteractionMode.SubPosition
-    regex = re.compile(r"\\pos\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
-    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.begin_capture()
+    def _get_ass_tag(self, x: float, y: float) -> str:
+        return f"{{\\pos({x:.2f},{y:.2f})}}"
 
-    def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.end_capture()
-
-    def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
-        sel = self._api.subs.selected_events
-        video_pos = self._mouse_pos_calc.get_video_pos(event)
-        if not sel or not video_pos:
-            return
-        for sub in sel:
-            text = sub.text
-
-            match = self.regex.search(text)
-            sub_x = float(match.group("x")) if match else 0.0
-            sub_y = float(match.group("y")) if match else 0.0
-            new_x = video_pos.x()
-            new_y = video_pos.y()
-            if event.modifiers() & LOCK_X_AXIS_MODIFIER:
-                new_x = sub_x
-            elif event.modifiers() & LOCK_Y_AXIS_MODIFIER:
-                new_y = sub_y
-
-            text = self.regex.sub("", text)
-            text = f"{{\\pos({new_x:.2f},{new_y:.2f})}}" + text
-            text = clean_ass_tags(text)
-            sub.text = text
-
-    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
-        with self._api.undo.capture():
-            for sub in self._api.subs.selected_events:
-                sub.text = clean_ass_tags(self.regex.sub("", sub.text))
+    def _get_regex(self) -> T.Pattern:
+        return re.compile(r"\\pos\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
 
-class SubRotateMouseHandler(VideoMouseHandler):
+class SubRotationHandler(VideoMouseHandler):
     mode = VideoInteractionMode.SubRotation
 
     def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
@@ -280,168 +365,33 @@ class SubRotateMouseHandler(VideoMouseHandler):
         return re.compile(rf"\\fr{axis}(?P<value>-?[0-9\.]+)")
 
 
-class SubRotationOriginVideoMouseHandler(VideoMouseHandler):
+class SubRotationOriginVideoMouseHandler(AbsolutePositionVideoMouseHandler):
     mode = VideoInteractionMode.SubRotationOrigin
-    regex = re.compile(r"\\org\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
-    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.begin_capture()
+    def _get_ass_tag(self, x: float, y: float) -> str:
+        return f"{{\\org({x:.2f},{y:.2f})}}"
 
-    def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.end_capture()
-
-    def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
-        sel = self._api.subs.selected_events
-        video_pos = self._mouse_pos_calc.get_video_pos(event)
-        if not sel or not video_pos:
-            return
-        for sub in sel:
-            text = sub.text
-
-            match = self.regex.search(text)
-            sub_x = float(match.group("x")) if match else 0.0
-            sub_y = float(match.group("y")) if match else 0.0
-            new_x = video_pos.x()
-            new_y = video_pos.y()
-            if event.modifiers() & LOCK_X_AXIS_MODIFIER:
-                new_x = sub_x
-            elif event.modifiers() & LOCK_Y_AXIS_MODIFIER:
-                new_y = sub_y
-
-            text = self.regex.sub("", text)
-            text = f"{{\\org({new_x:.2f},{new_y:.2f})}}" + text
-            text = clean_ass_tags(text)
-            sub.text = text
-
-    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
-        with self._api.undo.capture():
-            for sub in self._api.subs.selected_events:
-                sub.text = clean_ass_tags(self.regex.sub("", sub.text))
+    def _get_regex(self) -> T.Pattern:
+        return re.compile(r"\\org\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
 
-class SubShearVideoMouseHandler(VideoMouseHandler):
+class SubShearVideoMouseHandler(RelativeAxisVideoMouseHandler):
     mode = VideoInteractionMode.SubShear
+    default_scale = 2.0
 
-    def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
-        super().__init__(api, mouse_pos_calc)
-        self._initial_value_x = 0.0
-        self._initial_value_y = 0.0
-        self._initial_display_pos = QtCore.QPointF(0, 0)
-
-    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.begin_capture()
-
-        self._initial_value_x = 0.0
-        self._initial_value_y = 0.0
-        sel = self._api.subs.selected_events
-        if sel:
-            match = self._get_regex("x").search(sel[0].text)
-            if match:
-                self._initial_value_x = float(match.group("value"))
-            match = self._get_regex("y").search(sel[0].text)
-            if match:
-                self._initial_value_y = float(match.group("value"))
-
-        self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
-
-    def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.end_capture()
-
-    def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
-        sel = self._api.subs.selected_events
-        if not sel:
-            return
-        display_pos = self._mouse_pos_calc.get_display_pos(event)
-        value_x = self._initial_value_x + (
-            display_pos.x() - self._initial_display_pos.x()
-        ) * 4 / (2 ** self._api.video.view.zoom)
-        value_y = self._initial_value_y + (
-            display_pos.y() - self._initial_display_pos.y()
-        ) * 4 / (2 ** self._api.video.view.zoom)
-
-        for sub in sel:
-            text = sub.text
-            if not event.modifiers() & LOCK_X_AXIS_MODIFIER:
-                text = self._get_regex("x").sub("", text)
-                text = f"{{\\fax{value_x:.2f}}}" + text
-            if not event.modifiers() & LOCK_Y_AXIS_MODIFIER:
-                text = self._get_regex("y").sub("", text)
-                text = f"{{\\fay{value_y:.2f}}}" + text
-            text = clean_ass_tags(text)
-            sub.text = text
-
-    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
-        with self._api.undo.capture():
-            for sub in self._api.subs.selected_events:
-                text = sub.text
-                text = self._get_regex("x").sub("", text)
-                text = self._get_regex("y").sub("", text)
-                text = clean_ass_tags(text)
-                sub.text = text
+    def _get_ass_tag(self, axis: str, value: float) -> str:
+        return f"{{\\fa{axis}{value:.2f}}}"
 
     def _get_regex(self, axis: str) -> T.Pattern:
         return re.compile(rf"\\fa{axis}(?P<value>-?[0-9\.]+)")
 
 
-class SubScaleVideoMouseHandler(VideoMouseHandler):
+class SubScaleVideoMouseHandler(RelativeAxisVideoMouseHandler):
     mode = VideoInteractionMode.SubScale
+    default_scale = 100.0
 
-    def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
-        super().__init__(api, mouse_pos_calc)
-        self._initial_value_x = 0.0
-        self._initial_value_y = 0.0
-        self._initial_display_pos = QtCore.QPointF(0, 0)
-
-    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.begin_capture()
-
-        self._initial_value_x = 0.0
-        self._initial_value_y = 0.0
-        sel = self._api.subs.selected_events
-        if sel:
-            match = self._get_regex("x").search(sel[0].text)
-            if match:
-                self._initial_value_x = float(match.group("value"))
-            match = self._get_regex("y").search(sel[0].text)
-            if match:
-                self._initial_value_y = float(match.group("value"))
-
-        self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
-
-    def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.end_capture()
-
-    def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
-        sel = self._api.subs.selected_events
-        if not sel:
-            return
-        display_pos = self._mouse_pos_calc.get_display_pos(event)
-        value_x = self._initial_value_x + (
-            display_pos.x() - self._initial_display_pos.x()
-        ) * 200 / (100 ** self._api.video.view.zoom)
-        value_y = self._initial_value_y + (
-            display_pos.y() - self._initial_display_pos.y()
-        ) * 200 / (100 ** self._api.video.view.zoom)
-
-        for sub in sel:
-            text = sub.text
-            if not event.modifiers() & LOCK_X_AXIS_MODIFIER:
-                text = self._get_regex("x").sub("", text)
-                text = f"{{\\fscx{value_x:.2f}}}" + text
-            if not event.modifiers() & LOCK_Y_AXIS_MODIFIER:
-                text = self._get_regex("y").sub("", text)
-                text = f"{{\\fscy{value_y:.2f}}}" + text
-            text = clean_ass_tags(text)
-            sub.text = text
-
-    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
-        with self._api.undo.capture():
-            for sub in self._api.subs.selected_events:
-                text = sub.text
-                text = self._get_regex("x").sub("", text)
-                text = self._get_regex("y").sub("", text)
-                text = clean_ass_tags(text)
-                sub.text = text
+    def _get_ass_tag(self, axis: str, value: float) -> str:
+        return f"{{\\fsc{axis}{value:.2f}}}"
 
     def _get_regex(self, axis: str) -> T.Pattern:
         return re.compile(rf"\\fsc{axis}(?P<value>-?[0-9\.]+)")
@@ -459,7 +409,8 @@ class VideoMouseModeController(QtCore.QObject):
         self._mode: T.Optional[VideoInteractionMode] = None
         self._handlers = {
             cls.mode: cls(api, self.mouse_pos_calc)
-            for cls in VideoMouseHandler.__subclasses__()
+            for cls in all_subclasses(VideoMouseHandler)
+            if cls.mode is not NotImplemented
         }
 
     @property

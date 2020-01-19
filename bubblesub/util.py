@@ -184,3 +184,14 @@ def ucfirst(source: str) -> str:
     if not source:
         return source
     return source[0].upper() + source[1:]
+
+
+def all_subclasses(cls: T.Any) -> T.Set[T.Any]:
+    """Return all subclasses of the given class.
+
+    :param cls: class to inspect
+    :return: subclasses of the given class
+    """
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in all_subclasses(c)]
+    )
