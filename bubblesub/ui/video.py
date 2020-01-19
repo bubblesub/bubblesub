@@ -52,6 +52,7 @@ class VideoInteractionMode(enum.IntEnum):
     SubRotation = 4
     SubRotationOrigin = 5
     SubShear = 6
+    SubScale = 7
 
 
 class MousePosCalculator:
@@ -382,6 +383,70 @@ class SubShearVideoMouseHandler(VideoMouseHandler):
         return re.compile(rf"\\fa{axis}(?P<value>-?[0-9\.]+)")
 
 
+class SubScaleVideoMouseHandler(VideoMouseHandler):
+    mode = VideoInteractionMode.SubScale
+
+    def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
+        super().__init__(api, mouse_pos_calc)
+        self._initial_value_x = 0.0
+        self._initial_value_y = 0.0
+        self._initial_display_pos = QtCore.QPointF(0, 0)
+
+    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
+        self._api.undo.begin_capture()
+
+        self._initial_value_x = 0.0
+        self._initial_value_y = 0.0
+        sel = self._api.subs.selected_events
+        if sel:
+            match = self._get_regex("x").search(sel[0].text)
+            if match:
+                self._initial_value_x = float(match.group("value"))
+            match = self._get_regex("y").search(sel[0].text)
+            if match:
+                self._initial_value_y = float(match.group("value"))
+
+        self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
+
+    def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
+        self._api.undo.end_capture()
+
+    def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
+        sel = self._api.subs.selected_events
+        if not sel:
+            return
+        display_pos = self._mouse_pos_calc.get_display_pos(event)
+        value_x = self._initial_value_x + (
+            display_pos.x() - self._initial_display_pos.x()
+        ) * 200 / (100 ** self._api.video.view.zoom)
+        value_y = self._initial_value_y + (
+            display_pos.y() - self._initial_display_pos.y()
+        ) * 200 / (100 ** self._api.video.view.zoom)
+
+        for sub in sel:
+            text = sub.text
+            if not event.modifiers() & LOCK_X_AXIS_MODIFIER:
+                text = self._get_regex("x").sub("", text)
+                text = f"{{\\fscx{value_x:.2f}}}" + text
+            if not event.modifiers() & LOCK_Y_AXIS_MODIFIER:
+                text = self._get_regex("y").sub("", text)
+                text = f"{{\\fscy{value_y:.2f}}}" + text
+            text = clean_ass_tags(text)
+            sub.text = text
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        with self._api.undo.capture():
+            for sub in self._api.subs.selected_events:
+                text = sub.text
+                text = self._get_regex("x").sub("", text)
+                text = self._get_regex("y").sub("", text)
+                text = clean_ass_tags(text)
+                sub.text = text
+
+    def _get_regex(self, axis: str) -> T.Pattern:
+        return re.compile(rf"\\fsc{axis}(?P<value>-?[0-9\.]+)")
+
+
 class VideoMouseModeController(QtCore.QObject):
     mode_changed = QtCore.pyqtSignal(object)
 
@@ -527,6 +592,11 @@ class VideoModeButtons(QtWidgets.QToolBar):
             "sub-shear",
             "Shear selected subtitles",
             VideoInteractionMode.SubShear,
+        )
+        self._add_mode_btn(
+            "sub-scale",
+            "Scale selected subtitles",
+            VideoInteractionMode.SubScale,
         )
 
     def _add_action_btn(
