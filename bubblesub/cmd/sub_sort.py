@@ -23,7 +23,7 @@ class SubtitlesSortCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return len(self.api.subs.events) > 0
+        return bool(self.api.subs.events)
 
     async def run(self) -> None:
         with self.api.undo.capture(), self.api.gui.throttle_updates():

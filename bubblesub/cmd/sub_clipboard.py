@@ -96,7 +96,7 @@ class SubtitlesPasteCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.args.origin.makes_sense
+        return self.args.origin.makes_sense or not self.api.subs.events
 
     async def run(self) -> None:
         indexes = await self.args.origin.get_indexes()
