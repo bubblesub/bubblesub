@@ -173,18 +173,20 @@ class AbsolutePositionVideoMouseHandler(VideoMouseHandler):
 
 class RelativeAxisVideoMouseHandler(VideoMouseHandler):
     default_scale = 1
+    default_initial_value_x = 0.0
+    default_initial_value_y = 0.0
 
     def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
         super().__init__(api, mouse_pos_calc)
-        self._initial_value_x = 0.0
-        self._initial_value_y = 0.0
+        self._initial_value_x = self.default_initial_value_x
+        self._initial_value_y = self.default_initial_value_y
         self._initial_display_pos = QtCore.QPointF(0, 0)
 
     def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
         self._api.undo.begin_capture()
 
-        self._initial_value_x = 0.0
-        self._initial_value_y = 0.0
+        self._initial_value_x = self.default_initial_value_x
+        self._initial_value_y = self.default_initial_value_y
         sel = self._api.subs.selected_events
         if sel:
             match = self._get_regex("x").search(sel[0].text)
@@ -389,6 +391,8 @@ class SubShearVideoMouseHandler(RelativeAxisVideoMouseHandler):
 class SubScaleVideoMouseHandler(RelativeAxisVideoMouseHandler):
     mode = VideoInteractionMode.SubScale
     default_scale = 100.0
+    default_initial_value_x = 100.0
+    default_initial_value_y = 100.0
 
     def _get_ass_tag(self, axis: str, value: float) -> str:
         return f"{{\\fsc{axis}{value:.2f}}}"
