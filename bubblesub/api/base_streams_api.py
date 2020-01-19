@@ -73,13 +73,18 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
         self.switch_stream(None)
 
     @synchronized(lock=stream_lock)
-    def load_stream(self, path: Path, switch: bool = True) -> None:
+    def load_stream(self, path: Path, switch: bool = True) -> bool:
         """Load stream from specified file.
 
         :param path: path to load the stream from
         :param switch: whether to switch to that stream immediately
+        :return: False if stream was already loaded, True otherwise
         """
-        # TODO: switch to stream when trying to load an already loaded source
+        for stream in self._streams:
+            if stream.path.samefile(path):
+                if switch:
+                    self.switch_stream(stream.uid)
+                return False
 
         stream = self._create_stream(path)
         stream.loaded.connect(partial(self._on_stream_load, stream))
@@ -90,6 +95,8 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
         if switch:
             self.switch_stream(stream.uid)
+
+        return True
 
     def get_stream_index(self, uid: uuid.UUID) -> T.Optional[int]:
         """Returns index of the given stream uid.
