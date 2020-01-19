@@ -48,9 +48,10 @@ def clean_ass_tags(text: str) -> str:
 class VideoInteractionMode(enum.IntEnum):
     Zoom = 1
     Pan = 2
-    SubMove = 3
-    SubRotate = 4
-    SubShear = 5
+    SubPosition = 3
+    SubRotation = 4
+    SubRotationOrigin = 5
+    SubShear = 6
 
 
 class MousePosCalculator:
@@ -180,8 +181,8 @@ class PanVideoMouseHandler(VideoMouseHandler):
         )
 
 
-class SubMoveVideoMouseHandler(VideoMouseHandler):
-    mode = VideoInteractionMode.SubMove
+class SubPositionVideoMouseHandler(VideoMouseHandler):
+    mode = VideoInteractionMode.SubPosition
     regex = re.compile(r"\\pos\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
     def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
@@ -220,7 +221,7 @@ class SubMoveVideoMouseHandler(VideoMouseHandler):
 
 
 class SubRotateMouseHandler(VideoMouseHandler):
-    mode = VideoInteractionMode.SubRotate
+    mode = VideoInteractionMode.SubRotation
 
     def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
         super().__init__(api, mouse_pos_calc)
@@ -276,6 +277,45 @@ class SubRotateMouseHandler(VideoMouseHandler):
 
     def _get_regex(self, axis: str) -> T.Pattern:
         return re.compile(rf"\\fr{axis}(?P<value>-?[0-9\.]+)")
+
+
+class SubRotationOriginVideoMouseHandler(VideoMouseHandler):
+    mode = VideoInteractionMode.SubRotationOrigin
+    regex = re.compile(r"\\org\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
+
+    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
+        self._api.undo.begin_capture()
+
+    def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
+        self._api.undo.end_capture()
+
+    def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
+        sel = self._api.subs.selected_events
+        video_pos = self._mouse_pos_calc.get_video_pos(event)
+        if not sel or not video_pos:
+            return
+        for sub in sel:
+            text = sub.text
+
+            match = self.regex.search(text)
+            sub_x = float(match.group("x")) if match else 0.0
+            sub_y = float(match.group("y")) if match else 0.0
+            new_x = video_pos.x()
+            new_y = video_pos.y()
+            if event.modifiers() & LOCK_X_AXIS_MODIFIER:
+                new_x = sub_x
+            elif event.modifiers() & LOCK_Y_AXIS_MODIFIER:
+                new_y = sub_y
+
+            text = self.regex.sub("", text)
+            text = f"{{\\org({new_x:.2f},{new_y:.2f})}}" + text
+            text = clean_ass_tags(text)
+            sub.text = text
+
+    def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
+        with self._api.undo.capture():
+            for sub in self._api.subs.selected_events:
+                sub.text = clean_ass_tags(self.regex.sub("", sub.text))
 
 
 class SubShearVideoMouseHandler(VideoMouseHandler):
@@ -469,12 +509,19 @@ class VideoModeButtons(QtWidgets.QToolBar):
         self.addSeparator()
 
         self._add_mode_btn(
-            "sub-move", "Move selected subtitles", VideoInteractionMode.SubMove
+            "sub-position",
+            "Move selected subtitles",
+            VideoInteractionMode.SubPosition,
         )
         self._add_mode_btn(
-            "sub-rotate",
+            "sub-rotation",
             "Rotate selected subtitles",
-            VideoInteractionMode.SubRotate,
+            VideoInteractionMode.SubRotation,
+        )
+        self._add_mode_btn(
+            "sub-rotation-origin",
+            "Set rotation origin for selected subtitles",
+            VideoInteractionMode.SubRotationOrigin,
         )
         self._add_mode_btn(
             "sub-shear",
