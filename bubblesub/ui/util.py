@@ -403,4 +403,9 @@ def build_splitter(
 
 
 def get_icon(name: str) -> QtGui.QIcon:
-    return QtGui.QIcon(str(ROOT_DIR / f"icon-{name}.png"))
+    pixmap = QtGui.QPixmap(str(ROOT_DIR / f"icon-{name}.png")).scaled(
+        QtCore.QSize(48, 48),
+        QtCore.Qt.KeepAspectRatio,
+        QtCore.Qt.SmoothTransformation,
+    )
+    return QtGui.QIcon(pixmap)
