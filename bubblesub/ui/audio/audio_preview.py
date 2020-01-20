@@ -162,6 +162,7 @@ class AudioPreview(BaseLocalAudioWidget):
         QtWidgets.QApplication.instance().installEventFilter(self)
 
         api.audio.stream_loaded.connect(self._on_audio_state_change)
+        api.audio.stream_unloaded.connect(self._on_audio_state_change)
         api.audio.current_stream_switched.connect(self._on_audio_state_change)
         api.audio.view.view_changed.connect(self._on_audio_view_change)
 
