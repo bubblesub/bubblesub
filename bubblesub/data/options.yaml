@@ -9,6 +9,9 @@ audio:
     auto_sel_lead_out: 10000
     auto_sel_max: 60000
 
+view:
+    current: "full"
+
 video:
     subs_sync_interval: 65
     sync_pos_to_selection: true
@@ -31,6 +34,12 @@ gui:
     grid_columns: {}
     splitters: {}
     fonts: {}
+
+    visibility: {
+        "console": false,
+        "note-editor": true,
+        "video-controller": true
+    }
 
     themes:
         dark:
