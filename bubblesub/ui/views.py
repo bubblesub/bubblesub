@@ -19,8 +19,6 @@ import enum
 from PyQt5 import QtCore, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.ui.audio import Audio
-from bubblesub.ui.video import Video
 
 
 class ViewLayout(enum.Enum):
