@@ -56,7 +56,7 @@ Context refers to the currently focused widget.
 |<kbd>Alt+D</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> text-editor -s</code> |
 |<kbd>Alt+Shift+D</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> note-editor -s</code> |
 |<kbd>Alt+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console-input -s</code> |
-|<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console</code> |
+|<kbd>Alt+Shift+C</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> console-window</code> |
 |<kbd>Alt+X</kbd> | global | <code><a href="#user-content-cmd-sub-split">sub-split</a> -p=cf</code> |
 |<kbd>Alt+J</kbd> | global | <code><a href="#user-content-cmd-sub-merge">sub-merge</a> --concat</code> |
 |<kbd>Alt+Up</kbd> | global | <code><a href="#user-content-cmd-sub-move">sub-move</a> --above</code> |
@@ -157,7 +157,7 @@ Opens up the metadata editor dialog.
 Focuses given widget.
 
 Usage: `focus‑widget target [-s|--select]`
-* `target`: which widget to focus (can be `text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console`, `console-input`)
+* `target`: which widget to focus (can be `text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console-window`, `console-input`)
 * `-s`, `--select`: whether to select the text
 
 ### <a name="cmd-list-audio"></a>`list‑audio`
@@ -303,6 +303,19 @@ Adjusts the video volume.
 
 Usage: `set‑volume expression`
 * `expression`: expression to calculate new volume
+
+### <a name="cmd-show-view"></a>`show‑view`
+Shows a view.
+
+Usage: `show‑view view`
+* `view`: which view to show (can be `ViewLayout.Full`, `ViewLayout.Audio`, `ViewLayout.Video`, `ViewLayout.Subs`)
+
+### <a name="cmd-show-widget"></a>`show‑widget`
+Shows given widget.
+
+Usage: `show‑widget target [-m|--mode=_WidgetMode.Toggle]`
+* `target`: which widget to show/hide (can be `note-editor`, `console`, `spectrogram`, `video-container`, `video-controller`, `video-volume`, `frame-label`, `audio-label`)
+* `-m`, `--mode`: visibility mode for a widget (can be `_WidgetMode.Show`, `_WidgetMode.Hide`, `_WidgetMode.Toggle`)
 
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.
