@@ -156,7 +156,7 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         self._empty = True
 
         self._syntax_highlight = ConsoleSyntaxHighlight(api, self)
-        self.setObjectName("console")
+        self.setObjectName("console-window")
         self.setReadOnly(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
 
@@ -341,6 +341,7 @@ class Console(QtWidgets.QWidget):
         super().__init__(parent)
 
         self._api = api
+        self.setObjectName("console")
         self.log_window = ConsoleLogWindow(api, self)
 
         strip = QtWidgets.QWidget(self)

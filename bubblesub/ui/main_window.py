@@ -38,6 +38,7 @@ from bubblesub.ui.statusbar import StatusBar
 from bubblesub.ui.subs_grid import SubtitlesGrid
 from bubblesub.ui.util import build_splitter
 from bubblesub.ui.video import Video
+from bubblesub.ui.views import ViewLayoutManager
 
 
 class ClosingState(enum.IntEnum):
@@ -60,6 +61,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid = SubtitlesGrid(api, self)
         self.status_bar = StatusBar(api, self)
         self.console = Console(api, self)
+
+        self.view_manager = ViewLayoutManager(api, self)
 
         self.editor_splitter = build_splitter(
             self,
@@ -103,8 +106,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
         self.apply_theme(api.cfg.opt["gui"]["current_theme"])
+        self.view_manager.restore_widgets_visibility()
         self._restore_fonts()
         self._restore_splitters()
+        self.view_manager.restore_view_layout()
         self._setup_menu()
 
         HotkeyManager(
@@ -117,7 +122,10 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         api.gui.terminated.connect(self._store_splitters)
+        api.gui.terminated.connect(self.view_manager.store_widgets_visibility)
+        api.gui.terminated.connect(self.view_manager.store_view_layout)
         api.gui.terminated.connect(self._store_fonts)
+
         api.gui.request_quit.connect(self.close)
         api.gui.request_begin_update.connect(
             lambda: self.setUpdatesEnabled(False)
