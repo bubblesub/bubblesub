@@ -19,6 +19,7 @@ import argparse
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import Pts
+from bubblesub.ui.views import TargetWidget
 
 
 class AudioSetSelectionCommand(BaseCommand):
@@ -29,6 +30,10 @@ class AudioSetSelectionCommand(BaseCommand):
         "spectrogram-set-selection",
     ]
     help_text = "Sets the spectrogram selection."
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.gui.is_widget_visible(str(TargetWidget.Spectrogram))
 
     async def run(self) -> None:
         with self.api.undo.capture():

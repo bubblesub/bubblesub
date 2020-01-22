@@ -18,11 +18,16 @@ import argparse
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ui.views import TargetWidget
 
 
 class AudioZoomViewCommand(BaseCommand):
     names = ["audio-zoom-view", "spectrogram-zoom-view"]
     help_text = "Zooms the spectrogram in or out by the specified factor."
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.gui.is_widget_visible(str(TargetWidget.Spectrogram))
 
     async def run(self) -> None:
         mouse_x = 0.5
