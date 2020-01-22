@@ -62,6 +62,8 @@ class FocusWidgetCommand(BaseCommand):
         }:
             return self.api.gui.is_widget_visible(str(self.args.target))
 
+        return True
+
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
