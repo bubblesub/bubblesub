@@ -515,6 +515,7 @@ class VideoModeButtons(QtWidgets.QToolBar):
         self._controller = controller
 
         self.setOrientation(QtCore.Qt.Vertical)
+        self.setObjectName("video-controller")
 
         self._btn_group = QtWidgets.QButtonGroup(self)
         self._btn_group.setExclusive(True)
@@ -728,6 +729,7 @@ class VideoVolumeControl(QtWidgets.QWidget):
         layout.addWidget(self._mute_btn)
         layout.setAlignment(self._volume_slider, QtCore.Qt.AlignHCenter)
 
+        self.setObjectName("video-volume")
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum
         )
@@ -775,6 +777,7 @@ class VideoVolumeControl(QtWidgets.QWidget):
 class Video(QtWidgets.QWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
+        self._api = api
         self._controller = VideoMouseModeController(api, self)
 
         self._video_preview = VideoPreview(api, self._controller, self)
@@ -795,3 +798,5 @@ class Video(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(left_layout)
         layout.addLayout(right_layout)
+
+        self.setObjectName("video-container")
