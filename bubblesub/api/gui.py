@@ -52,6 +52,21 @@ class GuiApi(QtCore.QObject):
         """
         self._main_window = main_window
 
+    def is_widget_visible(self, widget_name: str) -> bool:
+        """Say if a widget is visible.
+
+        :param widget_name: name of the widget to look for
+        :return: true if the widget is visible, false otherwise
+        """
+        widget = self._main_window.findChild(
+            QtWidgets.QWidget, str(widget_name)
+        )
+
+        if widget is None:
+            self._api.log.error("{} cannot be found".format(widget_name))
+
+        return widget.isVisible()
+
     async def exec(
         self, func: T.Callable[..., T.Any], *args: T.Any, **kwargs: T.Any
     ) -> T.Any:
