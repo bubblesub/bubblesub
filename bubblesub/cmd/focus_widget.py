@@ -43,13 +43,24 @@ class _TargetWidget(enum.Enum):
     CommentCheckbox = "comment-checkbox"
     SubtitlesGrid = "subtitles-grid"
     Spectrogram = "spectrogram"
-    Console = "console"
+    ConsoleWindow = "console-window"
     ConsoleInput = "console-input"
 
 
 class FocusWidgetCommand(BaseCommand):
     names = ["focus-widget"]
     help_text = "Focuses given widget."
+
+    @property
+    def is_enabled(self) -> bool:
+
+        if self.args.target in {
+            _TargetWidget.NoteEditor,
+            _TargetWidget.ConsoleWindow,
+            _TargetWidget.ConsoleInput,
+            _TargetWidget.Spectrogram,
+        }:
+            return self.api.gui.is_widget_visible(str(self.args.target))
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)

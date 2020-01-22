@@ -18,12 +18,17 @@ import argparse
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ui.views import TargetWidget
 from bubblesub.util import eval_expr
 
 
 class VideoZoomCommand(BaseCommand):
     names = ["video-zoom"]
     help_text = "Zooms the video in or out by the specified factor."
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.gui.is_widget_visible(str(TargetWidget.Video))
 
     async def run(self) -> None:
         self.api.video.view.zoom = eval_expr(

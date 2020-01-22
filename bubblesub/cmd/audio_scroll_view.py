@@ -18,6 +18,7 @@ import argparse
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.ui.views import TargetWidget
 
 
 class AudioScrollViewCommand(BaseCommand):
@@ -25,6 +26,10 @@ class AudioScrollViewCommand(BaseCommand):
     help_text = (
         "Scrolls the spectrogram horizontally by its width's percentage."
     )
+
+    @property
+    def is_enabled(self) -> bool:
+        return self.api.gui.is_widget_visible(str(TargetWidget.Spectrogram))
 
     async def run(self) -> None:
         distance = int(self.args.delta * self.api.audio.view.view_size)
