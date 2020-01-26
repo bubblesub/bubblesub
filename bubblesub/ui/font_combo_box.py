@@ -121,10 +121,10 @@ class _FontFamilyDelegate(QtWidgets.QAbstractItemDelegate):
         font_family = idx.data(QtCore.Qt.DisplayRole)
         font = QtGui.QFont(option.font)
         font.setPointSize(QtGui.QFontInfo(font).pointSize() * 3 / 2)
-        w = QtGui.QFontMetrics(font).horizontalAdvance(
-            font_family + self.sample_text
-        )
-        h = QtGui.QFontMetrics(font).height()
+        metrics = QtGui.QFontMetrics(font)
+        box = metrics.boundingRect(font_family + self.sample_text)
+        w = box.width()
+        h = metrics.height()
 
         return QtCore.QSize(w, h)
 
