@@ -73,9 +73,7 @@ class MenuPlaceholder(MenuItem):
 class SubMenu(MenuItem):
     """Menu item that opens up another sub menu."""
 
-    def __init__(
-        self, name: str, children: T.MutableSequence[MenuItem]
-    ) -> None:
+    def __init__(self, name: str, children: T.List[MenuItem]) -> None:
         """Initialize self.
 
         :param name: menu label
@@ -91,7 +89,7 @@ class MenuConfig(SubConfig):
     def __init__(self) -> None:
         """Initialize self."""
         super().__init__()
-        self._menu: T.Dict[MenuContext, T.MutableSequence[MenuItem]] = {
+        self._menu: T.Dict[MenuContext, T.List[MenuItem]] = {
             context: [] for context in MenuContext
         }
         self.load(None)
@@ -145,9 +143,7 @@ class MenuConfig(SubConfig):
             sections[cur_context] += line + "\n"
 
         def _recurse_tree(
-            parent: T.MutableSequence[MenuItem],
-            parent_depth: int,
-            source: T.List[str],
+            parent: T.List[MenuItem], parent_depth: int, source: T.List[str]
         ) -> None:
             while source:
                 last_line = source[0].rstrip()
@@ -177,7 +173,7 @@ class MenuConfig(SubConfig):
             source = section_text.split("\n")
             _recurse_tree(self._menu[context], -1, source)
 
-    def __getitem__(self, context: MenuContext) -> T.MutableSequence[MenuItem]:
+    def __getitem__(self, context: MenuContext) -> T.List[MenuItem]:
         """Retrieve list of menu items by the specified context.
 
         :param context: context
@@ -185,9 +181,7 @@ class MenuConfig(SubConfig):
         """
         return self._menu[context]
 
-    def __iter__(
-        self,
-    ) -> T.Iterator[T.Tuple[MenuContext, T.MutableSequence[MenuItem]]]:
+    def __iter__(self,) -> T.Iterator[T.Tuple[MenuContext, T.List[MenuItem]]]:
         """Let users iterate directly over this config.
 
         :return: iterator
