@@ -103,37 +103,25 @@ class ViewManager(QtCore.QObject):
         if self._view != view:
             self._run_view(view)
 
-    def restore_view_layout(self) -> None:
-        view = View(self._api.cfg.opt["view"]["current"])
-        self._run_view(view)
-
-    def store_view_layout(self) -> None:
-        view = {
-            View.Full: "full",
-            View.Audio: "audio",
-            View.Video: "video",
-            View.Subs: "subs",
-        }.get(self._view)
-
-        self._api.cfg.opt["view"]["current"] = view
-
-    def restore_widgets_visibility(self) -> None:
-        for (key, data) in self._api.cfg.opt["gui"]["visibility"].items():
-            widget = self._main_window.findChild(QtWidgets.QWidget, key)
-            widget.setVisible(data)
-
-    def store_widgets_visibility(self) -> None:
-        def _store_widget(widget_name: str) -> bool:
-            widget = self._main_window.findChild(
-                QtWidgets.QWidget, widget_name
+    def restore_view(self) -> None:
+        self._view = View(self._api.cfg.opt["view"]["current"])
+        for widget in TargetWidget:
+            visibility = self._api.cfg.opt["gui"]["visibility"].get(
+                widget.value
             )
-            return widget.isVisible()
+            if visibility is not None:
+                self._main_window.findChild(
+                    QtWidgets.QWidget, widget.value
+                ).setVisible(visibility)
 
+    def store_view(self) -> None:
         self._api.cfg.opt["gui"]["visibility"] = {
-            "console": _store_widget("console-container"),
-            "note-editor": _store_widget("note-editor"),
-            "video-controller": _store_widget("video-controller"),
+            widget.value: self._main_window.findChild(
+                QtWidgets.QWidget, widget.value
+            ).isVisible()
+            for widget in TargetWidget
         }
+        self._api.cfg.opt["view"]["current"] = self._view.value
 
     def _run_view(self, view: View) -> None:
         visibility_map = VIEW_WIDGET_VISIBILITY_MAP[view]

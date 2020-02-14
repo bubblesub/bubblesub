@@ -106,10 +106,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
         self.apply_theme(api.cfg.opt["gui"]["current_theme"])
-        self.view_manager.restore_widgets_visibility()
+        self.view_manager.restore_view()
         self._restore_fonts()
         self._restore_splitters()
-        self.view_manager.restore_view_layout()
         self._setup_menu()
 
         HotkeyManager(
@@ -122,8 +121,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         api.gui.terminated.connect(self._store_splitters)
-        api.gui.terminated.connect(self.view_manager.store_widgets_visibility)
-        api.gui.terminated.connect(self.view_manager.store_view_layout)
+        api.gui.terminated.connect(self.view_manager.store_view)
         api.gui.terminated.connect(self._store_fonts)
 
         api.gui.request_quit.connect(self.close)
