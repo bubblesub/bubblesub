@@ -32,7 +32,7 @@ class VisibilityMode(BooleanOperation):
 
 class ShowWidgetCommand(BaseCommand):
     names = ["show-widget"]
-    help_text = "Shows given widget."
+    help_text = "Shows or hides given widget."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
@@ -47,7 +47,7 @@ class ShowWidgetCommand(BaseCommand):
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "target",
-            help="which widget to show/hide",
+            help="target widget",
             type=TargetWidget,
             choices=list(TargetWidget),
         )
@@ -55,7 +55,7 @@ class ShowWidgetCommand(BaseCommand):
         parser.add_argument(
             "-m",
             "--mode",
-            help="visibility mode for a widget",
+            help="whether to show or hide the widget",
             type=VisibilityMode,
             choices=VisibilityMode.choices(),
             default=VisibilityMode.TOGGLE[0],

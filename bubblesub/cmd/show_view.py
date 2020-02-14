@@ -25,7 +25,7 @@ from bubblesub.ui.views import View
 
 class ShowViewCommand(BaseCommand):
     names = ["show-view"]
-    help_text = "Shows a view."
+    help_text = "Switches to a different view layout."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)

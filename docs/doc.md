@@ -305,17 +305,17 @@ Usage: `set‑volume expression`
 * `expression`: expression to calculate new volume
 
 ### <a name="cmd-show-view"></a>`show‑view`
-Shows a view.
+Switches to a different view layout.
 
 Usage: `show‑view view`
 * `view`: which view to show (can be `full`, `audio`, `video`, `subs`)
 
 ### <a name="cmd-show-widget"></a>`show‑widget`
-Shows given widget.
+Shows or hides given widget.
 
 Usage: `show‑widget target [-m|--mode=toggle]`
-* `target`: which widget to show/hide (can be `note-editor`, `video-container`, `video-controller`, `video-volume`, `status`, `status-frame-label`, `status-audio-label`, `text-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console-container`, `console-window`, `console-input`)
-* `-m`, `--mode`: visibility mode for a widget (can be `show`, `hide`, `toggle`)
+* `target`: target widget (can be `note-editor`, `video-container`, `video-controller`, `video-volume`, `status`, `status-frame-label`, `status-audio-label`, `text-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console-container`, `console-window`, `console-input`)
+* `-m`, `--mode`: whether to show or hide the widget (can be `show`, `hide`, `toggle`)
 
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.

@@ -53,7 +53,7 @@ class GuiApi(QtCore.QObject):
         self._main_window = main_window
 
     def is_widget_visible(self, widget_name: str) -> bool:
-        """Say if a widget is visible.
+        """Return whether a widget is visible.
 
         :param widget_name: name of the widget to look for
         :return: true if the widget is visible, false otherwise
