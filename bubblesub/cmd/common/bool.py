@@ -16,31 +16,38 @@
 
 """Boolean operation."""
 
-_YES = ("1", "yes", "y", "on", "enable")
-_NO = ("0", "no", "n", "off", "disable")
-_TOGGLE = ("toggle",)
+import typing as T
 
 
 class BooleanOperation:
+    YES = ["1", "yes", "y", "on", "enable"]
+    NO = ["0", "no", "n", "off", "disable"]
+    TOGGLE = ["toggle"]
+
     def __init__(self, operation: str) -> None:
         self.operation = operation
 
-    def get_description(
-        self, yes_desc: str, no_desc: str, toggle_desc: str
-    ) -> str:
-        if self.operation in _YES:
-            return yes_desc
-        if self.operation in _NO:
-            return no_desc
-        if self.operation in _TOGGLE:
-            return toggle_desc
-        raise ValueError(f'unknown operation: "{self.operation}"')
+    def __str__(self) -> str:
+        return self.operation
+
+    def __hash__(self) -> int:
+        return hash(self.operation)
+
+    def __eq__(self, other) -> bool:
+        return (
+            isinstance(other, BooleanOperation)
+            and self.operation == other.operation
+        )
+
+    @classmethod
+    def choices(cls: T.Any) -> T.List[T.Any]:
+        return [cls(choice) for choice in cls.YES + cls.NO + cls.TOGGLE]
 
     def apply(self, origin: bool) -> bool:
-        if self.operation in _YES:
+        if self.operation in self.YES:
             return True
-        if self.operation in _NO:
+        if self.operation in self.NO:
             return False
-        if self.operation in _TOGGLE:
+        if self.operation in self.TOGGLE:
             return not origin
         raise ValueError(f'unknown operation: "{self.operation}"')

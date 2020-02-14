@@ -36,6 +36,7 @@ class MuteCommand(BaseCommand):
             "operation",
             help="whether to mute the audio",
             type=BooleanOperation,
+            choices=BooleanOperation.choices(),
         )
 
 
