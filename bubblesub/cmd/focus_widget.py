@@ -26,9 +26,6 @@ from bubblesub.api.cmd import BaseCommand
 class _TargetWidget(enum.Enum):
     """Known widgets in GUI."""
 
-    def __str__(self) -> str:
-        return self.value
-
     TextEditor = "text-editor"
     NoteEditor = "note-editor"
     StyleEditor = "style-editor"
