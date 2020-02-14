@@ -308,7 +308,7 @@ Usage: `set‑volume expression`
 Shows a view.
 
 Usage: `show‑view view`
-* `view`: which view to show (can be `ViewLayout.Full`, `ViewLayout.Audio`, `ViewLayout.Video`, `ViewLayout.Subs`)
+* `view`: which view to show (can be `full`, `audio`, `video`, `subs`)
 
 ### <a name="cmd-show-widget"></a>`show‑widget`
 Shows given widget.

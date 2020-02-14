@@ -21,7 +21,10 @@ from PyQt5 import QtCore, QtWidgets
 from bubblesub.api import Api
 
 
-class ViewLayout(enum.Enum):
+class View(enum.Enum):
+    def __str__(self) -> str:
+        return self.value
+
     Full = "full"
     Audio = "audio"
     Video = "video"
@@ -57,36 +60,60 @@ class TargetWidget(enum.Enum):
     ConsoleInput = "console-input"
 
 
-class ViewLayoutManager(QtCore.QObject):
+VIEW_WIDGET_VISIBILITY_MAP = {
+    View.Full: {
+        TargetWidget.Spectrogram: True,
+        TargetWidget.VideoContainer: True,
+        TargetWidget.StatusAudioLabel: True,
+        TargetWidget.StatusFrameLabel: True,
+    },
+    View.Audio: {
+        TargetWidget.Spectrogram: True,
+        TargetWidget.VideoContainer: False,
+        TargetWidget.StatusAudioLabel: True,
+        TargetWidget.StatusFrameLabel: False,
+    },
+    View.Video: {
+        TargetWidget.Spectrogram: False,
+        TargetWidget.VideoContainer: True,
+        TargetWidget.StatusAudioLabel: False,
+        TargetWidget.StatusFrameLabel: True,
+    },
+    View.Subs: {
+        TargetWidget.Spectrogram: False,
+        TargetWidget.VideoContainer: False,
+        TargetWidget.StatusAudioLabel: False,
+        TargetWidget.StatusFrameLabel: False,
+    },
+}
+
+
+class ViewManager(QtCore.QObject):
     def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
         super().__init__(main_window)
-
         self._api = api
         self._main_window = main_window
-        self._view_layout = ViewLayout.Full
+        self._view = View.Full
 
     @property
-    def view_layout(self) -> ViewLayout:
-        return self._view_layout
+    def current_view(self) -> View:
+        return self._view
 
-    @view_layout.setter
-    def view_layout(self, view_layout: ViewLayout) -> None:
-        if self._view_layout == view_layout:
-            return
-
-        self._run_view(view_layout)
+    def set_view(self, view: View) -> None:
+        if self._view != view:
+            self._run_view(view)
 
     def restore_view_layout(self) -> None:
-        view_layout = ViewLayout(self._api.cfg.opt["view"]["current"])
-        self._run_view(view_layout)
+        view = View(self._api.cfg.opt["view"]["current"])
+        self._run_view(view)
 
     def store_view_layout(self) -> None:
         view = {
-            ViewLayout.Full: "full",
-            ViewLayout.Audio: "audio",
-            ViewLayout.Video: "video",
-            ViewLayout.Subs: "subs",
-        }.get(self._view_layout)
+            View.Full: "full",
+            View.Audio: "audio",
+            View.Video: "video",
+            View.Subs: "subs",
+        }.get(self._view)
 
         self._api.cfg.opt["view"]["current"] = view
 
@@ -108,77 +135,13 @@ class ViewLayoutManager(QtCore.QObject):
             "video-controller": _store_widget("video-controller"),
         }
 
-    def _run_view(self, view_layout: ViewLayout) -> None:
-        func = {
-            ViewLayout.Full: self._full_view_layout,
-            ViewLayout.Audio: self._audio_view_layout,
-            ViewLayout.Video: self._video_view_layout,
-            ViewLayout.Subs: self._subs_view_layout,
-        }.get(view_layout)
+    def _run_view(self, view: View) -> None:
+        visibility_map = VIEW_WIDGET_VISIBILITY_MAP[view]
 
-        if func is not None:
-            func()
-        else:
-            self._api.log.error(f"Error setting the view")
-
-    def _audio_view_layout(self) -> None:
-        self._view_layout = ViewLayout.Audio
-
+        self._view = view
         self._api.playback.is_paused = True
 
-        self._widgets_visibility(
-            spectrogram="show",
-            audio_label="show",
-            video="hide",
-            frame_label="hide",
-        )
-
-    def _video_view_layout(self) -> None:
-        self._view_layout = ViewLayout.Video
-
-        self._api.playback.is_paused = True
-
-        self._widgets_visibility(
-            spectrogram="hide",
-            audio_label="hide",
-            video="show",
-            frame_label="show",
-        )
-
-        self._api.cmd.run_cmdline("show-widget video-volume -m hide")
-
-    def _subs_view_layout(self) -> None:
-        self._view_layout = ViewLayout.Subs
-
-        self._api.playback.is_paused = True
-        self._widgets_visibility(
-            spectrogram="hide",
-            audio_label="hide",
-            video="hide",
-            frame_label="hide",
-        )
-
-    def _full_view_layout(self) -> None:
-        self._view_layout = ViewLayout.Full
-
-        self._api.playback.is_paused = True
-
-        self._widgets_visibility(
-            spectrogram="show",
-            audio_label="show",
-            video="show",
-            frame_label="show",
-        )
-        self._api.cmd.run_cmdline("show-widget video-volume -m show")
-
-    def _widgets_visibility(
-        self, spectrogram: str, audio_label: str, video: str, frame_label: str
-    ) -> None:
-        self._api.cmd.run_cmdline("show-widget spectrogram -m " + spectrogram)
-        self._api.cmd.run_cmdline(
-            "show-widget status-audio-label -m " + audio_label
-        )
-        self._api.cmd.run_cmdline("show-widget video-container -m " + video)
-        self._api.cmd.run_cmdline(
-            "show-widget status-frame-label -m " + frame_label
-        )
+        for widget, visible in visibility_map.items():
+            self._main_window.findChild(
+                QtWidgets.QWidget, widget.value
+            ).setVisible(visible)

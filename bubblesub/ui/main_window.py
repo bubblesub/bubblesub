@@ -38,7 +38,7 @@ from bubblesub.ui.statusbar import StatusBar
 from bubblesub.ui.subs_grid import SubtitlesGrid
 from bubblesub.ui.util import build_splitter
 from bubblesub.ui.video import Video
-from bubblesub.ui.views import ViewLayoutManager
+from bubblesub.ui.views import ViewManager
 
 
 class ClosingState(enum.IntEnum):
@@ -62,7 +62,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.status_bar = StatusBar(api, self)
         self.console = Console(api, self)
 
-        self.view_manager = ViewLayoutManager(api, self)
+        self.view_manager = ViewManager(api, self)
 
         self.editor_splitter = build_splitter(
             self,
