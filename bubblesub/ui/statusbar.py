@@ -33,8 +33,9 @@ class StatusBar(QtWidgets.QStatusBar):
         self._audio_selection_label = QtWidgets.QLabel(self)
         self.setSizeGripEnabled(False)
 
-        self._audio_selection_label.setObjectName("audio-label")
-        self._video_frame_label.setObjectName("frame-label")
+        self.setObjectName("status")
+        self._audio_selection_label.setObjectName("status-audio-label")
+        self._video_frame_label.setObjectName("status-frame-label")
 
         for label in [
             self._subs_label,

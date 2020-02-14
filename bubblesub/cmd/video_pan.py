@@ -28,7 +28,9 @@ class VideoPanCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.gui.is_widget_visible(TargetWidget.Video.value)
+        return self.api.gui.is_widget_visible(
+            TargetWidget.VideoContainer.value
+        )
 
     async def run(self) -> None:
         self.api.video.view.pan = (
