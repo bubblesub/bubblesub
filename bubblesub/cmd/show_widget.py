@@ -15,21 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import enum
 
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.cmd.common import BooleanOperation
 from bubblesub.ui.views import TargetWidget
 
 
-class _WidgetMode(enum.Enum):
-    """Visibility mode for a GUI widget."""
-
-    Show = "show"
-    Hide = "hide"
-    Toggle = "toggle"
+class VisibilityMode(BooleanOperation):
+    YES = ["show"]
+    NO = ["hide"]
+    TOGGLE = ["toggle"]
 
 
 class ShowWidgetCommand(BaseCommand):
@@ -43,16 +41,7 @@ class ShowWidgetCommand(BaseCommand):
         widget = main_window.findChild(
             QtWidgets.QWidget, str(self.args.target)
         )
-
-        run_operation = {
-            _WidgetMode.Show: lambda: widget.setVisible(True),
-            _WidgetMode.Hide: lambda: widget.setVisible(False),
-            _WidgetMode.Toggle: lambda: widget.setVisible(
-                not widget.isVisible()
-            ),
-        }.get(self.args.mode)
-
-        run_operation()
+        widget.setVisible(self.args.mode.apply(widget.isVisible()))
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
@@ -67,9 +56,9 @@ class ShowWidgetCommand(BaseCommand):
             "-m",
             "--mode",
             help="visibility mode for a widget",
-            type=_WidgetMode,
-            default=_WidgetMode.Toggle,
-            choices=list(_WidgetMode),
+            type=VisibilityMode,
+            choices=VisibilityMode.choices(),
+            default=VisibilityMode.TOGGLE[0],
         )
 
 

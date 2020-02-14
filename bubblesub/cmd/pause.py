@@ -40,6 +40,7 @@ class PauseCommand(BaseCommand):
             "operation",
             help="whether to pause the video",
             type=BooleanOperation,
+            choices=BooleanOperation.choices(),
         )
 
 

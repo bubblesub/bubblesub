@@ -187,7 +187,7 @@ Opens up the style manager.
 Mutes or unmutes the video audio.
 
 Usage: `mute operation`
-* `operation`: whether to mute the audio
+* `operation`: whether to mute the audio (can be `1`, `yes`, `y`, `on`, `enable`, `0`, `no`, `n`, `off`, `disable`, `toggle`)
 
 ### <a name="cmd-new"></a>`new`
 Opens a new file. Prompts user to save the current file if there are unsaved changes.
@@ -205,7 +205,7 @@ Usage: `open [-p|--path=…]`
 Pauses or unpauses the video playback.
 
 Usage: `pause operation`
-* `operation`: whether to pause the video
+* `operation`: whether to pause the video (can be `1`, `yes`, `y`, `on`, `enable`, `0`, `no`, `n`, `off`, `disable`, `toggle`)
 
 ### <a name="cmd-play-region"></a>`play‑region`
 Seeks to region start and plays audio/video until region end.
@@ -313,9 +313,9 @@ Usage: `show‑view view`
 ### <a name="cmd-show-widget"></a>`show‑widget`
 Shows given widget.
 
-Usage: `show‑widget target [-m|--mode=_WidgetMode.Toggle]`
+Usage: `show‑widget target [-m|--mode=toggle]`
 * `target`: which widget to show/hide (can be `note-editor`, `video-container`, `video-controller`, `video-volume`, `status`, `status-frame-label`, `status-audio-label`, `text-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console-container`, `console-window`, `console-input`)
-* `-m`, `--mode`: visibility mode for a widget (can be `_WidgetMode.Show`, `_WidgetMode.Hide`, `_WidgetMode.Toggle`)
+* `-m`, `--mode`: visibility mode for a widget (can be `show`, `hide`, `toggle`)
 
 ### <a name="cmd-spell-check"></a>`spell‑check`
 Opens up the spell check dialog.
