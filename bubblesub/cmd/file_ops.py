@@ -90,8 +90,10 @@ class ReopenCommand(BaseCommand):
         if not await self.api.gui.confirm_unsaved_changes():
             return
 
-        self.api.subs.load_ass(self.api.subs.path)
-        self.api.log.info(f"reloaded {self.api.subs.path}")
+        path = self.api.subs.path
+        assert path
+        self.api.subs.load_ass(path)
+        self.api.log.info(f"reloaded {path}")
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

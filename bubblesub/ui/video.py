@@ -172,7 +172,7 @@ class AbsolutePositionVideoMouseHandler(VideoMouseHandler):
 
 
 class RelativeAxisVideoMouseHandler(VideoMouseHandler):
-    default_scale = 1
+    default_scale = 1.0
     default_initial_value_x = 0.0
     default_initial_value_y = 0.0
 
