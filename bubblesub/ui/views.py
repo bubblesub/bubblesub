@@ -22,7 +22,6 @@ from bubblesub.api import Api
 
 
 class ViewLayout(enum.Enum):
-
     Full = "full"
     Audio = "audio"
     Video = "video"
@@ -34,17 +33,31 @@ class TargetWidget(enum.Enum):
         return self.value
 
     NoteEditor = "note-editor"
-    Console = "console"
-    Spectrogram = "spectrogram"
     Video = "video-container"
     VideoController = "video-controller"
     VideoVolume = "video-volume"
     FrameLabel = "frame-label"
     AudioLabel = "audio-label"
+    TextEditor = "text-editor"
+    StyleEditor = "style-editor"
+    ActorEditor = "actor-editor"
+    LayerEditor = "layer-editor"
+    MarginLeftEditor = "margin-left-editor"
+    MarginRightEditor = "margin-right-editor"
+    MarginVerticalEditor = "margin-vertical-editor"
+    StartTimeEditor = "start-time-editor"
+    EndTimeEditor = "end-time-editor"
+    DurationEditor = "duration-editor"
+    CommentCheckbox = "comment-checkbox"
+    SubtitlesGrid = "subtitles-grid"
+    Spectrogram = "spectrogram"
+    Console = "console"
+    ConsoleWindow = "console-window"
+    ConsoleInput = "console-input"
 
 
 class ViewLayoutManager(QtCore.QObject):
-    def __init__(self, api: Api, main_window: QtWidgets.QMainWindow,) -> None:
+    def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
         super().__init__(main_window)
 
         self._api = api

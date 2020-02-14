@@ -15,33 +15,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import enum
 
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-
-
-class _TargetWidget(enum.Enum):
-    """Known widgets in GUI."""
-
-    TextEditor = "text-editor"
-    NoteEditor = "note-editor"
-    StyleEditor = "style-editor"
-    ActorEditor = "actor-editor"
-    LayerEditor = "layer-editor"
-    MarginLeftEditor = "margin-left-editor"
-    MarginRightEditor = "margin-right-editor"
-    MarginVerticalEditor = "margin-vertical-editor"
-    StartTimeEditor = "start-time-editor"
-    EndTimeEditor = "end-time-editor"
-    DurationEditor = "duration-editor"
-    CommentCheckbox = "comment-checkbox"
-    SubtitlesGrid = "subtitles-grid"
-    Spectrogram = "spectrogram"
-    ConsoleWindow = "console-window"
-    ConsoleInput = "console-input"
+from bubblesub.ui.views import TargetWidget
 
 
 class FocusWidgetCommand(BaseCommand):
@@ -50,16 +29,7 @@ class FocusWidgetCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-
-        if self.args.target in {
-            _TargetWidget.NoteEditor,
-            _TargetWidget.ConsoleWindow,
-            _TargetWidget.ConsoleInput,
-            _TargetWidget.Spectrogram,
-        }:
-            return self.api.gui.is_widget_visible(str(self.args.target))
-
-        return True
+        return self.api.gui.is_widget_visible(self.args.target.value)
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
@@ -77,8 +47,8 @@ class FocusWidgetCommand(BaseCommand):
         parser.add_argument(
             "target",
             help="which widget to focus",
-            type=_TargetWidget,
-            choices=list(_TargetWidget),
+            type=TargetWidget,
+            choices=list(TargetWidget),
         )
         parser.add_argument(
             "-s",
