@@ -157,7 +157,7 @@ Opens up the metadata editor dialog.
 Focuses given widget.
 
 Usage: `focus‑widget target [-s|--select]`
-* `target`: which widget to focus (can be `text-editor`, `note-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console-window`, `console-input`)
+* `target`: which widget to focus (can be `note-editor`, `video-container`, `video-controller`, `video-volume`, `status`, `status-frame-label`, `status-audio-label`, `text-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console-container`, `console-window`, `console-input`)
 * `-s`, `--select`: whether to select the text
 
 ### <a name="cmd-list-audio"></a>`list‑audio`
@@ -314,7 +314,7 @@ Usage: `show‑view view`
 Shows given widget.
 
 Usage: `show‑widget target [-m|--mode=_WidgetMode.Toggle]`
-* `target`: which widget to show/hide (can be `note-editor`, `console`, `spectrogram`, `video-container`, `video-controller`, `video-volume`, `frame-label`, `audio-label`)
+* `target`: which widget to show/hide (can be `note-editor`, `video-container`, `video-controller`, `video-volume`, `status`, `status-frame-label`, `status-audio-label`, `text-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console-container`, `console-window`, `console-input`)
 * `-m`, `--mode`: visibility mode for a widget (can be `_WidgetMode.Show`, `_WidgetMode.Hide`, `_WidgetMode.Toggle`)
 
 ### <a name="cmd-spell-check"></a>`spell‑check`

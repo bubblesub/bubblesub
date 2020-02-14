@@ -339,9 +339,10 @@ class ConsoleInput(QtWidgets.QLineEdit):
 class Console(QtWidgets.QWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
-
         self._api = api
-        self.setObjectName("console")
+
+        self.setObjectName("console-container")
+
         self.log_window = ConsoleLogWindow(api, self)
 
         strip = QtWidgets.QWidget(self)

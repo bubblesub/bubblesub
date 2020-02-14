@@ -780,6 +780,8 @@ class Video(QtWidgets.QWidget):
         self._api = api
         self._controller = VideoMouseModeController(api, self)
 
+        self.setObjectName("video-container")
+
         self._video_preview = VideoPreview(api, self._controller, self)
         self._volume_control = VideoVolumeControl(api, self)
         self._mode_btns = VideoModeButtons(api, self._controller, self)
@@ -798,5 +800,3 @@ class Video(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(left_layout)
         layout.addLayout(right_layout)
-
-        self.setObjectName("video-container")

@@ -33,11 +33,12 @@ class TargetWidget(enum.Enum):
         return self.value
 
     NoteEditor = "note-editor"
-    Video = "video-container"
+    VideoContainer = "video-container"
     VideoController = "video-controller"
     VideoVolume = "video-volume"
-    FrameLabel = "frame-label"
-    AudioLabel = "audio-label"
+    Status = "status"
+    StatusFrameLabel = "status-frame-label"
+    StatusAudioLabel = "status-audio-label"
     TextEditor = "text-editor"
     StyleEditor = "style-editor"
     ActorEditor = "actor-editor"
@@ -51,7 +52,7 @@ class TargetWidget(enum.Enum):
     CommentCheckbox = "comment-checkbox"
     SubtitlesGrid = "subtitles-grid"
     Spectrogram = "spectrogram"
-    Console = "console"
+    ConsoleContainer = "console-container"
     ConsoleWindow = "console-window"
     ConsoleInput = "console-input"
 
@@ -92,7 +93,6 @@ class ViewLayoutManager(QtCore.QObject):
     def restore_widgets_visibility(self) -> None:
         for (key, data) in self._api.cfg.opt["gui"]["visibility"].items():
             widget = self._main_window.findChild(QtWidgets.QWidget, key)
-
             widget.setVisible(data)
 
     def store_widgets_visibility(self) -> None:
@@ -100,11 +100,10 @@ class ViewLayoutManager(QtCore.QObject):
             widget = self._main_window.findChild(
                 QtWidgets.QWidget, widget_name
             )
-
             return widget.isVisible()
 
         self._api.cfg.opt["gui"]["visibility"] = {
-            "console": _store_widget("console"),
+            "console": _store_widget("console-container"),
             "note-editor": _store_widget("note-editor"),
             "video-controller": _store_widget("video-controller"),
         }
@@ -176,6 +175,10 @@ class ViewLayoutManager(QtCore.QObject):
         self, spectrogram: str, audio_label: str, video: str, frame_label: str
     ) -> None:
         self._api.cmd.run_cmdline("show-widget spectrogram -m " + spectrogram)
-        self._api.cmd.run_cmdline("show-widget audio-label -m " + audio_label)
+        self._api.cmd.run_cmdline(
+            "show-widget status-audio-label -m " + audio_label
+        )
         self._api.cmd.run_cmdline("show-widget video-container -m " + video)
-        self._api.cmd.run_cmdline("show-widget frame-label -m " + frame_label)
+        self._api.cmd.run_cmdline(
+            "show-widget status-frame-label -m " + frame_label
+        )
