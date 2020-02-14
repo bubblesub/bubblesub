@@ -15,62 +15,32 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import enum
 
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ui.views import TargetWidget
+from bubblesub.ui.views import ViewLayout
 
 
-class _WidgetMode(enum.Enum):
-    """Visibility mode for a GUI widget."""
-
-    Show = "show"
-    Hide = "hide"
-    Toggle = "toggle"
-
-
-class ShowWidgetCommand(BaseCommand):
-    names = ["show-widget"]
-    help_text = "Shows given widget."
+class ShowViewCommand(BaseCommand):
+    names = ["show-view"]
+    help_text = "Shows a view."
 
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        widget = main_window.findChild(
-            QtWidgets.QWidget, str(self.args.target)
-        )
-
-        run_operation = {
-            _WidgetMode.Show: lambda: widget.setVisible(True),
-            _WidgetMode.Hide: lambda: widget.setVisible(False),
-            _WidgetMode.Toggle: lambda: widget.setVisible(
-                not widget.isVisible()
-            ),
-        }.get(self.args.mode)
-
-        run_operation()
+        main_window.view_manager.view_layout = self.args.view
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            "target",
-            help="which widget to show/hide",
-            type=TargetWidget,
-            choices=list(TargetWidget),
-        )
-
-        parser.add_argument(
-            "-m",
-            "--mode",
-            help="visibility mode for a widget",
-            type=_WidgetMode,
-            default=_WidgetMode.Toggle,
-            choices=list(_WidgetMode),
+            "view",
+            help="which view to show",
+            type=ViewLayout,
+            choices=list(ViewLayout),
         )
 
 
-COMMANDS = [ShowWidgetCommand]
+COMMANDS = [ShowViewCommand]
