@@ -20,7 +20,7 @@ from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ui.views import ViewLayout
+from bubblesub.ui.views import View
 
 
 class ShowViewCommand(BaseCommand):
@@ -31,15 +31,12 @@ class ShowViewCommand(BaseCommand):
         await self.api.gui.exec(self._run_with_gui)
 
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
-        main_window.view_manager.view_layout = self.args.view
+        main_window.view_manager.set_view(self.args.view)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            "view",
-            help="which view to show",
-            type=ViewLayout,
-            choices=list(ViewLayout),
+            "view", help="which view to show", type=View, choices=list(View)
         )
 
 
