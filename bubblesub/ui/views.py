@@ -115,12 +115,22 @@ class ViewManager(QtCore.QObject):
                 ).setVisible(visibility)
 
     def store_view(self) -> None:
-        self._api.cfg.opt["gui"]["visibility"] = {
-            widget.value: self._main_window.findChild(
-                QtWidgets.QWidget, widget.value
-            ).isVisible()
-            for widget in TargetWidget
-        }
+        visibility_map = {}
+        for target_widget in TargetWidget:
+            widget = self._main_window.findChild(
+                QtWidgets.QWidget, target_widget.value
+            )
+
+            parent = widget.parent()
+            parents_visible = parent.isVisible()
+            while parent:
+                parents_visible &= parent.isVisible()
+                parent = parent.parent()
+
+            if parents_visible:
+                visibility_map[target_widget.value] = widget.isVisible()
+
+        self._api.cfg.opt["gui"]["visibility"] = visibility_map
         self._api.cfg.opt["view"]["current"] = self._view.value
 
     def _run_view(self, view: View) -> None:
