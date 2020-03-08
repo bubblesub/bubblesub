@@ -1,4 +1,4 @@
-FROM ubuntu:cosmic
+FROM ubuntu:eoan
 
 MAINTAINER rr- "https://github.com/rr-"
 
