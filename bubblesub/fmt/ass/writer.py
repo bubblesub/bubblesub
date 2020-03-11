@@ -19,6 +19,7 @@
 import functools
 import typing as T
 from collections import OrderedDict
+from decimal import Decimal
 from pathlib import Path
 
 from bubblesub.fmt.ass.event import AssEvent
@@ -32,12 +33,23 @@ NOTICE = (
 )
 
 
-def _escape(text: str) -> str:
+def _serialize_text(text: str) -> str:
     return text.replace(",", ";")
 
 
 def _serialize_color(col: AssColor) -> str:
     return f"&H{col.alpha:02X}{col.blue:02X}{col.green:02X}{col.red:02X}"
+
+
+def _serialize_integer(value: int) -> str:
+    return f"{value:d}"
+
+
+def _serialize_float(value: T.Union[int, float]) -> str:
+    dec = Decimal(str(value))
+    if dec == dec.to_integral():
+        return str(dec.quantize(Decimal(1)))
+    return str(dec.normalize())
 
 
 def _ms_to_timestamp(milliseconds: int) -> str:
@@ -91,29 +103,29 @@ def serialize_style(style: AssStyle) -> str:
     """
     return "Style: " + ",".join(
         [
-            _escape(style.name),
-            _escape(style.font_name),
-            _escape(f"{style.font_size:d}"),
-            _escape(_serialize_color(style.primary_color)),
-            _escape(_serialize_color(style.secondary_color)),
-            _escape(_serialize_color(style.outline_color)),
-            _escape(_serialize_color(style.back_color)),
-            _escape("-1" if style.bold else "0"),
-            _escape("-1" if style.italic else "0"),
-            _escape("-1" if style.underline else "0"),
-            _escape("-1" if style.strike_out else "0"),
-            _escape(f"{style.scale_x:}"),
-            _escape(f"{style.scale_y:}"),
-            _escape(f"{style.spacing:}"),
-            _escape(f"{style.angle:}"),
-            _escape(f"{style.border_style:d}"),
-            _escape(f"{style.outline:}"),
-            _escape(f"{style.shadow:}"),
-            _escape(f"{style.alignment:d}"),
-            _escape(f"{style.margin_left:d}"),
-            _escape(f"{style.margin_right:d}"),
-            _escape(f"{style.margin_vertical:d}"),
-            _escape(f"{style.encoding:d}"),
+            _serialize_text(style.name),
+            _serialize_text(style.font_name),
+            _serialize_integer(style.font_size),
+            _serialize_color(style.primary_color),
+            _serialize_color(style.secondary_color),
+            _serialize_color(style.outline_color),
+            _serialize_color(style.back_color),
+            "-1" if style.bold else "0",
+            "-1" if style.italic else "0",
+            "-1" if style.underline else "0",
+            "-1" if style.strike_out else "0",
+            _serialize_float(style.scale_x),
+            _serialize_float(style.scale_y),
+            _serialize_float(style.spacing),
+            _serialize_float(style.angle),
+            _serialize_integer(style.border_style),
+            _serialize_float(style.outline),
+            _serialize_float(style.shadow),
+            _serialize_integer(style.alignment),
+            _serialize_integer(style.margin_left),
+            _serialize_integer(style.margin_right),
+            _serialize_integer(style.margin_vertical),
+            _serialize_integer(style.encoding),
         ]
     )
 
@@ -164,15 +176,15 @@ def serialize_event(event: AssEvent) -> str:
         + ": "
         + ",".join(
             [
-                _escape(f"{event.layer:d}"),
-                _escape(_ms_to_timestamp(event.start)),
-                _escape(_ms_to_timestamp(event.end)),
-                _escape(event.style),
-                _escape(event.actor),
-                _escape(f"{event.margin_left:d}"),
-                _escape(f"{event.margin_right:d}"),
-                _escape(f"{event.margin_vertical:d}"),
-                _escape(event.effect),
+                _serialize_integer(event.layer),
+                _ms_to_timestamp(event.start),
+                _ms_to_timestamp(event.end),
+                _serialize_text(event.style),
+                _serialize_text(event.actor),
+                _serialize_integer(event.margin_left),
+                _serialize_integer(event.margin_right),
+                _serialize_integer(event.margin_vertical),
+                _serialize_text(event.effect),
                 text,
             ]
         )
