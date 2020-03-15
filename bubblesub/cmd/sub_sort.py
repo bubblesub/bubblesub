@@ -14,7 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import argparse
+
+from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.cmd.common import SubtitlesSelection
+from bubblesub.util import make_ranges
 
 
 class SubtitlesSortCommand(BaseCommand):
@@ -27,10 +32,21 @@ class SubtitlesSortCommand(BaseCommand):
 
     async def run(self) -> None:
         with self.api.undo.capture(), self.api.gui.throttle_updates():
-            events = sorted(
-                self.api.subs.events, key=lambda event: event.start
-            )
-            self.api.subs.events[:] = events
+            indexes = await self.args.target.get_indexes()
+            for idx, count in make_ranges(indexes):
+                events = self.api.subs.events[idx : idx + count]
+                events = sorted(events, key=lambda event: event.start)
+                self.api.subs.events[idx : idx + count] = events
+
+    @staticmethod
+    def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "-t",
+            "--target",
+            help="subtitles to process",
+            type=lambda value: SubtitlesSelection(api, value),
+            default="selected",
+        )
 
 
 COMMANDS = [SubtitlesSortCommand]
