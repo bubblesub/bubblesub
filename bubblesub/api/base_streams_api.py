@@ -183,7 +183,7 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
     @synchronized(lock=stream_lock)
     def _on_stream_error(self, stream: TStream) -> None:
-        self.unload_stream(stream.uid)
+        pass
 
     @synchronized(lock=stream_lock)
     def _on_stream_change(self, stream: TStream) -> None:
