@@ -22,7 +22,6 @@ from pathlib import Path
 from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.base_streams_api import BaseStreamsApi, TStream
 from bubblesub.api.log import LogApi
-from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
 
 if T.TYPE_CHECKING:
@@ -34,26 +33,15 @@ else:
 class AudioApi(AudioApiBaseClass):
     """Manages audio streams."""
 
-    def __init__(
-        self,
-        threading_api: ThreadingApi,
-        log_api: LogApi,
-        subs_api: SubtitlesApi,
-    ) -> None:
+    def __init__(self, threading_api: ThreadingApi, log_api: LogApi) -> None:
         """Initialize self.
 
         :param threading_api: threading API
         :param log_api: logging API
-        :param subs_api: subtitles API
         """
         super().__init__()
         self._threading_api = threading_api
         self._log_api = log_api
-        self._subs_api = subs_api
-
-    def _on_stream_load(self, stream: AudioStream) -> None:
-        super()._on_stream_load(stream)
-        self._subs_api.remember_audio_path_if_needed(stream.path)
 
     def _create_stream(self, path: Path) -> TStream:
         return AudioStream(self._threading_api, self._log_api, path)

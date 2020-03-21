@@ -190,8 +190,10 @@ class LoadVideoCommand(BaseCommand):
         )
 
         self.api.video.load_stream(path)
+        self.api.subs.remember_video_path_if_needed(path)
         if load_audio:
             self.api.audio.load_stream(path)
+            self.api.subs.remember_audio_path_if_needed(path)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
@@ -257,6 +259,7 @@ class LoadAudioCommand(BaseCommand):
         )
 
         self.api.audio.load_stream(path)
+        self.api.subs.remember_audio_path_if_needed(path)
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

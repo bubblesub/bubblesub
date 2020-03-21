@@ -54,7 +54,7 @@ class Api:
         self.threading = ThreadingApi(self.log)
 
         self.video = VideoApi(self.threading, self.log, self.subs)
-        self.audio = AudioApi(self.threading, self.log, self.subs)
+        self.audio = AudioApi(self.threading, self.log)
         self.playback = PlaybackApi(
             self.log, self.subs, self.video, self.audio
         )

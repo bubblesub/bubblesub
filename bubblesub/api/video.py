@@ -54,10 +54,6 @@ class VideoApi(VideoApiBaseClass):
         self._log_api = log_api
         self._subs_api = subs_api
 
-    def _on_stream_load(self, stream: VideoStream) -> None:
-        super()._on_stream_load(stream)
-        self._subs_api.remember_video_path_if_needed(stream.path)
-
     def _create_stream(self, path: Path) -> TStream:
         return VideoStream(
             self._threading_api, self._log_api, self._subs_api, path

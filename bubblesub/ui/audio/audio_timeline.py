@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
@@ -26,8 +24,6 @@ class AudioTimeline(BaseLocalAudioWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(api, parent)
         self.setFixedHeight(SLIDER_SIZE)
-
-        self._spectrum_cache: T.Dict[int, T.List[int]] = {}
 
         api.audio.stream_loaded.connect(self.repaint_if_needed)
         api.audio.stream_unloaded.connect(self.repaint_if_needed)
