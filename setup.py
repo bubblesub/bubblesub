@@ -86,6 +86,7 @@ class GenerateDocumentationCommand(Command):
 
         import bubblesub.cfg
         import bubblesub.api.cmd
+        from bubblesub.cmd.help import get_usage, get_params_help
 
         args = argparse.Namespace()
         setattr(args, "no_video", True)
@@ -120,56 +121,12 @@ class GenerateDocumentationCommand(Command):
             )
             if parser._actions:
                 print(file=handle)
-                print(self._get_usage(cmd_name, parser), file=handle)
-                print(self._get_params_help(cmd_name, parser), file=handle)
+                print(get_usage(cmd_name, parser, backticks=True), file=handle)
+                print(
+                    get_params_help(cmd_name, parser, backticks=True),
+                    file=handle,
+                )
             print(file=handle)
-
-    @staticmethod
-    def _get_usage(cmd_name, parser):
-        def format_action(action):
-            ret = ""
-            if not action.required:
-                ret += "["
-            ret += "|".join(action.option_strings) or f"{action.dest}" or ""
-            if action.option_strings and action.nargs != 0:
-                ret += f'={action.default or "…"}'
-            if not action.required:
-                ret += "]"
-            return ret
-
-        desc = "Usage: `"
-        desc += " ".join(
-            [cmd_name] + [format_action(action) for action in parser._actions]
-        )
-        desc += "`"
-        return desc
-
-    @staticmethod
-    def _get_params_help(cmd_name, parser):
-        desc = ""
-        for action in parser._actions:
-            if not action.help:
-                raise ValueError(
-                    f"Command {cmd_name} has no help text "
-                    f"for one of its arguments"
-                )
-
-            desc += "* "
-            desc += (
-                ", ".join(f"`{opt}`" for opt in action.option_strings)
-                or f"`{action.dest}`"
-                or ""
-            )
-            desc += ": "
-            desc += action.help
-            if action.choices:
-                desc += (
-                    " (can be "
-                    + ", ".join(f"`{choice!s}`" for choice in action.choices)
-                    + ")"
-                )
-            desc += "\n"
-        return desc.rstrip()
 
     @staticmethod
     def _get_anchor_name(prefix: str, name: str) -> str:

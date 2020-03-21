@@ -163,6 +163,9 @@ Usage: `focus‑widget target [-s|--select]`
 ### <a name="cmd-help"></a>`help`
 Lists available commands.
 
+Usage: `help [cmd]`
+* `cmd`: command name to get help for
+
 ### <a name="cmd-list-audio"></a>`list‑audio`
 Lists loaded audio streams in the console.
 
