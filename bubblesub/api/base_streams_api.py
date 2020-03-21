@@ -55,6 +55,7 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
     stream_created = QtCore.pyqtSignal(object)
     stream_changed = QtCore.pyqtSignal(object)
+    stream_errored = QtCore.pyqtSignal(object)
     stream_loaded = QtCore.pyqtSignal(object)
     stream_unloaded = QtCore.pyqtSignal(object)
 
@@ -183,7 +184,7 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
     @synchronized(lock=stream_lock)
     def _on_stream_error(self, stream: TStream) -> None:
-        pass
+        self.stream_errored.emit(stream)
 
     @synchronized(lock=stream_lock)
     def _on_stream_change(self, stream: TStream) -> None:
