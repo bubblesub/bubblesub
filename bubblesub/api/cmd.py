@@ -190,6 +190,8 @@ class BaseCommand(abc.ABC):
 class CommandApi(QtCore.QObject):
     """The command API."""
 
+    CORE_COMMAND = "bubblesub.api.cmd.core"
+    USER_COMMAND = "bubblesub.api.cmd.user"
     commands_loaded = QtCore.pyqtSignal()
 
     def __init__(self, api: "bubblesub.api.Api") -> None:
@@ -199,7 +201,7 @@ class CommandApi(QtCore.QObject):
         """
         super().__init__()
         self._api = api
-        self._cmd_registry: T.Dict[str, T.Type[BaseCommand]] = {}
+        self._cmd_registry: T.Dict[str, T.Tuple[str, T.Type[BaseCommand]]] = {}
         self._plugin_menu: T.List[MenuItem] = []
         self._plugin_base = PluginBase(package="bubblesub.api.cmd.plugins")
         self._plugin_sources: T.Dict[str, T.Any] = {}
@@ -227,7 +229,7 @@ class CommandApi(QtCore.QObject):
 
         for invocation in cmdline:
             cmd_name, *cmd_args = invocation
-            cls = self._cmd_registry.get(cmd_name, None)
+            _identifier, cls = self._cmd_registry.get(cmd_name, (None, None))
             if not cls:
                 raise CommandNotFound(f'no command named "{cmd_name}"')
 
@@ -288,26 +290,33 @@ class CommandApi(QtCore.QObject):
         :param name: name to search for
         :return: type if command found, None otherwise
         """
-        return self._cmd_registry.get(name, None)
+        _identifier, cls = self._cmd_registry.get(name, (None, None))
+        return cls
 
-    def get_all(self) -> T.List[T.Type[BaseCommand]]:
+    def get_all(
+        self, identifier: T.Optional[str] = None
+    ) -> T.Iterable[T.Type[BaseCommand]]:
         """Return list of all registered command types.
 
+        :param identifier: optional filter
         :return: list of types
         """
-        return list(set(self._cmd_registry.values()))
+        ret: T.Set[T.Type[BaseCommand]] = set()
+        for cls_identifier, cls in self._cmd_registry.values():
+            if cls_identifier == identifier or identifier is None:
+                ret.add(cls)
+        return ret
 
     def reload_commands(self) -> None:
         """Rescans filesystem for commands."""
         self._unload_commands()
         self._load_commands(
-            Path(__file__).parent.parent / "cmd",
-            identifier="bubblesub.api.cmd.core",
+            Path(__file__).parent.parent / "cmd", identifier=self.CORE_COMMAND,
         )
         if self._api.cfg.root_dir:
             self._load_commands(
                 self._api.cfg.root_dir / "scripts",
-                identifier="bubblesub.api.cmd.user",
+                identifier=self.USER_COMMAND,
             )
         self.commands_loaded.emit()
 
@@ -354,16 +363,16 @@ class CommandApi(QtCore.QObject):
         for plugin in plugin_source.list_plugins():
             with self._api.log.exception_guard():
                 mod = plugin_source.load_plugin(plugin)
-                self._load_module(mod)
+                self._load_module(mod, identifier)
         self._plugin_sources[identifier] = plugin_source
 
-    def _load_module(self, mod: types.ModuleType) -> None:
+    def _load_module(self, mod: types.ModuleType, identifier: str) -> None:
         # commands
         commands = getattr(mod, "COMMANDS", [])
         for cls in commands:
             for name in cls.names:
                 self._api.log.debug(f"registering {cls} as {name}")
-                self._cmd_registry[name] = cls
+                self._cmd_registry[name] = (identifier, cls)
 
         # menu
         menu = getattr(mod, "MENU", [])

@@ -43,7 +43,7 @@ def collect_command_names(compl: Completion, api: Api) -> None:
     if not match:
         return
 
-    for cls in api.cmd.get_all():
+    for _identifier, cls in api.cmd.get_all():
         for name in cls.names:
             if name.startswith(match.group("cmd")):
                 compl.suggestions.append(name + " ")
