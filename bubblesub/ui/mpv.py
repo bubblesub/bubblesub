@@ -199,13 +199,10 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         if not self._api.playback.is_ready:
             return
         if end is None:
-            # XXX: mpv doesn't accept None nor "" so we use max pts
-            end = self._api.playback.max_pts
+            self._mpv.set_option("end", "none")
         else:
-            end -= 1
-        assert end is not None
-        end = max(0, end)
-        self._mpv.set_option("end", ms_to_str(end))
+            end = max(0, end - 1)
+            self._mpv.set_option("end", ms_to_str(end))
 
     def _on_request_seek(self, pts: int, precise: bool) -> None:
         self._set_end(None)  # mpv refuses to seek beyond --end
