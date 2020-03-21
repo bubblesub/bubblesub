@@ -132,19 +132,29 @@ def _events_section_handler(
         text = text[: match.start()] + text[match.end() :]
         note = unescape_ass_tag(match.group("note"))
 
-    start: T.Optional[int] = None
-    end: T.Optional[int] = None
+    # ASS tags have centisecond precision
+    start = _timestamp_to_ms(field_dict["Start"])
+    end = _timestamp_to_ms(field_dict["End"])
+
+    # refine times down to millisecond precision using novelty {TIME:…} tag,
+    # but only if the times match the regular ASS times. This is so that
+    # subtitle times modified outside of bubblesub with editors that do not
+    # write the novelty {TIME:…} tag are not overwritten.
     match = re.search(r"{TIME:(?P<start>-?\d+),(?P<end>-?\d+)}", text)
     if match:
         text = text[: match.start()] + text[match.end() :]
-        start = int(match.group("start"))
-        end = int(match.group("end"))
+        start_ms = int(match.group("start"))
+        end_ms = int(match.group("end"))
+        if 0 <= start_ms - start < 10:
+            start = start_ms
+        if 0 <= end_ms - end < 10:
+            end = end_ms
 
     ass_file.events.append(
         AssEvent(
             layer=int(field_dict["Layer"]),
-            start=(start or _timestamp_to_ms(field_dict["Start"])),
-            end=(end or _timestamp_to_ms(field_dict["End"])),
+            start=start,
+            end=end,
             style=field_dict["Style"],
             actor=field_dict["Name"],
             margin_left=int(field_dict["MarginL"]),
