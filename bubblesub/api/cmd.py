@@ -140,7 +140,12 @@ class BaseCommand(abc.ABC):
     """Command names. Must be globally unique and should be human readable."""
 
     help_text: str = NotImplemented
-    """Command description shown in help."""
+    """Short command description shown in help. Should be a single sentence."""
+
+    help_text_extra: str = ""
+    """Long command description shown under short help. Should contain any
+    additional remarks.
+    """
 
     def __init__(
         self,

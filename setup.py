@@ -114,7 +114,10 @@ class GenerateDocumentationCommand(Command):
                     file=handle,
                 )
 
-            print(cls.help_text.rstrip(), file=handle)
+            print(
+                (cls.help_text + " " + cls.help_text_extra).strip(),
+                file=handle,
+            )
             if parser._actions:
                 print(file=handle)
                 print(self._get_usage(cmd_name, parser), file=handle)

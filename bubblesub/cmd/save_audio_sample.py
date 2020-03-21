@@ -24,8 +24,8 @@ from bubblesub.util import ms_to_str
 
 class SaveAudioSampleCommand(BaseCommand):
     names = ["save-audio-sample"]
-    help_text = (
-        "Saves given subtitles to a WAV file. "
+    help_text = "Saves given subtitles to a WAV file."
+    help_text_extra = (
         "Prompts user to choose where to save the file to if the path wasn't "
         "specified in the command arguments."
     )

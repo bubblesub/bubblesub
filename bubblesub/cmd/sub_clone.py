@@ -26,9 +26,9 @@ from bubblesub.fmt.ass.event import AssEvent
 
 class SubtitlesCloneCommand(BaseCommand):
     names = ["sub-clone", "sub-duplicate"]
-    help_text = (
-        "Duplicates given subtitles. Duplicated subtitles "
-        "are interleaved with the source subtitles."
+    help_text = "Duplicates given subtitles."
+    help_text_extra = (
+        "Duplicated subtitles are interleaved with the source subtitles."
     )
 
     @property

@@ -28,10 +28,8 @@ from bubblesub.ui.util import time_jump_dialog
 
 class SubtitlesShiftCommand(BaseCommand):
     names = ["sub-shift"]
-    help_text = (
-        "Shifts given subtitles. "
-        "Prompts user to provide amount to shift by."
-    )
+    help_text = "Shifts given subtitles."
+    help_text_extra = "Prompts user to provide amount to shift by."
 
     @property
     def is_enabled(self) -> bool:

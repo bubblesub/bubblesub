@@ -19,8 +19,8 @@ from bubblesub.api.cmd import BaseCommand
 
 class QuitCommand(BaseCommand):
     names = ["quit"]
-    help_text = (
-        "Quits the application. "
+    help_text = "Quits the application."
+    help_text_extra = (
         "Prompts user to save the current file if there are unsaved changes."
     )
 

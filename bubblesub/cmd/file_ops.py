@@ -32,8 +32,8 @@ from bubblesub.ui.util import (
 
 class NewCommand(BaseCommand):
     names = ["new"]
-    help_text = (
-        "Opens a new file. "
+    help_text = "Opens a new file."
+    help_text_extra = (
         "Prompts user to save the current file if there are unsaved changes."
     )
 
@@ -44,8 +44,8 @@ class NewCommand(BaseCommand):
 
 class OpenCommand(BaseCommand):
     names = ["open"]
-    help_text = (
-        "Opens an existing subtitles file. "
+    help_text = "Opens an existing subtitles file."
+    help_text_extra = (
         "Prompts user to save the current file if there are unsaved changes. "
         "Prompts user to choose where to load the file from if the path "
         "wasn't specified in the command arguments."
@@ -76,8 +76,8 @@ class OpenCommand(BaseCommand):
 
 class ReopenCommand(BaseCommand):
     names = ["reopen", "reload"]
-    help_text = (
-        "Reloads the currently loaded subtitles file from disk. "
+    help_text = "Reloads the currently loaded subtitles file from disk."
+    help_text_extra = (
         "Prompts user to save the current file if there are unsaved changes. "
         "Resets undo stack."
     )
@@ -108,8 +108,8 @@ class ReopenCommand(BaseCommand):
 
 class SaveCommand(BaseCommand):
     names = ["save"]
-    help_text = (
-        "Saves the current subtitles to an ASS file. "
+    help_text = "Saves the current subtitles to an ASS file."
+    help_text_extra = (
         "If the currently loaded subtitles weren't ever saved, prompts user "
         "to choose where to save the file to."
     )
@@ -135,8 +135,8 @@ class SaveCommand(BaseCommand):
 
 class SaveAsCommand(BaseCommand):
     names = ["save-as"]
-    help_text = (
-        "Saves the current subtitles to an ASS file. "
+    help_text = "Saves the current subtitles to an ASS file."
+    help_text_extra = (
         "Prompts user to choose where to save the file to if the path wasn't "
         "specified in the command arguments."
     )
@@ -167,8 +167,8 @@ class SaveAsCommand(BaseCommand):
 
 class LoadVideoCommand(BaseCommand):
     names = ["load-video"]
-    help_text = (
-        "Loads a video file for video playback. "
+    help_text = "Loads a video file for video playback."
+    help_text_extra = (
         "Prompts user to choose where to load the file from if the path "
         "wasn't specified in the command arguments."
     )
@@ -246,8 +246,8 @@ class ListVideoCommand(BaseCommand):
 
 class LoadAudioCommand(BaseCommand):
     names = ["load-audio"]
-    help_text = (
-        "Loads an audio file for audio playback. "
+    help_text = "Loads an audio file for audio playback."
+    help_text_extra = (
         "Prompts user to choose where to load the file from if the path "
         "wasn't specified in the command arguments."
     )
@@ -315,8 +315,8 @@ class ListAudioCommand(BaseCommand):
 
 class SetAudioDelayCommand(BaseCommand):
     names = ["set-audio-delay"]
-    help_text = (
-        "Sets a delay to the currently loaded audio stream. "
+    help_text = "Sets a delay to the currently loaded audio stream."
+    help_text_extra = (
         "Positive delay values will cause the audio to play later, "
         "while negative ones will cause it to play earlier."
     )

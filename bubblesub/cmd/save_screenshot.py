@@ -24,8 +24,8 @@ from bubblesub.util import ms_to_str
 
 class SaveScreenshotCommand(BaseCommand):
     names = ["save-screenshot"]
-    help_text = (
-        "Makes a screenshot of given video frame. "
+    help_text = "Makes a screenshot of given video frame."
+    help_text_extra = (
         "Prompts user to choose where to save the file to if the path wasn't "
         "specified in the command arguments."
     )
