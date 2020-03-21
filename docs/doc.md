@@ -160,6 +160,9 @@ Usage: `focus‑widget target [-s|--select]`
 * `target`: which widget to focus (can be `note-editor`, `video-container`, `video-controller`, `video-volume`, `status`, `status-frame-label`, `status-audio-label`, `text-editor`, `style-editor`, `actor-editor`, `layer-editor`, `margin-left-editor`, `margin-right-editor`, `margin-vertical-editor`, `start-time-editor`, `end-time-editor`, `duration-editor`, `comment-checkbox`, `subtitles-grid`, `spectrogram`, `console-container`, `console-window`, `console-input`)
 * `-s`, `--select`: whether to select the text
 
+### <a name="cmd-help"></a>`help`
+Lists available commands.
+
 ### <a name="cmd-list-audio"></a>`list‑audio`
 Lists loaded audio streams in the console.
 
