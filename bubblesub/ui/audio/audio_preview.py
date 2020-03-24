@@ -53,15 +53,22 @@ class SpectrumWorker(QueueWorker):
 
         self.cache: T.Dict[int, T.List[int]] = SortedDict()
 
-        self._input = pyfftw.empty_aligned(
-            2 << DERIVATION_SIZE, dtype=np.float32
-        )
-        self._output = pyfftw.empty_aligned(
-            (1 << DERIVATION_SIZE) + 1, dtype=np.complex64
-        )
-        self._fftw = pyfftw.FFTW(
-            self._input, self._output, flags=("FFTW_MEASURE",)
-        )
+        if pyfftw is not None:
+            self._input = pyfftw.empty_aligned(
+                2 << DERIVATION_SIZE, dtype=np.float32
+            )
+            self._output = pyfftw.empty_aligned(
+                (1 << DERIVATION_SIZE) + 1, dtype=np.complex64
+            )
+            self._fftw = pyfftw.FFTW(
+                self._input, self._output, flags=("FFTW_MEASURE",)
+            )
+        else:
+            self._input = np.empty(2 << DERIVATION_SIZE, dtype=np.float32)
+            self._output = np.empty(
+                (1 << DERIVATION_SIZE) + 1, dtype=np.complex64
+            )
+            self._fftw = None
 
     def _process_task(self, task: T.Any) -> None:
         anything_changed = False
@@ -76,7 +83,7 @@ class SpectrumWorker(QueueWorker):
     def _get_spectrogram_for_block_idx(self, block_idx: int) -> np.array:
         audio_stream = self._api.audio.current_stream
         video_stream = self._api.video.current_stream
-        if not audio_stream or not audio_stream.is_ready:
+        if not audio_stream or not audio_stream.is_ready or self._fftw is None:
             return None
 
         first_sample = block_idx << DERIVATION_DISTANCE
