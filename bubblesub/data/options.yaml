@@ -5,9 +5,12 @@ basic:
     log_levels: ["error","warning","info","cmd-echo"]
 
 audio:
-    auto_sel_lead_in: 10000
-    auto_sel_lead_out: 10000
-    auto_sel_max: 60000
+    auto_view_style: "dynamic"
+    auto_view_lead_in: 10000
+    auto_view_lead_out: 10000
+    auto_view_min: 10000
+    auto_view_max: 30000
+    auto_sel_subtitle: true
 
 view:
     current: "full"

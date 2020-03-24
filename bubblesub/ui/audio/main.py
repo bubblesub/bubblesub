@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import enum
+
 from PyQt5 import QtCore, QtWidgets
 
 from bubblesub.api import Api
@@ -21,6 +23,15 @@ from bubblesub.ui.audio.audio_preview import AudioPreview
 from bubblesub.ui.audio.audio_slider import AudioSlider
 from bubblesub.ui.audio.audio_timeline import AudioTimeline
 from bubblesub.ui.audio.video_preview import VideoPreview
+
+
+class AutoSelectionStyle(enum.Enum):
+    def __str__(self) -> str:
+        return self.value
+
+    Disabled = "none"
+    Dynamic = "dynamic"
+    Constant = "constant"
 
 
 class Audio(QtWidgets.QSplitter):
@@ -68,19 +79,38 @@ class Audio(QtWidgets.QSplitter):
             self._api.audio.view.unselect()
             return
 
-        auto_sel_lead_in = self._api.cfg.opt["audio"]["auto_sel_lead_in"]
-        auto_sel_lead_out = self._api.cfg.opt["audio"]["auto_sel_lead_out"]
-        auto_sel_max = self._api.cfg.opt["audio"]["auto_sel_max"]
+        auto_view_style = self._api.cfg.opt["audio"]["auto_view_style"]
+        auto_view_lead_in = self._api.cfg.opt["audio"]["auto_view_lead_in"]
+        auto_view_lead_out = self._api.cfg.opt["audio"]["auto_view_lead_out"]
+        auto_view_min = self._api.cfg.opt["audio"]["auto_view_max"]
+        auto_view_max = self._api.cfg.opt["audio"]["auto_view_max"]
+        auto_sel_subtitle = self._api.cfg.opt["audio"]["auto_sel_subtitle"]
 
-        first_sub = self._api.subs.selected_events[0]
-        last_sub = self._api.subs.selected_events[-1]
-        sel_start = first_sub.start - auto_sel_lead_in
-        sel_end = last_sub.end + auto_sel_lead_out
+        if auto_view_style == AutoSelectionStyle.Dynamic.value:
+            first_sub = self._api.subs.selected_events[0]
+            last_sub = self._api.subs.selected_events[-1]
+            view_start = first_sub.start - auto_view_lead_in
+            view_end = last_sub.end + auto_view_lead_out
 
-        if sel_end - sel_start > auto_sel_max:
-            center = (sel_start + sel_end) / 2
-            sel_start = center - auto_sel_max / 2
-            sel_end = center + auto_sel_max / 2
+            if view_end - view_start > auto_view_max:
+                center = (view_start + view_end) / 2
+                view_start = center - auto_view_max / 2
+                view_end = center + auto_view_max / 2
 
-        self._api.audio.view.view(sel_start, sel_end)
-        self._api.audio.view.select(first_sub.start, last_sub.end)
+            if view_end - view_start < auto_view_min:
+                center = (view_start + view_end) / 2
+                view_start = center - auto_view_min / 2
+                view_end = center + auto_view_min / 2
+
+            self._api.audio.view.view(view_start, view_end)
+
+        elif auto_view_style == AutoSelectionStyle.Constant.value:
+            first_sub = self._api.subs.selected_events[0]
+            last_sub = self._api.subs.selected_events[-1]
+            center = (first_sub.start + last_sub.end) / 2
+            view_start = center - auto_view_max / 2
+            view_end = center + auto_view_max / 2
+            self._api.audio.view.view(view_start, view_end)
+
+        if auto_sel_subtitle:
+            self._api.audio.view.select(first_sub.start, last_sub.end)
