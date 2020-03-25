@@ -16,6 +16,7 @@
 
 import enum
 import typing as T
+from copy import copy
 
 from dataclasses import dataclass
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -36,6 +37,7 @@ class DragMode(enum.Enum):
     SubtitleEnd = 6
     NewSubtitleStart = 7
     NewSubtitleEnd = 8
+    SubtitleSplit = 9
 
 
 @dataclass
@@ -188,6 +190,29 @@ class BaseAudioWidget(QtWidgets.QWidget):
             _create_new_subtitle(
                 self._api, pts, by_end=drag_mode == DragMode.NewSubtitleEnd
             )
+
+        elif drag_mode == DragMode.SubtitleSplit:
+            pts = self.pts_from_x(event.x())
+            source_events = [
+                source_event
+                for source_event in self._api.subs.events
+                if source_event.start <= pts <= source_event.end
+            ]
+            if not source_events:
+                self._api.undo.end_capture()
+                return
+            copied_events: T.List[AssEvent] = []
+            for source_event in reversed(source_events):
+                idx = source_event.index
+                new_event = copy(source_event)
+                self._api.subs.events.insert(idx + 1, new_event)
+                copied_events.append(new_event)
+            self._api.subs.selected_indexes = [idx, idx + 1]
+            self._drag_data = DragData(
+                drag_mode, source_events + copied_events
+            )
+            self._apply_drag(event)
+
         else:
             self._drag_data = DragData(
                 drag_mode, self._api.subs.selected_events[:]
@@ -251,6 +276,22 @@ class BaseAudioWidget(QtWidgets.QWidget):
                         ass_event.end,
                     )
             self._view.select(self._view.selection_start, pts)
+
+        elif self._drag_data.mode == DragMode.SubtitleSplit:
+            if self._api.video.current_stream:
+                pts = self._api.video.current_stream.align_pts_to_near_frame(
+                    pts
+                )
+            old_events = self._drag_data.selected_events[
+                : len(self._drag_data.selected_events) // 2
+            ]
+            new_events = self._drag_data.selected_events[
+                len(self._drag_data.selected_events) // 2 :
+            ]
+            for ass_event in old_events:
+                ass_event.end = pts
+            for ass_event in new_events:
+                ass_event.start = pts
 
     def _zoomed(self, delta: int, mouse_x: int) -> None:
         if not self._view.size:

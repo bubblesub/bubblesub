@@ -278,8 +278,11 @@ class AudioPreview(BaseLocalAudioWidget):
             else:
                 self.begin_drag_mode(DragMode.SelectionEnd, event)
         elif event.button() == QtCore.Qt.MiddleButton:
-            self.begin_drag_mode(DragMode.VideoPosition, event)
-            self.end_drag_mode()
+            if event.modifiers() & QtCore.Qt.ControlModifier:
+                self.begin_drag_mode(DragMode.SubtitleSplit, event)
+            else:
+                self.begin_drag_mode(DragMode.VideoPosition, event)
+                self.end_drag_mode()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         self._update_cursor(event)
