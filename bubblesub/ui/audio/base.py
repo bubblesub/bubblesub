@@ -41,12 +41,6 @@ class DragMode(enum.Enum):
 
 
 @dataclass
-class DragData:
-    mode: DragMode
-    selected_events: T.List[AssEvent]
-
-
-@dataclass
 class InsertionPoint:
     idx: int
     start: int
@@ -116,7 +110,7 @@ def get_subtitle_insertion_point(
     )
 
 
-def _create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
+def create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
     current_video_stream = api.video.current_stream
     if current_video_stream:
         pts = current_video_stream.align_pts_to_near_frame(pts)
@@ -140,11 +134,155 @@ def _create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
     api.subs.selected_indexes = [insertion_point.idx]
 
 
+class DragModeExecutor:
+    drag_mode = NotImplemented
+
+    def __init__(self, api: Api) -> None:
+        self._api = api
+        self.selected_events: T.List[AssEvent] = []
+
+    def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        self._api.undo.begin_capture()
+        self.selected_events = self._api.subs.selected_events[:]
+
+    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        pass
+
+    def end_drag(self):
+        self._api.undo.end_capture()
+
+
+class SelectionStartDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.SelectionStart
+
+    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        return self._api.audio.view.select(
+            min(self._api.audio.view.selection_end, pts),
+            self._api.audio.view.selection_end,
+        )
+
+
+class SelectionEndDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.SelectionEnd
+
+    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        self._api.audio.view.select(
+            self._api.audio.view.selection_start,
+            max(self._api.audio.view.selection_start, pts),
+        )
+
+
+class VideoPositionDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.VideoPosition
+
+    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        self._api.playback.seek(pts)
+
+
+class AudioViewDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.AudioView
+
+    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        old_center = (
+            self._api.audio.view.view_start
+            + self._api.audio.view.view_size / 2
+        )
+        new_center = pts
+        distance = new_center - old_center
+        self._api.audio.view.move_view(int(distance))
+
+
+class SubtitleStartDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.SubtitleStart
+
+    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        if self._api.video.current_stream:
+            pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
+        for ass_event in self.selected_events:
+            ass_event.start = pts
+            if ass_event.start > ass_event.end:
+                ass_event.end, ass_event.start = (
+                    ass_event.start,
+                    ass_event.end,
+                )
+        self._api.audio.view.select(pts, self._api.audio.view.selection_end)
+
+
+class SubtitleEndDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.SubtitleEnd
+
+    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        if self._api.video.current_stream:
+            pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
+        for ass_event in self.selected_events:
+            ass_event.end = pts
+            if ass_event.start > ass_event.end:
+                ass_event.end, ass_event.start = (
+                    ass_event.start,
+                    ass_event.end,
+                )
+        self._api.audio.view.select(self._api.audio.view.selection_start, pts)
+
+
+class NewSubtitleStartDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.NewSubtitleStart
+
+    def begin_drag(self, event: QtGui.QMouseEvent, pts) -> None:
+        super().begin_drag(event, pts)
+        create_new_subtitle(self._api, pts, by_end=False)
+
+
+class NewSubtitleEndDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.NewSubtitleEnd
+
+    def begin_drag(self, event: QtGui.QMouseEvent, pts) -> None:
+        super().begin_drag(event, pts)
+        create_new_subtitle(self._api, pts, by_end=True)
+
+
+class SubtitleSplitDragModeExecutor(DragModeExecutor):
+    drag_mode = DragMode.SubtitleSplit
+
+    def __init__(self, api: Api) -> None:
+        super().__init__(api)
+        self.source_events: T.List[AssEvent] = []
+        self.copied_events: T.List[AssEvent] = []
+
+    def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        super().begin_drag(event, pts)
+        self.source_events[:] = [
+            source_event
+            for source_event in self._api.subs.events
+            if source_event.start <= pts <= source_event.end
+        ]
+        self.copied_events[:] = []
+        if not self.source_events:
+            return
+        for source_event in reversed(self.source_events):
+            idx = source_event.index
+            new_event = copy(source_event)
+            self._api.subs.events.insert(idx + 1, new_event)
+            self.copied_events.append(new_event)
+        self._api.subs.selected_indexes = [idx, idx + 1]
+
+    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+        if self._api.video.current_stream:
+            pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
+        for ass_event in self.source_events:
+            ass_event.end = pts
+        for ass_event in self.copied_events:
+            ass_event.start = pts
+
+
 class BaseAudioWidget(QtWidgets.QWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
         super().__init__(parent)
         self._api = api
-        self._drag_data: T.Optional[DragData] = None
+        self._drag_mode: T.Optional[DragMode] = None
+        self._drag_mode_executors = {
+            executor.drag_mode: executor(self._api)
+            for executor in DragModeExecutor.__subclasses__()
+        }
         self._last_paint_cache_key = 0
 
     def repaint(self) -> None:
@@ -165,7 +303,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
         return self._api.audio.view
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        if self._drag_data:
+        if self._drag_mode:
             self.setCursor(QtCore.Qt.SizeHorCursor)
             self._apply_drag(event)
 
@@ -183,115 +321,22 @@ class BaseAudioWidget(QtWidgets.QWidget):
     def begin_drag_mode(
         self, drag_mode: DragMode, event: QtGui.QMouseEvent
     ) -> None:
-        self._api.undo.begin_capture()
-
-        if drag_mode in {DragMode.NewSubtitleStart, DragMode.NewSubtitleEnd}:
-            pts = self.pts_from_x(event.x())
-            _create_new_subtitle(
-                self._api, pts, by_end=drag_mode == DragMode.NewSubtitleEnd
-            )
-
-        elif drag_mode == DragMode.SubtitleSplit:
-            pts = self.pts_from_x(event.x())
-            source_events = [
-                source_event
-                for source_event in self._api.subs.events
-                if source_event.start <= pts <= source_event.end
-            ]
-            if not source_events:
-                self._api.undo.end_capture()
-                return
-            copied_events: T.List[AssEvent] = []
-            for source_event in reversed(source_events):
-                idx = source_event.index
-                new_event = copy(source_event)
-                self._api.subs.events.insert(idx + 1, new_event)
-                copied_events.append(new_event)
-            self._api.subs.selected_indexes = [idx, idx + 1]
-            self._drag_data = DragData(
-                drag_mode, source_events + copied_events
-            )
-            self._apply_drag(event)
-
-        else:
-            self._drag_data = DragData(
-                drag_mode, self._api.subs.selected_events[:]
-            )
-            self._apply_drag(event)
+        if self._drag_mode:
+            self._drag_mode_executors[self._drag_mode].end_drag()
+        pts = self.pts_from_x(event.x())
+        self._drag_mode = drag_mode
+        self._drag_mode_executors[self._drag_mode].begin_drag(event, pts)
+        self._drag_mode_executors[self._drag_mode].apply_drag(event, pts)
 
     def end_drag_mode(self) -> None:
-        self._drag_data = None
         self.setCursor(QtCore.Qt.ArrowCursor)
-        self._api.undo.end_capture()
+        if self._drag_mode:
+            self._drag_mode_executors[self._drag_mode].end_drag()
+            self._drag_mode = None
 
     def _apply_drag(self, event: QtGui.QMouseEvent) -> None:
         pts = self.pts_from_x(event.x())
-
-        assert self._drag_data
-
-        if self._drag_data.mode == DragMode.SelectionStart:
-            self._view.select(
-                min(self._view.selection_end, pts), self._view.selection_end
-            )
-
-        elif self._drag_data.mode == DragMode.SelectionEnd:
-            self._view.select(
-                self._view.selection_start,
-                max(self._view.selection_start, pts),
-            )
-
-        elif self._drag_data.mode == DragMode.VideoPosition:
-            self._api.playback.seek(pts)
-
-        elif self._drag_data.mode == DragMode.AudioView:
-            old_center = self._view.view_start + self._view.view_size / 2
-            new_center = pts
-            distance = new_center - old_center
-            self._view.move_view(int(distance))
-
-        elif self._drag_data.mode == DragMode.SubtitleStart:
-            if self._api.video.current_stream:
-                pts = self._api.video.current_stream.align_pts_to_near_frame(
-                    pts
-                )
-            for ass_event in self._drag_data.selected_events:
-                ass_event.start = pts
-                if ass_event.start > ass_event.end:
-                    ass_event.end, ass_event.start = (
-                        ass_event.start,
-                        ass_event.end,
-                    )
-            self._view.select(pts, self._view.selection_end)
-
-        elif self._drag_data.mode == DragMode.SubtitleEnd:
-            if self._api.video.current_stream:
-                pts = self._api.video.current_stream.align_pts_to_near_frame(
-                    pts
-                )
-            for ass_event in self._drag_data.selected_events:
-                ass_event.end = pts
-                if ass_event.start > ass_event.end:
-                    ass_event.end, ass_event.start = (
-                        ass_event.start,
-                        ass_event.end,
-                    )
-            self._view.select(self._view.selection_start, pts)
-
-        elif self._drag_data.mode == DragMode.SubtitleSplit:
-            if self._api.video.current_stream:
-                pts = self._api.video.current_stream.align_pts_to_near_frame(
-                    pts
-                )
-            old_events = self._drag_data.selected_events[
-                : len(self._drag_data.selected_events) // 2
-            ]
-            new_events = self._drag_data.selected_events[
-                len(self._drag_data.selected_events) // 2 :
-            ]
-            for ass_event in old_events:
-                ass_event.end = pts
-            for ass_event in new_events:
-                ass_event.start = pts
+        self._drag_mode_executors[self._drag_mode].apply_drag(event, pts)
 
     def _zoomed(self, delta: int, mouse_x: int) -> None:
         if not self._view.size:

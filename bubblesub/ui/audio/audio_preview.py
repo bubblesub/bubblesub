@@ -251,38 +251,46 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.end()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        ctrl = event.modifiers() & QtCore.Qt.ControlModifier
+        shift = event.modifiers() & QtCore.Qt.ShiftModifier
+
+        if event.button() == QtCore.Qt.LeftButton and not shift and not ctrl:
+            for label in self._labels:
+                if (
+                    label.x1 <= event.x() <= label.x2
+                    and label.y1 <= event.y() <= label.y2
+                ):
+                    self._api.subs.selected_indexes = (
+                        [label.event.index]
+                        if label.event.index is not None
+                        else []
+                    )
+                    return
+
         if event.button() == QtCore.Qt.LeftButton:
-            if event.modifiers() & QtCore.Qt.ShiftModifier:
-                self.begin_drag_mode(DragMode.SubtitleStart, event)
-            elif event.modifiers() & QtCore.Qt.ControlModifier:
-                self.begin_drag_mode(DragMode.NewSubtitleStart, event)
-            else:
-                for label in self._labels:
-                    if (
-                        label.x1 <= event.x() <= label.x2
-                        and label.y1 <= event.y() <= label.y2
-                    ):
-                        self._api.subs.selected_indexes = (
-                            [label.event.index]
-                            if label.event.index is not None
-                            else []
-                        )
-                        break
-                else:
-                    self.begin_drag_mode(DragMode.SelectionStart, event)
+            self.begin_drag_mode(
+                DragMode.SubtitleStart
+                if shift
+                else DragMode.NewSubtitleStart
+                if ctrl
+                else DragMode.SelectionStart,
+                event,
+            )
         elif event.button() == QtCore.Qt.RightButton:
-            if event.modifiers() & QtCore.Qt.ShiftModifier:
-                self.begin_drag_mode(DragMode.SubtitleEnd, event)
-            elif event.modifiers() & QtCore.Qt.ControlModifier:
-                self.begin_drag_mode(DragMode.NewSubtitleEnd, event)
-            else:
-                self.begin_drag_mode(DragMode.SelectionEnd, event)
+            self.begin_drag_mode(
+                DragMode.SubtitleEnd
+                if shift
+                else DragMode.NewSubtitleEnd
+                if ctrl
+                else DragMode.SelectionEnd,
+                event,
+            )
         elif event.button() == QtCore.Qt.MiddleButton:
-            if event.modifiers() & QtCore.Qt.ControlModifier:
-                self.begin_drag_mode(DragMode.SubtitleSplit, event)
-            else:
-                self.begin_drag_mode(DragMode.VideoPosition, event)
-                self.end_drag_mode()
+            self.begin_drag_mode(
+                DragMode.SubtitleSplit if ctrl else DragMode.VideoPosition,
+                event,
+            )
+            self.end_drag_mode()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         self._update_cursor(event)
@@ -552,7 +560,7 @@ class AudioPreview(BaseLocalAudioWidget):
             x = self.pts_to_x(pts)
             self.update(x, 0, x, self.height())
 
-        if self._drag_data or not event:
+        if self._drag_mode or not event:
             return
 
         # using QtWidgets.QApplication.keyboardModifiers() is unreliable,
