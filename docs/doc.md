@@ -47,8 +47,10 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+B</kbd> | global | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=cf</code> |
 |<kbd>Ctrl+M</kbd> | global | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=cf</code> |
 |<kbd>Ctrl+N</kbd> | global | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=cf -e=cf+dsd</code> |
-|<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
-|<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
+|<kbd>Ctrl+[</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}-0.1'</code> |
+|<kbd>Ctrl+]</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}+0.1'</code> |
+|<kbd>Ctrl+{</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}-0.5'</code> |
+|<kbd>Ctrl+}</kbd> | global | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}+0.5'</code> |
 |<kbd>F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> --below</code> |
 |<kbd>Shift+F3</kbd> | global | <code><a href="#user-content-cmd-search-repeat">search-repeat</a> --above</code> |
 |<kbd>Alt+A</kbd> | global | <code><a href="#user-content-cmd-focus-widget">focus-widget</a> spectrogram</code> |
@@ -98,8 +100,10 @@ Context refers to the currently focused widget.
 |<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=cf</code> |
 |<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=cf</code> |
 |<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=cf -e=cf+dsd</code> |
-|<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}/1.5'</code> |
-|<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}*1.5'</code> |
+|<kbd>[</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}-0.1'</code> |
+|<kbd>]</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}+0.1'</code> |
+|<kbd>{</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}-0.5'</code> |
+|<kbd>}</kbd> | spectrogram | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}+0.5'</code> |
 |<kbd>Alt+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=ps.e</code> |
 |<kbd>Alt+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=ns.s</code> |
 |<kbd>Alt+Shift+Left</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=-1kf</code> |
