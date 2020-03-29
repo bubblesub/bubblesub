@@ -229,9 +229,9 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
     def _on_mute_change(self) -> None:
         self._mpv.set_property("mute", self._api.playback.is_muted)
 
-    def _on_pause_change(self) -> None:
+    def _on_pause_change(self, is_paused: bool) -> None:
         self._set_end(None)
-        self._mpv.set_property("pause", self._api.playback.is_paused)
+        self._mpv.set_property("pause", is_paused)
 
     def _on_video_zoom_change(self) -> None:
         # ignore errors coming from setting extreme values

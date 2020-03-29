@@ -47,7 +47,7 @@ class PlaybackApi(QtCore.QObject):
     state_changed = QtCore.pyqtSignal(PlaybackFrontendState)
     current_pts_changed = QtCore.pyqtSignal()
     volume_changed = QtCore.pyqtSignal()
-    pause_changed = QtCore.pyqtSignal()
+    pause_changed = QtCore.pyqtSignal(bool)
     mute_changed = QtCore.pyqtSignal()
     playback_speed_changed = QtCore.pyqtSignal()
 
@@ -231,7 +231,7 @@ class PlaybackApi(QtCore.QObject):
         """
         if value != self._is_paused:
             self._is_paused = value
-            self.pause_changed.emit()
+            self.pause_changed.emit(value)
 
     @property
     def is_ready(self) -> bool:

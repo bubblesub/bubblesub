@@ -21,13 +21,13 @@ Context refers to the currently focused widget.
 |<kbd>Alt+3</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.e-500ms -e=a.e</code> |
 |<kbd>Alt+4</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.e -e=a.e+500ms</code> |
 |<kbd>Ctrl+R</kbd> | global | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
-|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s; <a href="#user-content-cmd-pause">pause</a> off</code> |
-|<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f</code> |
-|<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f</code> |
-|<kbd>Ctrl+;</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s</code> |
-|<kbd>Ctrl+'</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.e</code> |
-|<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms</code> |
-|<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+500ms</code> |
+|<kbd>Ctrl+T</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s -U</code> |
+|<kbd>Ctrl+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f -P</code> |
+|<kbd>Ctrl+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f -P</code> |
+|<kbd>Ctrl+;</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s -P</code> |
+|<kbd>Ctrl+'</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.e -P</code> |
+|<kbd>Ctrl+Shift+,</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms -P</code> |
+|<kbd>Ctrl+Shift+.</kbd> | global | <code><a href="#user-content-cmd-seek">seek</a> -p=+500ms -P</code> |
 |<kbd>Ctrl+P</kbd> | global | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
 |<kbd>Ctrl+Z</kbd> | global | <code><a href="#user-content-cmd-undo">undo</a> </code> |
 |<kbd>Ctrl+Y</kbd> | global | <code><a href="#user-content-cmd-redo">redo</a> </code> |
@@ -89,14 +89,14 @@ Context refers to the currently focused widget.
 |<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-view">audio-zoom-view</a> -d=1.1</code> |
 |<kbd>Ctrl+=</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-view">audio-zoom-view</a> -d=0.9</code> |
 |<kbd>Ctrl++</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-view">audio-zoom-view</a> -d=0.9</code> |
-|<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f</code> |
-|<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f</code> |
-|<kbd>;</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s</code> |
-|<kbd>'</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.e</code> |
-|<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1500ms</code> |
-|<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1500ms</code> |
-|<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms</code> |
-|<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+500ms</code> |
+|<kbd>,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f -P</code> |
+|<kbd>.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f -P</code> |
+|<kbd>;</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s -P</code> |
+|<kbd>'</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.e -P</code> |
+|<kbd>Ctrl+Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-1500ms -P</code> |
+|<kbd>Ctrl+Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+1500ms -P</code> |
+|<kbd>Shift+,</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms -P</code> |
+|<kbd>Shift+.</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=+500ms -P</code> |
 |<kbd>B</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=cf</code> |
 |<kbd>M</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=cf</code> |
 |<kbd>N</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -s=cf -e=cf+dsd</code> |
@@ -286,9 +286,11 @@ Usage: `search‑repeat [--above] [--below]`
 ### <a name="cmd-seek"></a>`seek`
 Changes the video playback position to desired place.
 
-Usage: `seek -p|--pos=… [--precise]`
+Usage: `seek -p|--pos=… [--precise] [-P|--pause] [-U|--unpause]`
 * `-p`, `--pos`: where to seek
 * `--precise`: whether to use precise seeking at the expense of performance
+* `-P`, `--pause`: pause after seeking
+* `-U`, `--unpause`: unpause after seeking
 
 ### <a name="cmd-set-audio-delay"></a>`set‑audio‑delay`
 Sets a delay to the currently loaded audio stream. Positive delay values will cause the audio to play later, while negative ones will cause it to play earlier.

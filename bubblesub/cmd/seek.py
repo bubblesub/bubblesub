@@ -34,7 +34,8 @@ class SeekCommand(BaseCommand):
             origin=self.api.playback.current_pts, align_to_near_frame=True
         )
         self.api.playback.seek(pts, self.args.precise)
-        self.api.playback.is_paused = True
+        if self.args.pause is not None:
+            self.api.playback.is_paused = self.args.pause
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:
@@ -51,6 +52,16 @@ class SeekCommand(BaseCommand):
                 "whether to use precise seeking at the expense of performance"
             ),
             action="store_true",
+        )
+        parser.add_argument(
+            "-P", "--pause", help="pause after seeking", action="store_true",
+        )
+        parser.add_argument(
+            "-U",
+            "--unpause",
+            help="unpause after seeking",
+            dest="pause",
+            action="store_false",
         )
 
 
