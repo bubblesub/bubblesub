@@ -264,6 +264,8 @@ class SubtitlesGrid(QtWidgets.QTableView):
             self._sync_grid_selection_to_api
         )
 
+        column = self.currentIndex().column()
+
         selection = QtCore.QItemSelection()
         for row in self._api.subs.selected_indexes:
             idx = self.model().index(row, 0)
@@ -273,7 +275,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
 
         if self._api.subs.selected_indexes:
             first_row = self._api.subs.selected_indexes[0]
-            cell_index = self.model().index(first_row, 0)
+            cell_index = self.model().index(first_row, column)
             self.setCurrentIndex(cell_index)
             self.scrollTo(cell_index)
 
