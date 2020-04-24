@@ -170,6 +170,13 @@ Lists available commands.
 Usage: `help [cmd]`
 * `cmd`: command name to get help for
 
+### <a name="cmd-inline-edit"></a>`inline‑edit`
+Triggers an inline edit of a given subtitle.
+
+Usage: `inline‑edit [-t|--target=selected] [-m|--mode=text]`
+* `-t`, `--target`: subtitles to process
+* `-m`, `--mode`: which cell to edit (can be `start`, `end`, `style`, `actor`, `text`, `note`, `short-duration`, `long-duration`, `layer`, `margin-vertical`, `margin-left`, `margin-right`, `is-comment`)
+
 ### <a name="cmd-list-audio"></a>`list‑audio`
 Lists loaded audio streams in the console.
 
