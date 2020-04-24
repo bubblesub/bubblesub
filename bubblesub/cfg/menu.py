@@ -21,6 +21,8 @@ import re
 import typing as T
 from pathlib import Path
 
+from dataclasses import dataclass
+
 from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import ROOT_DIR
 
@@ -36,62 +38,69 @@ class MenuContext(enum.Enum):
     SubtitlesGrid = "subtitles_grid"
 
 
+class MenuItemType(enum.Enum):
+    """Menu item type."""
+
+    Separator = "separator"
+    SubMenu = "submenu"
+    Command = "command"
+    RecentFiles = "recent_files"
+    Plugins = "plugins"
+
+
+@dataclass
 class MenuItem:
-    """Base menu item in GUI."""
+    """Menu item in GUI."""
+
+    type: MenuItemType
+    label: T.Optional[str] = None
+    cmdline: T.Optional[str] = None
+    children: T.Optional[T.List["MenuItem"]] = None
 
 
-class MenuCommand(MenuItem):
-    """Menu item associated with a bubblesub command."""
+def _recurse_tree(
+    parent: MenuItem, parent_depth: int, source: T.List[str]
+) -> None:
+    while source:
+        last_line = source[0].rstrip()
+        if not last_line:
+            break
 
-    def __init__(self, name: str, cmdline: str) -> None:
-        """Initialize self.
+        match = re.search("^ *", last_line)
+        assert match
+        current_depth = len(match.group(0))
+        if current_depth <= parent_depth:
+            break
 
-        Menu label is taken from the associated command.
+        token = last_line.strip()
+        if current_depth <= parent_depth:
+            continue
 
-        :param name: menu label
-        :param cmdline: command line to execute
-        """
-        self.name = name
-        self.cmdline = cmdline
+        source.pop(0)
+        if token == "-":
+            node = MenuItem(type=MenuItemType.Separator)
+        else:
+            if "|" in token:
+                label, artifact = token.split("|", 2)
+            else:
+                label = None
+                artifact = token
 
+            if artifact == "!recent!":
+                node = MenuItem(type=MenuItemType.RecentFiles, label=label)
+            elif artifact == "!plugins!":
+                node = MenuItem(type=MenuItemType.Plugins, label=label)
+            elif "|" in token:
+                node = MenuItem(
+                    type=MenuItemType.Command, label=label, cmdline=artifact
+                )
+            else:
+                node = MenuItem(
+                    type=MenuItemType.SubMenu, label=artifact, children=[]
+                )
+                _recurse_tree(node, current_depth, source)
 
-class MenuSeparator(MenuItem):
-    """Empty horizontal line."""
-
-
-class MenuRecentFiles(MenuItem):
-    """List of recently opened files."""
-
-    def __init__(self, text: str) -> None:
-        """Initialize self.
-
-        :param text: text to display
-        """
-        self.text = text
-
-
-class MenuPlaceholder(MenuItem):
-    """Menu text that does nothing (always disabled)."""
-
-    def __init__(self, text: str) -> None:
-        """Initialize self.
-
-        :param text: text to display
-        """
-        self.text = text
-
-
-class SubMenu(MenuItem):
-    """Menu item that opens up another sub menu."""
-
-    def __init__(self, name: str, children: T.List[MenuItem]) -> None:
-        """Initialize self.
-
-        :param name: menu label
-        :param children: submenu items
-        """
-        self.name = name
-        self.children = children
+        parent.children.append(node)
 
 
 class MenuConfig(SubConfig):
@@ -100,9 +109,7 @@ class MenuConfig(SubConfig):
     def __init__(self) -> None:
         """Initialize self."""
         super().__init__()
-        self._menu: T.Dict[MenuContext, T.List[MenuItem]] = {
-            context: [] for context in MenuContext
-        }
+        self._menu: T.Dict[MenuContext, MenuItem] = {}
         self.load(None)
 
     def create_example_file(self, root_dir: Path) -> None:
@@ -121,8 +128,12 @@ class MenuConfig(SubConfig):
         :param root_dir: directory where to look for the matching config file
         """
         for context in MenuContext:
-            self._menu[context].clear()
+            self._menu[context] = MenuItem(
+                type=MenuItemType.SubMenu, children=[]
+            )
+
         self._loads((ROOT_DIR / "menu.conf").read_text())
+
         if root_dir:
             user_path = _get_user_path(root_dir)
             if user_path.exists():
@@ -149,47 +160,16 @@ class MenuConfig(SubConfig):
                         f'"{match.group(1)}" is not a valid menu context'
                     )
                 continue
+
             if cur_context not in sections:
                 sections[cur_context] = ""
             sections[cur_context] += line + "\n"
-
-        def _recurse_tree(
-            parent: T.List[MenuItem], parent_depth: int, source: T.List[str]
-        ) -> None:
-            while source:
-                last_line = source[0].rstrip()
-                if not last_line:
-                    break
-
-                match = re.search("^ *", last_line)
-                assert match
-                current_depth = len(match.group(0))
-                if current_depth <= parent_depth:
-                    break
-
-                token = last_line.strip()
-                if current_depth <= parent_depth:
-                    continue
-
-                source.pop(0)
-                if token == "-":
-                    parent.append(MenuSeparator())
-                elif "|" not in token:
-                    node = SubMenu(name=token, children=[])
-                    parent.append(node)
-                    _recurse_tree(node.children, current_depth, source)
-                else:
-                    name, cmdline = token.split("|", 1)
-                    if cmdline == "!recent!":
-                        parent.append(MenuRecentFiles(text=name))
-                    else:
-                        parent.append(MenuCommand(name=name, cmdline=cmdline))
 
         for context, section_text in sections.items():
             source = section_text.split("\n")
             _recurse_tree(self._menu[context], -1, source)
 
-    def __getitem__(self, context: MenuContext) -> T.List[MenuItem]:
+    def __getitem__(self, context: MenuContext) -> MenuItem:
         """Retrieve list of menu items by the specified context.
 
         :param context: context
@@ -197,9 +177,50 @@ class MenuConfig(SubConfig):
         """
         return self._menu[context]
 
-    def __iter__(self,) -> T.Iterator[T.Tuple[MenuContext, T.List[MenuItem]]]:
+    def __iter__(self,) -> T.Iterator[T.Tuple[MenuContext, MenuItem]]:
         """Let users iterate directly over this config.
 
         :return: iterator
         """
         return ((context, items) for context, items in self._menu.items())
+
+
+# convenience classes for plugins.
+
+
+class MenuCommand(MenuItem):
+    """Backwards-compatible class for creating menu commands."""
+
+    def __init__(self, name: str, cmdline: str) -> None:
+        """Initialize self.
+
+        :param name: menu label
+        :param cmdline: command line to run
+        """
+        super().__init__(
+            type=MenuItemType.Command, label=name, cmdline=cmdline
+        )
+
+
+class MenuSeparator(MenuItem):
+    """Backwards-compatible class for creating menu separators."""
+
+    def __init__(self) -> None:
+        """Initialize self."""
+        super().__init__(type=MenuItemType.Separator)
+
+
+class SubMenu(MenuItem):
+    """Backwards-compatible class for creating submenus."""
+
+    def __init__(
+        self, name: str, children: T.Optional[T.Sequence[MenuItem]] = None
+    ) -> None:
+        """Initialize self.
+
+        :param name: menu label
+        :param children: optional children menu items
+        """
+        super().__init__(
+            type=MenuItemType.SubMenu, label=name, children=children or []
+        )

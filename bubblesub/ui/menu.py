@@ -24,14 +24,7 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogApi
 from bubblesub.cfg.hotkeys import HotkeyContext
-from bubblesub.cfg.menu import (
-    MenuCommand,
-    MenuItem,
-    MenuPlaceholder,
-    MenuRecentFiles,
-    MenuSeparator,
-    SubMenu,
-)
+from bubblesub.cfg.menu import MenuItem
 
 HotkeyMap = T.Dict[T.Tuple[HotkeyContext, str], str]
 
@@ -63,13 +56,13 @@ def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
 
 class CommandAction(QtWidgets.QAction):
     def __init__(
-        self, api: Api, item: MenuCommand, parent: QtWidgets.QWidget
+        self, api: Api, item: MenuItem, parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
         self.commands = api.cmd.parse_cmdline(item.cmdline)
         self.triggered.connect(self._on_trigger)
-        self.setText(item.name)
+        self.setText(item.label)
 
     def _on_trigger(self) -> None:
         for cmd in self.commands:
@@ -97,56 +90,97 @@ def _build_hotkey_map(api: Api) -> HotkeyMap:
     return ret
 
 
+class MenuBuilder:
+    def __init__(self, api: Api, context: HotkeyContext) -> None:
+        self.api = api
+        self.context = context
+        self.hotkey_map = _build_hotkey_map(api)
+
+    def build(self, parent: QtWidgets.QWidget, menu_item: MenuItem) -> None:
+        method_name = "build_" + menu_item.type.value
+        if hasattr(self, method_name):
+            getattr(self, method_name)(parent, menu_item)
+        else:
+            self.api.log.error(f"unexpected menu item {menu_item.type.value}")
+
+    def build_separator(
+        self, parent: QtWidgets.QWidget, item: MenuItem
+    ) -> None:
+        parent.addSeparator()
+
+    def build_recent_files(
+        self, parent: QtWidgets.QWidget, item: MenuItem
+    ) -> None:
+        if item.label:
+            parent = parent.addMenu(item.label)
+        recent_files = self.api.cfg.opt.get("recent_files", [])
+        if recent_files:
+            for recent_file in recent_files:
+                action = LoadRecentFileAction(self.api, recent_file, parent)
+                parent.addAction(action)
+        else:
+            action = QtWidgets.QAction(parent)
+            action.setText("(no recent files found)")
+            action.setEnabled(False)
+            parent.addAction(action)
+
+    def build_plugins(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+        if item.label:
+            parent = parent.addMenu(item.label)
+        subitems = self.api.cmd.get_plugin_menu_items()
+        if subitems:
+            for subitem in subitems:
+                self.build(parent, subitem)
+        else:
+            action = QtWidgets.QAction(parent)
+            action.setText("(no plugins found)")
+            action.setEnabled(False)
+            parent.addAction(action)
+
+    def build_submenu(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+        submenu = parent.addMenu(item.label)
+        for subitem in item.children:
+            self.build(submenu, subitem)
+
+    def build_placeholder(
+        self, parent: QtWidgets.QWidget, item: MenuItem
+    ) -> None:
+        action = QtWidgets.QAction(parent)
+        action.setText(item.label)
+        action.setEnabled(False)
+        parent.addAction(action)
+
+    def build_command(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+        try:
+            action = CommandAction(self.api, item, parent)
+        except CommandError as ex:
+            self.api.log.error(str(ex))
+            return
+
+        shortcut = self.hotkey_map.get((self.context, item.cmdline))
+        if shortcut is not None:
+            action.setText(action.text() + "\t" + shortcut)
+
+        parent.addAction(action)
+
+
 def setup_menu(
     api: Api,
     parent: QtWidgets.QWidget,
-    menu_def: T.Sequence[MenuItem],
+    root_item: MenuItem,
     context: HotkeyContext,
 ) -> T.Any:
     for action in parent.actions():
         parent.removeAction(action)
 
-    hotkey_map = _build_hotkey_map(api)
-    stack = [(parent, menu_def)]
+    if hasattr(parent, "aboutToShow"):
+        parent.aboutToShow.connect(
+            functools.partial(_on_menu_about_to_show, api.log, parent)
+        )
+        parent.aboutToHide.connect(
+            functools.partial(_on_menu_about_to_hide, parent)
+        )
 
-    while stack:
-        parent, menu_def = stack.pop()
-
-        if hasattr(parent, "aboutToShow"):
-            parent.aboutToShow.connect(
-                functools.partial(_on_menu_about_to_show, api.log, parent)
-            )
-            parent.aboutToHide.connect(
-                functools.partial(_on_menu_about_to_hide, parent)
-            )
-
-        for item in menu_def:
-            if isinstance(item, MenuSeparator):
-                parent.addSeparator()
-            elif isinstance(item, MenuRecentFiles):
-                submenu = parent.addMenu(item.text)
-                for recent_file in api.cfg.opt.get("recent_files", []):
-                    action = LoadRecentFileAction(api, recent_file, submenu)
-                    submenu.addAction(action)
-            elif isinstance(item, SubMenu):
-                submenu = parent.addMenu(item.name)
-                setup_menu(api, submenu, item.children, context)
-            elif isinstance(item, MenuPlaceholder):
-                action = QtWidgets.QAction(parent)
-                action.setText(item.text)
-                action.setEnabled(False)
-                parent.addAction(action)
-            elif isinstance(item, MenuCommand):
-                try:
-                    action = CommandAction(api, item, parent)
-                except CommandError as ex:
-                    api.log.error(str(ex))
-                    continue
-
-                shortcut = hotkey_map.get((context, item.cmdline))
-                if shortcut is not None:
-                    action.setText(action.text() + "\t" + shortcut)
-
-                parent.addAction(action)
-            else:
-                api.log.error(f"unexpected menu item {item}")
+    menu_builder = MenuBuilder(api, context)
+    for node in root_item.children:
+        menu_builder.build(parent, node)
