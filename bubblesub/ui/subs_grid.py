@@ -120,7 +120,12 @@ class SubtitlesGrid(QtWidgets.QTableView):
         super().__init__(parent)
         self._api = api
         self.setObjectName("subtitles-grid")
-        self.setModel(AssEventsModel(self, api))
+        self.setModel(AssEventsModel(self, api, editable=True))
+        self.setEditTriggers(
+            QtWidgets.QAbstractItemView.DoubleClicked
+            | QtWidgets.QAbstractItemView.SelectedClicked
+            | QtWidgets.QAbstractItemView.EditKeyPressed
+        )
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setTabKeyNavigation(False)
         self.horizontalHeader().setSectionsMovable(True)
