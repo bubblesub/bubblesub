@@ -53,6 +53,8 @@ class AssEventsModelOptions:
 
 
 class _Column:
+    editable = True
+
     def __init__(self, header: str) -> None:
         self.header = header
 
@@ -119,6 +121,8 @@ class _TimePropertyColumn(_PropertyColumn):
 
 
 class _CpsColumn(_Column):
+    editable = False
+
     def __init__(self) -> None:
         super().__init__("CPS")
 
@@ -213,7 +217,10 @@ class AssEventsModel(ObservableListTableAdapter):
     def flags(self, index: QtCore.QModelIndex) -> int:
         ret = QtCore.Qt.ItemIsEnabled
         ret |= QtCore.Qt.ItemIsSelectable
-        if self._options.editable:
+        if (
+            self._options.editable
+            and _COLUMNS[AssEventsModelColumn(index.column())].editable
+        ):
             ret |= QtCore.Qt.ItemIsEditable
         return T.cast(int, ret)
 
