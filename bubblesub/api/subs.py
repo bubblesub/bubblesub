@@ -224,6 +224,8 @@ class SubtitlesApi(QtCore.QObject):
         with path.open("r") as handle:
             load_ass(handle, self.ass_file)
 
+        self._cfg.opt.add_recent_file(path)
+
         self.selected_indexes = []
         self._path = path
         self.loaded.emit()
@@ -245,6 +247,7 @@ class SubtitlesApi(QtCore.QObject):
             write_ass(self.ass_file, handle)
         if remember_path:
             self.saved.emit()
+            self._cfg.opt.add_recent_file(path)
 
     def _on_items_removed(self, idx: int, count: int) -> None:
         new_indexes = list(sorted(self.selected_indexes))

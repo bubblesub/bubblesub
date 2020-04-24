@@ -16,6 +16,7 @@
 
 import functools
 import typing as T
+from pathlib import Path
 
 from PyQt5 import QtWidgets
 
@@ -27,6 +28,7 @@ from bubblesub.cfg.menu import (
     MenuCommand,
     MenuItem,
     MenuPlaceholder,
+    MenuRecentFiles,
     MenuSeparator,
     SubMenu,
 )
@@ -59,7 +61,7 @@ def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
         focused_widget.setFocus()
 
 
-class _CommandAction(QtWidgets.QAction):
+class CommandAction(QtWidgets.QAction):
     def __init__(
         self, api: Api, item: MenuCommand, parent: QtWidgets.QWidget
     ) -> None:
@@ -74,6 +76,20 @@ class _CommandAction(QtWidgets.QAction):
             self.api.cmd.run(cmd)
 
 
+class LoadRecentFileAction(QtWidgets.QAction):
+    def __init__(
+        self, api: Api, path: T.Union[str, Path], parent: QtWidgets.QWidget
+    ) -> None:
+        super().__init__(parent)
+        self.api = api
+        self.path = path
+        self.triggered.connect(self._on_trigger)
+        self.setText(path)
+
+    def _on_trigger(self) -> None:
+        self.api.subs.load_ass(self.path)
+
+
 def _build_hotkey_map(api: Api) -> HotkeyMap:
     ret: HotkeyMap = {}
     for hotkey in api.cfg.hotkeys:
@@ -81,7 +97,7 @@ def _build_hotkey_map(api: Api) -> HotkeyMap:
     return ret
 
 
-def setup_cmd_menu(
+def setup_menu(
     api: Api,
     parent: QtWidgets.QWidget,
     menu_def: T.Sequence[MenuItem],
@@ -107,8 +123,14 @@ def setup_cmd_menu(
         for item in menu_def:
             if isinstance(item, MenuSeparator):
                 parent.addSeparator()
+            elif isinstance(item, MenuRecentFiles):
+                submenu = parent.addMenu(item.text)
+                for recent_file in api.cfg.opt.get("recent_files", []):
+                    action = LoadRecentFileAction(api, recent_file, submenu)
+                    submenu.addAction(action)
             elif isinstance(item, SubMenu):
-                stack.append((parent.addMenu(item.name), item.children))
+                submenu = parent.addMenu(item.name)
+                setup_menu(api, submenu, item.children, context)
             elif isinstance(item, MenuPlaceholder):
                 action = QtWidgets.QAction(parent)
                 action.setText(item.text)
@@ -116,7 +138,7 @@ def setup_cmd_menu(
                 parent.addAction(action)
             elif isinstance(item, MenuCommand):
                 try:
-                    action = _CommandAction(api, item, parent)
+                    action = CommandAction(api, item, parent)
                 except CommandError as ex:
                     api.log.error(str(ex))
                     continue

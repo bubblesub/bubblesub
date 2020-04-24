@@ -88,7 +88,7 @@ class OptionsConfig(SubConfig):
         return yaml.dump(self._storage, indent=4, default_flow_style=False)
 
     def __getitem__(self, key: T.Any) -> T.Any:
-        """Returns given configuration item.
+        """Return given configuration item.
 
         :param key: key to retrieve
         :return: configuration value
@@ -96,9 +96,42 @@ class OptionsConfig(SubConfig):
         return self._storage[key]
 
     def __setitem__(self, key: T.Any, value: T.Any) -> None:
-        """Updates given configuration item.
+        """Update given configuration item.
 
         :param key: key to update
         :param value: new configuration value
         """
         self._storage[key] = value
+
+    def __contains__(self, key: T.Any) -> None:
+        """Checks if a given key exists.
+
+        :param key: key to check
+        :return: whether the key exists
+        """
+        return key in self._storage
+
+    def get(self, key: T.Any, default: T.Any = None) -> T.Any:
+        """Return given configuration item if it exists, default value
+        otherwise.
+
+        :param key: key to retrieve
+        :param default: value to return if the key does not exist
+        :return: configuration value
+        """
+        return self._storage.get(key, default)
+
+    def add_recent_file(self, path: T.Union[Path, str]) -> None:
+        """Record given path as recently used.
+
+        :param path: path to record
+        """
+        if "recent_files" not in self:
+            self["recent_files"] = []
+        else:
+            self["recent_files"] = [
+                p for p in self["recent_files"] if str(path) != p
+            ]
+        self["recent_files"].insert(0, str(path))
+        self["recent_files"] = self["recent_files"][0:10]
+        self.changed.emit()

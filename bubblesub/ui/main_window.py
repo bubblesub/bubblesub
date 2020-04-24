@@ -33,7 +33,7 @@ from bubblesub.ui.audio import Audio
 from bubblesub.ui.console import Console
 from bubblesub.ui.editor import Editor
 from bubblesub.ui.hotkeys import HotkeyManager
-from bubblesub.ui.menu import setup_cmd_menu
+from bubblesub.ui.menu import setup_menu
 from bubblesub.ui.statusbar import StatusBar
 from bubblesub.ui.subs_grid import SubtitlesGrid
 from bubblesub.ui.util import build_splitter
@@ -133,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._setup_menu)
+        api.cfg.opt.changed.connect(self._setup_menu)
         QtWidgets.QApplication.instance().installEventFilter(self)
 
     def eventFilter(
@@ -208,7 +209,7 @@ class MainWindow(QtWidgets.QMainWindow):
             MenuSeparator(),
         ] + plugin_menu
 
-        setup_cmd_menu(
+        setup_menu(
             self._api,
             self.menuBar(),
             self._api.cfg.menu[MenuContext.MainMenu]

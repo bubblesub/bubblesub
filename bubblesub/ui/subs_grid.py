@@ -24,7 +24,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.cfg.hotkeys import HotkeyContext
 from bubblesub.cfg.menu import MenuContext
-from bubblesub.ui.menu import setup_cmd_menu
+from bubblesub.ui.menu import setup_menu
 from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
 
 MAGIC_MARGIN = 2  # ????
@@ -171,7 +171,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self._rebuild_subs_menu()
 
     def _rebuild_subs_menu(self) -> None:
-        setup_cmd_menu(
+        setup_menu(
             self._api,
             self._subs_menu,
             self._api.cfg.menu[MenuContext.SubtitlesGrid],

@@ -59,6 +59,17 @@ class MenuSeparator(MenuItem):
     """Empty horizontal line."""
 
 
+class MenuRecentFiles(MenuItem):
+    """List of recently opened files."""
+
+    def __init__(self, text: str) -> None:
+        """Initialize self.
+
+        :param text: text to display
+        """
+        self.text = text
+
+
 class MenuPlaceholder(MenuItem):
     """Menu text that does nothing (always disabled)."""
 
@@ -157,16 +168,21 @@ class MenuConfig(SubConfig):
                     break
 
                 token = last_line.strip()
-                if current_depth > parent_depth:
-                    source.pop(0)
-                    if token == "-":
-                        parent.append(MenuSeparator())
-                    elif "|" not in token:
-                        node = SubMenu(name=token, children=[])
-                        parent.append(node)
-                        _recurse_tree(node.children, current_depth, source)
+                if current_depth <= parent_depth:
+                    continue
+
+                source.pop(0)
+                if token == "-":
+                    parent.append(MenuSeparator())
+                elif "|" not in token:
+                    node = SubMenu(name=token, children=[])
+                    parent.append(node)
+                    _recurse_tree(node.children, current_depth, source)
+                else:
+                    name, cmdline = token.split("|", 1)
+                    if cmdline == "!recent!":
+                        parent.append(MenuRecentFiles(text=name))
                     else:
-                        name, cmdline = token.split("|", 1)
                         parent.append(MenuCommand(name=name, cmdline=cmdline))
 
         for context, section_text in sections.items():
