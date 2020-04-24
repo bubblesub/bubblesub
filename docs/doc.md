@@ -110,6 +110,24 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=+1kf</code> |
 |<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-copy">sub-copy</a> </code> |
 |<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-paste">sub-paste</a> --after</code> |
+|<kbd>K</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
+|<kbd>J</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
+|<kbd>T</kbd> | subtitles grid | <code><a href="#user-content-cmd-inline-edit">inline-edit</a> -m=text</code> |
+|<kbd>N</kbd> | subtitles grid | <code><a href="#user-content-cmd-inline-edit">inline-edit</a> -m=note</code> |
+|<kbd>R</kbd> | subtitles grid | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
+|<kbd>P</kbd> | subtitles grid | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
+|<kbd>,</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=-1f -P</code> |
+|<kbd>.</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=+1f -P</code> |
+|<kbd>;</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s -P</code> |
+|<kbd>'</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.e -P</code> |
+|<kbd>Ctrl+Shift+,</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=-1500ms -P</code> |
+|<kbd>Ctrl+Shift+.</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=+1500ms -P</code> |
+|<kbd>Shift+,</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=-500ms -P</code> |
+|<kbd>Shift+.</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=+500ms -P</code> |
+|<kbd>[</kbd> | subtitles grid | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}-0.1'</code> |
+|<kbd>]</kbd> | subtitles grid | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}+0.1'</code> |
+|<kbd>{</kbd> | subtitles grid | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}-0.5'</code> |
+|<kbd>}</kbd> | subtitles grid | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}+0.5'</code> |
 
 # Default commands
 ### <a name="cmd-audio-scroll-view"></a>`audio‑scroll‑view`
