@@ -27,6 +27,7 @@ from bubblesub.ui.util import (
     ImmediateDataWidgetMapper,
     get_text_edit_row_height,
 )
+from bubblesub.ui.vim_text_edit import VimTextEdit
 
 
 class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
@@ -66,7 +67,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
             self.setFormat(start, end - start, self._fmt)
 
 
-class TextEdit(QtWidgets.QPlainTextEdit):
+class TextEdit(VimTextEdit):
     def __init__(
         self, api: Api, parent: QtWidgets.QWidget, **kwargs: T.Any
     ) -> None:
@@ -251,4 +252,6 @@ class Editor(QtWidgets.QWidget):
         self.style_edit.blockSignals(False)
 
         self.setEnabled(True)
+        self.text_edit.reset()
+        self.note_edit.reset()
         self._data_widget_mapper.set_current_index(selected[0])
