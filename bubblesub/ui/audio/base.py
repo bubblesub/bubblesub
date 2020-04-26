@@ -142,14 +142,13 @@ class DragModeExecutor:
         self.selected_events: T.List[AssEvent] = []
 
     def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
-        self._api.undo.begin_capture()
         self.selected_events = self._api.subs.selected_events[:]
 
     def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         pass
 
     def end_drag(self):
-        self._api.undo.end_capture()
+        self._api.undo.push()
 
 
 class SelectionStartDragModeExecutor(DragModeExecutor):

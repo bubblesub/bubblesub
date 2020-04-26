@@ -222,15 +222,15 @@ class Editor(QtWidgets.QWidget):
         self, source: QtCore.QObject, event: QtCore.QEvent
     ) -> bool:
         if isinstance(source, QtWidgets.QWidget) and self.isAncestorOf(source):
-            if event.type() == QtCore.QEvent.FocusIn:
-                self._api.undo.begin_capture()
-            elif event.type() == QtCore.QEvent.FocusOut:
-                self._api.undo.end_capture()
+            if event.type() == QtCore.QEvent.FocusOut:
+                self._api.undo.push()
         return False
 
     def _on_selection_change(
         self, selected: T.List[int], _changed: bool
     ) -> None:
+        self._api.undo.push()
+
         if len(selected) != 1:
             self.setEnabled(False)
             self._data_widget_mapper.set_current_index(None)

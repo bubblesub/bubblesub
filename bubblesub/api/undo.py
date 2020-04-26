@@ -137,7 +137,6 @@ class UndoApi:
         self._stack: T.List[UndoState] = []
         self._stack_pos = -1
         self._dirty = False
-        self._capture_nesting = 0
         self._ignore = False
 
         self._subs_api.loaded.connect(self._on_subtitles_load)
@@ -169,50 +168,23 @@ class UndoApi:
 
     @contextlib.contextmanager
     def capture(self) -> T.Iterator[None]:
-        """Record the application state before and after user operation.
-
-        Shorthand for begin_capture() and end_capture().
+        """Execute user operation and record the application state after it.
 
         Doesn't push onto undo stack if nothing has changed.
         This function should wrap any operation that makes "undoable" changes
         (such as changes to the ASS events or styles), especially operations
-        from within commands. Otherwise the undo may behave unpredictably.
+        from within commands. Otherwise undoing may do too many changes, and
+        the program might exit without asking for confirmation.
         """
-        self.begin_capture()
         try:
             yield
         finally:
-            self.end_capture()
-
-    def begin_capture(self) -> None:
-        """Begin undo capture."""
-        if self._ignore:
-            return
-
-        old_state = self._stack[self._stack_pos]
-        old_state.selected_indexes = self._subs_api.selected_indexes
-
-        if self._capture_nesting > 0:
-            self._push()
-
-        self._capture_nesting += 1
-
-    def end_capture(self, recursive=False) -> None:
-        """End undo capture.
-
-        :param recursive: whether to finish also parent captures
-        """
-        self._push()
-        if recursive:
-            self._capture_nesting = 0
-        elif self._capture_nesting > 0:
-            self._capture_nesting -= 1
+            self.push()
 
     def undo(self) -> None:
         """Restore previous application state."""
         if not self.has_undo:
             raise RuntimeError("no more undo")
-
         self._ignore = True
         self._stack_pos -= 1
         old_state = self._stack[self._stack_pos]
@@ -245,11 +217,13 @@ class UndoApi:
         self._stack = self._stack[-max_undo + 1 :]
         self._stack_pos = len(self._stack) - 1
 
-    def _push(self) -> bool:
+    def push(self) -> bool:
         """Discard any redo information and push current state onto stack.
 
         :return: whether there was a change
         """
+        if self._ignore:
+            return False
         old_state = self._stack[self._stack_pos]
         cur_state = self._make_state()
         if old_state == cur_state:

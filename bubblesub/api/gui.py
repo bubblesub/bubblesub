@@ -84,7 +84,6 @@ class GuiApi(QtCore.QObject):
 
         :return: true it's okay to proceed, false if user has chosen to cancel
         """
-        self._api.undo.end_capture(recursive=True)
         if not self._api.undo.needs_save:
             return True
 

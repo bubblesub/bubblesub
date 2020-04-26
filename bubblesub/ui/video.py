@@ -130,11 +130,8 @@ class VideoMouseHandler:
 
 
 class AbsolutePositionVideoMouseHandler(VideoMouseHandler):
-    def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.begin_capture()
-
     def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.end_capture()
+        self._api.undo.push()
 
     def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
@@ -183,8 +180,6 @@ class RelativeAxisVideoMouseHandler(VideoMouseHandler):
         self._initial_display_pos = QtCore.QPointF(0, 0)
 
     def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.begin_capture()
-
         self._initial_value_x = self.default_initial_value_x
         self._initial_value_y = self.default_initial_value_y
         sel = self._api.subs.selected_events
@@ -199,7 +194,7 @@ class RelativeAxisVideoMouseHandler(VideoMouseHandler):
         self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
 
     def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.end_capture()
+        self._api.undo.push()
 
     def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
@@ -317,8 +312,6 @@ class SubRotationHandler(VideoMouseHandler):
         self._initial_display_pos = QtCore.QPointF(0, 0)
 
     def on_drag_start(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.begin_capture()
-
         self._initial_angle = 0.0
         sel = self._api.subs.selected_events
         if sel:
@@ -330,7 +323,7 @@ class SubRotationHandler(VideoMouseHandler):
         self._initial_display_pos = self._mouse_pos_calc.get_display_pos(event)
 
     def on_drag_release(self, event: QtGui.QMouseEvent) -> None:
-        self._api.undo.end_capture()
+        self._api.undo.push()
 
     def on_drag_move(self, event: QtGui.QMouseEvent) -> None:
         sel = self._api.subs.selected_events
