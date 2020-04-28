@@ -137,6 +137,13 @@ class Application:
 
         main_window.show()
 
+        def save_config() -> None:
+            if not self._args.no_config:
+                assert api.cfg.root_dir is not None
+                api.cfg.save(api.cfg.root_dir)
+
+        api.cfg.opt.changed.connect(save_config)
+
         if self._args.file:
             api.cmd.run_cmdline([["open", "--path", self._args.file]])
 
@@ -146,6 +153,4 @@ class Application:
         with self._loop:
             self._loop.run_forever()
 
-        if not self._args.no_config:
-            assert api.cfg.root_dir is not None
-            api.cfg.save(api.cfg.root_dir)
+        save_config()
