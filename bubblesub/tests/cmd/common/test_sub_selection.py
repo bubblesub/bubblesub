@@ -18,7 +18,7 @@
 
 import asyncio
 import typing as T
-from unittest.mock import MagicMock
+from unittest.mock import Mock
 
 import pytest
 
@@ -81,9 +81,9 @@ def test_get_all_indexes(
     :param current_pts: current video PTS to simulate
     :param expected_indexes: expected selection indexes
     """
-    api = MagicMock()
+    api = Mock()
     api.playback.current_pts = current_pts
-    api.subs.events = [MagicMock() for _ in range(sub_count)]
+    api.subs.events = [Mock() for _ in range(sub_count)]
     for i, event in enumerate(api.subs.events):
         event.index = i
         event.num = i + 1

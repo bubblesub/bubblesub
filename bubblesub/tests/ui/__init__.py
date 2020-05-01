@@ -15,9 +15,3 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """Tests for bubblesub.ui module."""
-
-import sys
-
-from PyQt5 import QtWidgets
-
-app = QtWidgets.QApplication(sys.argv)

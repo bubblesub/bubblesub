@@ -32,10 +32,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v1
     - name: Build image
       run: docker build -t bubblesub .
     - name: Run image
-      run: docker run -t bubblesub
+      run: docker run --env DISPLAY=':99.0' -t bubblesub

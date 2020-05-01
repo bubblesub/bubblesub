@@ -18,7 +18,7 @@
 
 import asyncio
 import typing as T
-from unittest.mock import MagicMock
+from unittest.mock import Mock
 
 import pytest
 
@@ -42,10 +42,10 @@ def _assert_pts_value(
     assert actual_value == expected_value
 
 
-def _mock_subs_api(sub_times, sub_selection) -> MagicMock:
+def _mock_subs_api(sub_times, sub_selection) -> Mock:
     events = []
     for start, end in sub_times:
-        events.append(MagicMock(start=start, end=end))
+        events.append(Mock(start=start, end=end))
     for i, event in enumerate(events):
         event.prev = events[i - 1] if i > 0 else None
         event.next = events[i + 1] if i + 1 < len(events) else None
@@ -62,7 +62,7 @@ def _mock_subs_api(sub_times, sub_selection) -> MagicMock:
     def _mock_len(cls):
         return len(events)
 
-    subs_api = MagicMock()
+    subs_api = Mock()
     subs_api.events.get = _mock_get
     subs_api.events.__getitem__ = _mock_getitem
     subs_api.events.__len__ = _mock_len
@@ -136,7 +136,7 @@ def test_basic_arithmetic(
     :param origin: optional origin to parse against
     :param expected_value: expected PTS
     """
-    api = MagicMock()
+    api = Mock()
     pts = Pts(api, expr)
 
     _assert_pts_value(pts, expected_value, origin)
@@ -187,7 +187,7 @@ def test_subtitles(
     :param sub_selection: current subtitle selection indexes to simulate
     :param expected_value: expected PTS
     """
-    api = MagicMock()
+    api = Mock()
     api.subs = _mock_subs_api(sub_times, sub_selection)
 
     pts = Pts(api, expr)
@@ -275,7 +275,7 @@ def test_frames(
     :param keyframe_indexes: which frames are keyframes to simulate
     :param expected_value: expected PTS
     """
-    api = MagicMock()
+    api = Mock()
     api.video.current_stream.timecodes = frame_times
     api.video.current_stream.keyframes = keyframe_indexes
     if cur_frame_idx is Ellipsis:
@@ -301,7 +301,7 @@ def test_audio_selection(
     :param selection: audio selection to simulate
     :param expected_value: expected PTS
     """
-    api = MagicMock()
+    api = Mock()
     api.audio.view.selection_start = selection[0]
     api.audio.view.selection_end = selection[1]
     pts = Pts(api, expr)
@@ -320,7 +320,7 @@ def test_audio_view(
     :param view: audio view to simulate
     :param expected_value: expected PTS
     """
-    api = MagicMock()
+    api = Mock()
     api.audio.view.view_start = view[0]
     api.audio.view.view_end = view[1]
     pts = Pts(api, expr)
@@ -329,7 +329,7 @@ def test_audio_view(
 
 def test_default_subtitle_duration() -> None:
     """Test default subtitle duration magic string."""
-    api = MagicMock()
+    api = Mock()
     api.cfg.opt = {"subs": {"default_duration": 123}}
     pts = Pts(api, "dsd")
 
@@ -338,7 +338,7 @@ def test_default_subtitle_duration() -> None:
 
 def test_min_max() -> None:
     """Test min and max possible PTS magic strings."""
-    api = MagicMock()
+    api = Mock()
     api.playback.max_pts = 999
 
     min_pts = Pts(api, "min")

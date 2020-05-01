@@ -522,11 +522,12 @@ TESTS += [
 @pytest.mark.parametrize(
     "keys,expected_text,expected_position", TESTS,
 )
-def test_vim_text_edit(
-    keys: str, expected_text: str, expected_position: int
+def test_vim_text_edit(  # pylint: disable=redefined-outer-name
+    qtbot, keys: str, expected_text: str, expected_position: int
 ) -> None:
     """Test VimTextEdit behavior.
 
+    :param qtbot: test QApplication
     :param keys: keys to send to the input
     :param expected_text: expected text contents of the edit
     :param expected_position: expected caret position

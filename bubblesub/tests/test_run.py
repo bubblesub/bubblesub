@@ -16,31 +16,29 @@
 
 """Basic program installation test for Travis CI."""
 
-import os
-import pathlib
-import signal
 import subprocess
-import tempfile
 
 import pytest
 
-SERVER_NUM = 99
 TIMEOUT = 4
 
 
 @pytest.mark.ci
 def test_run() -> None:
-    """Test if bubblesub is able to run. Use xvfb-run to simulate
-    virtual framebuffer on headless machines.
+    """Test if bubblesub is able to run.
 
-    This test is to be used by CI only.
+    This test is supposed to be used within Docker.
     """
     try:
-        subprocess.run(["xvfb-run", "bubblesub"], timeout=TIMEOUT, check=True)
+        result = subprocess.run(
+            ["bubblesub"],
+            timeout=TIMEOUT,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            check=False,
+        )
+        assert result.returncode == 0, f"Failed: {result.stderr}"
     except subprocess.TimeoutExpired:
-        tmp_dir = pathlib.Path(tempfile.gettempdir())
-        lock_file = tmp_dir / f".X{SERVER_NUM}-lock"
-        pid = int(lock_file.read_text().strip())
-        os.kill(pid, signal.SIGINT)
+        pass
     else:
         assert False, f"program not terminated after {TIMEOUT} s"

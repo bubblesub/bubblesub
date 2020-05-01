@@ -18,23 +18,22 @@
 
 import io
 import tempfile
-import unittest
-import unittest.mock
 from pathlib import Path
+from unittest.mock import patch
 
 from bubblesub.fmt.ass.file import AssFile
 from bubblesub.fmt.ass.writer import write_ass
 
 
-@unittest.mock.patch(
+@patch(
     "bubblesub.fmt.ass.writer.write_meta",
     side_effect=lambda ass_file, handle: handle.write("META"),
 )
-@unittest.mock.patch(
+@patch(
     "bubblesub.fmt.ass.writer.write_styles",
     side_effect=lambda ass_file, handle: handle.write("STYLES"),
 )
-@unittest.mock.patch(
+@patch(
     "bubblesub.fmt.ass.writer.write_events",
     side_effect=lambda ass_file, handle: handle.write("EVENTS"),
 )
@@ -57,15 +56,15 @@ def test_write_ass_handle(
     assert content == "META\nSTYLES\nEVENTS"
 
 
-@unittest.mock.patch(
+@patch(
     "bubblesub.fmt.ass.writer.write_meta",
     side_effect=lambda ass_file, handle: handle.write("META"),
 )
-@unittest.mock.patch(
+@patch(
     "bubblesub.fmt.ass.writer.write_styles",
     side_effect=lambda ass_file, handle: handle.write("STYLES"),
 )
-@unittest.mock.patch(
+@patch(
     "bubblesub.fmt.ass.writer.write_events",
     side_effect=lambda ass_file, handle: handle.write("EVENTS"),
 )

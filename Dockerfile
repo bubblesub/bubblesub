@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # List of system packages
 ENV SYSTEM="build-essential software-properties-common locales \
-autoconf automake libtool git-core pkg-config wget nasm"
+autoconf automake libtool git-core pkg-config wget nasm libxkbcommon-x11-0"
 
 # Prepare building machine
 RUN apt-get update && \
@@ -40,8 +40,7 @@ RUN git config --global http.sslVerify false
 RUN rm -f /usr/bin/python && \
     ln -s /usr/bin/python3.7 /usr/bin/python && \
     python -m pip install -U pip && \
-    pip install setuptools dataclasses && \
-    pip install pytest docstring_parser mock
+    pip install setuptools
 
 # Install ffms2
 RUN git clone https://github.com/FFMS/ffms2.git && \
@@ -59,7 +58,7 @@ COPY setup.py .
 COPY pyproject.toml .
 RUN locale-gen en_US.UTF-8 && \
     export LC_ALL=en_US.UTF-8 && \
-    pip install -e .
+    pip install -e .[develop]
 
 # Install bubblesub
 COPY bubblesub bubblesub
@@ -70,4 +69,8 @@ RUN find . -type d -name __pycache__ -exec rm -r {} \+
 RUN ldconfig
 
 # Run pytest
-CMD pytest bubblesub/
+CMD \
+    # start a virtual X server for UI tests
+    /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX; \
+    # run the tests
+    pytest bubblesub/

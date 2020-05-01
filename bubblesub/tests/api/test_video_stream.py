@@ -18,8 +18,8 @@
 
 import typing as T
 from pathlib import Path
+from unittest.mock import Mock, PropertyMock, patch
 
-import mock
 import numpy as np
 import pytest
 
@@ -37,13 +37,13 @@ def _test_align_pts_to_frame(
     :param expected: expected PTS
     :param align_func: the function to test
     """
-    threading_api = mock.MagicMock()
-    log_api = mock.MagicMock()
-    subs_api = mock.MagicMock()
+    threading_api = Mock()
+    log_api = Mock()
+    subs_api = Mock()
 
-    with mock.patch(
+    with patch(
         VideoStream.__module__ + "." + VideoStream.__name__ + ".timecodes",
-        new_callable=mock.PropertyMock,
+        new_callable=PropertyMock,
         return_value=[0, 10, 20],
     ):
         stream = VideoStream(threading_api, log_api, subs_api, Path("dummy"))
@@ -185,13 +185,13 @@ def test_frame_idx_from_pts(
     :param pts: source PTS
     :param expected: expected frame index
     """
-    threading_api = mock.MagicMock()
-    log_api = mock.MagicMock()
-    subs_api = mock.MagicMock()
+    threading_api = Mock()
+    log_api = Mock()
+    subs_api = Mock()
 
-    with mock.patch(
+    with patch(
         VideoStream.__module__ + "." + VideoStream.__name__ + ".timecodes",
-        new_callable=mock.PropertyMock,
+        new_callable=PropertyMock,
         return_value=timecodes,
     ):
         stream = VideoStream(threading_api, log_api, subs_api, Path("dummy"))

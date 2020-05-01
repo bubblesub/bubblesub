@@ -266,7 +266,9 @@ setup(
     package_dir={"bubblesub": "bubblesub"},
     package_data={"bubblesub": ["data/*", "data/**/*"]},
     install_requires=install_packages,
-    extras_require={"develop": ["docstring_parser", "mypy", "pytest"]},
+    extras_require={
+        "develop": ["docstring_parser", "mypy", "pytest", "pytest-qt"]
+    },
     cmdclass={
         "doc": GenerateDocumentationCommand,
         "test": PyTestCommand,
