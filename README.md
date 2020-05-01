@@ -29,6 +29,7 @@
 - Newlines support in the editor
 - Everything is aligned to video frames
 - Style editor with realistic preview
+- Vim mode in the text editor (off by default)
 - No bloat
 
 ## Screenshot

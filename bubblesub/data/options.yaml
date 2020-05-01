@@ -3,6 +3,7 @@
 basic:
     max_undo: 1000
     log_levels: ["error","warning","info","cmd-echo"]
+    vim_mode: false
 
 audio:
     auto_view_style: "dynamic"

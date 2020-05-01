@@ -183,6 +183,8 @@ class VimTextEditSelectionMode(Enum):
 class VimTextEdit(QtWidgets.QPlainTextEdit):
     def __init__(self, parent: QtWidgets.QWidget, **kwargs: T.Any) -> None:
         super().__init__(parent, **kwargs)
+        self._vim_mode_enabled = True
+
         self._mode = VimTextEditMode.Normal
         self._count: T.Optional[int] = None
         self._count_mul = 0
@@ -196,8 +198,22 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         self._selection_mode: T.Optional[VimTextEditSelectionMode] = None
         self.reset()
 
+    @property
+    def vim_mode_enabled(self) -> bool:
+        return self._vim_mode_enabled
+
+    @vim_mode_enabled.setter
+    def vim_mode_enabled(self, enabled: bool) -> None:
+        self._vim_mode_enabled = enabled
+        self.reset()
+        if not enabled:
+            self.insert()
+
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        self.consume(event)
+        if self.vim_mode_enabled:
+            self.consume(event)
+        else:
+            super().keyPressEvent(event)
 
     def consume(self, event: QtGui.QKeyEvent) -> None:
         method_name = "consume_" + self._mode.value
@@ -421,7 +437,11 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             self._count = None
             self._count_mul = 1
             self._selection_mode = None
-        self.setCursorWidth(1 if self._mode == VimTextEditMode.Insert else 10)
+        self.setCursorWidth(
+            10
+            if self.vim_mode_enabled and self._mode != VimTextEditMode.Insert
+            else 1
+        )
 
     def go_left(self) -> None:
         cursor = self.textCursor()

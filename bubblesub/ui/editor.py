@@ -84,6 +84,7 @@ class TextEdit(VimTextEdit):
                 self.setFont(font)
 
         self.setMinimumHeight(get_text_edit_row_height(self, 2))
+        self.vim_mode_enabled = self._api.cfg.opt["basic"]["vim_mode"]
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.modifiers() & QtCore.Qt.ControlModifier:
