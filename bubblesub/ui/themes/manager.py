@@ -30,10 +30,10 @@ class ThemeManager(QtCore.QObject):
         self._api = api
         self._theme: BaseTheme = SystemTheme()
 
-        self.apply_theme(api.cfg.opt["gui"]["current_theme"])
+        self.apply_theme(api.cfg.opt["gui"]["current_theme"], force=True)
 
-    def apply_theme(self, theme_name: str) -> None:
-        if theme_name == self._theme.name:
+    def apply_theme(self, theme_name: str, force: bool = False) -> None:
+        if theme_name == self._theme.name and not force:
             return
 
         theme = next(
