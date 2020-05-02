@@ -274,7 +274,7 @@ class SubtitleSplitDragModeExecutor(DragModeExecutor):
 
 
 class BaseAudioWidget(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._api = api
         self._drag_mode: T.Optional[DragMode] = None

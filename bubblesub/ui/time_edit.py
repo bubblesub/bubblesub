@@ -50,7 +50,7 @@ class TimeEdit(QtWidgets.QWidget):
 
     def __init__(
         self,
-        parent: QtWidgets.QWidget = None,
+        parent: QtWidgets.QWidget,
         allow_negative: bool = False,
         **kwargs: T.Any,
     ) -> None:

@@ -101,7 +101,7 @@ class VideoBandWorker(QueueWorker):
 
 
 class VideoPreview(BaseLocalAudioWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(api, parent)
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Preferred

@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
@@ -25,10 +23,7 @@ from bubblesub.ui.themes import ThemeManager
 
 class AudioTimeline(BaseLocalAudioWidget):
     def __init__(
-        self,
-        api: Api,
-        theme_mgr: ThemeManager,
-        parent: QtWidgets.QWidget = None,
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(api, parent)
         self._theme_mgr = theme_mgr

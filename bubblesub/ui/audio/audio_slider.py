@@ -27,10 +27,7 @@ from bubblesub.ui.themes import ThemeManager
 
 class AudioSlider(BaseGlobalAudioWidget):
     def __init__(
-        self,
-        api: Api,
-        theme_mgr: ThemeManager,
-        parent: QtWidgets.QWidget = None,
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(api, parent)
         self._theme_mgr = theme_mgr

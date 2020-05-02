@@ -217,7 +217,7 @@ async def time_jump_dialog(
     show_radio: bool = True,
 ) -> T.Optional[T.Tuple[int, bool]]:
     class TimeJumpDialog(QtWidgets.QDialog):
-        def __init__(self, parent: QtWidgets.QWidget = None) -> None:
+        def __init__(self, parent: QtWidgets.QWidget) -> None:
             super().__init__(parent)
             self.setWindowTitle("Select time...")
 

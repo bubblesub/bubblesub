@@ -35,10 +35,7 @@ SEEK_THRESHOLD = datetime.timedelta(seconds=0.2)
 
 class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(
-        self,
-        api: Api,
-        theme_mgr: ThemeManager,
-        parent: QtWidgets.QWidget = None,
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget,
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -124,10 +121,7 @@ class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
 
 class SubtitlesGrid(QtWidgets.QTableView):
     def __init__(
-        self,
-        api: Api,
-        theme_mgr: ThemeManager,
-        parent: QtWidgets.QWidget = None,
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget,
     ) -> None:
         super().__init__(parent)
         self._api = api

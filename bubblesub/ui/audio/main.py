@@ -37,10 +37,7 @@ class AutoSelectionStyle(enum.Enum):
 
 class Audio(QtWidgets.QSplitter):
     def __init__(
-        self,
-        api: Api,
-        theme_mgr: ThemeManager,
-        parent: QtWidgets.QWidget = None,
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self._api = api
