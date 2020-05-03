@@ -19,12 +19,13 @@ from pathlib import Path
 
 from PyQt5 import QtWidgets
 
-from bubblesub.ui.assets import ASSETS_DIR
 from bubblesub.ui.themes.base import BaseTheme
+from bubblesub.ui.themes.dark import DarkTheme
+from bubblesub.ui.themes.light import LightTheme
 
 
-class SystemTheme(BaseTheme):
-    name = "system"
+class SystemLightTheme(BaseTheme):
+    name = "system-light"
 
     def apply(self) -> None:
         QtWidgets.QApplication.setStyle("")
@@ -32,38 +33,22 @@ class SystemTheme(BaseTheme):
 
     @property
     def palette(self) -> T.Dict[str, str]:
-        return {
-            "spectrogram/mouse-marker": "#40C04080",
-            "spectrogram/video-marker": "#00A000",
-            "spectrogram/keyframe": "#FF800078",
-            "spectrogram/selected-sub-text": "#FFFFFF",
-            "spectrogram/selected-sub-line": "#2A82DADC",
-            "spectrogram/selected-sub-fill": "#2A82DA32",
-            "spectrogram/unselected-sub-text": "#000000",
-            "spectrogram/unselected-sub-line": "#2A82DA78",
-            "spectrogram/unselected-sub-fill": "#2A82DA1E",
-            "spectrogram/focused-sel-line": "#90A000DC",
-            "spectrogram/focused-sel-fill": "#A0FF003C",
-            "spectrogram/unfocused-sel-line": "#90A0006E",
-            "spectrogram/unfocused-sel-fill": "#A0FF001E",
-            "grid/ass-mark": "#E60000",
-            "grid/comment": "#EFEBE7",
-            "console/error": "#FF0000",
-            "console/warning": "#C86400",
-            "console/info": "#000000",
-            "console/debug": "#0064C8",
-            "console/timestamp": "#787878",
-            "console/command": "#008000",
-        }
+        return LightTheme().palette
 
     def get_icon_path(self, name: str) -> Path:
-        paths = [
-            (ASSETS_DIR / "light" / f"icon-{name}.svg"),
-            (ASSETS_DIR / "light" / f"icon-{name}.png"),
-            (ASSETS_DIR / f"icon-{name}.svg"),
-            (ASSETS_DIR / f"icon-{name}.png"),
-        ]
-        for path in paths:
-            if path.exists():
-                return path
-        return Path("")
+        return LightTheme().get_icon_path(name)
+
+
+class SystemDarkTheme(BaseTheme):
+    name = "system-dark"
+
+    def apply(self) -> None:
+        QtWidgets.QApplication.setStyle("")
+        QtWidgets.QApplication.instance().setStyleSheet("")
+
+    @property
+    def palette(self) -> T.Dict[str, str]:
+        return DarkTheme().palette
+
+    def get_icon_path(self, name: str) -> Path:
+        return DarkTheme().get_icon_path(name)

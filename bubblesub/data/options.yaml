@@ -30,7 +30,7 @@ styles:
 
 gui:
     spell_check: "en"
-    current_theme: "light"
+    current_theme: "system-light"
     preview_fonts: true
     try_to_refresh_fonts: true
 

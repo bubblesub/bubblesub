@@ -23,14 +23,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.ui.themes.base import BaseTheme
-from bubblesub.ui.themes.system import SystemTheme
+from bubblesub.ui.themes.system import SystemLightTheme
 
 
 class ThemeManager(QtCore.QObject):
     def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._api = api
-        self._theme: BaseTheme = SystemTheme()
+        self._theme: BaseTheme = SystemLightTheme()
         self._icons_to_update: T.Dict[T.Any, str] = {}
 
         self.apply_theme(api.cfg.opt["gui"]["current_theme"], force=True)

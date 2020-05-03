@@ -18,4 +18,4 @@ from .base import BaseTheme
 from .dark import DarkTheme
 from .light import LightTheme
 from .manager import ThemeManager
-from .system import SystemTheme
+from .system import SystemDarkTheme, SystemLightTheme
