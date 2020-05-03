@@ -17,34 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-import sys
 
-from setuptools import Command, find_packages, setup
-
-
-class FormatCommand(Command):
-    description = "run formatters"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        import subprocess
-
-        commands = [
-            ["isort", "-p", "bubblesub", "-o", "mpv", "-ns", "__init__.py"],
-            ["black", "-l79", "."],
-        ]
-        for command in commands:
-            status = subprocess.run(command)
-            if status.returncode != 0:
-                sys.exit(status.returncode)
-        sys.exit(0)
-
+from setuptools import find_packages, setup
 
 install_packages = [
     "ffms2",
