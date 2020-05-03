@@ -59,6 +59,33 @@ class MenuItem:
     children: T.Optional[T.List["MenuItem"]] = None
 
 
+def _get_node(token: str) -> MenuItem:
+    if token == "-":
+        return MenuItem(type=MenuItemType.Separator)
+
+    if "|" in token:
+        label, artifact = token.split("|", 2)
+    else:
+        label = None
+        artifact = token
+
+    if artifact == "!recent!":
+        return MenuItem(type=MenuItemType.RecentFiles, label=label)
+
+    if artifact == "!plugins!":
+        return MenuItem(type=MenuItemType.Plugins, label=label)
+
+    if artifact == "!themes!":
+        return MenuItem(type=MenuItemType.Themes, label=label)
+
+    if "|" in token:
+        return MenuItem(
+            type=MenuItemType.Command, label=label, cmdline=artifact
+        )
+
+    return MenuItem(type=MenuItemType.SubMenu, label=artifact, children=[])
+
+
 def _recurse_tree(
     parent: MenuItem, parent_depth: int, source: T.List[str]
 ) -> None:
@@ -78,31 +105,9 @@ def _recurse_tree(
             continue
 
         source.pop(0)
-        if token == "-":
-            node = MenuItem(type=MenuItemType.Separator)
-        else:
-            if "|" in token:
-                label, artifact = token.split("|", 2)
-            else:
-                label = None
-                artifact = token
-
-            if artifact == "!recent!":
-                node = MenuItem(type=MenuItemType.RecentFiles, label=label)
-            elif artifact == "!plugins!":
-                node = MenuItem(type=MenuItemType.Plugins, label=label)
-            elif artifact == "!themes!":
-                node = MenuItem(type=MenuItemType.Themes, label=label)
-            elif "|" in token:
-                node = MenuItem(
-                    type=MenuItemType.Command, label=label, cmdline=artifact
-                )
-            else:
-                node = MenuItem(
-                    type=MenuItemType.SubMenu, label=artifact, children=[]
-                )
-                _recurse_tree(node, current_depth, source)
-
+        node = _get_node(token)
+        if node.type == MenuItemType.SubMenu:
+            _recurse_tree(node, current_depth, source)
         parent.children.append(node)
 
 
