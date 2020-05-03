@@ -30,7 +30,8 @@ def test_commands_have_help_text(  # pylint: disable=redefined-outer-name
     """
     api.cmd.reload_commands()
 
-    assert len(api.cmd.get_all()) >= 1
+    commands = list(api.cmd.get_all())
+    assert len(commands) >= 1
     classes = BaseCommand.__subclasses__()
     assert len(classes) >= 1
     for cls in classes:
@@ -50,7 +51,8 @@ def test_commands_help_text_format(  # pylint: disable=redefined-outer-name
     """
     api.cmd.reload_commands()
 
-    assert len(api.cmd.get_all()) >= 1
+    commands = list(api.cmd.get_all())
+    assert len(commands) >= 1
     classes = BaseCommand.__subclasses__()
     assert len(classes) >= 1
     for cls in classes:

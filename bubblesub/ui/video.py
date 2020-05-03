@@ -415,7 +415,7 @@ class VideoMouseModeController(QtCore.QObject):
         return self._mode
 
     @mode.setter
-    def mode(self, value: T.Optional[VideoInteractionMode]):
+    def mode(self, value: T.Optional[VideoInteractionMode]) -> None:
         if value != self._mode:
             self._mode = value
             self.mode_changed.emit(self._mode)
@@ -573,13 +573,13 @@ class VideoModeButtons(QtWidgets.QToolBar):
         self.addWidget(btn)
         self._btn_group.addButton(btn)
 
-    def _on_mode_btn_press(self):
+    def _on_mode_btn_press(self) -> None:
         btn = self.sender()
         checked_btn = self._btn_group.checkedButton()
         if checked_btn is not None and checked_btn == btn:
             self._btn_group.setExclusive(False)
 
-    def _on_mode_btn_release(self):
+    def _on_mode_btn_release(self) -> None:
         btn = self.sender()
         if self._btn_group.exclusive() is False:
             btn.setChecked(False)

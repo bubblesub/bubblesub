@@ -58,13 +58,13 @@ def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
 
 class CommandAction(QtWidgets.QAction):
     def __init__(
-        self, api: Api, item: MenuItem, parent: QtWidgets.QWidget
+        self, api: Api, label: str, cmdline: str, parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
-        self.commands = api.cmd.parse_cmdline(item.cmdline)
+        self.commands = api.cmd.parse_cmdline(cmdline)
         self.triggered.connect(self._on_trigger)
-        self.setText(item.label)
+        self.setText(label)
 
     def _on_trigger(self) -> None:
         for cmd in self.commands:
@@ -87,7 +87,7 @@ class LoadRecentFileAction(QtWidgets.QAction):
 
 class LoadThemeAction(QtWidgets.QAction):
     def __init__(
-        self, api: Api, theme: BaseTheme, parent: QtWidgets.QWidget
+        self, api: Api, theme: T.Type[BaseTheme], parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
@@ -168,7 +168,7 @@ class MenuBuilder:
 
     def build_submenu(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
         submenu = parent.addMenu(item.label)
-        for subitem in item.children:
+        for subitem in item.children or []:
             self.build(submenu, subitem)
 
     def build_placeholder(
@@ -180,8 +180,11 @@ class MenuBuilder:
         parent.addAction(action)
 
     def build_command(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+        assert item.label
+        assert item.cmdline
+
         try:
-            action = CommandAction(self.api, item, parent)
+            action = CommandAction(self.api, item.label, item.cmdline, parent)
         except CommandError as ex:
             self.api.log.error(str(ex))
             return
@@ -211,5 +214,5 @@ def setup_menu(
         )
 
     menu_builder = MenuBuilder(api, context)
-    for node in root_item.children:
+    for node in root_item.children or []:
         menu_builder.build(parent, node)

@@ -332,10 +332,10 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             self.lowercase_line()
             self.reset()
         else:
-            method = {
+            method_map: T.Dict[str, T.Callable[[], None]] = {
                 "G": self.go_to_last_line,
                 "b": self.go_back_word,
-                "B": lambda **kwargs: self.go_back_word(big=True, **kwargs),
+                "B": lambda: self.go_back_word(big=True),
                 "h": self.go_left,
                 "j": self.go_down,
                 "k": self.go_up,
@@ -349,7 +349,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
                 "X": self.delete_backwards_character,
                 ";": self.repeat_character_jump_forward,
                 ",": self.repeat_character_jump_backward,
-            }.get(event.text())
+            }
+            method = method_map.get(event.text())
 
             # TODO: r
             # TODO: R
@@ -393,13 +394,16 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             if self._count_reset == 1:
                 self._count = 0
                 self._count_reset = 2
+            assert self._count is not None
             self._count *= 10
             self._count += int(event.text())
         else:
             if self._count_reset == 0:
+                assert self._count is not None
                 self._count_mul = self._count
                 self._count_reset = 1
             elif self._count_reset == 2:
+                assert self._count is not None
                 self._count *= self._count_mul
             self.consume_normal(event)
 
@@ -727,7 +731,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         if (self._count or 1) > 1:
             cursor.movePosition(
                 QtGui.QTextCursor.Down,
-                self._count - 1,
+                (self._count or 1) - 1,
                 QtGui.QTextCursor.KeepAnchor,
             )
         cursor.movePosition(
@@ -794,9 +798,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             cursor.movePosition(QtGui.QTextCursor.Up)
             self.setTextCursor(cursor)
 
-    def select_cursor_for_operator(
-        self, lines: bool
-    ) -> T.Tuple[QtGui.QTextCursor, bool]:
+    def select_cursor_for_operator(self, lines: bool) -> QtGui.QTextCursor:
+        assert self._anchor
         old_pos = self._anchor.position()
         new_pos = self.textCursor().position()
 
@@ -856,6 +859,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         return cursor
 
     def operator_yank(self) -> None:
+        assert self._anchor
         old_pos = self._anchor.position()
         new_pos = self.textCursor().position()
         cursor = self.select_cursor_for_operator(lines=False)
@@ -884,6 +888,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         self.insert()
 
     def operator_lowercase(self) -> None:
+        assert self._anchor
         old_pos = self._anchor.position()
         new_pos = self.textCursor().position()
         cursor = self.select_cursor_for_operator(lines=True)
@@ -897,6 +902,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         self.reset()
 
     def operator_uppercase(self) -> None:
+        assert self._anchor
         old_pos = self._anchor.position()
         new_pos = self.textCursor().position()
         cursor = self.select_cursor_for_operator(lines=True)

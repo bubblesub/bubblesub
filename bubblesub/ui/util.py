@@ -34,11 +34,13 @@ AUDIO_FILE_FILTER = (
 )
 
 
-def async_slot(*args):
-    def real_decorator(func):
+def async_slot(*args: T.Any) -> T.Callable[..., T.Callable[..., None]]:
+    def real_decorator(
+        func: T.Callable[..., "asyncio.Future[T.Any]"]
+    ) -> T.Callable[..., None]:
         @QtCore.pyqtSlot(*args)
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: T.Any, **kwargs: T.Any) -> None:
             asyncio.ensure_future(func(*args, **kwargs))
 
         return wrapper

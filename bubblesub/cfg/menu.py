@@ -63,6 +63,7 @@ def _get_node(token: str) -> MenuItem:
     if token == "-":
         return MenuItem(type=MenuItemType.Separator)
 
+    label: T.Optional[str]
     if "|" in token:
         label, artifact = token.split("|", 2)
     else:
@@ -108,6 +109,7 @@ def _recurse_tree(
         node = _get_node(token)
         if node.type == MenuItemType.SubMenu:
             _recurse_tree(node, current_depth, source)
+        parent.children = parent.children or []
         parent.children.append(node)
 
 
@@ -222,7 +224,7 @@ class SubMenu(MenuItem):
     """Backwards-compatible class for creating submenus."""
 
     def __init__(
-        self, name: str, children: T.Optional[T.Sequence[MenuItem]] = None
+        self, name: str, children: T.Optional[T.List[MenuItem]] = None
     ) -> None:
         """Initialize self.
 

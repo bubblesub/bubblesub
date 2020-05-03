@@ -103,7 +103,7 @@ class OptionsConfig(SubConfig):
         """
         self._storage[key] = value
 
-    def __contains__(self, key: T.Any) -> None:
+    def __contains__(self, key: T.Any) -> bool:
         """Checks if a given key exists.
 
         :param key: key to check

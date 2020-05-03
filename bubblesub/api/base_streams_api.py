@@ -36,6 +36,7 @@ if T.TYPE_CHECKING:
         loaded: QtCore.pyqtSignal
         changed: QtCore.pyqtSignal
         errored: QtCore.pyqtSignal
+        path: Path
 
     _TStream = T.TypeVar("_TStream", bound="TStream")
 

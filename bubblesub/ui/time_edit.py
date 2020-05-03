@@ -76,7 +76,7 @@ class TimeEdit(QtWidgets.QWidget):
         self._reset_text()
 
     def _on_text_edit(self, text: str) -> None:
-        self._qt_value = str_to_ms(text)
+        self.set_value(str_to_ms(text))
 
     def set_allow_negative(self, allow: bool) -> None:
         """Change whether negative PTS are allowed.
@@ -84,7 +84,7 @@ class TimeEdit(QtWidgets.QWidget):
         :param allow: whether to allow negative PTS
         """
         self._allow_negative = allow
-        self._qt_value = 0
+        self.set_value(0)
         self._reset_mask()
         self._reset_text()
 
@@ -94,29 +94,30 @@ class TimeEdit(QtWidgets.QWidget):
 
     @_qt_value.setter
     def _qt_value(self, value: int) -> None:
-        if value != self._value:
-            self._value = value
-            text = ms_to_str(value)
-            if self._allow_negative and value >= 0:
-                text = "+" + text
-            if text != self._edit.text():
-                self._edit.setText(text)
-                self._edit.setCursorPosition(0)
-            self.value_changed.emit(self._value)
+        self.set_value(value)
 
     def get_value(self) -> int:
         """Return current PTS.
 
         :return: selected PTS
         """
-        return self._qt_value
+        return self._value
 
-    def set_value(self, time: int) -> None:
+    def set_value(self, value: int) -> None:
         """Set current PTS.
 
-        :param time: PTS to set
+        :param value: PTS to set
         """
-        self._qt_value = time
+        if value == self._value:
+            return
+        self._value = value
+        text = ms_to_str(value)
+        if self._allow_negative and value >= 0:
+            text = "+" + text
+        if text != self._edit.text():
+            self._edit.setText(text)
+            self._edit.setCursorPosition(0)
+        self.value_changed.emit(self._value)
 
     def _reset_mask(self) -> None:
         if self._allow_negative:

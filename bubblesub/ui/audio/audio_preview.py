@@ -397,7 +397,7 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
         painter.restore()
 
-    def block_idx_from_x(self, x) -> int:
+    def block_idx_from_x(self, x: int) -> int:
         audio_stream = self._api.audio.current_stream
         pts = self.pts_from_x(x)
         pts -= audio_stream.delay if audio_stream else 0

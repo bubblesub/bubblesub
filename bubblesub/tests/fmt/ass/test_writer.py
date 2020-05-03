@@ -19,7 +19,7 @@
 import io
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from bubblesub.fmt.ass.file import AssFile
 from bubblesub.fmt.ass.writer import write_ass
@@ -38,7 +38,7 @@ from bubblesub.fmt.ass.writer import write_ass
     side_effect=lambda ass_file, handle: handle.write("EVENTS"),
 )
 def test_write_ass_handle(
-    write_meta_mock, write_styles_mock, write_events_mock
+    write_meta_mock: Mock, write_styles_mock: Mock, write_events_mock: Mock
 ) -> None:
     """Test the write_ass function for file handles.
 
@@ -69,7 +69,7 @@ def test_write_ass_handle(
     side_effect=lambda ass_file, handle: handle.write("EVENTS"),
 )
 def test_write_ass_file(
-    write_meta_mock, write_styles_mock, write_events_mock
+    write_meta_mock: Mock, write_styles_mock: Mock, write_events_mock: Mock
 ) -> None:
     """Test the write_ass function for file paths.
 

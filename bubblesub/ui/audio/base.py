@@ -147,7 +147,7 @@ class DragModeExecutor:
     def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         pass
 
-    def end_drag(self):
+    def end_drag(self) -> None:
         self._api.undo.push()
 
 
@@ -226,7 +226,7 @@ class SubtitleEndDragModeExecutor(DragModeExecutor):
 class NewSubtitleStartDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.NewSubtitleStart
 
-    def begin_drag(self, event: QtGui.QMouseEvent, pts) -> None:
+    def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         super().begin_drag(event, pts)
         create_new_subtitle(self._api, pts, by_end=False)
 
@@ -234,7 +234,7 @@ class NewSubtitleStartDragModeExecutor(DragModeExecutor):
 class NewSubtitleEndDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.NewSubtitleEnd
 
-    def begin_drag(self, event: QtGui.QMouseEvent, pts) -> None:
+    def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         super().begin_drag(event, pts)
         create_new_subtitle(self._api, pts, by_end=True)
 
@@ -257,7 +257,9 @@ class SubtitleSplitDragModeExecutor(DragModeExecutor):
         self.copied_events[:] = []
         if not self.source_events:
             return
+        idx: int
         for source_event in reversed(self.source_events):
+            assert source_event.index
             idx = source_event.index
             new_event = copy(source_event)
             self._api.subs.events.insert(idx + 1, new_event)

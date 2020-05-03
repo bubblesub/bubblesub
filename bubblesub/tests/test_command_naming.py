@@ -91,8 +91,9 @@ def test_command_naming(  # pylint: disable=redefined-outer-name
     """
     api.cmd.reload_commands()
 
-    assert len(api.cmd.get_all()) >= 1
-    for cls in api.cmd.get_all():
+    commands = list(api.cmd.get_all())
+    assert len(commands) >= 1
+    for cls in commands:
         verify_name(cls.__name__, cls.names[0])
 
     api.cmd.unload()
@@ -107,7 +108,8 @@ def test_commands_have_names(  # pylint: disable=redefined-outer-name
     """
     api.cmd.reload_commands()
 
-    assert len(api.cmd.get_all()) >= 1
+    commands = list(api.cmd.get_all())
+    assert len(commands) >= 1
     classes = BaseCommand.__subclasses__()
     assert len(classes) >= 1
     for cls in classes:

@@ -43,7 +43,9 @@ def synchronized(wrapped: T.Any = None, lock: T.Any = None) -> T.Any:
         lock = threading.RLock()
 
     @functools.wraps(wrapped)
-    def _wrapper(*args, **kwargs):
+    def _wrapper(*args: T.Any, **kwargs: T.Any) -> T.Any:
+        assert lock
+        assert wrapped
         with lock:
             return wrapped(*args, **kwargs)
 

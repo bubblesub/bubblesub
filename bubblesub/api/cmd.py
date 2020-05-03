@@ -71,7 +71,7 @@ class BadInvocation(CommandError):
 class CommandArgumentParser(argparse.ArgumentParser):
     """Overloaded ArgumentParser, suitable for commands."""
 
-    def error(self, message):
+    def error(self, message: str) -> None:
         """Rather than exiting, raise an exception.
 
         :param message: error message about to be shown to the user

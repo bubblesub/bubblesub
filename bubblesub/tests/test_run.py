@@ -37,7 +37,7 @@ def test_run() -> None:
             stdout=subprocess.PIPE,
             check=False,
         )
-        assert result.returncode == 0, f"Failed: {result.stderr}"
+        assert result.returncode == 0, f"Failed: {result.stderr!s}"
     except subprocess.TimeoutExpired:
         pass
     else:

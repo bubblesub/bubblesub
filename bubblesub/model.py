@@ -192,7 +192,9 @@ class ObservableList(T.Generic[TItem]):
         """
         ...
 
-    def __getitem__(self, idx):  # pylint: disable=function-redefined
+    def __getitem__(
+        self, idx: T.Any
+    ) -> T.Any:  # pylint: disable=function-redefined
         """Retrieve item at given position.
 
         :param idx: item position

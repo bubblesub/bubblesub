@@ -100,9 +100,7 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
         ast.USub: operator.neg,
     }
 
-    def _eval(
-        node: T.List[ast.stmt],
-    ) -> T.Union[int, float, fractions.Fraction]:
+    def _eval(node: ast.expr) -> T.Union[int, float, fractions.Fraction]:
         if isinstance(node, ast.Num):
             return fractions.Fraction(node.n)
         if isinstance(node, ast.BinOp):

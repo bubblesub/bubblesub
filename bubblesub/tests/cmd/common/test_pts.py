@@ -42,7 +42,9 @@ def _assert_pts_value(
     assert actual_value == expected_value
 
 
-def _mock_subs_api(sub_times, sub_selection) -> Mock:
+def _mock_subs_api(
+    sub_times: T.List[T.Tuple[int, int]], sub_selection: T.List[int]
+) -> Mock:
     events = []
     for start, end in sub_times:
         events.append(Mock(start=start, end=end))
@@ -50,16 +52,16 @@ def _mock_subs_api(sub_times, sub_selection) -> Mock:
         event.prev = events[i - 1] if i > 0 else None
         event.next = events[i + 1] if i + 1 < len(events) else None
 
-    def _mock_get(idx):
+    def _mock_get(idx: int) -> Mock:
         try:
             return events[idx]
         except IndexError:
             return None
 
-    def _mock_getitem(cls, idx):
+    def _mock_getitem(cls: T.Any, idx: int) -> Mock:
         return events[idx]
 
-    def _mock_len(cls):
+    def _mock_len(cls: T.Any) -> int:
         return len(events)
 
     subs_api = Mock()

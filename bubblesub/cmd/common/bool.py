@@ -33,7 +33,7 @@ class BooleanOperation:
     def __hash__(self) -> int:
         return hash(self.operation)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: T.Any) -> bool:
         return (
             isinstance(other, BooleanOperation)
             and self.operation == other.operation

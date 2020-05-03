@@ -16,6 +16,8 @@
 
 """Tests for bubblesub.fmt.ass.util module."""
 
+import typing as T
+
 import pytest
 
 from bubblesub.fmt.ass.util import iter_words_ass_line
@@ -36,7 +38,7 @@ from bubblesub.fmt.ass.util import iter_words_ass_line
         ("1st 2nd", ["1st", "2nd"]),
     ],
 )
-def test_iter_words_ass_line(ass_text, expected):
+def test_iter_words_ass_line(ass_text: str, expected: T.List[str]) -> None:
     """Tests iterating over words in ASS lines.
 
     :param ass_text: input ASS line

@@ -17,6 +17,7 @@
 """Test VimTextEdit class."""
 
 import re
+import typing as T
 
 import pytest
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -523,7 +524,7 @@ TESTS += [
     "keys,expected_text,expected_position", TESTS,
 )
 def test_vim_text_edit(  # pylint: disable=redefined-outer-name
-    qtbot, keys: str, expected_text: str, expected_position: int
+    qtbot: T.Any, keys: str, expected_text: str, expected_position: int
 ) -> None:
     """Test VimTextEdit behavior.
 
