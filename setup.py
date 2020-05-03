@@ -269,7 +269,13 @@ setup(
     },
     install_requires=install_packages,
     extras_require={
-        "develop": ["docstring_parser", "mypy", "pytest", "pytest-qt"]
+        "develop": [
+            "docstring_parser",
+            "mypy",
+            "pytest",
+            "pytest-qt",
+            "pyScss",
+        ]
     },
     cmdclass={
         "doc": GenerateDocumentationCommand,

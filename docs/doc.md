@@ -308,7 +308,7 @@ Usage: `set‑playback‑speed expression`
 Changes the GUI color theme.
 
 Usage: `set‑theme theme_name`
-* `theme_name`: name of the theme to change to (can be `system`)
+* `theme_name`: name of the theme to change to (can be `dark`, `light`, `system`)
 
 ### <a name="cmd-set-volume"></a>`set‑volume`
 Adjusts the video volume.

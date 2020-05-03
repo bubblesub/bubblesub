@@ -15,5 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .base import BaseTheme
+from .dark import DarkTheme
+from .light import LightTheme
 from .manager import ThemeManager
 from .system import SystemTheme

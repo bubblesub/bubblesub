@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+import re
+import typing as T
+from pathlib import Path
+
+from scss import Compiler
+from scss.namespace import Namespace
+from scss.types import String
+
+DISCLAIMER_CSS = "/* file generated automatically */\n"
+DISCLAIMER_SVG = "<!-- this file was generated automatically -->\n"
+
+
+def main() -> None:
+    data_dir = Path(__file__).parent / "data"
+    assets_dir = Path(__file__).parent.parent / "bubblesub" / "ui" / "assets"
+    base_theme_path = data_dir / "base-theme.scss"
+
+    base_theme_content = base_theme_path.read_text()
+    needed_svg_files = re.findall(r"[^/]+\.svg", base_theme_content)
+
+    for theme in {"dark", "light"}:
+        variables_path = data_dir / f"palette-{theme}.scss"
+
+        namespace = Namespace()
+        namespace.set_variable("$THEME", String(theme))
+        compiler = Compiler(output_style="compact", namespace=namespace)
+        (assets_dir / f"{theme}.qss").write_text(
+            DISCLAIMER_CSS
+            + compiler.compile_string(
+                variables_path.read_text() + base_theme_content
+            )
+        )
+
+        variables: T.Dict[str, str] = {}
+        for line in variables_path.read_text().splitlines():
+            match = re.match(r"\$(.*):\s+([^;]*)", line)
+            key = match.group(1)
+            value = match.group(2)
+            variables[key] = value
+
+        for svg_name in needed_svg_files + [
+            p.name for p in data_dir.glob("icon-*.svg")
+        ]:
+            source_svg_path = data_dir / re.sub(r"--[^\.]+", "", svg_name)
+            target_svg_path = assets_dir / theme / svg_name
+
+            if "--focus" in svg_name:
+                color = variables["COLOR_SELECTION_LIGHT"]
+            elif "--pressed" in svg_name:
+                color = variables["COLOR_SELECTION_NORMAL"]
+            elif "--disabled" in svg_name:
+                color = variables["COLOR_BACKGROUND_LIGHT"]
+            else:
+                color = variables["COLOR_FOREGROUND_DARK"]
+
+            svg_content = source_svg_path.read_text()
+            svg_content = re.sub(r"\bred\b", color, svg_content, flags=re.M)
+            svg_content = svg_content.replace("?>", "?>\n" + DISCLAIMER_SVG)
+
+            target_svg_path.parent.mkdir(parents=True, exist_ok=True)
+            target_svg_path.write_text(svg_content)
+
+
+if __name__ == "__main__":
+    main()

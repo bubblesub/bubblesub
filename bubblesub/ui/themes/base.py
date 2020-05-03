@@ -18,7 +18,7 @@ import functools
 import typing as T
 from pathlib import Path
 
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.ui.assets import ASSETS_DIR
 
@@ -27,7 +27,12 @@ class BaseTheme:
     name: str = NotImplemented
 
     def apply(self) -> None:
-        raise NotImplementedError("not implemented")
+        QtWidgets.QApplication.setStyle("fusion")
+        QtWidgets.QApplication.instance().setStyleSheet(
+            (ASSETS_DIR / f"{self.name}.qss")
+            .read_text()
+            .replace("$ASSETS_DIR", str(ASSETS_DIR))
+        )
 
     @property
     def palette(self) -> T.Dict[str, str]:

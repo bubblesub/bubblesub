@@ -3,6 +3,7 @@
 - To install development dependencies: `pip install --user -e '.[develop]'`
 - To run tests: `python setup.py test`
 - To run type checks: `python setup.py mypy`
+- To generate themes and icons: `python scripts/generate_assets`
 - To generate documentation: `python setup.py doc`
 
 ## Pre-commit
