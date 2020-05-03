@@ -16,150 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import io
 import os
 import sys
-import typing as T
-from pathlib import Path
 
 from setuptools import Command, find_packages, setup
-
-
-class GenerateDocumentationCommand(Command):
-    description = "generate documentation"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    @property
-    def _docs_dir(self) -> Path:
-        return Path(__file__).parent / "docs"
-
-    def run(self):
-        with io.StringIO() as handle:
-            self._generate_hotkeys_documentation(handle=handle)
-            self._generate_commands_documentation(handle=handle)
-            handle.seek(0)
-            text = handle.read()
-        (self._docs_dir / "doc.md").write_text(text.strip() + "\n")
-
-    def _generate_hotkeys_documentation(self, handle):
-        import re
-        import shlex
-        import bubblesub.cfg
-        from bubblesub.api.cmd import split_invocation
-
-        cfg = bubblesub.cfg.Config()
-
-        table = []
-        for hotkey in cfg.hotkeys:
-            last_cell = []
-            for invocation in split_invocation(hotkey.cmdline):
-                cmd_name, *cmd_args = invocation
-                anchor = self._get_anchor_name("cmd", cmd_name)
-                last_cell.append(
-                    f'<a href="#user-content-{anchor}">{cmd_name}</a> '
-                    + " ".join(shlex.quote(arg) for arg in cmd_args)
-                )
-            row = [
-                f"<kbd>{hotkey.shortcut}</kbd>",
-                re.sub("([A-Z])", r" \1", hotkey.context.name).strip().lower(),
-                "<code>" + "; ".join(last_cell) + "</code>",
-            ]
-            table.append(row)
-
-        print("# Default hotkeys", file=handle)
-        print("", file=handle)
-        print("Context refers to the currently focused widget.", file=handle)
-        print("", file=handle)
-        print(
-            self._make_table(["Shortcut", "Context", "Command"], table),
-            file=handle,
-        )
-
-    def _generate_commands_documentation(self, handle):
-        import argparse
-
-        import bubblesub.cfg
-        import bubblesub.api.cmd
-        from bubblesub.cmd.help import get_usage, get_params_help
-
-        args = argparse.Namespace()
-        setattr(args, "no_video", True)
-
-        api = bubblesub.api.Api(args)
-        api.cmd.reload_commands()
-
-        print("# Default commands", file=handle)
-        for cls in sorted(api.cmd.get_all(), key=lambda cls: cls.names[0]):
-            parser = argparse.ArgumentParser(
-                add_help=False,
-                prog=cls.names[0],
-                formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-            )
-            cls.decorate_parser(api, parser)
-
-            cmd_anchor = self._get_anchor_name("cmd", cls.names[0])
-            cmd_name = cls.names[0].replace("-", "\N{NON-BREAKING HYPHEN}")
-            print(f'### <a name="{cmd_anchor}"></a>`{cmd_name}`', file=handle)
-
-            if len(cls.names) > 1:
-                print(
-                    "Aliases: "
-                    + ", ".join(f"`{alias}`" for alias in cls.names[1:])
-                    + "\n",
-                    file=handle,
-                )
-
-            print(
-                (cls.help_text + " " + cls.help_text_extra).strip(),
-                file=handle,
-            )
-            if parser._actions:
-                print(file=handle)
-                print(get_usage(cmd_name, parser, backticks=True), file=handle)
-                print(
-                    get_params_help(cmd_name, parser, backticks=True),
-                    file=handle,
-                )
-            print(file=handle)
-
-    @staticmethod
-    def _get_anchor_name(prefix: str, name: str) -> str:
-        return prefix + "-" + name.replace("/", "-")
-
-    @staticmethod
-    def _make_table(
-        header_names: T.List[str], rows: T.List[T.List[str]]
-    ) -> str:
-        ret = "| " + " | ".join(header_names) + " |\n"
-        ret += "|" + "|".join([":--" for _ in header_names]) + "|\n"
-        for row in rows:
-            ret += (
-                "|"
-                + " | ".join(str(cell).replace("\n", "<br>") for cell in row)
-                + " |\n"
-            )
-        return ret
-
-    @staticmethod
-    def _repr_type(type_: type) -> str:
-        for comp, name in {
-            str: "string",
-            int: "integer",
-            float: "real number",
-            bool: "boolean",
-            Path: "path",
-        }.items():
-            if type_ == comp:
-                return name
-            if type_ == T.Optional[comp]:
-                return name + ", optional"
-        raise RuntimeError(f'don\'t know how to describe "{type_}"')
 
 
 class PyTestCommand(Command):
@@ -277,11 +137,7 @@ setup(
             "pyScss",
         ]
     },
-    cmdclass={
-        "doc": GenerateDocumentationCommand,
-        "test": PyTestCommand,
-        "mypy": MypyCommand,
-    },
+    cmdclass={"test": PyTestCommand, "mypy": MypyCommand,},
     classifiers=[
         "Environment :: X11 Applications :: Qt",
         "Development Status :: 4 - Beta",

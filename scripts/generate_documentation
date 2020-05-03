@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+import argparse
+import io
+import re
+import shlex
+import typing as T
+from pathlib import Path
+
+from bubblesub.api import Api
+from bubblesub.api.cmd import split_invocation
+from bubblesub.cfg import Config
+from bubblesub.cmd.help import get_params_help, get_usage
+
+DOCS_DIR = Path(__file__).parent.parent / "docs"
+
+
+def get_anchor_name(prefix: str, name: str) -> str:
+    return prefix + "-" + name.replace("/", "-")
+
+
+def make_table(header_names: T.List[str], rows: T.List[T.List[str]]) -> str:
+    ret = "| " + " | ".join(header_names) + " |\n"
+    ret += "|" + "|".join([":--" for _ in header_names]) + "|\n"
+    for row in rows:
+        ret += (
+            "|"
+            + " | ".join(str(cell).replace("\n", "<br>") for cell in row)
+            + " |\n"
+        )
+    return ret
+
+
+def generate_hotkeys_documentation(handle):
+    cfg = Config()
+
+    table = []
+    for hotkey in cfg.hotkeys:
+        last_cell = []
+        for invocation in split_invocation(hotkey.cmdline):
+            cmd_name, *cmd_args = invocation
+            anchor = get_anchor_name("cmd", cmd_name)
+            last_cell.append(
+                f'<a href="#user-content-{anchor}">{cmd_name}</a> '
+                + " ".join(shlex.quote(arg) for arg in cmd_args)
+            )
+        row = [
+            f"<kbd>{hotkey.shortcut}</kbd>",
+            re.sub("([A-Z])", r" \1", hotkey.context.name).strip().lower(),
+            "<code>" + "; ".join(last_cell) + "</code>",
+        ]
+        table.append(row)
+
+    print("# Default hotkeys", file=handle)
+    print("", file=handle)
+    print("Context refers to the currently focused widget.", file=handle)
+    print("", file=handle)
+    print(
+        make_table(["Shortcut", "Context", "Command"], table), file=handle,
+    )
+
+
+def generate_commands_documentation(handle):
+    args = argparse.Namespace()
+    setattr(args, "no_video", True)
+
+    api = Api(args)
+    api.cmd.reload_commands()
+
+    print("# Default commands", file=handle)
+    for cls in sorted(api.cmd.get_all(), key=lambda cls: cls.names[0]):
+        parser = argparse.ArgumentParser(
+            add_help=False,
+            prog=cls.names[0],
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        )
+        cls.decorate_parser(api, parser)
+
+        cmd_anchor = get_anchor_name("cmd", cls.names[0])
+        cmd_name = cls.names[0].replace("-", "\N{NON-BREAKING HYPHEN}")
+        print(f'### <a name="{cmd_anchor}"></a>`{cmd_name}`', file=handle)
+
+        if len(cls.names) > 1:
+            print(
+                "Aliases: "
+                + ", ".join(f"`{alias}`" for alias in cls.names[1:])
+                + "\n",
+                file=handle,
+            )
+
+        print(
+            (cls.help_text + " " + cls.help_text_extra).strip(), file=handle,
+        )
+        if parser._actions:  # pylint: disable=protected-access
+            print(file=handle)
+            print(get_usage(cmd_name, parser, backticks=True), file=handle)
+            print(
+                get_params_help(cmd_name, parser, backticks=True), file=handle,
+            )
+        print(file=handle)
+
+
+def main() -> None:
+    with io.StringIO() as handle:
+        generate_hotkeys_documentation(handle=handle)
+        generate_commands_documentation(handle=handle)
+        handle.seek(0)
+        text = handle.read()
+    (DOCS_DIR / "doc.md").write_text(text.strip() + "\n")
+
+
+if __name__ == "__main__":
+    main()
