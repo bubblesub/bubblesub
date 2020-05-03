@@ -26,6 +26,7 @@ from bubblesub.ui.themes.light import LightTheme
 
 class SystemLightTheme(BaseTheme):
     name = "system-light"
+    title = "system (with light icons)"
 
     def apply(self) -> None:
         QtWidgets.QApplication.setStyle("")
@@ -41,6 +42,7 @@ class SystemLightTheme(BaseTheme):
 
 class SystemDarkTheme(BaseTheme):
     name = "system-dark"
+    title = "system (with dark icons)"
 
     def apply(self) -> None:
         QtWidgets.QApplication.setStyle("")

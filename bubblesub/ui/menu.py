@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import asyncio
 import functools
 import typing as T
 from pathlib import Path
@@ -25,6 +26,7 @@ from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogApi
 from bubblesub.cfg.hotkeys import HotkeyContext
 from bubblesub.cfg.menu import MenuItem
+from bubblesub.ui.themes import BaseTheme
 
 HotkeyMap = T.Dict[T.Tuple[HotkeyContext, str], str]
 
@@ -83,6 +85,26 @@ class LoadRecentFileAction(QtWidgets.QAction):
         self.api.subs.load_ass(self.path)
 
 
+class LoadThemeAction(QtWidgets.QAction):
+    def __init__(
+        self, api: Api, theme: BaseTheme, parent: QtWidgets.QWidget
+    ) -> None:
+        super().__init__(parent)
+        self.api = api
+        self.theme = theme
+        self.triggered.connect(self._on_trigger)
+        self.setText(f"Switch to &{theme.title} theme")
+
+    def _on_trigger(self) -> None:
+        asyncio.ensure_future(self._run())
+
+    async def _run(self) -> None:
+        await self.api.gui.exec(self._run_with_gui)
+
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        main_window.theme_mgr.apply_theme(self.theme.name)
+
+
 def _build_hotkey_map(api: Api) -> HotkeyMap:
     ret: HotkeyMap = {}
     for hotkey in api.cfg.hotkeys:
@@ -135,6 +157,13 @@ class MenuBuilder:
             action = QtWidgets.QAction(parent)
             action.setText("(no plugins found)")
             action.setEnabled(False)
+            parent.addAction(action)
+
+    def build_themes(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+        if item.label:
+            parent = parent.addMenu(item.label)
+        for theme in BaseTheme.__subclasses__():
+            action = LoadThemeAction(self.api, theme, parent)
             parent.addAction(action)
 
     def build_submenu(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:

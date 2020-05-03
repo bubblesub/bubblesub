@@ -21,6 +21,7 @@ from bubblesub.ui.themes.base import BaseTheme
 
 class LightTheme(BaseTheme):
     name = "light"
+    title = "light"
 
     @property
     def palette(self) -> T.Dict[str, str]:

@@ -46,6 +46,7 @@ class MenuItemType(enum.Enum):
     Command = "command"
     RecentFiles = "recent_files"
     Plugins = "plugins"
+    Themes = "themes"
 
 
 @dataclass
@@ -90,6 +91,8 @@ def _recurse_tree(
                 node = MenuItem(type=MenuItemType.RecentFiles, label=label)
             elif artifact == "!plugins!":
                 node = MenuItem(type=MenuItemType.Plugins, label=label)
+            elif artifact == "!themes!":
+                node = MenuItem(type=MenuItemType.Themes, label=label)
             elif "|" in token:
                 node = MenuItem(
                     type=MenuItemType.Command, label=label, cmdline=artifact

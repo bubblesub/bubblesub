@@ -25,6 +25,7 @@ from bubblesub.ui.assets import ASSETS_DIR
 
 class BaseTheme:
     name: str = NotImplemented
+    title: str = NotImplemented
 
     def apply(self) -> None:
         QtWidgets.QApplication.setStyle("fusion")
