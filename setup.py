@@ -46,32 +46,6 @@ class FormatCommand(Command):
         sys.exit(0)
 
 
-class MypyCommand(Command):
-    description = "run type checks"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        import subprocess
-
-        status = subprocess.run(
-            [
-                "mypy",
-                "bubblesub",
-                "--ignore-missing-imports",
-                "--disallow-untyped-calls",
-                "--disallow-untyped-defs",
-                "--disallow-incomplete-defs",
-            ]
-        )
-        sys.exit(status.returncode)
-
-
 install_packages = [
     "ffms2",
     "numpy",
@@ -119,7 +93,6 @@ setup(
             "pyScss",
         ]
     },
-    cmdclass={"mypy": MypyCommand},
     classifiers=[
         "Environment :: X11 Applications :: Qt",
         "Development Status :: 4 - Beta",

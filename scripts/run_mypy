@@ -1,0 +1,10 @@
+#!/bin/bash
+target="${1:-bubblesub}"
+shift 1
+mypy \
+    --ignore-missing-imports \
+    --disallow-untyped-calls \
+    --disallow-untyped-defs \
+    --disallow-incomplete-defs \
+    "$target" \
+    "$@"
