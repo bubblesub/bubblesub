@@ -1,10 +1,10 @@
 ## Cheat sheet
 
 - To install development dependencies: `pip install --user -e '.[develop]'`
-- To run tests: `python setup.py test`
+- To run tests: `scripts/run_tests`
 - To run type checks: `python setup.py mypy`
-- To generate themes and icons: `python scripts/generate_assets`
-- To generate documentation: `python scripts/generate_documentation`
+- To generate themes and icons: `scripts/generate_assets`
+- To generate documentation: `scripts/generate_documentation`
 
 ## Pre-commit
 

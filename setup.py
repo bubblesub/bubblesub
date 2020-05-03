@@ -22,24 +22,6 @@ import sys
 from setuptools import Command, find_packages, setup
 
 
-class PyTestCommand(Command):
-    description = "run tests"
-    user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
-
-    def initialize_options(self):
-        self.pytest_args = "-m 'not ci'"
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        import shlex
-        import pytest
-
-        errno = pytest.main(shlex.split(self.pytest_args))
-        sys.exit(errno)
-
-
 class FormatCommand(Command):
     description = "run formatters"
     user_options = []
@@ -137,7 +119,7 @@ setup(
             "pyScss",
         ]
     },
-    cmdclass={"test": PyTestCommand, "mypy": MypyCommand,},
+    cmdclass={"mypy": MypyCommand},
     classifiers=[
         "Environment :: X11 Applications :: Qt",
         "Development Status :: 4 - Beta",
