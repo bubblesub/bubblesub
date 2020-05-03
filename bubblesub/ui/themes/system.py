@@ -15,9 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import typing as T
+from pathlib import Path
 
 from PyQt5 import QtWidgets
 
+from bubblesub.ui.assets import ASSETS_DIR
 from bubblesub.ui.themes.base import BaseTheme
 
 
@@ -53,3 +55,15 @@ class SystemTheme(BaseTheme):
             "console/timestamp": "#787878",
             "console/command": "#008000",
         }
+
+    def get_icon_path(self, name: str) -> Path:
+        paths = [
+            (ASSETS_DIR / "light" / f"icon-{name}.svg"),
+            (ASSETS_DIR / "light" / f"icon-{name}.png"),
+            (ASSETS_DIR / f"icon-{name}.svg"),
+            (ASSETS_DIR / f"icon-{name}.png"),
+        ]
+        for path in paths:
+            if path.exists():
+                return path
+        return Path("")

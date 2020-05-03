@@ -14,20 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Paths to program data and user data."""
-
-import os
+import typing as T
 from pathlib import Path
 
-
-def _path_from_env(variable: str, default: Path) -> Path:
-    value = os.environ.get(variable)
-    if value:
-        return Path(value)
-    return default
+ASSETS_DIR = Path(__file__).parent / "assets"
 
 
-DATA_DIR = Path(__file__).parent / "data"
-USER_HOME = Path(os.path.expandvars("$HOME"))
-USER_CONFIG_DIR = _path_from_env("XDG_CONFIG_HOME", USER_HOME / ".config")
-USER_CACHE_DIR = _path_from_env("XDG_CACHE_HOME", USER_HOME / ".cache")
+def get_assets(directory_name: str) -> T.Iterable[Path]:
+    """Get path to all static assets under given directory name.
+
+    :param directory_name: directory that contains relevant assets
+    :return: list of paths found in the user and built-in asset directories
+    """
+    path = ASSETS_DIR / directory_name
+    if path.exists():
+        yield from path.iterdir()

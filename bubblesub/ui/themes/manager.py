@@ -16,6 +16,8 @@
 
 import functools
 import re
+import typing as T
+import weakref
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -29,6 +31,7 @@ class ThemeManager(QtCore.QObject):
         super().__init__(parent)
         self._api = api
         self._theme: BaseTheme = SystemTheme()
+        self._icons_to_update: T.Dict[T.Any, str] = {}
 
         self.apply_theme(api.cfg.opt["gui"]["current_theme"], force=True)
 
@@ -50,6 +53,14 @@ class ThemeManager(QtCore.QObject):
         self.get_color.cache_clear()
         self.parent().update()
 
+        new_icons_to_update: T.Dict[T.Any, str] = {}
+        for widget_ref, name in self._icons_to_update.items():
+            widget = widget_ref()
+            if widget is not None:
+                widget.setIcon(self.get_icon(name))
+                new_icons_to_update[widget_ref] = name
+        self._icons_to_update = new_icons_to_update
+
     @property
     def current_theme(self) -> BaseTheme:
         return self._theme
@@ -66,3 +77,10 @@ class ThemeManager(QtCore.QObject):
             )
         )
         return QtGui.QColor(*color_value)
+
+    def get_icon(self, name: str) -> QtGui.QIcon:
+        return self.current_theme.get_icon(name)
+
+    def set_icon(self, widget: QtWidgets.QWidget, name: str) -> None:
+        widget.setIcon(self.get_icon(name))
+        self._icons_to_update[weakref.ref(widget)] = name

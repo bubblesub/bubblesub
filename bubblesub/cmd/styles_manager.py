@@ -27,6 +27,7 @@ from bubblesub.ass_renderer import AssRenderer
 from bubblesub.fmt.ass.event import AssEvent, AssEventList
 from bubblesub.fmt.ass.meta import AssMeta
 from bubblesub.fmt.ass.style import AssStyle, AssStyleList
+from bubblesub.ui.assets import get_assets
 from bubblesub.ui.font_combo_box import FontComboBox, refresh_font_db
 from bubblesub.ui.model.styles import AssStylesModel, AssStylesModelColumn
 from bubblesub.ui.util import (
@@ -63,7 +64,7 @@ class _StylePreview(QtWidgets.QGroupBox):
         self._editor.setFixedHeight(get_text_edit_row_height(self._editor, 2))
 
         self._background_combobox = QtWidgets.QComboBox()
-        for i, path in enumerate(api.cfg.get_assets("style_preview_bk")):
+        for i, path in enumerate(get_assets("style_preview_bk")):
             self._background_combobox.addItem(path.name, path.resolve())
             if path.name == api.cfg.opt["styles"]["preview_background"]:
                 self._background_combobox.setCurrentIndex(i)

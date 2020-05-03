@@ -30,7 +30,7 @@ from bubblesub.api.playback import (
     MIN_VOLUME,
 )
 from bubblesub.ui.mpv import MpvWidget
-from bubblesub.ui.util import get_icon
+from bubblesub.ui.themes import ThemeManager
 from bubblesub.util import all_subclasses
 
 EPSILON = 1e-7
@@ -500,11 +500,13 @@ class VideoModeButtons(QtWidgets.QToolBar):
     def __init__(
         self,
         api: Api,
+        theme_mgr: ThemeManager,
         controller: VideoMouseModeController,
         parent: QtWidgets.QWidget,
     ) -> None:
         super().__init__(parent)
         self._api = api
+        self._theme_mgr = theme_mgr
         self._controller = controller
 
         self.setOrientation(QtCore.Qt.Vertical)
@@ -553,7 +555,7 @@ class VideoModeButtons(QtWidgets.QToolBar):
     ) -> None:
         btn = QtWidgets.QToolButton(self)
         btn.setToolTip(tooltip)
-        btn.setIcon(get_icon(icon_name))
+        self._theme_mgr.set_icon(btn, icon_name)
         btn.pressed.connect(self._reset_mode)
         btn.pressed.connect(callback)
         self.addWidget(btn)
@@ -563,7 +565,7 @@ class VideoModeButtons(QtWidgets.QToolBar):
     ) -> None:
         btn = QtWidgets.QToolButton(self)
         btn.setToolTip(tooltip)
-        btn.setIcon(get_icon(icon_name))
+        self._theme_mgr.set_icon(btn, icon_name)
         btn.setProperty("mode", mode)
         btn.setCheckable(True)
         btn.pressed.connect(self._on_mode_btn_press)
@@ -608,12 +610,15 @@ class VideoModeButtons(QtWidgets.QToolBar):
 
 
 class VideoPlaybackButtons(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+    ) -> None:
         super().__init__(parent)
         self._api = api
+        self._theme_mgr = theme_mgr
 
         self._play_pause_btn = QtWidgets.QPushButton("Play", self)
-        self._play_pause_btn.setIcon(get_icon("play"))
+        self._theme_mgr.set_icon(self._play_pause_btn, "play")
         self._play_pause_btn.setCheckable(True)
 
         self._sync_video_pos_checkbox = QtWidgets.QCheckBox(
@@ -684,8 +689,9 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
         self._play_pause_btn.setText(
             "Paused" if self._api.playback.is_paused else "Playing"
         )
-        self._play_pause_btn.setIcon(
-            get_icon("pause" if self._api.playback.is_paused else "play")
+        self._theme_mgr.set_icon(
+            self._play_pause_btn,
+            "pause" if self._api.playback.is_paused else "play",
         )
         self._connect_ui_signals()
 
@@ -703,9 +709,12 @@ class VideoPlaybackButtons(QtWidgets.QWidget):
 
 
 class VideoVolumeControl(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+    ) -> None:
         super().__init__(parent)
         self._api = api
+        self._theme_mgr = theme_mgr
 
         self._volume_slider = QtWidgets.QSlider(self)
         self._volume_slider.setMinimum(float(MIN_VOLUME))
@@ -761,14 +770,17 @@ class VideoVolumeControl(QtWidgets.QWidget):
     def _on_video_mute_change(self) -> None:
         self._disconnect_ui_signals()
         self._mute_btn.setChecked(self._api.playback.is_muted)
-        self._mute_btn.setIcon(
-            get_icon("muted" if self._mute_btn.isChecked() else "unmuted")
+        self._theme_mgr.set_icon(
+            self._mute_btn,
+            "muted" if self._mute_btn.isChecked() else "unmuted",
         )
         self._connect_ui_signals()
 
 
 class Video(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+    def __init__(
+        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+    ) -> None:
         super().__init__(parent)
         self._api = api
         self._controller = VideoMouseModeController(api, self)
@@ -776,9 +788,11 @@ class Video(QtWidgets.QWidget):
         self.setObjectName("video-container")
 
         self._video_preview = VideoPreview(api, self._controller, self)
-        self._volume_control = VideoVolumeControl(api, self)
-        self._mode_btns = VideoModeButtons(api, self._controller, self)
-        self._playback_btns = VideoPlaybackButtons(api, self)
+        self._volume_control = VideoVolumeControl(api, theme_mgr, self)
+        self._mode_btns = VideoModeButtons(
+            api, theme_mgr, self._controller, self
+        )
+        self._playback_btns = VideoPlaybackButtons(api, theme_mgr, self)
 
         left_layout = QtWidgets.QVBoxLayout()
         left_layout.addWidget(self._mode_btns)

@@ -23,7 +23,7 @@ from pathlib import Path
 from PyQt5 import QtCore, QtGui, QtWidgets
 from pyqtcolordialog import QColorDialog
 
-from bubblesub.data import ROOT_DIR
+from bubblesub.ui.assets import ASSETS_DIR
 from bubblesub.ui.time_edit import TimeEdit
 
 SUBS_FILE_FILTER = "Advanced Substation Alpha (*.ass)"
@@ -93,7 +93,7 @@ class ColorPickerPreview(QtWidgets.QFrame):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._background = QtGui.QPixmap(
-            str(ROOT_DIR / "style_preview_bk" / "grid.png")
+            str(ASSETS_DIR / "style_preview_bk" / "grid.png")
         )
         self._color = QtGui.QColor(0, 0, 0, 0)
         self.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
@@ -400,12 +400,3 @@ def build_splitter(
         splitter.addWidget(widget)
         splitter.setStretchFactor(i, stretch_factor)
     return splitter
-
-
-def get_icon(name: str) -> QtGui.QIcon:
-    pixmap = QtGui.QPixmap(str(ROOT_DIR / f"icon-{name}.png")).scaled(
-        QtCore.QSize(48, 48),
-        QtCore.Qt.KeepAspectRatio,
-        QtCore.Qt.SmoothTransformation,
-    )
-    return QtGui.QIcon(pixmap)

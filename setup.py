@@ -264,7 +264,9 @@ setup(
     packages=find_packages(),
     entry_points={"console_scripts": ["bubblesub = bubblesub.__main__:main"]},
     package_dir={"bubblesub": "bubblesub"},
-    package_data={"bubblesub": ["data/*", "data/**/*"]},
+    package_data={
+        "bubblesub": ["data/*", "data/**/*", "ui/assets/*", "ui/assets/**/*"]
+    },
     install_requires=install_packages,
     extras_require={
         "develop": ["docstring_parser", "mypy", "pytest", "pytest-qt"]

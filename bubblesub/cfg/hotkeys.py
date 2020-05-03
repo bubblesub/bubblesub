@@ -24,7 +24,7 @@ from pathlib import Path
 from PyQt5 import QtCore
 
 from bubblesub.cfg.base import ConfigError, SubConfig
-from bubblesub.data import ROOT_DIR
+from bubblesub.data import DATA_DIR
 
 
 def _get_user_path(root_dir: Path) -> Path:
@@ -85,7 +85,7 @@ class HotkeysConfig(SubConfig):
         """
         user_path = _get_user_path(root_dir)
         if not user_path.exists():
-            user_path.write_text((ROOT_DIR / "hotkeys.example").read_text())
+            user_path.write_text((DATA_DIR / "hotkeys.example").read_text())
 
     def load(self, root_dir: T.Optional[Path]) -> None:
         """Load internals of this config from the specified directory.
@@ -93,7 +93,7 @@ class HotkeysConfig(SubConfig):
         :param root_dir: directory where to look for the matching config file
         """
         self._hotkeys.clear()
-        self._loads((ROOT_DIR / "hotkeys.conf").read_text())
+        self._loads((DATA_DIR / "hotkeys.conf").read_text())
         if root_dir:
             user_path = _get_user_path(root_dir)
             if user_path.exists():

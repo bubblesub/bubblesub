@@ -19,7 +19,7 @@ import typing as T
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.data import ROOT_DIR
+from bubblesub.ui.assets import ASSETS_DIR
 
 
 def refresh_font_db() -> None:
@@ -28,7 +28,7 @@ def refresh_font_db() -> None:
     # invalidating its internal database by adding a dummy application font.
     # On Linux, this works with `fc-cache -r`.
     font_db = QtGui.QFontDatabase()
-    font_db.addApplicationFont(str(ROOT_DIR / "AdobeBlank.ttf"))
+    font_db.addApplicationFont(str(ASSETS_DIR / "AdobeBlank.ttf"))
     font_db.removeAllApplicationFonts()
 
 

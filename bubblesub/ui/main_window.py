@@ -22,7 +22,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.cfg.hotkeys import HotkeyContext
 from bubblesub.cfg.menu import MenuContext
-from bubblesub.data import ROOT_DIR
+from bubblesub.ui.assets import ASSETS_DIR
 from bubblesub.ui.audio import Audio
 from bubblesub.ui.console import Console
 from bubblesub.ui.editor import Editor
@@ -52,7 +52,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.theme_mgr = ThemeManager(api, self)
 
-        self.video = Video(api, self)
+        self.video = Video(api, self.theme_mgr, self)
         self.audio = Audio(api, self.theme_mgr, self)
         self.editor = Editor(api, self.theme_mgr, self)
         self.subs_grid = SubtitlesGrid(api, self.theme_mgr, self)
@@ -97,7 +97,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setStatusBar(self.status_bar)
 
         self.setWindowIcon(
-            QtGui.QIcon(str(ROOT_DIR / "bubblesub-icon-64.png"))
+            QtGui.QIcon(str(ASSETS_DIR / "bubblesub-icon-64.png"))
         )
 
         self.subs_grid.setFocus()

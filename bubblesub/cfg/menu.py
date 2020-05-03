@@ -24,7 +24,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 from bubblesub.cfg.base import ConfigError, SubConfig
-from bubblesub.data import ROOT_DIR
+from bubblesub.data import DATA_DIR
 
 
 def _get_user_path(root_dir: Path) -> Path:
@@ -120,7 +120,7 @@ class MenuConfig(SubConfig):
         """
         user_path = _get_user_path(root_dir)
         if not user_path.exists():
-            user_path.write_text((ROOT_DIR / "menu.example").read_text())
+            user_path.write_text((DATA_DIR / "menu.example").read_text())
 
     def load(self, root_dir: T.Optional[Path]) -> None:
         """Load internals of this config from the specified directory.
@@ -132,7 +132,7 @@ class MenuConfig(SubConfig):
                 type=MenuItemType.SubMenu, children=[]
             )
 
-        self._loads((ROOT_DIR / "menu.conf").read_text())
+        self._loads((DATA_DIR / "menu.conf").read_text())
 
         if root_dir:
             user_path = _get_user_path(root_dir)

@@ -14,7 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import functools
 import typing as T
+from pathlib import Path
+
+from PyQt5 import QtCore, QtGui
+
+from bubblesub.ui.assets import ASSETS_DIR
 
 
 class BaseTheme:
@@ -26,3 +32,24 @@ class BaseTheme:
     @property
     def palette(self) -> T.Dict[str, str]:
         raise NotImplementedError("not implemented")
+
+    @functools.lru_cache(maxsize=None)
+    def get_icon(self, name: str) -> QtGui.QIcon:
+        pixmap = QtGui.QPixmap(str(self.get_icon_path(name))).scaled(
+            QtCore.QSize(48, 48),
+            QtCore.Qt.KeepAspectRatio,
+            QtCore.Qt.SmoothTransformation,
+        )
+        return QtGui.QIcon(pixmap)
+
+    def get_icon_path(self, name: str) -> Path:
+        paths = [
+            (ASSETS_DIR / self.name / f"icon-{name}.svg"),
+            (ASSETS_DIR / self.name / f"icon-{name}.png"),
+            (ASSETS_DIR / f"icon-{name}.svg"),
+            (ASSETS_DIR / f"icon-{name}.png"),
+        ]
+        for path in paths:
+            if path.exists():
+                return path
+        return Path("")

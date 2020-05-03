@@ -16,13 +16,12 @@
 
 """Program configuration."""
 
-import typing as T
 from pathlib import Path
 
 from bubblesub.cfg.hotkeys import HotkeysConfig
 from bubblesub.cfg.menu import MenuConfig
 from bubblesub.cfg.options import OptionsConfig
-from bubblesub.data import ROOT_DIR, USER_CONFIG_DIR
+from bubblesub.data import USER_CONFIG_DIR
 
 
 class Config:
@@ -55,17 +54,3 @@ class Config:
         self.opt.save(root_dir)
         self.hotkeys.create_example_file(root_dir)
         self.menu.create_example_file(root_dir)
-
-    def get_assets(self, directory_name: str) -> T.Iterable[Path]:
-        """Get path to all static assets under given directory name.
-
-        :param directory_name: directory that contains relevant assets
-        :return: list of paths found in the user and built-in asset directories
-        """
-        for path in [ROOT_DIR, self.root_dir]:
-            if path is None:
-                continue
-
-            path /= directory_name
-            if path.exists():
-                yield from path.iterdir()

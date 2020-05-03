@@ -27,7 +27,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bubblesub.api import Api
 from bubblesub.api.log import LogLevel
 from bubblesub.cfg import ConfigError
-from bubblesub.data import ROOT_DIR
+from bubblesub.ui.assets import ASSETS_DIR
 from bubblesub.ui.main_window import MainWindow
 
 
@@ -105,7 +105,7 @@ class Application:
         asyncio.set_event_loop(self._loop)
 
     def splash_screen(self) -> None:
-        pixmap = QtGui.QPixmap(str(ROOT_DIR / "bubblesub.png"))
+        pixmap = QtGui.QPixmap(str(ASSETS_DIR / "bubblesub.png"))
         pixmap = pixmap.scaledToWidth(640)
         self._splash = MySplashScreen(pixmap)
         self._splash.show()

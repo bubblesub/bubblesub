@@ -24,7 +24,7 @@ import yaml
 from PyQt5 import QtCore
 
 from bubblesub.cfg.base import ConfigError, SubConfig
-from bubblesub.data import ROOT_DIR
+from bubblesub.data import DATA_DIR
 
 
 def _get_user_path(root_dir: Path) -> Path:
@@ -54,7 +54,7 @@ class OptionsConfig(SubConfig):
         :param root_dir: directory where to look for the matching config file
         """
         self._storage = {}
-        self._loads((ROOT_DIR / "options.yaml").read_text())
+        self._loads((DATA_DIR / "options.yaml").read_text())
         if root_dir:
             user_path = _get_user_path(root_dir)
             if user_path.exists():
