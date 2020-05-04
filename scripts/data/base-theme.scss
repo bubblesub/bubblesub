@@ -470,7 +470,7 @@ QScrollBar {
     &::handle {
 
         &:horizontal {
-            background-color: $COLOR_FOREGROUND_DARK;
+            background-color: $COLOR_BACKGROUND_LIGHT;
             border: $BORDER_NORMAL;
             border-radius: $SIZE_BORDER_RADIUS;
             min-width: 8px;
@@ -488,7 +488,7 @@ QScrollBar {
         }
 
         &:vertical {
-            background-color: $COLOR_FOREGROUND_DARK;
+            background-color: $COLOR_BACKGROUND_LIGHT;
             border: $BORDER_NORMAL;
             min-height: 8px;
             border-radius: $SIZE_BORDER_RADIUS;

@@ -84,10 +84,10 @@ QScrollArea QWidget QWidget:disabled { background-color: #F5F5F5; }
 
 QScrollBar:horizontal { height: 16px; margin: 2px 16px 2px 16px; border: 1px solid #EAE5E1; border-radius: 4px; background-color: #F5F5F5; }
 QScrollBar:vertical { background-color: #F5F5F5; width: 16px; margin: 16px 2px 16px 2px; border: 1px solid #EAE5E1; border-radius: 4px; }
-QScrollBar::handle:horizontal { background-color: #878787; border: 1px solid #EAE5E1; border-radius: 4px; min-width: 8px; }
+QScrollBar::handle:horizontal { background-color: #D3CEC9; border: 1px solid #EAE5E1; border-radius: 4px; min-width: 8px; }
 QScrollBar::handle:horizontal:hover { background-color: #EB732D; border: 1px solid #EB732D; border-radius: 4px; min-width: 8px; }
 QScrollBar::handle:horizontal:focus { border: 1px solid #EB9B5F; }
-QScrollBar::handle:vertical { background-color: #878787; border: 1px solid #EAE5E1; min-height: 8px; border-radius: 4px; }
+QScrollBar::handle:vertical { background-color: #D3CEC9; border: 1px solid #EAE5E1; min-height: 8px; border-radius: 4px; }
 QScrollBar::handle:vertical:hover { background-color: #EB732D; border: 1px solid #EB732D; border-radius: 4px; min-height: 8px; }
 QScrollBar::handle:vertical:focus { border: 1px solid #EB9B5F; }
 QScrollBar::add-line:horizontal { margin: 0px 0px 0px 0px; border-image: url("$ASSETS_DIR/light/arrow_right--disabled.svg"); height: 12px; width: 12px; subcontrol-position: right; subcontrol-origin: margin; }
