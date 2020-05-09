@@ -136,7 +136,7 @@ class UndoApi:
         self._subs_api = subs_api
         self._stack: T.List[UndoState] = []
         self._stack_pos = -1
-        self._dirty = False
+        self._saved_state: T.Optional[UndoState] = None
         self._ignore = False
 
         self._subs_api.loaded.connect(self._on_subtitles_load)
@@ -148,7 +148,7 @@ class UndoApi:
 
         :return: whether there are any unsaved changes
         """
-        return self._dirty
+        return self._make_state() != self._saved_state
 
     @property
     def has_undo(self) -> bool:
@@ -188,7 +188,6 @@ class UndoApi:
         self._ignore = True
         self._stack_pos -= 1
         old_state = self._stack[self._stack_pos]
-        self._dirty = True
         assert old_state
         self._apply_state(old_state)
         self._ignore = False
@@ -201,7 +200,6 @@ class UndoApi:
         self._ignore = True
         self._stack_pos += 1
         new_state = self._stack[self._stack_pos]
-        self._dirty = True
         self._apply_state(new_state)
         self._ignore = False
 
@@ -231,7 +229,6 @@ class UndoApi:
         self._discard_redo()
         self._stack.append(cur_state)
         self._stack_pos = len(self._stack) - 1
-        self._dirty = True
         self._discard_old_undo()
         return True
 
@@ -239,10 +236,10 @@ class UndoApi:
         state = self._make_state()
         self._stack = [state]
         self._stack_pos = 0
-        self._dirty = False
+        self._saved_state = state
 
     def _on_subtitles_save(self) -> None:
-        self._dirty = False
+        self._saved_state = self._make_state()
 
     def _make_state(self) -> UndoState:
         return UndoState(
