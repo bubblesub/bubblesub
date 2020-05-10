@@ -50,9 +50,9 @@ def main() -> None:
             elif "--pressed" in svg_name:
                 color = variables["COLOR_SELECTION_NORMAL"]
             elif "--disabled" in svg_name:
-                color = variables["COLOR_BACKGROUND_LIGHT"]
-            else:
                 color = variables["COLOR_FOREGROUND_DARK"]
+            else:
+                color = variables["COLOR_FOREGROUND_LIGHT"]
 
             svg_content = source_svg_path.read_text()
             svg_content = re.sub(r"\bred\b", color, svg_content, flags=re.M)
