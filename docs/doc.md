@@ -80,10 +80,8 @@ Context refers to the currently focused widget.
 |<kbd>Shift+Return</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
 |<kbd>Return</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
 |<kbd>R</kbd> | spectrogram | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
-|<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-play-region">play-region</a> -s=cs.s -e=cs.e</code> |
+|<kbd>T</kbd> | spectrogram | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s -U</code> |
 |<kbd>P</kbd> | spectrogram | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
-|<kbd>Shift+K</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
-|<kbd>Shift+J</kbd> | spectrogram | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
 |<kbd>A</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-view">audio-scroll-view</a> -d=-0.05</code> |
 |<kbd>F</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-scroll-view">audio-scroll-view</a> -d=0.05</code> |
 |<kbd>Ctrl+-</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-zoom-view">audio-zoom-view</a> -d=1.1</code> |
@@ -110,6 +108,18 @@ Context refers to the currently focused widget.
 |<kbd>Alt+Shift+Right</kbd> | spectrogram | <code><a href="#user-content-cmd-audio-set-sel">audio-set-sel</a> -e=+1kf</code> |
 |<kbd>Ctrl+C</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-copy">sub-copy</a> </code> |
 |<kbd>Ctrl+V</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-paste">sub-paste</a> --after</code> |
+|<kbd>K</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-above</code> |
+|<kbd>J</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-select">sub-select</a> one-below</code> |
+|<kbd>Shift+Return</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --before</code> |
+|<kbd>Return</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-insert">sub-insert</a> --after</code> |
+|<kbd>R</kbd> | subtitles grid | <code><a href="#user-content-cmd-play-region">play-region</a> -s=a.s -e=a.e</code> |
+|<kbd>T</kbd> | subtitles grid | <code><a href="#user-content-cmd-seek">seek</a> -p=cs.s -U</code> |
+|<kbd>P</kbd> | subtitles grid | <code><a href="#user-content-cmd-pause">pause</a> toggle</code> |
+|<kbd>Delete</kbd> | subtitles grid | <code><a href="#user-content-cmd-sub-delete">sub-delete</a> </code> |
+|<kbd>[</kbd> | subtitles grid | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}-0.1'</code> |
+|<kbd>]</kbd> | subtitles grid | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}+0.1'</code> |
+|<kbd>{</kbd> | subtitles grid | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}-0.5'</code> |
+|<kbd>}</kbd> | subtitles grid | <code><a href="#user-content-cmd-set-playback-speed">set-playback-speed</a> '{}+0.5'</code> |
 
 # Default commands
 ### <a name="cmd-audio-scroll-view"></a>`audio‑scroll‑view`
