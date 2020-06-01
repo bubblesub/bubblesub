@@ -28,7 +28,7 @@ install_packages = [
     "quamash",
     "regex",
     "pyqtcolordialog",
-    "pympv",
+    "pympv2",
     "ass_tag_parser",
     "Pillow",
     "pyyaml",
