@@ -1,5 +1,5 @@
 <p align='center'>
-    <img src='bubblesub/data/bubblesub-textured.png' alt='logo' width='50%'/>
+    <img src='bubblesub/ui/assets/bubblesub-textured.png' alt='logo' width='50%'/>
 </p>
 
 <p align='center'>
