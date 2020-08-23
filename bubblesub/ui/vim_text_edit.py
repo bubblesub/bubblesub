@@ -1068,6 +1068,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         self.insert()
 
     def join_lines(self) -> None:
+        has_whitespace = False
         for _ in range(self._count - 1 if self._count else 1):
             cursor = self.textCursor()
             if not cursor.movePosition(QtGui.QTextCursor.Down):
