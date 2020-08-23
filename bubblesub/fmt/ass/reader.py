@@ -16,6 +16,7 @@
 
 """ASS file reader."""
 
+import io
 import re
 import typing as T
 from pathlib import Path
@@ -221,14 +222,19 @@ def load_ass(handle: T.IO[str], ass_file: AssFile) -> None:
             raise ValueError(f'corrupt ASS file at line #{i+1}: "{line}"')
 
 
-def read_ass(source: T.Union[Path, T.IO[str]]) -> AssFile:
+def read_ass(source: T.Union[Path, T.IO[str], str]) -> AssFile:
     """Read ASS from the specified source.
 
     :param source: readable stream or a path
     :return: read ass file
     """
     ass_file = AssFile()
-    if isinstance(source, Path):
+    if isinstance(source, str):
+        with io.StringIO() as handle:
+            handle.write(source)
+            handle.seek(0)
+            load_ass(handle, ass_file)
+    elif isinstance(source, Path):
         with source.open("r") as handle:
             load_ass(handle, ass_file)
     else:
