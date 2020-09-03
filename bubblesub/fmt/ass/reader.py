@@ -210,7 +210,11 @@ def load_ass(handle: T.IO[str], ass_file: AssFile) -> None:
                     handler = _styles_section_handler
                 elif section == "Events":
                     handler = _events_section_handler
-                elif section == "Aegisub Project Garbage":
+                elif section in [
+                    "Aegisub Project Garbage",
+                    "Graphics",
+                    "Fonts",
+                ]:
                     handler = _dummy_handler
                 else:
                     raise ValueError(f'unrecognized section: "{section}"')
