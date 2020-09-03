@@ -521,7 +521,8 @@ TESTS += [
 
 
 @pytest.mark.parametrize(
-    "keys,expected_text,expected_position", TESTS,
+    "keys,expected_text,expected_position",
+    TESTS,
 )
 def test_vim_text_edit(  # pylint: disable=redefined-outer-name
     qtbot: T.Any, keys: str, expected_text: str, expected_position: int

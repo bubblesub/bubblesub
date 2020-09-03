@@ -187,7 +187,9 @@ class MenuConfig(SubConfig):
         """
         return self._menu[context]
 
-    def __iter__(self,) -> T.Iterator[T.Tuple[MenuContext, MenuItem]]:
+    def __iter__(
+        self,
+    ) -> T.Iterator[T.Tuple[MenuContext, MenuItem]]:
         """Let users iterate directly over this config.
 
         :return: iterator

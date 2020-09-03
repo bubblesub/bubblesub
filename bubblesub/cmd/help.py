@@ -145,7 +145,8 @@ class HelpCommand(BaseCommand):
 
     def _list_commands(self, identifier: str) -> None:
         for cls in sorted(
-            self.api.cmd.get_all(identifier), key=lambda cls: cls.names[0],
+            self.api.cmd.get_all(identifier),
+            key=lambda cls: cls.names[0],
         ):
             self.api.log.info(
                 f"- {cls.names[0]}: {transform_help(cls.help_text)}"

@@ -515,7 +515,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             else:
                 # overshot
                 cursor.movePosition(
-                    QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor,
+                    QtGui.QTextCursor.Right,
+                    QtGui.QTextCursor.MoveAnchor,
                 )
 
         self.setTextCursor(cursor)
@@ -632,7 +633,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             if cursor.positionInBlock() == cursor.block().length() - 1:
                 break
             cursor.movePosition(
-                QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor,
+                QtGui.QTextCursor.Right,
+                QtGui.QTextCursor.KeepAnchor,
             )
         self._yanked_text = get_selected_text_from_cursor(cursor)
         cursor.removeSelectedText()
@@ -643,7 +645,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             if cursor.positionInBlock() == 0:
                 break
             cursor.movePosition(
-                QtGui.QTextCursor.Left, QtGui.QTextCursor.KeepAnchor,
+                QtGui.QTextCursor.Left,
+                QtGui.QTextCursor.KeepAnchor,
             )
         self._yanked_text = get_selected_text_from_cursor(cursor)
         cursor.removeSelectedText()
@@ -661,7 +664,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
                 self._count or 1,
             ):
                 cursor.movePosition(
-                    QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor,
+                    QtGui.QTextCursor.EndOfLine,
+                    QtGui.QTextCursor.KeepAnchor,
                 )
         else:
             before = False

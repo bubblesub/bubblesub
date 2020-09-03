@@ -54,7 +54,10 @@ class SeekCommand(BaseCommand):
             action="store_true",
         )
         parser.add_argument(
-            "-P", "--pause", help="pause after seeking", action="store_true",
+            "-P",
+            "--pause",
+            help="pause after seeking",
+            action="store_true",
         )
         parser.add_argument(
             "-U",

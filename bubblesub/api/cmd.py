@@ -311,7 +311,8 @@ class CommandApi(QtCore.QObject):
         """Rescans filesystem for commands."""
         self._unload_commands()
         self._load_commands(
-            Path(__file__).parent.parent / "cmd", identifier=self.CORE_COMMAND,
+            Path(__file__).parent.parent / "cmd",
+            identifier=self.CORE_COMMAND,
         )
         if self._api.cfg.root_dir:
             self._load_commands(
