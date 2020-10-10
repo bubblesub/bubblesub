@@ -85,8 +85,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._mpv.set_wakeup_callback(self._mpv_event_handler)
         self._mpv.initialize()
 
-        self._opengl = self._mpv.opengl_cb_api()
-        self._opengl.set_update_callback(self.maybe_update)
+        self._opengl = None
 
         self._timer = QtCore.QTimer(parent=None)
         self._timer.setInterval(api.cfg.opt["video"]["subs_sync_interval"])
@@ -152,26 +151,31 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self.makeCurrent()
         if self._opengl:
             self._opengl.set_update_callback(lambda: None)
-            self._opengl.uninit_gl()
+            self._opengl.close()
         self.deleteLater()
         self._timer.stop()
 
     def initializeGL(self) -> None:
-        if self._opengl:
-            self._opengl.init_gl(None, get_proc_address)
+        self._opengl = mpv.RenderContext(
+            self._mpv, "opengl", {"get_proc_address": get_proc_address}
+        )
+        self._opengl.set_update_callback(self.maybe_update)
 
     def paintGL(self) -> None:
         if self._opengl:
-            self._opengl.draw(
-                self.defaultFramebufferObject(),
-                round(self.width() * self.devicePixelRatioF()),
-                round(-self.height() * self.devicePixelRatioF()),
+            self._opengl.render(
+                {
+                    "fbo": self.defaultFramebufferObject(),
+                    "w": round(self.width() * self.devicePixelRatioF()),
+                    "h": round(self.height() * self.devicePixelRatioF()),
+                },
+                flip_y=True,
             )
 
     @QtCore.pyqtSlot()
     def swapped(self) -> None:
         if self._opengl:
-            self._opengl.report_flip(0)
+            self._opengl.report_swap()
 
     def maybe_update(self) -> None:
         if self._destroyed:
