@@ -164,6 +164,8 @@ class VideoStream(QtCore.QObject):
         pts = self.align_pts_to_prev_frame(pts)
         idx = self.timecodes.index(pts)
         frame = self.get_frame(idx, grab_width, grab_height)
+        if not frame.flags.c_contiguous:
+            frame = frame.copy(order="C")
         image = PIL.Image.frombytes("RGB", (grab_width, grab_height), frame)
 
         if include_subtitles:
