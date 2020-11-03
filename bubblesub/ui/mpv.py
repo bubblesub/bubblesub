@@ -21,6 +21,18 @@ import locale
 import typing as T
 
 import mpv
+from mpv import (
+    MPV,
+    MpvSubApi,
+    OpenGlCbGetProcAddrFn,
+    OpenGlCbUpdateFn,
+    _mpv_get_sub_api,
+    _mpv_opengl_cb_draw,
+    _mpv_opengl_cb_init_gl,
+    _mpv_opengl_cb_report_flip,
+    _mpv_opengl_cb_set_update_callback,
+    _mpv_opengl_cb_uninit_gl,
+)
 from PyQt5 import QtCore, QtOpenGL, QtWidgets
 
 from bubblesub.api import Api
@@ -31,12 +43,12 @@ from bubblesub.fmt.ass.writer import write_ass
 from bubblesub.util import ms_to_str
 
 
-def get_proc_address(proc: T.Any) -> T.Optional[int]:
+def get_proc_addr(_, name):
     glctx = QtOpenGL.QGLContext.currentContext()
     if glctx is None:
         return None
-    addr = glctx.getProcAddress(str(proc, "utf-8"))
-    return T.cast(int, addr.__int__())
+    addr = int(glctx.getProcAddress(name.decode("utf-8")))
+    return addr
 
 
 class MpvWidget(QtWidgets.QOpenGLWidget):
@@ -52,13 +64,23 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         self._destroyed = False
         self._need_subs_refresh = False
-        self._mpv = mpv.Context()
 
-        self._mpv.set_log_level("error")
+        self.mpv = MPV(
+            vo="opengl-cb", ytdl=False, loglevel="info", log_handler=print
+        )
+        self.mpv_gl = _mpv_get_sub_api(
+            self.mpv.handle, MpvSubApi.MPV_SUB_API_OPENGL_CB
+        )
+        self.on_update_c = OpenGlCbUpdateFn(self.on_update)
+        self.on_update_fake_c = OpenGlCbUpdateFn(self.on_update_fake)
+        self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
+        _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_c, None)
+        self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
+
         for key, value in {
-            "config": False,
+            # "config": False,
             "quiet": False,
-            "msg-level": "all=error",
+            "msg-level": "all=info",
             "osc": False,
             "osd-bar": False,
             "input-cursor": False,
@@ -68,6 +90,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             "sub-auto": False,
             "audio-file-auto": False,
             "vo": "null" if api.args.no_video else "libmpv",
+            "hwdec": "no",
             "pause": True,
             "idle": True,
             "blend-subtitles": "video",
@@ -77,13 +100,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             "keep-open": True,
             "track-auto-selection": False,
         }.items():
-            self._mpv.set_option(key, value)
-
-        self._mpv.observe_property("time-pos")
-        self._mpv.observe_property("track-list")
-        self._mpv.observe_property("pause")
-        self._mpv.set_wakeup_callback(self._mpv_event_handler)
-        self._mpv.initialize()
+            setattr(self.mpv, key, value)
 
         self._opengl = None
 
@@ -119,11 +136,58 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         api.playback.pause_changed.connect(self._on_pause_change)
         api.video.view.zoom_changed.connect(self._on_video_zoom_change)
         api.video.view.pan_changed.connect(self._on_video_pan_change)
-        self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
         api.gui.terminated.connect(self.shutdown)
         self._schedule_update.connect(self.update)
 
+        self.mpv.observe_property("time-pos", self._on_mpv_time_pos_change)
+        self.mpv.observe_property("track-list", self._on_mpv_track_list_change)
+        self.mpv.observe_property("pause", self._on_mpv_pause_change)
+
         self._timer.start()
+
+    def initializeGL(self):
+        _mpv_opengl_cb_init_gl(self.mpv_gl, None, self.get_proc_addr_c, None)
+
+    def paintGL(self):
+        ratio = self.devicePixelRatioF()
+        w = int(self.width() * ratio)
+        h = int(self.height() * ratio)
+        _mpv_opengl_cb_draw(
+            self.mpv_gl, self.defaultFramebufferObject(), w, -h
+        )
+
+    @QtCore.pyqtSlot()
+    def maybe_update(self):
+        if self._destroyed:
+            return
+        if self.window().isMinimized():
+            self.makeCurrent()
+            self.paintGL()
+            self.context().swapBuffers(self.context().surface())
+            self.swapped()
+            self.doneCurrent()
+        else:
+            self.update()
+
+    def on_update(self, ctx=None):
+        # maybe_update method should run on the thread that creates the
+        # OpenGLContext, which in general is the main thread.
+        # QMetaObject.invokeMethod can do this trick.
+        QtCore.QMetaObject.invokeMethod(self, "maybe_update")
+
+    def on_update_fake(self, ctx=None):
+        pass
+
+    def swapped(self):
+        _mpv_opengl_cb_report_flip(self.mpv_gl, 0)
+
+    def closeEvent(self, _):
+        self.makeCurrent()
+        if self.mpv_gl:
+            _mpv_opengl_cb_set_update_callback(
+                self.mpv_gl, self.on_update_fake_c, None
+            )
+        _mpv_opengl_cb_uninit_gl(self.mpv_gl)
 
     def _on_video_state_change(self, stream: VideoStream) -> None:
         self._sync_media()
@@ -133,14 +197,14 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._sync_media()
 
     def _sync_media(self) -> None:
-        self._mpv.set_property("pause", True)
-        self._mpv.command("loadfile", "null://")
+        self.mpv.pause = True
+        self.mpv.loadfile("null://")
         external_files: T.Set[str] = set()
         for stream in self._api.video.streams:
             external_files.add(str(stream.path))
         for stream in self._api.audio.streams:
             external_files.add(str(stream.path))
-        self._mpv.set_property("external-files", list(external_files))
+        self.mpv.external_files = list(external_files)
         if not external_files:
             self._api.playback.state = PlaybackFrontendState.NotReady
         else:
@@ -155,33 +219,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self.deleteLater()
         self._timer.stop()
 
-    def initializeGL(self) -> None:
-        self._opengl = mpv.RenderContext(
-            self._mpv, "opengl", {"get_proc_address": get_proc_address}
-        )
-        self._opengl.set_update_callback(self.maybe_update)
-
-    def paintGL(self) -> None:
-        if self._opengl:
-            self._opengl.render(
-                {
-                    "fbo": self.defaultFramebufferObject(),
-                    "w": round(self.width() * self.devicePixelRatioF()),
-                    "h": round(self.height() * self.devicePixelRatioF()),
-                },
-                flip_y=True,
-            )
-
-    @QtCore.pyqtSlot()
-    def swapped(self) -> None:
-        if self._opengl:
-            self._opengl.report_swap()
-
-    def maybe_update(self) -> None:
-        if self._destroyed:
-            return
-        self._schedule_update.emit()
-
     def _refresh_subs_if_needed(self) -> None:
         if self._need_subs_refresh:
             self._refresh_subs()
@@ -189,72 +226,64 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
     def _refresh_subs(self) -> None:
         if not self._api.playback.is_ready:
             return
-        if self._mpv.get_property("sub"):
+        if self.mpv.sub:
             try:
-                self._mpv.command("sub_remove")
+                self.mpv.command("sub_remove")
             except mpv.MPVError:
                 pass
         with io.StringIO() as handle:
             write_ass(self._api.subs.ass_file, handle)
-            self._mpv.command("sub_add", "memory://" + handle.getvalue())
+            self.mpv.command("sub_add", "memory://" + handle.getvalue())
         self._need_subs_refresh = False
 
     def _set_end(self, end: T.Optional[int]) -> None:
         if not self._api.playback.is_ready:
             return
         if end is None:
-            self._mpv.set_option("end", "none")
+            ret = "none"
         else:
             end = max(0, end - 1)
-            self._mpv.set_option("end", ms_to_str(end))
+            ret = ms_to_str(end)
+        if self.mpv.end != ret:
+            self.mpv.end = ret
 
     def _on_request_seek(self, pts: int, precise: bool) -> None:
         self._set_end(None)  # mpv refuses to seek beyond --end
-        self._mpv.command(
-            "seek", ms_to_str(pts), "absolute+exact" if precise else "absolute"
-        )
+        self.mpv.seek(ms_to_str(pts), "absolute", "exact")
 
     def _on_request_playback(
         self, start: T.Optional[int], end: T.Optional[int]
     ) -> None:
         if start is not None:
-            self._mpv.command("seek", ms_to_str(start), "absolute")
+            self.mpv.seek(ms_to_str(start), "absolute")
         self._set_end(end)
-        self._mpv.set_property("pause", False)
+        self.mpv.pause = False
 
     def _on_playback_speed_change(self) -> None:
-        self._mpv.set_property(
-            "speed", float(self._api.playback.playback_speed)
-        )
+        self.mpv.speed = float(self._api.playback.playback_speed)
 
     def _on_volume_change(self) -> None:
-        self._mpv.set_property("volume", float(self._api.playback.volume))
+        self.mpv.volume = float(self._api.playback.volume)
 
     def _on_mute_change(self) -> None:
-        self._mpv.set_property("mute", self._api.playback.is_muted)
+        self.mpv.mute = self._api.playback.is_muted
 
     def _on_pause_change(self, is_paused: bool) -> None:
         self._set_end(None)
-        self._mpv.set_property("pause", is_paused)
+        self.mpv.pause = is_paused
 
     def _on_video_zoom_change(self) -> None:
         # ignore errors coming from setting extreme values
         try:
-            self._mpv.set_property(
-                "video-zoom", float(self._api.video.view.zoom)
-            )
+            self.mpv.video_zoom = float(self._api.video.view.zoom)
         except mpv.MPVError:
             pass
 
     def _on_video_pan_change(self) -> None:
         # ignore errors coming from setting extreme values
         try:
-            self._mpv.set_property(
-                "video-pan-x", float(self._api.video.view.pan_x)
-            )
-            self._mpv.set_property(
-                "video-pan-y", float(self._api.video.view.pan_y)
-            )
+            self.mpv.video_pan_x = float(self._api.video.view.pan_x)
+            self.mpv.video_pan_y = float(self._api.video.view.pan_y)
         except mpv.MPVError:
             pass
 
@@ -267,13 +296,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
     def _on_mpv_load(self) -> None:
         self._api.playback.state = PlaybackFrontendState.Ready
         self._need_subs_refresh = True
-
-    def _mpv_event_handler(self) -> None:
-        while self._mpv:
-            with self._api.log.exception_guard():
-                event = self._mpv.wait_event(0.01)
-                if self._handle_event(event):
-                    break
 
     def _on_track_list_ready(self, track_list: T.Any) -> None:
         # self._api.log.debug(json.dumps(track_list, indent=4))
@@ -298,12 +320,12 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             ):
                 aid = track["id"]
 
-        if self._mpv.get_property("vid") != vid:
-            self._mpv.set_property("vid", vid if vid is not None else "no")
+        if self.mpv.vid != vid:
+            self.mpv.vid = vid if vid is not None else "no"
             self._api.log.debug(f"playback: changing vid to {vid}")
 
-        if self._mpv.get_property("aid") != aid:
-            self._mpv.set_property("aid", aid if aid is not None else "no")
+        if self.mpv.aid != aid:
+            self.mpv.aid = aid if aid is not None else "no"
             self._api.log.debug(f"playback: changing aid to {aid}")
 
         delay = (
@@ -311,15 +333,15 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             if self._api.audio.current_stream
             else 0
         ) / 1000.0
-        if self._mpv.get_property("audio-delay") != delay:
-            self._mpv.set_property("audio-delay", delay)
+        if self.mpv.audio_delay != delay:
+            self.mpv.audio_delay = delay
 
         if vid is not None or aid is not None:
             self._api.playback.state = PlaybackFrontendState.Ready
         else:
             self._api.playback.state = PlaybackFrontendState.NotReady
 
-    def _handle_event(self, event: mpv.Event) -> bool:
+    def _handle_event(self, event: T.Any) -> bool:
         if self._destroyed:
             return False
 
@@ -336,16 +358,26 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
                 f"video/{event_log.prefix}: {event_log.text.strip()}"
             )
         elif event.id == mpv.Events.property_change:
-            event_prop = event.data
-            if event_prop.name == "time-pos":
-                pts = round((event_prop.data or 0) * 1000)
-                self._api.playback.receive_current_pts_change.emit(pts)
-            elif event_prop.name == "pause":
-                self._api.playback.pause_changed.disconnect(
-                    self._on_pause_change
-                )
-                self._api.playback.is_paused = event_prop.data
-                self._api.playback.pause_changed.connect(self._on_pause_change)
-            elif event_prop.name == "track-list":
-                self._on_track_list_ready(event_prop.data)
+            if event.data.name == "time-pos":
+                self._on_mpv_time_pos_change(event)
+            elif event.data.name == "pause":
+                self._on_mpv_pause_change(event)
+            elif event.data.name == "track-list":
+                self._on_mpv_track_list_change(event)
         return False
+
+    def _on_mpv_time_pos_change(
+        self, prop_name: str, new_value: T.Any
+    ) -> None:
+        pts = round((new_value or 0) * 1000)
+        self._api.playback.receive_current_pts_change.emit(pts)
+
+    def _on_mpv_pause_change(self, prop_name: str, new_value: T.Any) -> None:
+        self._api.playback.pause_changed.disconnect(self._on_pause_change)
+        self._api.playback.is_paused = new_value
+        self._api.playback.pause_changed.connect(self._on_pause_change)
+
+    def _on_mpv_track_list_change(
+        self, prop_name: str, new_value: T.Any
+    ) -> None:
+        self._on_track_list_ready(new_value)
