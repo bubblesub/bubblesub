@@ -75,6 +75,9 @@ class SubtitlesSetCommand(BaseCommand):
                 if self.args.no_comment:
                     sub.is_comment = False
 
+                if self.args.layer is not None:
+                    sub.layer = self.args.layer
+
                 sub.end_update()
 
     @staticmethod
@@ -101,6 +104,7 @@ class SubtitlesSetCommand(BaseCommand):
             action="store_true",
             help="mark subtitles as a non-comment",
         )
+        parser.add_argument("--layer", help="new subtitles layer", type=int)
 
         parser.add_argument(
             "-s",
