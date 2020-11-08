@@ -446,8 +446,9 @@ Usage: `sub‑shift [-t|--target=selected] [--no-align]`
 ### <a name="cmd-sub-sort"></a>`sub‑sort`
 Sorts all subtitles by their start time.
 
-Usage: `sub‑sort [-t|--target=selected]`
+Usage: `sub‑sort [-t|--target=selected] [-s|--style=…]`
 * `-t`, `--target`: subtitles to process
+* `-s`, `--style`: how to sort the subtitles (can be `start`, `end`, `actor`, `style`, `layer`)
 
 ### <a name="cmd-sub-split"></a>`sub‑split`
 Splits given subtitles at specified time.

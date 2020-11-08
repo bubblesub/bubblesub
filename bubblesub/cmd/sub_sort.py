@@ -15,11 +15,23 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
+import enum
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import SubtitlesSelection
 from bubblesub.util import make_ranges
+
+
+class SortStyle(enum.Enum):
+    def __str__(self) -> str:
+        return self.value
+
+    Start = "start"
+    End = "end"
+    Actor = "actor"
+    Style = "style"
+    Layer = "layer"
 
 
 class SubtitlesSortCommand(BaseCommand):
@@ -31,11 +43,20 @@ class SubtitlesSortCommand(BaseCommand):
         return bool(self.api.subs.events)
 
     async def run(self) -> None:
+        attr_name = {
+            SortStyle.Start: "start",
+            SortStyle.End: "end",
+            SortStyle.Actor: "actor",
+            SortStyle.Style: "style",
+            SortStyle.Layer: "layer",
+        }[self.args.style]
         with self.api.undo.capture(), self.api.gui.throttle_updates():
             indexes = await self.args.target.get_indexes()
             for idx, count in make_ranges(indexes):
                 events = self.api.subs.events[idx : idx + count]
-                events = sorted(events, key=lambda event: event.start)
+                events = sorted(
+                    events, key=lambda event: getattr(event, attr_name)
+                )
                 self.api.subs.events[idx : idx + count] = events
 
     @staticmethod
@@ -46,6 +67,13 @@ class SubtitlesSortCommand(BaseCommand):
             help="subtitles to process",
             type=lambda value: SubtitlesSelection(api, value),
             default="selected",
+        )
+        parser.add_argument(
+            "-s",
+            "--style",
+            help="how to sort the subtitles",
+            type=SortStyle,
+            choices=list(SortStyle),
         )
 
 
