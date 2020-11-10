@@ -74,6 +74,7 @@ class SubtitlesSortCommand(BaseCommand):
             help="how to sort the subtitles",
             type=SortStyle,
             choices=list(SortStyle),
+            default=SortStyle.Start,
         )
 
 
