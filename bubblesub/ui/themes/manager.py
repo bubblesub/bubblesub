@@ -47,10 +47,10 @@ class ThemeManager(QtCore.QObject):
             self._api.log.error(f'unknown theme: "{theme_name}"')
             return
 
+        self.get_color.cache_clear()
         self._theme = theme()
         self._theme.apply()
         self._api.cfg.opt["gui"]["current_theme"] = theme_name
-        self.get_color.cache_clear()
         self.parent().update()
 
         new_icons_to_update: T.Dict[T.Any, str] = {}

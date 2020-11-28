@@ -126,28 +126,44 @@ class SpectrumWorker(QueueWorker):
         return out
 
 
-class SubtitleLabel:
+class SubtitleRect:
     text_margin = 4
 
     def __init__(
-        self, painter: QtGui.QPainter, x1: int, x2: int, event: AssEvent
+        self,
+        painter: QtGui.QPainter,
+        x1: int,
+        y1: int,
+        x2: int,
+        y2: int,
+        event: AssEvent,
+        is_selected: bool,
     ) -> None:
         self.event = event
         self.text_width = painter.fontMetrics().width(self.text)
         self.text_height = painter.fontMetrics().capHeight()
         self.x1 = x1
-        self.y1 = 0
-        self.x2 = x1 + min(x2 - x1, self.text_margin * 2 + self.text_width)
-        self.y2 = self.text_margin * 2 + self.text_height
-        self.is_visible = (x2 - x1) >= 2 * self.text_margin + self.text_width
+        self.x2 = x2
+        self.y1 = y1
+        self.y2 = y2
+        self.label_x1 = x1
+        self.label_y1 = y1
+        self.label_x2 = x1 + min(
+            x2 - x1, self.text_margin * 2 + self.text_width
+        )
+        self.label_y2 = self.text_margin * 2 + self.text_height
+        self.label_is_visible = (
+            x2 - x1
+        ) >= 2 * self.text_margin + self.text_width
+        self.is_selected = is_selected
 
     @property
-    def text_x(self) -> int:
-        return self.x1 + self.text_margin
+    def label_text_x(self) -> int:
+        return self.label_x1 + self.text_margin
 
     @property
-    def text_y(self) -> int:
-        return self.y1 + self.text_margin
+    def label_text_y(self) -> int:
+        return self.label_y1 + self.text_margin
 
     @property
     def text(self) -> str:
@@ -162,7 +178,7 @@ class AudioPreview(BaseLocalAudioWidget):
         self._theme_mgr = theme_mgr
 
         self.setMinimumHeight(int(SLIDER_SIZE * 1.5))
-        self._labels: T.List[SubtitleLabel] = []
+        self._rects: T.List[SubtitleRect] = []
 
         self._mouse_pos: T.Optional[QtCore.QPoint] = None
         self._color_table: T.List[int] = []
@@ -245,6 +261,8 @@ class AudioPreview(BaseLocalAudioWidget):
         painter = QtGui.QPainter()
         painter.begin(self)
 
+        self._recompute_rects(painter)
+
         self._draw_spectrogram(painter)
         self._draw_subtitle_rects(painter)
         self._draw_selection(painter)
@@ -260,14 +278,14 @@ class AudioPreview(BaseLocalAudioWidget):
         shift = event.modifiers() & QtCore.Qt.ShiftModifier
 
         if event.button() == QtCore.Qt.LeftButton and not shift and not ctrl:
-            for label in self._labels:
+            for rect in self._rects:
                 if (
-                    label.x1 <= event.x() <= label.x2
-                    and label.y1 <= event.y() <= label.y2
+                    rect.label_x1 <= event.x() <= rect.label_x2
+                    and rect.label_y1 <= event.y() <= rect.label_y2
                 ):
                     self._api.subs.selected_indexes = (
-                        [label.event.index]
-                        if label.event.index is not None
+                        [rect.event.index]
+                        if rect.event.index is not None
                         else []
                     )
                     return
@@ -310,9 +328,16 @@ class AudioPreview(BaseLocalAudioWidget):
             )
             for i in range(256)
         ]
-        self._mouse_color = self._theme_mgr.get_color(
-            "spectrogram/mouse-marker"
-        )
+        self._pens = {
+            color: QtGui.QPen(
+                self._theme_mgr.get_color(color), 1, QtCore.Qt.SolidLine
+            )
+            for color in self._theme_mgr.current_theme.palette.keys()
+        }
+        self._brushes = {
+            color: QtGui.QBrush(self._theme_mgr.get_color(color))
+            for color in self._theme_mgr.current_theme.palette.keys()
+        }
 
     def _on_volume_change(self) -> None:
         self._spectrum_worker.cache.clear()
@@ -408,21 +433,17 @@ class AudioPreview(BaseLocalAudioWidget):
 
     def _draw_keyframes(self, painter: QtGui.QPainter) -> None:
         h = painter.viewport().height()
-        color = self._theme_mgr.get_color("spectrogram/keyframe")
-        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
+        painter.setPen(self._pens["spectrogram/keyframe"])
         if self._api.video.current_stream:
             for keyframe in self._api.video.current_stream.keyframes:
                 timecode = self._api.video.current_stream.timecodes[keyframe]
                 x = round(self.pts_to_x(timecode))
                 painter.drawLine(x, 0, x, h)
 
-    def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
-        self._labels[:] = []
+    def _recompute_rects(self, painter: QtGui.QPainter) -> None:
+        self._rects[:] = []
 
         h = painter.viewport().height()
-
-        painter.setFont(QtGui.QFont(self.font().family(), 10))
-
         for i, event in enumerate(self._api.subs.events):
             x1 = round(self.pts_to_x(event.start))
             x2 = round(self.pts_to_x(event.end))
@@ -432,59 +453,42 @@ class AudioPreview(BaseLocalAudioWidget):
                 continue
 
             is_selected = i in self._api.subs.selected_indexes
-            color_key = "selected" if is_selected else "unselected"
-
-            label = SubtitleLabel(painter, x1, x2, event=event)
-            self._labels.append(label)
-
-            painter.setPen(
-                QtGui.QPen(
-                    self._theme_mgr.get_color(
-                        f"spectrogram/{color_key}-sub-line"
-                    ),
-                    1,
-                    QtCore.Qt.SolidLine,
+            self._rects.append(
+                SubtitleRect(
+                    painter, x1, 0, x2, h, event=event, is_selected=is_selected
                 )
             )
 
-            if label.is_visible or is_selected:
+    def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
+        painter.setFont(QtGui.QFont(self.font().family(), 10))
+
+        for rect in self._rects:
+            prefix = "selected" if rect.is_selected else "unselected"
+
+            if rect.label_is_visible:
+                painter.setPen(self._pens[f"spectrogram/{prefix}-label-line"])
                 painter.setBrush(
-                    QtGui.QBrush(
-                        self._theme_mgr.get_color(
-                            f"spectrogram/{color_key}-sub-line"
-                        )
-                        if is_selected
-                        else self.palette().window()
-                    )
+                    self._brushes[f"spectrogram/{prefix}-label-fill"]
                 )
                 painter.drawRect(
-                    label.x1,
-                    label.y1,
-                    label.x2 - label.x1,
-                    label.y2 - label.y1,
+                    rect.label_x1,
+                    rect.label_y1,
+                    rect.label_x2 - rect.label_x1,
+                    rect.label_y2 - rect.label_y1,
                 )
 
-            painter.setBrush(
-                QtGui.QBrush(
-                    self._theme_mgr.get_color(
-                        f"spectrogram/{color_key}-sub-fill"
-                    )
-                )
+            painter.setPen(self._pens[f"spectrogram/{prefix}-sub-line"])
+            painter.setBrush(self._brushes[f"spectrogram/{prefix}-sub-fill"])
+            painter.drawRect(
+                rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1
             )
-            painter.drawRect(x1, 0, x2 - x1, h)
 
-            if label.is_visible:
-                painter.setPen(
-                    QtGui.QPen(
-                        self._theme_mgr.get_color(
-                            f"spectrogram/{color_key}-sub-text"
-                        ),
-                        1,
-                        QtCore.Qt.SolidLine,
-                    )
-                )
+            if rect.label_is_visible:
+                painter.setPen(self._pens[f"spectrogram/{prefix}-label-text"])
                 painter.drawText(
-                    label.text_x, label.text_y + label.text_height, label.text
+                    rect.label_text_x,
+                    rect.label_text_y + rect.text_height,
+                    rect.text,
                 )
 
     def _draw_selection(self, painter: QtGui.QPainter) -> None:
@@ -494,16 +498,8 @@ class AudioPreview(BaseLocalAudioWidget):
             if self.parent().hasFocus()
             else "spectrogram/unfocused-sel"
         )
-        painter.setPen(
-            QtGui.QPen(
-                self._theme_mgr.get_color(f"{color_key}-line"),
-                1,
-                QtCore.Qt.SolidLine,
-            )
-        )
-        painter.setBrush(
-            QtGui.QBrush(self._theme_mgr.get_color(f"{color_key}-fill"))
-        )
+        painter.setPen(self._pens[f"{color_key}-line"])
+        painter.setBrush(self._brushes[f"{color_key}-fill"])
         x1 = round(self.pts_to_x(self._view.selection_start))
         x2 = round(self.pts_to_x(self._view.selection_end))
         painter.drawRect(x1, 0, x2 - x1, h)
@@ -513,7 +509,7 @@ class AudioPreview(BaseLocalAudioWidget):
             return
         x = round(self.pts_to_x(self._api.playback.current_pts))
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(self._theme_mgr.get_color("spectrogram/video-marker"))
+        painter.setBrush(self._brushes["spectrogram/video-marker"])
 
         width = 7
         polygon = QtGui.QPolygonF()
@@ -538,7 +534,7 @@ class AudioPreview(BaseLocalAudioWidget):
             pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
         x = round(self.pts_to_x(pts))
 
-        painter.setPen(self._mouse_color)
+        painter.setPen(self._pens["spectrogram/mouse-marker"])
         painter.setBrush(QtCore.Qt.NoBrush)
         painter.drawLine(x, 0, x, painter.viewport().height())
 
@@ -578,8 +574,9 @@ class AudioPreview(BaseLocalAudioWidget):
         elif modifiers == QtCore.Qt.ControlModifier:
             self.setCursor(QtCore.Qt.SizeHorCursor)
         elif any(
-            label.x1 <= pos.x() <= label.x2 and label.y1 <= pos.y() <= label.y2
-            for label in self._labels
+            rect.label_x1 <= pos.x() <= rect.label_x2
+            and rect.label_y1 <= pos.y() <= rect.label_y2
+            for rect in self._rects
         ):
             self.setCursor(QtCore.Qt.PointingHandCursor)
         else:
