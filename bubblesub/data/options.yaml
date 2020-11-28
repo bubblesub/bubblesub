@@ -12,6 +12,7 @@ audio:
     auto_view_min: 10000
     auto_view_max: 30000
     auto_sel_subtitle: true
+    show_text_on_spectrogram: true
 
 view:
     current: "full"

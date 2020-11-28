@@ -26,6 +26,7 @@ from bubblesub.api import Api
 from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.threading import QueueWorker
 from bubblesub.fmt.ass.event import AssEvent
+from bubblesub.fmt.ass.util import ass_to_plaintext
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.themes import ThemeManager
 from bubblesub.ui.util import blend_colors
@@ -208,6 +209,10 @@ class AudioPreview(BaseLocalAudioWidget):
         self._spectrum_worker = SpectrumWorker(self._api)
         self._api.threading.schedule_runnable(self._spectrum_worker)
         self._spectrum_worker.signals.finished.connect(self.repaint)
+
+        self._show_text_on_spectrogram = api.cfg.opt["audio"][
+            "show_text_on_spectrogram"
+        ]
 
     def shutdown(self) -> None:
         self._spectrum_worker.stop()
@@ -490,6 +495,21 @@ class AudioPreview(BaseLocalAudioWidget):
                     rect.label_text_y + rect.text_height,
                     rect.text,
                 )
+
+                if self._show_text_on_spectrogram:
+                    painter.setPen(
+                        self._pens[f"spectrogram/{prefix}-sub-text"]
+                    )
+                    painter.drawText(
+                        rect.label_x2 + rect.text_margin,
+                        rect.label_y1,
+                        rect.x2 - rect.label_x2 - rect.text_margin * 2,
+                        rect.y2 - rect.label_y2,
+                        QtCore.Qt.AlignLeft
+                        | QtCore.Qt.AlignTop
+                        | QtCore.Qt.TextWordWrap,
+                        ass_to_plaintext(rect.event.text).replace("\n", " "),
+                    )
 
     def _draw_selection(self, painter: QtGui.QPainter) -> None:
         h = self.height()
