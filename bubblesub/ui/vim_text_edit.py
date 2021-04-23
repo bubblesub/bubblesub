@@ -167,6 +167,7 @@ class VimTextEditMode(Enum):
     Normal = "normal"
     Insert = "insert"
     GCommand = "g_command"
+    ZCommand = "z_command"
     Delete = "delete"
     GetOperatorCount = "get_operator_count"
 
@@ -255,6 +256,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             self.open_new_line(before=True)
         elif event.text() == "g":
             self.set_mode(VimTextEditMode.GCommand, reset=False)
+        elif event.text() == "z":
+            self.set_mode(VimTextEditMode.ZCommand, reset=False)
         elif event.text() == "f":
             self._jump_operator = VimTextEditOperator.JumpToNextCharacter
         elif event.text() == "F":
@@ -415,6 +418,9 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
                 assert self._count is not None
                 self._count *= self._count_mul
             self.consume_normal(event)
+
+    def consume_z_command(self, event: QtGui.QKeyEvent) -> None:
+        self.reset()
 
     def consume_g_command(self, event: QtGui.QKeyEvent) -> None:
         if event.text() == "g":

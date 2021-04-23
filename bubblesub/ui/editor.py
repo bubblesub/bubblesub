@@ -100,6 +100,13 @@ class TextEdit(VimTextEdit):
                 self.objectName()
             ] = self.font().toString()
 
+    def consume_z_command(self, event: QtGui.QKeyEvent) -> None:
+        if event.text() == "p":
+            self._api.cmd.run_cmdline("play-region -s=a.s -e=a.e")
+            self.reset()
+        else:
+            super().consume_z_command(event)
+
     def go_up(self) -> bool:
         ret = super().go_up()
         if not ret:
