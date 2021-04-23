@@ -27,6 +27,15 @@ def is_keyword(character: str) -> bool:
     return character == "_"
 
 
+def return_position_changed(func: T.Callable) -> T.Callable:
+    def wrapper(self, *args, **kwargs) -> None:
+        old_pos = self.textCursor().position()
+        func(self, *args, **kwargs)
+        return self.textCursor().position() != old_pos
+
+    return wrapper
+
+
 def utf_class(character: str) -> int:
     classes = [
         (0x037E, 0x037E, 1),  # Greek question mark
@@ -447,6 +456,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             else 1
         )
 
+    @return_position_changed
     def go_left(self) -> None:
         cursor = self.textCursor()
         for _ in range(self._count or 1):
@@ -454,6 +464,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
                 cursor.movePosition(QtGui.QTextCursor.Left)
                 self.setTextCursor(cursor)
 
+    @return_position_changed
     def go_right(self) -> None:
         cursor = self.textCursor()
         for _ in range(self._count or 1):
@@ -461,6 +472,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
                 cursor.movePosition(QtGui.QTextCursor.Right)
                 self.setTextCursor(cursor)
 
+    @return_position_changed
     def go_up(self) -> None:
         cursor = self.textCursor()
         cursor.movePosition(
@@ -472,6 +484,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         if self._main_operator and not self._selection_mode:
             self._selection_mode = VimTextEditSelectionMode.Line
 
+    @return_position_changed
     def go_down(self) -> None:
         cursor = self.textCursor()
         cursor.movePosition(
@@ -483,14 +496,17 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             self._selection_mode = VimTextEditSelectionMode.Line
         self.setTextCursor(cursor)
 
+    @return_position_changed
     def go_back_word(self, big: bool = False) -> None:
         for _ in range(self._count or 1):
             self.go_back_one_word(big=big)
 
+    @return_position_changed
     def go_forward_word(self, big: bool = False) -> None:
         for _ in range(self._count or 1):
             self.go_forward_one_word(big=big)
 
+    @return_position_changed
     def go_forward_end_word(self, big: bool = False) -> None:
         for _ in range(self._count or 1):
             self.go_forward_one_end_word(big=big)
@@ -498,6 +514,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             self._count = 1
             self.go_right()
 
+    @return_position_changed
     def go_back_one_word(self, big: bool = False) -> None:
         cursor = self.textCursor()
         if cursor.movePosition(QtGui.QTextCursor.Left):
@@ -521,6 +538,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
 
         self.setTextCursor(cursor)
 
+    @return_position_changed
     def go_forward_one_word(self, big: bool = False) -> None:
         cursor = self.textCursor()
         if cursor.position() == cursor.document().characterCount() - 1:
@@ -545,6 +563,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
 
         self.setTextCursor(cursor)
 
+    @return_position_changed
     def go_forward_one_end_word(self, big: bool = False) -> None:
         cursor = self.textCursor()
         if cursor.position() == cursor.document().characterCount() - 1:
@@ -576,6 +595,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         cursor.movePosition(QtGui.QTextCursor.Left)
         self.setTextCursor(cursor)
 
+    @return_position_changed
     def go_to_first_line(self) -> None:
         if self._count is not None:
             self.go_to_specific_line()
@@ -586,6 +606,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         if self._main_operator and not self._selection_mode:
             self._selection_mode = VimTextEditSelectionMode.Line
 
+    @return_position_changed
     def go_to_last_line(self) -> None:
         if self._count is not None:
             self.go_to_specific_line()
@@ -597,6 +618,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         if self._main_operator and not self._selection_mode:
             self._selection_mode = VimTextEditSelectionMode.Line
 
+    @return_position_changed
     def go_to_specific_line(self) -> None:
         cursor = self.textCursor()
         cursor.movePosition(QtGui.QTextCursor.Start)
@@ -610,11 +632,13 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         if self._main_operator and not self._selection_mode:
             self._selection_mode = VimTextEditSelectionMode.Line
 
+    @return_position_changed
     def go_to_beginning_of_line(self) -> None:
         cursor = self.textCursor()
         cursor.movePosition(QtGui.QTextCursor.StartOfLine)
         self.setTextCursor(cursor)
 
+    @return_position_changed
     def go_to_end_of_line(self) -> None:
         cursor = self.textCursor()
         cursor.movePosition(

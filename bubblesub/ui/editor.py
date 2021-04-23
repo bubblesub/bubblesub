@@ -100,6 +100,18 @@ class TextEdit(VimTextEdit):
                 self.objectName()
             ] = self.font().toString()
 
+    def go_up(self) -> bool:
+        ret = super().go_up()
+        if not ret:
+            self._api.cmd.run_cmdline("sub-select one-above")
+        return ret
+
+    def go_down(self) -> bool:
+        ret = super().go_down()
+        if not ret:
+            self._api.cmd.run_cmdline("sub-select one-below")
+        return ret
+
 
 class Editor(QtWidgets.QWidget):
     def __init__(
