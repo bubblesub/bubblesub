@@ -1,4 +1,4 @@
-FROM ubuntu:eoan
+FROM ubuntu:latest
 
 MAINTAINER rr- "https://github.com/rr-"
 
@@ -21,7 +21,7 @@ ENV MPV="libmpv-dev"
 ENV FFMPEG="libavcodec-dev libavformat-dev libavdevice-dev zlib1g-dev"
 
 # List of bubblesub packages
-ENV BUBBLESUB="python3.7 python3.7-dev python3-pip python-enchant \
+ENV BUBBLESUB="python3.8 python3.8-dev python3-pip python3-enchant \
 xvfb qt5-default"
 
 # Install bubblesub's dependencies
@@ -38,7 +38,7 @@ RUN git config --global http.sslVerify false
 
 # Set Python environment
 RUN rm -f /usr/bin/python && \
-    ln -s /usr/bin/python3.7 /usr/bin/python && \
+    ln -s /usr/bin/python3.8 /usr/bin/python && \
     python -m pip install -U pip && \
     pip install setuptools
 
