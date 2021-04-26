@@ -341,31 +341,6 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         else:
             self._api.playback.state = PlaybackFrontendState.NotReady
 
-    def _handle_event(self, event: T.Any) -> bool:
-        if self._destroyed:
-            return False
-
-        if event.id in {mpv.Events.none, mpv.Events.shutdown}:
-            return True
-
-        if event.id == mpv.Events.end_file:
-            self._on_mpv_unload()
-        elif event.id == mpv.Events.file_loaded:
-            self._on_mpv_load()
-        elif event.id == mpv.Events.log_message:
-            event_log = event.data
-            self._api.log.debug(
-                f"video/{event_log.prefix}: {event_log.text.strip()}"
-            )
-        elif event.id == mpv.Events.property_change:
-            if event.data.name == "time-pos":
-                self._on_mpv_time_pos_change(event)
-            elif event.data.name == "pause":
-                self._on_mpv_pause_change(event)
-            elif event.data.name == "track-list":
-                self._on_mpv_track_list_change(event)
-        return False
-
     def _on_mpv_time_pos_change(
         self, prop_name: str, new_value: T.Any
     ) -> None:
