@@ -137,10 +137,11 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
                     text += sub.text
                     if i != len(subs) - 1:
                         pos = subs[i + 1].start - subs[0].start
-                        text += r"{\alpha&HFF&\t(%d,%d,\alpha&H00&)}" % (
-                            pos,
-                            pos,
-                        )
+                        if pos != 0:
+                            text += r"{\alpha&HFF&\t(%d,%d,\alpha&H00&)}" % (
+                                pos,
+                                pos,
+                            )
                 subs[0].text = text
             else:
                 subs[0].text = "".join(
