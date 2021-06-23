@@ -19,9 +19,9 @@
 import bisect
 import enum
 import typing as T
+from dataclasses import dataclass
 
 import parsimonious
-from dataclasses import dataclass
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandError
