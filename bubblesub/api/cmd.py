@@ -363,8 +363,12 @@ class CommandApi(QtCore.QObject):
         )
         for plugin in plugin_source.list_plugins():
             with self._api.log.exception_guard():
-                mod = plugin_source.load_plugin(plugin)
-                self._load_module(mod, identifier)
+                try:
+                    mod = plugin_source.load_plugin(plugin)
+                    self._load_module(mod, identifier)
+                except CommandError as ex:
+                    self._api.log.error(f"problem loading module {plugin}:")
+                    self._api.log.error(f"{ex}")
         self._plugin_sources[identifier] = plugin_source
 
     def _load_module(self, mod: types.ModuleType, identifier: str) -> None:
