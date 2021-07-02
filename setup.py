@@ -37,6 +37,7 @@ install_packages = [
     "lazy_import",
     "sortedcontainers",
     "dataclasses;python_version<'3.7'",
+    "pynvim",
 ]
 
 if os.name == "nt":

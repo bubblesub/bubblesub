@@ -73,6 +73,7 @@ class TextEdit(VimTextEdit):
         self, api: Api, parent: QtWidgets.QWidget, **kwargs: T.Any
     ) -> None:
         super().__init__(parent, **kwargs)
+        self._z_mode = False
         self._api = api
         try:
             font_def = self._api.cfg.opt["gui"]["fonts"][self.objectName()]
@@ -100,24 +101,35 @@ class TextEdit(VimTextEdit):
                 self.objectName()
             ] = self.font().toString()
 
-    def consume_z_command(self, event: QtGui.QKeyEvent) -> None:
-        if event.text() == "p":
-            self._api.cmd.run_cmdline("play-region -s=a.s -e=a.e")
-            self.reset()
-        else:
-            super().consume_z_command(event)
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        if self.vim_mode_enabled and self._nvim:
+            response = self._nvim.request("nvim_get_mode")
+            mode = response["mode"]
+            blocking = response["blocking"]
 
-    def go_up(self) -> bool:
-        ret = super().go_up()
-        if not ret:
-            self._api.cmd.run_cmdline("sub-select one-above")
-        return ret
+            if self._z_mode and event.text() == "p":
+                self._api.cmd.run_cmdline("play-region -s=a.s -e=a.e")
+                self._z_mode = False
 
-    def go_down(self) -> bool:
-        ret = super().go_down()
-        if not ret:
-            self._api.cmd.run_cmdline("sub-select one-below")
-        return ret
+            elif not blocking:
+                if mode == "n" and event.text() == "z":
+                    self._z_mode = True
+                else:
+                    self._z_mode = False
+
+                row, _col = self._nvim.current.window.cursor
+                if mode == "n" and event.text() == "k" and row == 1:
+                    self._api.cmd.run_cmdline("sub-select one-above")
+                    return
+                if (
+                    mode == "n"
+                    and event.text() == "j"
+                    and row == len(self._nvim.current.buffer)
+                ):
+                    self._api.cmd.run_cmdline("sub-select one-below")
+                    return
+
+        super().keyPressEvent(event)
 
 
 class Editor(QtWidgets.QWidget):

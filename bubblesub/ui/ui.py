@@ -112,45 +112,45 @@ class Application:
         self._splash.showMessage("Loading API...")
 
     def run(self, api: Api) -> None:
-        logger = Logger(api)
-
-        try:
-            if self._splash:
-                self._splash.showMessage("Loading config...")
-            if not self._args.no_config:
-                api.cfg.load(api.cfg.DEFAULT_PATH)
-        except ConfigError as ex:
-            api.log.error(str(ex))
-
-        # load empty file
-        api.subs.unload()
-
-        if self._splash:
-            self._splash.showMessage("Loading commands...")
-        api.cmd.reload_commands()
-
-        if self._splash:
-            self._splash.showMessage("Loading UI...")
-        main_window = MainWindow(api)
-        api.gui.set_main_window(main_window)
-        logger.set_main_window(main_window)
-
-        main_window.show()
-
-        def save_config() -> None:
-            if not self._args.no_config:
-                assert api.cfg.root_dir is not None
-                api.cfg.save(api.cfg.root_dir)
-
-        api.cfg.opt.changed.connect(save_config)
-
-        if self._args.file:
-            api.cmd.run_cmdline([["open", "--path", self._args.file]])
-
-        if self._splash:
-            self._splash.finish(main_window)
-
         with self._loop:
+            logger = Logger(api)
+
+            try:
+                if self._splash:
+                    self._splash.showMessage("Loading config...")
+                if not self._args.no_config:
+                    api.cfg.load(api.cfg.DEFAULT_PATH)
+            except ConfigError as ex:
+                api.log.error(str(ex))
+
+            # load empty file
+            api.subs.unload()
+
+            if self._splash:
+                self._splash.showMessage("Loading commands...")
+            api.cmd.reload_commands()
+
+            if self._splash:
+                self._splash.showMessage("Loading UI...")
+            main_window = MainWindow(api)
+            api.gui.set_main_window(main_window)
+            logger.set_main_window(main_window)
+
+            main_window.show()
+
+            def save_config() -> None:
+                if not self._args.no_config:
+                    assert api.cfg.root_dir is not None
+                    api.cfg.save(api.cfg.root_dir)
+
+            api.cfg.opt.changed.connect(save_config)
+
+            if self._args.file:
+                api.cmd.run_cmdline([["open", "--path", self._args.file]])
+
+            if self._splash:
+                self._splash.finish(main_window)
+
             self._loop.run_forever()
 
         save_config()
