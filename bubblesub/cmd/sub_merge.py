@@ -15,10 +15,33 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
+import enum
+import typing as T
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandUnavailable
 from bubblesub.cmd.common import SubtitlesSelection
+
+
+class SubtitlesMergeSeparator(enum.Enum):
+    def __str__(self) -> str:
+        return self.value
+
+    NONE = "none"
+    SPACE = "space"
+    NEWLINE = "newline"
+
+
+def merge_text(
+    chunks: T.Iterable[str], separator: SubtitlesMergeSeparator
+) -> str:
+    if separator == SubtitlesMergeSeparator.NONE:
+        return "".join(chunks)
+    if separator == SubtitlesMergeSeparator.SPACE:
+        return " ".join(map(str.strip, chunks))
+    if separator == SubtitlesMergeSeparator.SPACE:
+        return "\n".join(map(str.strip, chunks))
+    raise RuntimeError(f'unknown separator separator: "{separator}"')
 
 
 class SubtitlesMergeCommand(BaseCommand):
@@ -43,8 +66,12 @@ class SubtitlesMergeCommand(BaseCommand):
             subs[0].begin_update()
             subs[0].end = subs[-1].end
             if self.args.concat:
-                subs[0].text = "".join(sub.text for sub in subs)
-                subs[0].note = "".join(sub.note for sub in subs)
+                subs[0].text = merge_text(
+                    (sub.text for sub in subs), separator=self.args.separator
+                )
+                subs[0].note = merge_text(
+                    (sub.note for sub in subs), separator=self.args.separator
+                )
             subs[0].end_update()
 
             self.api.subs.events.remove(subs[0].index + 1, len(subs) - 1)
@@ -63,10 +90,17 @@ class SubtitlesMergeCommand(BaseCommand):
             "--concat",
             "--concatenate",
             help=(
-                "merge the subtitles text "
+                "merge the subtitles text and notes "
                 "(otherwise keep only the first subtitle)"
             ),
             action="store_true",
+        )
+        parser.add_argument(
+            "--separator",
+            help=("separator to merge the text with"),
+            type=SubtitlesMergeSeparator,
+            choices=list(SubtitlesMergeSeparator),
+            default=SubtitlesMergeSeparator.SPACE,
         )
 
 

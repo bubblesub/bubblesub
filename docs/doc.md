@@ -377,9 +377,10 @@ Aliases: `sub-join`
 
 Merges given subtitles together.
 
-Usage: `sub‑merge [-t|--target=selected] [--concat|--concatenate]`
+Usage: `sub‑merge [-t|--target=selected] [--concat|--concatenate] [--separator=space]`
 * `-t`, `--target`: subtitles to merge
-* `--concat`, `--concatenate`: merge the subtitles text (otherwise keep only the first subtitle)
+* `--concat`, `--concatenate`: merge the subtitles text and notes (otherwise keep only the first subtitle)
+* `--separator`: separator to merge the text with (can be `none`, `space`, `newline`)
 
 ### <a name="cmd-sub-merge-karaoke"></a>`sub‑merge‑karaoke`
 Aliases: `sub-join-karaoke`
