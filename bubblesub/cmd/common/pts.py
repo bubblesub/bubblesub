@@ -121,36 +121,36 @@ class _AsyncNodeVisitor:
 
 
 class _Token(enum.IntEnum):
-    previous = enum.auto()
-    next = enum.auto()
-    current = enum.auto()
-    first = enum.auto()
-    last = enum.auto()
+    PREVIOUS = enum.auto()
+    NEXT = enum.auto()
+    CURRENT = enum.auto()
+    FIRST = enum.auto()
+    LAST = enum.auto()
 
-    start = enum.auto()
-    end = enum.auto()
+    START = enum.auto()
+    END = enum.auto()
 
     @staticmethod
     def start_end(obj: T.Any, token: "_Token") -> T.Any:
-        if token == _Token.start:
+        if token == _Token.START:
             return obj.start
-        if token == _Token.end:
+        if token == _Token.END:
             return obj.end
         raise NotImplementedError(f'unknown boundary: "{token}"')
 
     @staticmethod
     def prev_next(obj: T.Any, token: "_Token") -> T.Any:
-        if token == _Token.previous:
+        if token == _Token.PREVIOUS:
             return obj.prev
-        if token == _Token.current:
+        if token == _Token.CURRENT:
             return obj
-        if token == _Token.next:
+        if token == _Token.NEXT:
             return obj.next
         raise NotImplementedError(f'unknown direction: "{token}"')
 
     @staticmethod
     def delta_from_direction(token: "_Token") -> int:
-        mapping = {_Token.previous: -1, _Token.current: 0, _Token.next: 1}
+        mapping = {_Token.PREVIOUS: -1, _Token.CURRENT: 0, _Token.NEXT: 1}
         try:
             return mapping[token]
         except LookupError:
@@ -158,15 +158,15 @@ class _Token(enum.IntEnum):
 
 
 class _TimeUnit(enum.IntEnum):
-    ms = 0
-    frame = 1
-    keyframe = 2
+    MS = 0
+    FRAME = 1
+    KEYFRAME = 2
 
 
 @dataclass
 class _Time:
     value: int = 0
-    unit: _TimeUnit = _TimeUnit.ms
+    unit: _TimeUnit = _TimeUnit.MS
 
     @staticmethod
     def add(time1: "_Time", time2: "_Time", api: Api) -> "_Time":
@@ -200,13 +200,13 @@ class _Time:
         """
         if time1.unit == time2.unit:
             return _Time(func(time1.value, time2.value), time1.unit)
-        if time2.unit == _TimeUnit.ms:
+        if time2.unit == _TimeUnit.MS:
             return _Time(func(time1.unpack(api), time2.value))
-        if time2.unit == _TimeUnit.frame:
+        if time2.unit == _TimeUnit.FRAME:
             return _Time(
                 _apply_frame(api, time1.unpack(api), func(0, time2.value))
             )
-        if time2.unit == _TimeUnit.keyframe:
+        if time2.unit == _TimeUnit.KEYFRAME:
             return _Time(
                 _apply_keyframe(api, time1.unpack(api), func(0, time2.value))
             )
@@ -219,17 +219,17 @@ class _Time:
         :return: resolved pts
         """
         current_stream = api.video.current_stream
-        if self.unit == _TimeUnit.frame:
+        if self.unit == _TimeUnit.FRAME:
             if not current_stream or not current_stream.timecodes:
                 raise CommandError("timecode information is not available")
             idx = max(1, min(self.value, len(current_stream.timecodes))) - 1
             return current_stream.timecodes[idx]
-        if self.unit == _TimeUnit.keyframe:
+        if self.unit == _TimeUnit.KEYFRAME:
             if not current_stream or not current_stream.timecodes:
                 raise CommandError("keyframe information is not available")
             idx = max(1, min(self.value, len(current_stream.keyframes))) - 1
             return current_stream.timecodes[current_stream.keyframes[idx]]
-        if self.unit == _TimeUnit.ms:
+        if self.unit == _TimeUnit.MS:
             return self.value
         raise NotImplementedError(f"unknown unit: {self.unit}")
 
@@ -332,20 +332,20 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     async def visit_rel(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
         try:
             return {
-                "c": _Token.current,
-                "p": _Token.previous,
-                "n": _Token.next,
-                "f": _Token.first,
-                "l": _Token.last,
+                "c": _Token.CURRENT,
+                "p": _Token.PREVIOUS,
+                "n": _Token.NEXT,
+                "f": _Token.FIRST,
+                "l": _Token.LAST,
             }[node.text]
         except LookupError:
             raise NotImplementedError(f"unknown relation: {node.text}")
 
     async def visit_start(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
-        return _Token.start
+        return _Token.START
 
     async def visit_end(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
-        return _Token.end
+        return _Token.END
 
     # --- times ---
 
@@ -387,13 +387,13 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
 
     async def visit_frame(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
         num, _ = _flatten(visited)
-        return _Time(num, _TimeUnit.frame)
+        return _Time(num, _TimeUnit.FRAME)
 
     async def visit_keyframe(
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
         num, _ = _flatten(visited)
-        return _Time(num, _TimeUnit.keyframe)
+        return _Time(num, _TimeUnit.KEYFRAME)
 
     async def visit_rel_subtitle(
         self, node: T.Any, visited: T.List[T.Any]
@@ -401,9 +401,9 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         direction, _, boundary = _flatten(visited)
         sub: T.Optional[AssEvent]
         try:
-            if direction == _Token.first:
+            if direction == _Token.FIRST:
                 sub = self._api.subs.events[0]
-            elif direction == _Token.last:
+            elif direction == _Token.LAST:
                 sub = self._api.subs.events[-1]
             else:
                 sub = self._api.subs.selected_events[0]
@@ -417,13 +417,13 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     ) -> T.Any:
         direction, _ = _flatten(visited)
         origin = self._api.playback.current_pts
-        if direction == _Token.first:
-            return _Time(1, _TimeUnit.frame)
-        if direction == _Token.last:
+        if direction == _Token.FIRST:
+            return _Time(1, _TimeUnit.FRAME)
+        if direction == _Token.LAST:
             return _Time(
-                len(self._api.video.current_stream.timecodes), _TimeUnit.frame
+                len(self._api.video.current_stream.timecodes), _TimeUnit.FRAME
             )
-        if direction == _Token.current:
+        if direction == _Token.CURRENT:
             return _Time(origin)
         delta = _Token.delta_from_direction(direction)
         return _Time(_apply_frame(self._api, origin, delta))
@@ -433,12 +433,12 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     ) -> T.Any:
         direction, _ = _flatten(visited)
         origin = self._api.playback.current_pts
-        if direction == _Token.first:
-            return _Time(1, _TimeUnit.keyframe)
-        if direction == _Token.last:
+        if direction == _Token.FIRST:
+            return _Time(1, _TimeUnit.KEYFRAME)
+        if direction == _Token.LAST:
             return _Time(
                 len(self._api.video.current_stream.keyframes),
-                _TimeUnit.keyframe,
+                _TimeUnit.KEYFRAME,
             )
         delta = _Token.delta_from_direction(direction)
         return _Time(_apply_keyframe(self._api, origin, delta))
@@ -447,9 +447,9 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
         _, boundary = _flatten(visited)
-        if boundary == _Token.start:
+        if boundary == _Token.START:
             return _Time(self._api.audio.view.selection_start)
-        if boundary == _Token.end:
+        if boundary == _Token.END:
             return _Time(self._api.audio.view.selection_end)
         raise NotImplementedError(f'unknown boundary: "{boundary}"')
 
@@ -457,9 +457,9 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         self, node: T.Any, visited: T.List[T.Any]
     ) -> T.Any:
         _, boundary = _flatten(visited)
-        if boundary == _Token.start:
+        if boundary == _Token.START:
             return _Time(self._api.audio.view.view_start)
-        if boundary == _Token.end:
+        if boundary == _Token.END:
             return _Time(self._api.audio.view.view_end)
         raise NotImplementedError(f'unknown boundary: "{boundary}"')
 

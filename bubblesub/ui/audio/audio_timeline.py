@@ -67,9 +67,9 @@ class AudioTimeline(BaseLocalAudioWidget):
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() == QtCore.Qt.LeftButton:
-            self.begin_drag_mode(DragMode.VideoPosition, event)
+            self.begin_drag_mode(DragMode.VIDEO_POSITION, event)
         elif event.button() == QtCore.Qt.MiddleButton:
-            self.begin_drag_mode(DragMode.VideoPosition, event)
+            self.begin_drag_mode(DragMode.VIDEO_POSITION, event)
             self.end_drag_mode()
 
     def _draw_scale(self, painter: QtGui.QPainter) -> None:

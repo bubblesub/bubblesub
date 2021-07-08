@@ -19,9 +19,8 @@
 import enum
 import re
 import typing as T
-from pathlib import Path
-
 from dataclasses import dataclass
+from pathlib import Path
 
 from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import DATA_DIR
@@ -34,19 +33,19 @@ def _get_user_path(root_dir: Path) -> Path:
 class MenuContext(enum.Enum):
     """Which GUI widget the menu appears in."""
 
-    MainMenu = "main"
-    SubtitlesGrid = "subtitles_grid"
+    MAIN_MENU = "main"
+    SUBTITLES_GRID = "subtitles_grid"
 
 
 class MenuItemType(enum.Enum):
     """Menu item type."""
 
-    Separator = "separator"
-    SubMenu = "submenu"
-    Command = "command"
-    RecentFiles = "recent_files"
-    Plugins = "plugins"
-    Themes = "themes"
+    SEPARATOR = "separator"
+    SUB_MENU = "submenu"
+    COMMAND = "command"
+    RECENT_FILES = "recent_files"
+    PLUGINS = "plugins"
+    THEMES = "themes"
 
 
 @dataclass
@@ -61,7 +60,7 @@ class MenuItem:
 
 def _get_node(token: str) -> MenuItem:
     if token == "-":
-        return MenuItem(type=MenuItemType.Separator)
+        return MenuItem(type=MenuItemType.SEPARATOR)
 
     label: T.Optional[str]
     if "|" in token:
@@ -71,20 +70,20 @@ def _get_node(token: str) -> MenuItem:
         artifact = token
 
     if artifact == "!recent!":
-        return MenuItem(type=MenuItemType.RecentFiles, label=label)
+        return MenuItem(type=MenuItemType.RECENT_FILES, label=label)
 
     if artifact == "!plugins!":
-        return MenuItem(type=MenuItemType.Plugins, label=label)
+        return MenuItem(type=MenuItemType.PLUGINS, label=label)
 
     if artifact == "!themes!":
-        return MenuItem(type=MenuItemType.Themes, label=label)
+        return MenuItem(type=MenuItemType.THEMES, label=label)
 
     if "|" in token:
         return MenuItem(
-            type=MenuItemType.Command, label=label, cmdline=artifact
+            type=MenuItemType.COMMAND, label=label, cmdline=artifact
         )
 
-    return MenuItem(type=MenuItemType.SubMenu, label=artifact, children=[])
+    return MenuItem(type=MenuItemType.SUB_MENU, label=artifact, children=[])
 
 
 def _recurse_tree(
@@ -107,7 +106,7 @@ def _recurse_tree(
 
         source.pop(0)
         node = _get_node(token)
-        if node.type == MenuItemType.SubMenu:
+        if node.type == MenuItemType.SUB_MENU:
             _recurse_tree(node, current_depth, source)
         parent.children = parent.children or []
         parent.children.append(node)
@@ -139,7 +138,7 @@ class MenuConfig(SubConfig):
         """
         for context in MenuContext:
             self._menu[context] = MenuItem(
-                type=MenuItemType.SubMenu, children=[]
+                type=MenuItemType.SUB_MENU, children=[]
             )
 
         self._loads((DATA_DIR / "menu.conf").read_text())
@@ -154,7 +153,7 @@ class MenuConfig(SubConfig):
 
     def _loads(self, text: str) -> None:
         sections: T.Dict[MenuContext, str] = {}
-        cur_context = MenuContext.MainMenu
+        cur_context = MenuContext.MAIN_MENU
         lines = text.split("\n")
         while lines:
             line = lines.pop(0).rstrip()
@@ -210,7 +209,7 @@ class MenuCommand(MenuItem):
         :param cmdline: command line to run
         """
         super().__init__(
-            type=MenuItemType.Command, label=name, cmdline=cmdline
+            type=MenuItemType.COMMAND, label=name, cmdline=cmdline
         )
 
 
@@ -219,7 +218,7 @@ class MenuSeparator(MenuItem):
 
     def __init__(self) -> None:
         """Initialize self."""
-        super().__init__(type=MenuItemType.Separator)
+        super().__init__(type=MenuItemType.SEPARATOR)
 
 
 class SubMenu(MenuItem):
@@ -234,5 +233,5 @@ class SubMenu(MenuItem):
         :param children: optional children menu items
         """
         super().__init__(
-            type=MenuItemType.SubMenu, label=name, children=children or []
+            type=MenuItemType.SUB_MENU, label=name, children=children or []
         )

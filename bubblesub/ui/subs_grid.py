@@ -150,18 +150,18 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self._subs_grid_delegate = SubtitlesGridDelegate(
             self._api, theme_mgr, self
         )
-        for col_idx in {AssEventsModelColumn.Text, AssEventsModelColumn.Note}:
+        for col_idx in {AssEventsModelColumn.TEXT, AssEventsModelColumn.NOTE}:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
                 col_idx, QtWidgets.QHeaderView.Stretch
             )
         for col_idx in {
-            AssEventsModelColumn.LongDuration,
-            AssEventsModelColumn.Layer,
-            AssEventsModelColumn.MarginVertical,
-            AssEventsModelColumn.MarginLeft,
-            AssEventsModelColumn.MarginRight,
-            AssEventsModelColumn.IsComment,
+            AssEventsModelColumn.LONG_DURATION,
+            AssEventsModelColumn.LAYER,
+            AssEventsModelColumn.MARGIN_VERTICAL,
+            AssEventsModelColumn.MARGIN_LEFT,
+            AssEventsModelColumn.MARGIN_RIGHT,
+            AssEventsModelColumn.IS_COMMENT,
         }:
             self.setColumnHidden(col_idx, True)
 
@@ -188,8 +188,8 @@ class SubtitlesGrid(QtWidgets.QTableView):
         setup_menu(
             self._api,
             self._subs_menu,
-            self._api.cfg.menu[MenuContext.SubtitlesGrid],
-            HotkeyContext.SubtitlesGrid,
+            self._api.cfg.menu[MenuContext.SUBTITLES_GRID],
+            HotkeyContext.SUBTITLES_GRID,
         )
 
     def _setup_header_menu(self) -> None:

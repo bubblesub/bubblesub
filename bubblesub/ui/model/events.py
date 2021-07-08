@@ -16,8 +16,8 @@
 
 import enum
 import typing as T
-
 from dataclasses import dataclass
+
 from PyQt5 import QtCore, QtGui
 
 from bubblesub.api import Api
@@ -32,20 +32,20 @@ from bubblesub.util import ms_to_str
 class AssEventsModelColumn(enum.IntEnum):
     """Column indices in subtitles grid."""
 
-    Start = 0
-    End = 1
-    AssStyle = 2
-    Actor = 3
-    Text = 4
-    Note = 5
-    ShortDuration = 6
-    LongDuration = 7
-    CharsPerSec = 8
-    Layer = 9
-    MarginVertical = 10
-    MarginLeft = 11
-    MarginRight = 12
-    IsComment = 13
+    START = 0
+    END = 1
+    ASS_STYLE = 2
+    ACTOR = 3
+    TEXT = 4
+    NOTE = 5
+    SHORT_DURATION = 6
+    LONG_DURATION = 7
+    CHARS_PER_SEC = 8
+    LAYER = 9
+    MARGIN_VERTICAL = 10
+    MARGIN_LEFT = 11
+    MARGIN_RIGHT = 12
+    IS_COMMENT = 13
 
 
 @dataclass
@@ -160,26 +160,26 @@ class _LongDurationColumn(_IntPropertyColumn):
 
 
 _COLUMNS: T.Dict[AssEventsModelColumn, _Column] = {
-    AssEventsModelColumn.Start: _TimePropertyColumn("Start", "start"),
-    AssEventsModelColumn.End: _TimePropertyColumn("End", "end"),
-    AssEventsModelColumn.AssStyle: _TextPropertyColumn("Style", "style"),
-    AssEventsModelColumn.Actor: _TextPropertyColumn("Actor", "actor"),
-    AssEventsModelColumn.Text: _TextPropertyColumn("Text", "text"),
-    AssEventsModelColumn.Note: _TextPropertyColumn("Note", "note"),
-    AssEventsModelColumn.ShortDuration: _ShortDurationColumn(),
-    AssEventsModelColumn.LongDuration: _LongDurationColumn(),
-    AssEventsModelColumn.CharsPerSec: _CpsColumn(),
-    AssEventsModelColumn.Layer: _IntPropertyColumn("Layer", "layer"),
-    AssEventsModelColumn.MarginVertical: _IntPropertyColumn(
+    AssEventsModelColumn.START: _TimePropertyColumn("Start", "start"),
+    AssEventsModelColumn.END: _TimePropertyColumn("End", "end"),
+    AssEventsModelColumn.ASS_STYLE: _TextPropertyColumn("Style", "style"),
+    AssEventsModelColumn.ACTOR: _TextPropertyColumn("Actor", "actor"),
+    AssEventsModelColumn.TEXT: _TextPropertyColumn("Text", "text"),
+    AssEventsModelColumn.NOTE: _TextPropertyColumn("Note", "note"),
+    AssEventsModelColumn.SHORT_DURATION: _ShortDurationColumn(),
+    AssEventsModelColumn.LONG_DURATION: _LongDurationColumn(),
+    AssEventsModelColumn.CHARS_PER_SEC: _CpsColumn(),
+    AssEventsModelColumn.LAYER: _IntPropertyColumn("Layer", "layer"),
+    AssEventsModelColumn.MARGIN_VERTICAL: _IntPropertyColumn(
         "Vertical margin", "margin_left"
     ),
-    AssEventsModelColumn.MarginLeft: _IntPropertyColumn(
+    AssEventsModelColumn.MARGIN_LEFT: _IntPropertyColumn(
         "Left margin", "margin_vertical"
     ),
-    AssEventsModelColumn.MarginRight: _IntPropertyColumn(
+    AssEventsModelColumn.MARGIN_RIGHT: _IntPropertyColumn(
         "Right margin", "margin_right"
     ),
-    AssEventsModelColumn.IsComment: _BoolPropertyColumn(
+    AssEventsModelColumn.IS_COMMENT: _BoolPropertyColumn(
         "Is comment?", "is_comment"
     ),
 }
@@ -212,8 +212,8 @@ class AssEventsModel(ObservableListTableAdapter):
                 return _COLUMNS[AssEventsModelColumn(idx)].header
             if role == QtCore.Qt.TextAlignmentRole:
                 if idx in {
-                    AssEventsModelColumn.Text,
-                    AssEventsModelColumn.Note,
+                    AssEventsModelColumn.TEXT,
+                    AssEventsModelColumn.NOTE,
                 }:
                     return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
                 return QtCore.Qt.AlignCenter
@@ -240,13 +240,13 @@ class AssEventsModel(ObservableListTableAdapter):
         if role == QtCore.Qt.BackgroundRole:
             if subtitle.is_comment:
                 return self._theme_mgr.get_color("grid/comment")
-            if col_idx == AssEventsModelColumn.CharsPerSec:
+            if col_idx == AssEventsModelColumn.CHARS_PER_SEC:
                 return self._get_background_cps(subtitle)
 
         if role == QtCore.Qt.TextAlignmentRole:
             if col_idx in {
-                AssEventsModelColumn.Text,
-                AssEventsModelColumn.Note,
+                AssEventsModelColumn.TEXT,
+                AssEventsModelColumn.NOTE,
             }:
                 return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
             return QtCore.Qt.AlignCenter

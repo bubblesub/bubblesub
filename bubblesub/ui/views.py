@@ -25,65 +25,65 @@ class View(enum.Enum):
     def __str__(self) -> str:
         return self.value
 
-    Full = "full"
-    Audio = "audio"
-    Video = "video"
-    Subs = "subs"
+    FULL = "full"
+    AUDIO = "audio"
+    VIDEO = "video"
+    SUBS = "subs"
 
 
 class TargetWidget(enum.Enum):
     def __str__(self) -> str:
         return self.value
 
-    NoteEditor = "note-editor"
-    VideoContainer = "video-container"
-    VideoController = "video-controller"
-    VideoVolume = "video-volume"
-    Status = "status"
-    StatusFrameLabel = "status-frame-label"
-    StatusAudioLabel = "status-audio-label"
-    TextEditor = "text-editor"
-    StyleEditor = "style-editor"
-    ActorEditor = "actor-editor"
-    LayerEditor = "layer-editor"
-    MarginLeftEditor = "margin-left-editor"
-    MarginRightEditor = "margin-right-editor"
-    MarginVerticalEditor = "margin-vertical-editor"
-    StartTimeEditor = "start-time-editor"
-    EndTimeEditor = "end-time-editor"
-    DurationEditor = "duration-editor"
-    CommentCheckbox = "comment-checkbox"
-    SubtitlesGrid = "subtitles-grid"
-    Spectrogram = "spectrogram"
-    ConsoleContainer = "console-container"
-    ConsoleWindow = "console-window"
-    ConsoleInput = "console-input"
+    NOTE_EDITOR = "note-editor"
+    VIDEO_CONTAINER = "video-container"
+    VIDEO_CONTROLLER = "video-controller"
+    VIDEO_VOLUME = "video-volume"
+    STATUS = "status"
+    STATUS_FRAME_LABEL = "status-frame-label"
+    STATUS_AUDIO_LABEL = "status-audio-label"
+    TEXT_EDITOR = "text-editor"
+    STYLE_EDITOR = "style-editor"
+    ACTOR_EDITOR = "actor-editor"
+    LAYER_EDITOR = "layer-editor"
+    MARGIN_LEFT_EDITOR = "margin-left-editor"
+    MARGIN_RIGHT_EDITOR = "margin-right-editor"
+    MARGIN_VERTICAL_EDITOR = "margin-vertical-editor"
+    START_TIME_EDITOR = "start-time-editor"
+    END_TIME_EDITOR = "end-time-editor"
+    DURATION_EDITOR = "duration-editor"
+    COMMENT_CHECKBOX = "comment-checkbox"
+    SUBTITLES_GRID = "subtitles-grid"
+    SPECTROGRAM = "spectrogram"
+    CONSOLE_CONTAINER = "console-container"
+    CONSOLE_WINDOW = "console-window"
+    CONSOLE_INPUT = "console-input"
 
 
 VIEW_WIDGET_VISIBILITY_MAP = {
-    View.Full: {
-        TargetWidget.Spectrogram: True,
-        TargetWidget.VideoContainer: True,
-        TargetWidget.StatusAudioLabel: True,
-        TargetWidget.StatusFrameLabel: True,
+    View.FULL: {
+        TargetWidget.SPECTROGRAM: True,
+        TargetWidget.VIDEO_CONTAINER: True,
+        TargetWidget.STATUS_AUDIO_LABEL: True,
+        TargetWidget.STATUS_FRAME_LABEL: True,
     },
-    View.Audio: {
-        TargetWidget.Spectrogram: True,
-        TargetWidget.VideoContainer: False,
-        TargetWidget.StatusAudioLabel: True,
-        TargetWidget.StatusFrameLabel: False,
+    View.AUDIO: {
+        TargetWidget.SPECTROGRAM: True,
+        TargetWidget.VIDEO_CONTAINER: False,
+        TargetWidget.STATUS_AUDIO_LABEL: True,
+        TargetWidget.STATUS_FRAME_LABEL: False,
     },
-    View.Video: {
-        TargetWidget.Spectrogram: False,
-        TargetWidget.VideoContainer: True,
-        TargetWidget.StatusAudioLabel: False,
-        TargetWidget.StatusFrameLabel: True,
+    View.VIDEO: {
+        TargetWidget.SPECTROGRAM: False,
+        TargetWidget.VIDEO_CONTAINER: True,
+        TargetWidget.STATUS_AUDIO_LABEL: False,
+        TargetWidget.STATUS_FRAME_LABEL: True,
     },
-    View.Subs: {
-        TargetWidget.Spectrogram: False,
-        TargetWidget.VideoContainer: False,
-        TargetWidget.StatusAudioLabel: False,
-        TargetWidget.StatusFrameLabel: False,
+    View.SUBS: {
+        TargetWidget.SPECTROGRAM: False,
+        TargetWidget.VIDEO_CONTAINER: False,
+        TargetWidget.STATUS_AUDIO_LABEL: False,
+        TargetWidget.STATUS_FRAME_LABEL: False,
     },
 }
 
@@ -93,7 +93,7 @@ class ViewManager(QtCore.QObject):
         super().__init__(main_window)
         self._api = api
         self._main_window = main_window
-        self._view = View.Full
+        self._view = View.FULL
 
     @property
     def current_view(self) -> View:

@@ -30,9 +30,9 @@ class AutoSelectionStyle(enum.Enum):
     def __str__(self) -> str:
         return self.value
 
-    Disabled = "none"
-    Dynamic = "dynamic"
-    Constant = "constant"
+    DISABLED = "none"
+    DYNAMIC = "dynamic"
+    CONSTANT = "constant"
 
 
 class Audio(QtWidgets.QSplitter):
@@ -89,7 +89,7 @@ class Audio(QtWidgets.QSplitter):
         auto_view_max = self._api.cfg.opt["audio"]["auto_view_max"]
         auto_sel_subtitle = self._api.cfg.opt["audio"]["auto_sel_subtitle"]
 
-        if auto_view_style == AutoSelectionStyle.Dynamic.value:
+        if auto_view_style == AutoSelectionStyle.DYNAMIC.value:
             first_sub = self._api.subs.selected_events[0]
             last_sub = self._api.subs.selected_events[-1]
             view_start = first_sub.start - auto_view_lead_in
@@ -107,7 +107,7 @@ class Audio(QtWidgets.QSplitter):
 
             self._api.audio.view.view(view_start, view_end)
 
-        elif auto_view_style == AutoSelectionStyle.Constant.value:
+        elif auto_view_style == AutoSelectionStyle.CONSTANT.value:
             first_sub = self._api.subs.selected_events[0]
             last_sub = self._api.subs.selected_events[-1]
             center = (first_sub.start + last_sub.end) / 2

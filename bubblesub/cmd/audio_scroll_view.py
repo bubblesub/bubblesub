@@ -29,7 +29,7 @@ class AudioScrollViewCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.gui.is_widget_visible(TargetWidget.Spectrogram.value)
+        return self.api.gui.is_widget_visible(TargetWidget.SPECTROGRAM.value)
 
     async def run(self) -> None:
         distance = int(self.args.delta * self.api.audio.view.view_size)

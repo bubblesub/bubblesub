@@ -235,18 +235,18 @@ class Editor(QtWidgets.QWidget):
             signal_map={TextEdit: "textChanged"},
         )
         for column, widget in {
-            (AssEventsModelColumn.Start, self.start_time_edit),
-            (AssEventsModelColumn.End, self.end_time_edit),
-            (AssEventsModelColumn.LongDuration, self.duration_edit),
-            (AssEventsModelColumn.Layer, self.layer_edit),
-            (AssEventsModelColumn.Actor, self.actor_edit),
-            (AssEventsModelColumn.AssStyle, self.style_edit),
-            (AssEventsModelColumn.MarginVertical, self.margin_v_edit),
-            (AssEventsModelColumn.MarginLeft, self.margin_l_edit),
-            (AssEventsModelColumn.MarginRight, self.margin_r_edit),
-            (AssEventsModelColumn.IsComment, self.comment_checkbox),
-            (AssEventsModelColumn.Text, self.text_edit),
-            (AssEventsModelColumn.Note, self.note_edit),
+            (AssEventsModelColumn.START, self.start_time_edit),
+            (AssEventsModelColumn.END, self.end_time_edit),
+            (AssEventsModelColumn.LONG_DURATION, self.duration_edit),
+            (AssEventsModelColumn.LAYER, self.layer_edit),
+            (AssEventsModelColumn.ACTOR, self.actor_edit),
+            (AssEventsModelColumn.ASS_STYLE, self.style_edit),
+            (AssEventsModelColumn.MARGIN_VERTICAL, self.margin_v_edit),
+            (AssEventsModelColumn.MARGIN_LEFT, self.margin_l_edit),
+            (AssEventsModelColumn.MARGIN_RIGHT, self.margin_r_edit),
+            (AssEventsModelColumn.IS_COMMENT, self.comment_checkbox),
+            (AssEventsModelColumn.TEXT, self.text_edit),
+            (AssEventsModelColumn.NOTE, self.note_edit),
         }:
             self._data_widget_mapper.add_mapping(widget, column)
 

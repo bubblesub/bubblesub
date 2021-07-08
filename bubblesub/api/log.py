@@ -30,11 +30,11 @@ from bubblesub.cfg import Config
 class LogLevel(enum.Enum):
     """Message log level."""
 
-    Error = "error"
-    Warning = "warning"
-    Info = "info"
-    Debug = "debug"
-    CommandEcho = "cmd-echo"
+    ERROR = "error"
+    WARNING = "warning"
+    INFO = "info"
+    DEBUG = "debug"
+    COMMAND_ECHO = "cmd-echo"
 
 
 class LogApi(QtCore.QObject):
@@ -55,35 +55,35 @@ class LogApi(QtCore.QObject):
 
         :param text: text to log
         """
-        self.log(LogLevel.Debug, text)
+        self.log(LogLevel.DEBUG, text)
 
     def info(self, text: str) -> None:
         """Log a message with info level.
 
         :param text: text to log
         """
-        self.log(LogLevel.Info, text)
+        self.log(LogLevel.INFO, text)
 
     def warn(self, text: str) -> None:
         """Log a message with warning level.
 
         :param text: text to log
         """
-        self.log(LogLevel.Warning, text)
+        self.log(LogLevel.WARNING, text)
 
     def error(self, text: str) -> None:
         """Log a message with error level.
 
         :param text: text to log
         """
-        self.log(LogLevel.Error, text)
+        self.log(LogLevel.ERROR, text)
 
     def command_echo(self, text: str) -> None:
         """Log a message with command echo level.
 
         :param text: text to log
         """
-        self.log(LogLevel.CommandEcho, text)
+        self.log(LogLevel.COMMAND_ECHO, text)
 
     def log(self, level: LogLevel, text: str) -> None:
         """Log a message.

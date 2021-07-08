@@ -18,8 +18,8 @@ import argparse
 import datetime
 import re
 import typing as T
-
 from dataclasses import dataclass
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
@@ -167,7 +167,7 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
 
     def log(self, level: LogLevel, text: str) -> None:
-        if level == LogLevel.Debug:
+        if level == LogLevel.DEBUG:
             return
 
         old_pos_x = self.horizontalScrollBar().value()

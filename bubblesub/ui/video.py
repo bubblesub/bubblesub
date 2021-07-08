@@ -47,13 +47,13 @@ def clean_ass_tags(text: str) -> str:
 
 
 class VideoInteractionMode(enum.IntEnum):
-    Zoom = 1
-    Pan = 2
-    SubPosition = 3
-    SubRotation = 4
-    SubRotationOrigin = 5
-    SubShear = 6
-    SubScale = 7
+    ZOOM = 1
+    PAN = 2
+    SUB_POSITION = 3
+    SUB_ROTATION = 4
+    SUB_ROTATION_ORIGIN = 5
+    SUB_SHEAR = 6
+    SUB_SCALE = 7
 
 
 class MousePosCalculator:
@@ -240,7 +240,7 @@ class RelativeAxisVideoMouseHandler(VideoMouseHandler):
 
 
 class ZoomVideoMouseHandler(VideoMouseHandler):
-    mode = VideoInteractionMode.Zoom
+    mode = VideoInteractionMode.ZOOM
 
     def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
         super().__init__(api, mouse_pos_calc)
@@ -264,7 +264,7 @@ class ZoomVideoMouseHandler(VideoMouseHandler):
 
 
 class PanVideoMouseHandler(VideoMouseHandler):
-    mode = VideoInteractionMode.Pan
+    mode = VideoInteractionMode.PAN
 
     def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
         super().__init__(api, mouse_pos_calc)
@@ -294,7 +294,7 @@ class PanVideoMouseHandler(VideoMouseHandler):
 
 
 class SubPositionVideoMouseHandler(AbsolutePositionVideoMouseHandler):
-    mode = VideoInteractionMode.SubPosition
+    mode = VideoInteractionMode.SUB_POSITION
 
     def _get_ass_tag(self, x: float, y: float) -> str:
         return f"{{\\pos({x:.2f},{y:.2f})}}"
@@ -304,7 +304,7 @@ class SubPositionVideoMouseHandler(AbsolutePositionVideoMouseHandler):
 
 
 class SubRotationHandler(VideoMouseHandler):
-    mode = VideoInteractionMode.SubRotation
+    mode = VideoInteractionMode.SUB_ROTATION
 
     def __init__(self, api: Api, mouse_pos_calc: MousePosCalculator) -> None:
         super().__init__(api, mouse_pos_calc)
@@ -361,7 +361,7 @@ class SubRotationHandler(VideoMouseHandler):
 
 
 class SubRotationOriginVideoMouseHandler(AbsolutePositionVideoMouseHandler):
-    mode = VideoInteractionMode.SubRotationOrigin
+    mode = VideoInteractionMode.SUB_ROTATION_ORIGIN
 
     def _get_ass_tag(self, x: float, y: float) -> str:
         return f"{{\\org({x:.2f},{y:.2f})}}"
@@ -371,7 +371,7 @@ class SubRotationOriginVideoMouseHandler(AbsolutePositionVideoMouseHandler):
 
 
 class SubShearVideoMouseHandler(RelativeAxisVideoMouseHandler):
-    mode = VideoInteractionMode.SubShear
+    mode = VideoInteractionMode.SUB_SHEAR
     default_scale = 2.0
 
     def _get_ass_tag(self, axis: str, value: float) -> str:
@@ -382,7 +382,7 @@ class SubShearVideoMouseHandler(RelativeAxisVideoMouseHandler):
 
 
 class SubScaleVideoMouseHandler(RelativeAxisVideoMouseHandler):
-    mode = VideoInteractionMode.SubScale
+    mode = VideoInteractionMode.SUB_SCALE
     default_scale = 100.0
     default_initial_value_x = 100.0
     default_initial_value_y = 100.0
@@ -442,20 +442,20 @@ class VideoMouseModeController(QtCore.QObject):
             self.current_handler.on_drag_start(event)
             self.current_handler.on_drag_move(event)
         if event.button() == QtCore.Qt.RightButton:
-            self._handlers[VideoInteractionMode.Pan].on_drag_start(event)
-            self._handlers[VideoInteractionMode.Pan].on_drag_move(event)
+            self._handlers[VideoInteractionMode.PAN].on_drag_start(event)
+            self._handlers[VideoInteractionMode.PAN].on_drag_move(event)
 
     def on_mouse_move(self, event: QtGui.QMouseEvent) -> None:
         if self._dragging == QtCore.Qt.LeftButton and self.current_handler:
             self.current_handler.on_drag_move(event)
         if self._dragging == QtCore.Qt.RightButton:
-            self._handlers[VideoInteractionMode.Pan].on_drag_move(event)
+            self._handlers[VideoInteractionMode.PAN].on_drag_move(event)
 
     def on_mouse_release(self, event: QtGui.QMouseEvent) -> None:
         if self._dragging == QtCore.Qt.LeftButton and self.current_handler:
             self.current_handler.on_drag_release(event)
         if self._dragging == QtCore.Qt.RightButton:
-            self._handlers[VideoInteractionMode.Pan].on_drag_release(event)
+            self._handlers[VideoInteractionMode.PAN].on_drag_release(event)
         self._dragging = None
 
 
@@ -519,35 +519,35 @@ class VideoModeButtons(QtWidgets.QToolBar):
         self._add_action_btn(
             "reset", "Reset video view", self._on_reset_btn_click
         )
-        self._add_mode_btn("zoom-in", "Zoom video", VideoInteractionMode.Zoom)
-        self._add_mode_btn("move", "Pan video", VideoInteractionMode.Pan)
+        self._add_mode_btn("zoom-in", "Zoom video", VideoInteractionMode.ZOOM)
+        self._add_mode_btn("move", "Pan video", VideoInteractionMode.PAN)
 
         self.addSeparator()
 
         self._add_mode_btn(
             "sub-position",
             "Move selected subtitles",
-            VideoInteractionMode.SubPosition,
+            VideoInteractionMode.SUB_POSITION,
         )
         self._add_mode_btn(
             "sub-rotation",
             "Rotate selected subtitles",
-            VideoInteractionMode.SubRotation,
+            VideoInteractionMode.SUB_ROTATION,
         )
         self._add_mode_btn(
             "sub-rotation-origin",
             "Set rotation origin for selected subtitles",
-            VideoInteractionMode.SubRotationOrigin,
+            VideoInteractionMode.SUB_ROTATION_ORIGIN,
         )
         self._add_mode_btn(
             "sub-shear",
             "Shear selected subtitles",
-            VideoInteractionMode.SubShear,
+            VideoInteractionMode.SUB_SHEAR,
         )
         self._add_mode_btn(
             "sub-scale",
             "Scale selected subtitles",
-            VideoInteractionMode.SubScale,
+            VideoInteractionMode.SUB_SCALE,
         )
 
     def _add_action_btn(

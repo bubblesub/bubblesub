@@ -37,16 +37,16 @@ from bubblesub.ui.views import ViewManager
 
 
 class ClosingState(enum.IntEnum):
-    Ready = 1
-    WaitingForConfirmation = 2
-    Confirmed = 3
+    READY = 1
+    WAITING_FOR_CONFIRMATION = 2
+    CONFIRMED = 3
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, api: Api) -> None:
         super().__init__()
 
-        self._closing_state = ClosingState.Ready
+        self._closing_state = ClosingState.READY
         self._api = api
         self._update_title()
 
@@ -110,9 +110,9 @@ class MainWindow(QtWidgets.QMainWindow):
         HotkeyManager(
             api,
             {
-                HotkeyContext.Global: self,
-                HotkeyContext.Spectrogram: self.audio,
-                HotkeyContext.SubtitlesGrid: self.subs_grid,
+                HotkeyContext.GLOBAL: self,
+                HotkeyContext.SPECTROGRAM: self.audio,
+                HotkeyContext.SUBTITLES_GRID: self.subs_grid,
             },
         )
 
@@ -144,21 +144,21 @@ class MainWindow(QtWidgets.QMainWindow):
         return False
 
     def closeEvent(self, event: QtCore.QEvent) -> None:
-        if self._closing_state == ClosingState.Confirmed:
+        if self._closing_state == ClosingState.CONFIRMED:
             self._api.gui.terminated.emit()
             event.accept()
-        elif self._closing_state == ClosingState.WaitingForConfirmation:
+        elif self._closing_state == ClosingState.WAITING_FOR_CONFIRMATION:
             event.ignore()
-        elif self._closing_state == ClosingState.Ready:
+        elif self._closing_state == ClosingState.READY:
 
             def on_close(task: "asyncio.Future[bool]") -> None:
                 if task.result():
-                    self._closing_state = ClosingState.Confirmed
+                    self._closing_state = ClosingState.CONFIRMED
                     self.close()
                 else:
-                    self._closing_state = ClosingState.Ready
+                    self._closing_state = ClosingState.READY
 
-            self._closing_state = ClosingState.WaitingForConfirmation
+            self._closing_state = ClosingState.WAITING_FOR_CONFIRMATION
             task = asyncio.ensure_future(
                 self._api.gui.confirm_unsaved_changes()
             )
@@ -169,8 +169,8 @@ class MainWindow(QtWidgets.QMainWindow):
         setup_menu(
             self._api,
             self.menuBar(),
-            self._api.cfg.menu[MenuContext.MainMenu],
-            HotkeyContext.Global,
+            self._api.cfg.menu[MenuContext.MAIN_MENU],
+            HotkeyContext.GLOBAL,
         )
 
     def _restore_splitters(self) -> None:

@@ -17,8 +17,8 @@
 import enum
 import typing as T
 from copy import copy
-
 from dataclasses import dataclass
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
@@ -29,15 +29,15 @@ SLIDER_SIZE = 20
 
 
 class DragMode(enum.Enum):
-    SelectionStart = 1
-    SelectionEnd = 2
-    VideoPosition = 3
-    AudioView = 4
-    SubtitleStart = 5
-    SubtitleEnd = 6
-    NewSubtitleStart = 7
-    NewSubtitleEnd = 8
-    SubtitleSplit = 9
+    SELECTION_START = 1
+    SELECTION_END = 2
+    VIDEO_POSITION = 3
+    AUDIO_VIEW = 4
+    SUBTITLE_START = 5
+    SUBTITLE_END = 6
+    NEW_SUBTITLE_START = 7
+    NEW_SUBTITLE_END = 8
+    SUBTITLE_SPLIT = 9
 
 
 @dataclass
@@ -152,7 +152,7 @@ class DragModeExecutor:
 
 
 class SelectionStartDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.SelectionStart
+    drag_mode = DragMode.SELECTION_START
 
     def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         return self._api.audio.view.select(
@@ -162,7 +162,7 @@ class SelectionStartDragModeExecutor(DragModeExecutor):
 
 
 class SelectionEndDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.SelectionEnd
+    drag_mode = DragMode.SELECTION_END
 
     def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         self._api.audio.view.select(
@@ -172,14 +172,14 @@ class SelectionEndDragModeExecutor(DragModeExecutor):
 
 
 class VideoPositionDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.VideoPosition
+    drag_mode = DragMode.VIDEO_POSITION
 
     def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         self._api.playback.seek(pts)
 
 
 class AudioViewDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.AudioView
+    drag_mode = DragMode.AUDIO_VIEW
 
     def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         old_center = (
@@ -192,7 +192,7 @@ class AudioViewDragModeExecutor(DragModeExecutor):
 
 
 class SubtitleStartDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.SubtitleStart
+    drag_mode = DragMode.SUBTITLE_START
 
     def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         if self._api.video.current_stream:
@@ -208,7 +208,7 @@ class SubtitleStartDragModeExecutor(DragModeExecutor):
 
 
 class SubtitleEndDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.SubtitleEnd
+    drag_mode = DragMode.SUBTITLE_END
 
     def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         if self._api.video.current_stream:
@@ -224,7 +224,7 @@ class SubtitleEndDragModeExecutor(DragModeExecutor):
 
 
 class NewSubtitleStartDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.NewSubtitleStart
+    drag_mode = DragMode.NEW_SUBTITLE_START
 
     def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         super().begin_drag(event, pts)
@@ -232,7 +232,7 @@ class NewSubtitleStartDragModeExecutor(DragModeExecutor):
 
 
 class NewSubtitleEndDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.NewSubtitleEnd
+    drag_mode = DragMode.NEW_SUBTITLE_END
 
     def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         super().begin_drag(event, pts)
@@ -240,7 +240,7 @@ class NewSubtitleEndDragModeExecutor(DragModeExecutor):
 
 
 class SubtitleSplitDragModeExecutor(DragModeExecutor):
-    drag_mode = DragMode.SubtitleSplit
+    drag_mode = DragMode.SUBTITLE_SPLIT
 
     def __init__(self, api: Api) -> None:
         super().__init__(api)

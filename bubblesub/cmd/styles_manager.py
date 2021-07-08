@@ -421,15 +421,15 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.underline_checkbox, 2, 2)
         layout.addWidget(self.strike_out_checkbox, 3, 2)
 
-        mapper.add_mapping(self.font_name_edit, AssStylesModelColumn.FontName)
-        mapper.add_mapping(self.font_size_edit, AssStylesModelColumn.FontSize)
-        mapper.add_mapping(self.bold_checkbox, AssStylesModelColumn.Bold)
-        mapper.add_mapping(self.italic_checkbox, AssStylesModelColumn.Italic)
+        mapper.add_mapping(self.font_name_edit, AssStylesModelColumn.FONT_NAME)
+        mapper.add_mapping(self.font_size_edit, AssStylesModelColumn.FONT_SIZE)
+        mapper.add_mapping(self.bold_checkbox, AssStylesModelColumn.BOLD)
+        mapper.add_mapping(self.italic_checkbox, AssStylesModelColumn.ITALIC)
         mapper.add_mapping(
-            self.underline_checkbox, AssStylesModelColumn.Underline
+            self.underline_checkbox, AssStylesModelColumn.UNDERLINE
         )
         mapper.add_mapping(
-            self.strike_out_checkbox, AssStylesModelColumn.StrikeOut
+            self.strike_out_checkbox, AssStylesModelColumn.STRIKE_OUT
         )
 
 
@@ -474,7 +474,7 @@ class _AlignmentGroupBox(QtWidgets.QGroupBox):
         for radio_button in self.radio_buttons.values():
             radio_button.toggled.connect(lambda _event: self.changed.emit())
 
-        mapper.add_mapping(self, AssStylesModelColumn.Alignment)
+        mapper.add_mapping(self, AssStylesModelColumn.ALIGNMENT)
 
     def get_value(self) -> int:
         for idx, radio_button in self.radio_buttons.items():
@@ -512,16 +512,16 @@ class _ColorsGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.back_color_button, 3, 1)
 
         mapper.add_mapping(
-            self.primary_color_button, AssStylesModelColumn.PrimaryColor
+            self.primary_color_button, AssStylesModelColumn.PRIMARY_COLOR
         )
         mapper.add_mapping(
-            self.secondary_color_button, AssStylesModelColumn.SecondaryColor
+            self.secondary_color_button, AssStylesModelColumn.SECONDARY_COLOR
         )
         mapper.add_mapping(
-            self.back_color_button, AssStylesModelColumn.BackColor
+            self.back_color_button, AssStylesModelColumn.BACK_COLOR
         )
         mapper.add_mapping(
-            self.outline_color_button, AssStylesModelColumn.OutlineColor
+            self.outline_color_button, AssStylesModelColumn.OUTLINE_COLOR
         )
 
 
@@ -546,10 +546,10 @@ class _OutlineGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.shadow_width_edit, 1, 1)
 
         mapper.add_mapping(
-            self.shadow_width_edit, AssStylesModelColumn.ShadowWidth
+            self.shadow_width_edit, AssStylesModelColumn.SHADOW_WIDTH
         )
         mapper.add_mapping(
-            self.outline_width_edit, AssStylesModelColumn.OutlineWidth
+            self.outline_width_edit, AssStylesModelColumn.OUTLINE_WIDTH
         )
 
 
@@ -579,13 +579,13 @@ class _MarginGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self.margin_vertical_edit, 2, 1)
 
         mapper.add_mapping(
-            self.margin_left_edit, AssStylesModelColumn.MarginLeft
+            self.margin_left_edit, AssStylesModelColumn.MARGIN_LEFT
         )
         mapper.add_mapping(
-            self.margin_right_edit, AssStylesModelColumn.MarginRight
+            self.margin_right_edit, AssStylesModelColumn.MARGIN_RIGHT
         )
         mapper.add_mapping(
-            self.margin_vertical_edit, AssStylesModelColumn.MarginVertical
+            self.margin_vertical_edit, AssStylesModelColumn.MARGIN_VERTICAL
         )
 
 
@@ -619,10 +619,10 @@ class _MiscGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(QtWidgets.QLabel("Spacing:", self), 3, 0)
         layout.addWidget(self.spacing_edit, 3, 1)
 
-        mapper.add_mapping(self.scale_x_edit, AssStylesModelColumn.ScaleX)
-        mapper.add_mapping(self.scale_y_edit, AssStylesModelColumn.ScaleY)
-        mapper.add_mapping(self.angle_edit, AssStylesModelColumn.Angle)
-        mapper.add_mapping(self.spacing_edit, AssStylesModelColumn.Spacing)
+        mapper.add_mapping(self.scale_x_edit, AssStylesModelColumn.SCALE_X)
+        mapper.add_mapping(self.scale_y_edit, AssStylesModelColumn.SCALE_Y)
+        mapper.add_mapping(self.angle_edit, AssStylesModelColumn.ANGLE)
+        mapper.add_mapping(self.spacing_edit, AssStylesModelColumn.SPACING)
 
 
 class _StyleEditor(QtWidgets.QWidget):

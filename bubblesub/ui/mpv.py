@@ -206,9 +206,9 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             external_files.add(str(stream.path))
         self.mpv.external_files = list(external_files)
         if not external_files:
-            self._api.playback.state = PlaybackFrontendState.NotReady
+            self._api.playback.state = PlaybackFrontendState.NOT_READY
         else:
-            self._api.playback.state = PlaybackFrontendState.Loading
+            self._api.playback.state = PlaybackFrontendState.LOADING
 
     def shutdown(self) -> None:
         self._destroyed = True
@@ -291,10 +291,10 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._need_subs_refresh = True
 
     def _on_mpv_unload(self) -> None:
-        self._api.playback.state = PlaybackFrontendState.NotReady
+        self._api.playback.state = PlaybackFrontendState.NOT_READY
 
     def _on_mpv_load(self) -> None:
-        self._api.playback.state = PlaybackFrontendState.Ready
+        self._api.playback.state = PlaybackFrontendState.READY
         self._need_subs_refresh = True
 
     def _on_track_list_ready(self, track_list: T.Any) -> None:
@@ -337,9 +337,9 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self.mpv.audio_delay = delay
 
         if vid is not None or aid is not None:
-            self._api.playback.state = PlaybackFrontendState.Ready
+            self._api.playback.state = PlaybackFrontendState.READY
         else:
-            self._api.playback.state = PlaybackFrontendState.NotReady
+            self._api.playback.state = PlaybackFrontendState.NOT_READY
 
     def _on_mpv_time_pos_change(
         self, prop_name: str, new_value: T.Any

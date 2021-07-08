@@ -27,7 +27,7 @@ class AudioZoomViewCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.gui.is_widget_visible(TargetWidget.Spectrogram.value)
+        return self.api.gui.is_widget_visible(TargetWidget.SPECTROGRAM.value)
 
     async def run(self) -> None:
         mouse_x = 0.5

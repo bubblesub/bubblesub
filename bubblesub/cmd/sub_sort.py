@@ -27,11 +27,11 @@ class SortStyle(enum.Enum):
     def __str__(self) -> str:
         return self.value
 
-    Start = "start"
-    End = "end"
-    Actor = "actor"
-    Style = "style"
-    Layer = "layer"
+    START = "start"
+    END = "end"
+    ACTOR = "actor"
+    STYLE = "style"
+    LAYER = "layer"
 
 
 class SubtitlesSortCommand(BaseCommand):
@@ -44,11 +44,11 @@ class SubtitlesSortCommand(BaseCommand):
 
     async def run(self) -> None:
         attr_name = {
-            SortStyle.Start: "start",
-            SortStyle.End: "end",
-            SortStyle.Actor: "actor",
-            SortStyle.Style: "style",
-            SortStyle.Layer: "layer",
+            SortStyle.START: "start",
+            SortStyle.END: "end",
+            SortStyle.ACTOR: "actor",
+            SortStyle.STYLE: "style",
+            SortStyle.LAYER: "layer",
         }[self.args.style]
         with self.api.undo.capture(), self.api.gui.throttle_updates():
             indexes = await self.args.target.get_indexes()
@@ -74,7 +74,7 @@ class SubtitlesSortCommand(BaseCommand):
             help="how to sort the subtitles",
             type=SortStyle,
             choices=list(SortStyle),
-            default=SortStyle.Start,
+            default=SortStyle.START,
         )
 
 

@@ -29,7 +29,7 @@ class VideoZoomCommand(BaseCommand):
     @property
     def is_enabled(self) -> bool:
         return self.api.gui.is_widget_visible(
-            TargetWidget.VideoContainer.value
+            TargetWidget.VIDEO_CONTAINER.value
         )
 
     async def run(self) -> None:

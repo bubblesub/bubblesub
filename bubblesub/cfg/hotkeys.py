@@ -34,9 +34,9 @@ def _get_user_path(root_dir: Path) -> Path:
 class HotkeyContext(enum.Enum):
     """Which GUI widget the hotkey works in."""
 
-    Global = "global"
-    Spectrogram = "spectrogram"
-    SubtitlesGrid = "subtitles_grid"
+    GLOBAL = "global"
+    SPECTROGRAM = "spectrogram"
+    SUBTITLES_GRID = "subtitles_grid"
 
 
 class Hotkey:
@@ -103,7 +103,7 @@ class HotkeysConfig(SubConfig):
                     raise ConfigError(f"error loading {user_path}: {ex}")
 
     def _loads(self, text: str) -> None:
-        cur_context = HotkeyContext.Global
+        cur_context = HotkeyContext.GLOBAL
         for i, line in enumerate(text.split("\n"), 1):
             line = line.strip()
             if not line or line.startswith("#"):

@@ -86,7 +86,7 @@ class HotkeyManager:
         def _on_activate(keys: str) -> None:
             widget = QtWidgets.QApplication.focusWidget()
             if not widget:
-                widget = self._hotkey_context_map[HotkeyContext.Global]
+                widget = self._hotkey_context_map[HotkeyContext.GLOBAL]
             while widget:
                 if (widget, keys) in self._cmd_map:
                     _qt_shortcut, cmds = self._cmd_map[widget, keys]

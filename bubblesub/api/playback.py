@@ -36,9 +36,9 @@ MAX_VOLUME = fractions.Fraction(200)
 class PlaybackFrontendState(enum.Enum):
     """State of media player."""
 
-    NotReady = enum.auto()
-    Loading = enum.auto()
-    Ready = enum.auto()
+    NOT_READY = enum.auto()
+    LOADING = enum.auto()
+    READY = enum.auto()
 
 
 class PlaybackApi(QtCore.QObject):
@@ -76,7 +76,7 @@ class PlaybackApi(QtCore.QObject):
         self._video_api = video_api
         self._audio_api = audio_api
 
-        self._state = PlaybackFrontendState.NotReady
+        self._state = PlaybackFrontendState.NOT_READY
         self._playback_speed = fractions.Fraction(1.0)
         self._volume = fractions.Fraction(100.0)
         self._is_muted = False
@@ -239,7 +239,7 @@ class PlaybackApi(QtCore.QObject):
 
         :return: whether the playback frontend is ready
         """
-        return self._state == PlaybackFrontendState.Ready
+        return self._state == PlaybackFrontendState.READY
 
     def _on_current_pts_change(self, new_pts: int) -> None:
         if new_pts != self._current_pts:

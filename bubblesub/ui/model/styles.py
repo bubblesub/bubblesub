@@ -34,27 +34,27 @@ def _deserialize_color(color: QtGui.QColor) -> AssColor:
 
 
 class AssStylesModelColumn(enum.IntEnum):
-    Name = 0
-    FontName = 1
-    FontSize = 2
-    Bold = 3
-    Italic = 4
-    Underline = 5
-    StrikeOut = 6
-    PrimaryColor = 7
-    SecondaryColor = 8
-    BackColor = 9
-    OutlineColor = 10
-    ShadowWidth = 11
-    OutlineWidth = 12
-    ScaleX = 13
-    ScaleY = 14
-    Angle = 15
-    Spacing = 16
-    MarginLeft = 17
-    MarginRight = 18
-    MarginVertical = 19
-    Alignment = 20
+    NAME = 0
+    FONT_NAME = 1
+    FONT_SIZE = 2
+    BOLD = 3
+    ITALIC = 4
+    UNDERLINE = 5
+    STRIKE_OUT = 6
+    PRIMARY_COLOR = 7
+    SECONDARY_COLOR = 8
+    BACK_COLOR = 9
+    OUTLINE_COLOR = 10
+    SHADOW_WIDTH = 11
+    OUTLINE_WIDTH = 12
+    SCALE_X = 13
+    SCALE_Y = 14
+    ANGLE = 15
+    SPACING = 16
+    MARGIN_LEFT = 17
+    MARGIN_RIGHT = 18
+    MARGIN_VERTICAL = 19
+    ALIGNMENT = 20
 
 
 def _getattr_proxy(
@@ -76,69 +76,69 @@ def _setattr_proxy(
 
 
 _READER_MAP = {
-    AssStylesModelColumn.Name: _getattr_proxy("name", str),
-    AssStylesModelColumn.FontName: _getattr_proxy("font_name", str),
-    AssStylesModelColumn.FontSize: _getattr_proxy("font_size", int),
-    AssStylesModelColumn.Bold: _getattr_proxy("bold", bool),
-    AssStylesModelColumn.Italic: _getattr_proxy("italic", bool),
-    AssStylesModelColumn.Underline: _getattr_proxy("underline", bool),
-    AssStylesModelColumn.StrikeOut: _getattr_proxy("strike_out", bool),
-    AssStylesModelColumn.ShadowWidth: _getattr_proxy("shadow", float),
-    AssStylesModelColumn.OutlineWidth: _getattr_proxy("outline", float),
-    AssStylesModelColumn.ScaleX: _getattr_proxy("scale_x", float),
-    AssStylesModelColumn.ScaleY: _getattr_proxy("scale_y", float),
-    AssStylesModelColumn.Angle: _getattr_proxy("angle", float),
-    AssStylesModelColumn.Spacing: _getattr_proxy("spacing", float),
-    AssStylesModelColumn.Alignment: _getattr_proxy("alignment", int),
-    AssStylesModelColumn.MarginLeft: _getattr_proxy("margin_left", int),
-    AssStylesModelColumn.MarginRight: _getattr_proxy("margin_right", int),
-    AssStylesModelColumn.MarginVertical: _getattr_proxy(
+    AssStylesModelColumn.NAME: _getattr_proxy("name", str),
+    AssStylesModelColumn.FONT_NAME: _getattr_proxy("font_name", str),
+    AssStylesModelColumn.FONT_SIZE: _getattr_proxy("font_size", int),
+    AssStylesModelColumn.BOLD: _getattr_proxy("bold", bool),
+    AssStylesModelColumn.ITALIC: _getattr_proxy("italic", bool),
+    AssStylesModelColumn.UNDERLINE: _getattr_proxy("underline", bool),
+    AssStylesModelColumn.STRIKE_OUT: _getattr_proxy("strike_out", bool),
+    AssStylesModelColumn.SHADOW_WIDTH: _getattr_proxy("shadow", float),
+    AssStylesModelColumn.OUTLINE_WIDTH: _getattr_proxy("outline", float),
+    AssStylesModelColumn.SCALE_X: _getattr_proxy("scale_x", float),
+    AssStylesModelColumn.SCALE_Y: _getattr_proxy("scale_y", float),
+    AssStylesModelColumn.ANGLE: _getattr_proxy("angle", float),
+    AssStylesModelColumn.SPACING: _getattr_proxy("spacing", float),
+    AssStylesModelColumn.ALIGNMENT: _getattr_proxy("alignment", int),
+    AssStylesModelColumn.MARGIN_LEFT: _getattr_proxy("margin_left", int),
+    AssStylesModelColumn.MARGIN_RIGHT: _getattr_proxy("margin_right", int),
+    AssStylesModelColumn.MARGIN_VERTICAL: _getattr_proxy(
         "margin_vertical", int
     ),
-    AssStylesModelColumn.PrimaryColor: _getattr_proxy(
+    AssStylesModelColumn.PRIMARY_COLOR: _getattr_proxy(
         "primary_color", _serialize_color
     ),
-    AssStylesModelColumn.SecondaryColor: _getattr_proxy(
+    AssStylesModelColumn.SECONDARY_COLOR: _getattr_proxy(
         "secondary_color", _serialize_color
     ),
-    AssStylesModelColumn.BackColor: _getattr_proxy(
+    AssStylesModelColumn.BACK_COLOR: _getattr_proxy(
         "back_color", _serialize_color
     ),
-    AssStylesModelColumn.OutlineColor: _getattr_proxy(
+    AssStylesModelColumn.OUTLINE_COLOR: _getattr_proxy(
         "outline_color", _serialize_color
     ),
 }
 
 _WRITER_MAP = {
-    AssStylesModelColumn.Name: _setattr_proxy("name", str),
-    AssStylesModelColumn.FontName: _setattr_proxy("font_name", str),
-    AssStylesModelColumn.FontSize: _setattr_proxy("font_size", int),
-    AssStylesModelColumn.Bold: _setattr_proxy("bold", bool),
-    AssStylesModelColumn.Italic: _setattr_proxy("italic", bool),
-    AssStylesModelColumn.Underline: _setattr_proxy("underline", bool),
-    AssStylesModelColumn.StrikeOut: _setattr_proxy("strike_out", bool),
-    AssStylesModelColumn.ShadowWidth: _setattr_proxy("shadow", float),
-    AssStylesModelColumn.OutlineWidth: _setattr_proxy("outline", float),
-    AssStylesModelColumn.ScaleX: _setattr_proxy("scale_x", float),
-    AssStylesModelColumn.ScaleY: _setattr_proxy("scale_y", float),
-    AssStylesModelColumn.Angle: _setattr_proxy("angle", float),
-    AssStylesModelColumn.Spacing: _setattr_proxy("spacing", float),
-    AssStylesModelColumn.Alignment: _setattr_proxy("alignment", int),
-    AssStylesModelColumn.MarginLeft: _setattr_proxy("margin_left", int),
-    AssStylesModelColumn.MarginRight: _setattr_proxy("margin_right", int),
-    AssStylesModelColumn.MarginVertical: _setattr_proxy(
+    AssStylesModelColumn.NAME: _setattr_proxy("name", str),
+    AssStylesModelColumn.FONT_NAME: _setattr_proxy("font_name", str),
+    AssStylesModelColumn.FONT_SIZE: _setattr_proxy("font_size", int),
+    AssStylesModelColumn.BOLD: _setattr_proxy("bold", bool),
+    AssStylesModelColumn.ITALIC: _setattr_proxy("italic", bool),
+    AssStylesModelColumn.UNDERLINE: _setattr_proxy("underline", bool),
+    AssStylesModelColumn.STRIKE_OUT: _setattr_proxy("strike_out", bool),
+    AssStylesModelColumn.SHADOW_WIDTH: _setattr_proxy("shadow", float),
+    AssStylesModelColumn.OUTLINE_WIDTH: _setattr_proxy("outline", float),
+    AssStylesModelColumn.SCALE_X: _setattr_proxy("scale_x", float),
+    AssStylesModelColumn.SCALE_Y: _setattr_proxy("scale_y", float),
+    AssStylesModelColumn.ANGLE: _setattr_proxy("angle", float),
+    AssStylesModelColumn.SPACING: _setattr_proxy("spacing", float),
+    AssStylesModelColumn.ALIGNMENT: _setattr_proxy("alignment", int),
+    AssStylesModelColumn.MARGIN_LEFT: _setattr_proxy("margin_left", int),
+    AssStylesModelColumn.MARGIN_RIGHT: _setattr_proxy("margin_right", int),
+    AssStylesModelColumn.MARGIN_VERTICAL: _setattr_proxy(
         "margin_vertical", int
     ),
-    AssStylesModelColumn.PrimaryColor: _setattr_proxy(
+    AssStylesModelColumn.PRIMARY_COLOR: _setattr_proxy(
         "primary_color", _deserialize_color
     ),
-    AssStylesModelColumn.SecondaryColor: _setattr_proxy(
+    AssStylesModelColumn.SECONDARY_COLOR: _setattr_proxy(
         "secondary_color", _deserialize_color
     ),
-    AssStylesModelColumn.BackColor: _setattr_proxy(
+    AssStylesModelColumn.BACK_COLOR: _setattr_proxy(
         "back_color", _deserialize_color
     ),
-    AssStylesModelColumn.OutlineColor: _setattr_proxy(
+    AssStylesModelColumn.OUTLINE_COLOR: _setattr_proxy(
         "outline_color", _deserialize_color
     ),
 }
@@ -146,7 +146,7 @@ _WRITER_MAP = {
 
 class AssStylesModel(ObservableListTableAdapter):
     def flags(self, index: QtCore.QModelIndex) -> int:
-        if index.column() == AssStylesModelColumn.Name:
+        if index.column() == AssStylesModelColumn.NAME:
             return T.cast(
                 int, QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
             )

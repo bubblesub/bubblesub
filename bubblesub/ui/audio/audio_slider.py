@@ -72,9 +72,9 @@ class AudioSlider(BaseGlobalAudioWidget):
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() == QtCore.Qt.LeftButton:
-            self.begin_drag_mode(DragMode.AudioView, event)
+            self.begin_drag_mode(DragMode.AUDIO_VIEW, event)
         elif event.button() == QtCore.Qt.MiddleButton:
-            self.begin_drag_mode(DragMode.AudioView, event)
+            self.begin_drag_mode(DragMode.AUDIO_VIEW, event)
             self.end_drag_mode()
 
     def _draw_video_pos(self, painter: QtGui.QPainter) -> None:

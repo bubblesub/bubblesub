@@ -38,10 +38,10 @@ MAX_HISTORY_ENTRIES = 25
 class SearchMode(enum.IntEnum):
     """Search mode in subtitles grid."""
 
-    Text = 1
-    Note = 2
-    Actor = 3
-    Style = 4
+    TEXT = 1
+    NOTE = 2
+    ACTOR = 3
+    STYLE = 4
 
 
 def _create_search_regex(
@@ -171,10 +171,10 @@ class _StyleSearchModeHandler(_SearchModeHandler):
 
 
 _HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
-    SearchMode.Text: _TextSearchModeHandler,
-    SearchMode.Note: _NoteSearchModeHandler,
-    SearchMode.Actor: _ActorSearchModeHandler,
-    SearchMode.Style: _StyleSearchModeHandler,
+    SearchMode.TEXT: _TextSearchModeHandler,
+    SearchMode.NOTE: _NoteSearchModeHandler,
+    SearchMode.ACTOR: _ActorSearchModeHandler,
+    SearchMode.STYLE: _StyleSearchModeHandler,
 }
 
 
@@ -280,15 +280,15 @@ class _SearchModeGroupBox(QtWidgets.QGroupBox):
     def __init__(self, parent: QtWidgets.QWidget) -> None:
         super().__init__("Search mode:", parent)
         self._radio_buttons = {
-            SearchMode.Text: QtWidgets.QRadioButton("Text", self),
-            SearchMode.Note: QtWidgets.QRadioButton("Note", self),
-            SearchMode.Actor: QtWidgets.QRadioButton("Actor", self),
-            SearchMode.Style: QtWidgets.QRadioButton("Style", self),
+            SearchMode.TEXT: QtWidgets.QRadioButton("Text", self),
+            SearchMode.NOTE: QtWidgets.QRadioButton("Note", self),
+            SearchMode.ACTOR: QtWidgets.QRadioButton("Actor", self),
+            SearchMode.STYLE: QtWidgets.QRadioButton("Style", self),
         }
         layout = QtWidgets.QVBoxLayout(self)
         for radio_button in self._radio_buttons.values():
             layout.addWidget(radio_button)
-        self._radio_buttons[SearchMode.Text].setChecked(True)
+        self._radio_buttons[SearchMode.TEXT].setChecked(True)
 
     def set_value(self, value: SearchMode) -> None:
         self._radio_buttons[value].setChecked(True)
