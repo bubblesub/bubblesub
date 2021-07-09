@@ -143,8 +143,8 @@ def test_align_pts_to_near_frame(origin: int, expected: int) -> None:
         ([], -1, -1),
         ([], 0, -1),
         ([], 2.2, -1),
-        ([], np.array([0], dtype=np.int), np.array([-1], dtype=np.int)),
-        ([], np.array([0.0], dtype=np.float), np.array([-1], dtype=np.int)),
+        ([], np.array([0], dtype=int), np.array([-1], dtype=int)),
+        ([], np.array([0.0], dtype=float), np.array([-1], dtype=int)),
         # integers
         ([0, 10, 20], -1, 0),
         ([0, 10, 20], 0, 0),
@@ -164,13 +164,13 @@ def test_align_pts_to_near_frame(origin: int, expected: int) -> None:
         # numpy arrays
         (
             [0, 10, 20],
-            np.array([-1, 0, 1, 9, 10, 19, 20, 21], dtype=np.int),
-            np.array([0, 0, 0, 0, 1, 1, 2, 2], dtype=np.int),
+            np.array([-1, 0, 1, 9, 10, 19, 20, 21], dtype=int),
+            np.array([0, 0, 0, 0, 1, 1, 2, 2], dtype=int),
         ),
         (
             [0, 10, 20],
-            np.array([0.1, 9.9, 10 - 1e5, 10.0, 50.0], dtype=np.float),
-            np.array([0, 0, 0, 1, 2], dtype=np.int),
+            np.array([0.1, 9.9, 10 - 1e5, 10.0, 50.0], dtype=float),
+            np.array([0, 0, 0, 1, 2], dtype=int),
         ),
     ],
 )
