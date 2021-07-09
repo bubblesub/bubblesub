@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=import-outside-toplevel
+
 import contextlib
 import logging
 import typing as T
@@ -172,6 +174,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             self._nvim = None
 
     def _sync_ui(self) -> None:
+        # pylint: disable=too-many-statements
         if self._nvim is None:
             return
 
@@ -187,17 +190,17 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         lines = list(self._nvim.current.buffer)
         self.setPlainText("\n".join(lines))
 
-        start_row, start_col_b = self._nvim.eval('getpos("v")')[1:3]
-        end_row, end_col_b = self._nvim.eval('getpos(".")')[1:3]
-        start_row -= 1
-        end_row -= 1
-        start_col_b -= 1
-        end_col_b -= 1
+        def get_pos(mark: str) -> T.Tuple[int, int]:
+            row, col_b = self._nvim.eval('getpos("v")')[1:3]
+            row -= 1
+            col_b -= 1
+            col = byte_pos_to_string_pos(lines, col_b, row)
+            return row, col
 
-        start_col = byte_pos_to_string_pos(lines, start_col_b, start_row)
-        end_col = byte_pos_to_string_pos(lines, end_col_b, end_row)
-
+        start_row, start_col = get_pos("v")
         start_pos = rel_pos_to_abs_pos(lines, start_row, start_col)
+
+        end_row, end_col = get_pos(".")
         end_pos = rel_pos_to_abs_pos(lines, end_row, end_col)
 
         cursor = self.textCursor()

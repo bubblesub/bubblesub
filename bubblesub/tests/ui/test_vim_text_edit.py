@@ -544,20 +544,30 @@ TESTS += [
     ("ifoo<CR>bar<Esc>gg<Down>", "foo\nbar", 4),
 ]
 
-text_edit_parent = None
+
+@pytest.fixture(scope="session")
+def root_qt_widget() -> QtWidgets.QWidget:
+    """Construct a root QT widget that child objects can reference to avoid
+    early garbage collection.
+
+    :return: root QT widget for testing
+    """
+    return QtWidgets.QWidget()
 
 
 @pytest.fixture(scope="session")
-def text_edit(qapp: T.Any) -> None:
+def text_edit(  # pylint: disable=redefined-outer-name
+    qapp: T.Any, root_qt_widget: QtWidgets.QWidget
+) -> None:
     """Construct VimTextEdit instance for testing.
 
     :param qapp: test QApplication
+    :param root_qt_widget: root widget
+    :return: text edit instance
     """
-    global text_edit_parent
-    text_edit_parent = QtWidgets.QWidget()
-    text_edit = VimTextEdit(parent=text_edit_parent)
-    text_edit.vim_mode_enabled = True
-    return text_edit
+    widget = VimTextEdit(parent=root_qt_widget)
+    widget.vim_mode_enabled = True
+    return widget
 
 
 @pytest.mark.parametrize(
@@ -577,9 +587,8 @@ def test_vim_text_edit(  # pylint: disable=redefined-outer-name
     :param expected_text: expected text contents of the edit
     :param expected_position: expected caret position
     """
-    text_edit._nvim.input("\x1B")
-    text_edit._nvim.input("\x1B")
-    text_edit._nvim.command("%bufdo bd!")
+    text_edit.setPlainText("")
+    text_edit.reset()
     for key in re.findall("<[^>]+>|.", keys):
         if key.startswith("<"):
             key_num = KEYMAP[key]

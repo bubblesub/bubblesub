@@ -28,6 +28,7 @@ from bubblesub.ui import ui
 
 
 def setup_logging() -> None:
+    """Add console logging handler; configure loggin levels."""
     root = logging.getLogger()
     root.setLevel(logging.INFO)
 

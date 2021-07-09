@@ -9,6 +9,8 @@ good-names=
     columnCount,
     rowCount,
     keyPressEvent,
+    inputMethodEvent,
+    focusInEvent,
     mousePressEvent,
     mouseMoveEvent,
     mouseReleaseEvent,
