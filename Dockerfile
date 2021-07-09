@@ -2,39 +2,32 @@ FROM ubuntu:latest
 
 MAINTAINER rr- "https://github.com/rr-"
 
+ENV SYSTEM_PACKAGES="\
+    build-essential software-properties-common locales autoconf automake \
+    libtool git-core pkg-config wget nasm libxkbcommon-x11-0"
+ENV MPV_PACKAGES="\
+    libmpv-dev"
+ENV FFMPEG_PACKAGES="\
+    libavcodec-dev libavformat-dev libavdevice-dev zlib1g-dev"
+ENV BUBBLESUB_PACKAGES="\
+    python3.8 python3.8-dev python3-pip python3-enchant xvfb qt5-default"
+ENV EXTRA_PACKAGES="\
+    neovim"
+
 # Disable user-interaction
 ENV DEBIAN_FRONTEND noninteractive
-
-# List of system packages
-ENV SYSTEM="build-essential software-properties-common locales \
-autoconf automake libtool git-core pkg-config wget nasm libxkbcommon-x11-0"
-
-# Prepare building machine
+# Install dependencies
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends -y \
-        $SYSTEM
-
-# List of mpv packages
-ENV MPV="libmpv-dev"
-
-# List of FFmpeg packages
-ENV FFMPEG="libavcodec-dev libavformat-dev libavdevice-dev zlib1g-dev"
-
-# List of bubblesub packages
-ENV BUBBLESUB="python3.8 python3.8-dev python3-pip python3-enchant \
-xvfb qt5-default"
-
-# Install bubblesub's dependencies
-RUN apt-get update && \
-    apt-get install --no-install-suggests --no-install-recommends -y \
-        $MPV $FFMPEG $BUBBLESUB
+        $SYSTEM_PACKAGES \
+        $MPV_PACKAGES \
+        $FFMPEG_PACKAGES \
+        $BUBBLESUB_PACKAGES \
+        $EXTRA_PACKAGES
 
 # Cleanup
 RUN apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
-
-# Disable git sslVerify
-RUN git config --global http.sslVerify false
 
 # Set Python environment
 RUN rm -f /usr/bin/python && \
@@ -42,6 +35,8 @@ RUN rm -f /usr/bin/python && \
     python -m pip install -U pip && \
     pip install setuptools
 
+# Disable git sslVerify
+RUN git config --global http.sslVerify false
 # Install ffms2
 RUN git clone https://github.com/FFMS/ffms2.git && \
     cd ffms2 && \

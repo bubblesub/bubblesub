@@ -1,0 +1,2 @@
+"nvimrc that is loaded for neovim unit tests.
+set virtualedit=onemore

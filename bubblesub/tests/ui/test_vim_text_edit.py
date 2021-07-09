@@ -18,6 +18,7 @@
 
 import re
 import typing as T
+from pathlib import Path
 
 import pytest
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -566,6 +567,7 @@ def text_edit(  # pylint: disable=redefined-outer-name
     :return: text edit instance
     """
     widget = VimTextEdit(parent=root_qt_widget)
+    widget.vim_arguments = ["-u", str(Path(__file__).parent / "nvimrc")]
     widget.vim_mode_enabled = True
     return widget
 

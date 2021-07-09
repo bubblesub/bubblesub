@@ -50,6 +50,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
     def __init__(self, parent: QtWidgets.QWidget, **kwargs: T.Any) -> None:
         self._nvim = None
         self._vim_mode_enabled = False
+        self.vim_arguments = []
         self._signals_connected = 0
         super().__init__(parent, **kwargs)
         self._connect_ui_signals()
@@ -79,7 +80,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
 
                 self._nvim.input("\x1B")
                 self._nvim.input("\x1B")
-                self._nvim.command("%bufdo bd!")
+                self._nvim.command("%bufdo! bd!")
                 self._nvim.current.buffer[:] = text.splitlines()
                 self._nvim.input("\x1B")
 
@@ -162,7 +163,9 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             from pynvim import attach
 
             self._nvim = attach(
-                "child", argv=["/usr/bin/env", "nvim", "--embed", "--headless"]
+                "child",
+                argv=["/usr/bin/env", "nvim", "--embed", "--headless"]
+                + self.vim_arguments,
             )
             # self._nvim.command("map zp doau User play_current_audio<CR>")
             # self._nvim.subscribe("User")
