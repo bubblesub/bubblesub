@@ -32,15 +32,19 @@ class SubtitlesMergeSeparator(enum.Enum):
     NEWLINE = "newline"
 
 
+def strip_whitespace(text: str) -> str:
+    return text.replace("\\N", "\n").strip()
+
+
 def merge_text(
     chunks: T.Iterable[str], separator: SubtitlesMergeSeparator
 ) -> str:
     if separator == SubtitlesMergeSeparator.NONE:
         return "".join(chunks)
     if separator == SubtitlesMergeSeparator.SPACE:
-        return " ".join(map(str.strip, chunks))
+        return " ".join(map(strip_whitespace, chunks))
     if separator == SubtitlesMergeSeparator.NEWLINE:
-        return "\n".join(map(str.strip, chunks))
+        return "\n".join(map(strip_whitespace, chunks))
     raise RuntimeError(f'unknown separator separator: "{separator}"')
 
 
