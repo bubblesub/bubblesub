@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import io
-import re
 import shlex
 import typing as T
 from pathlib import Path
@@ -45,7 +44,7 @@ def generate_hotkeys_documentation(handle):
             )
         row = [
             f"<kbd>{hotkey.shortcut}</kbd>",
-            re.sub("([A-Z])", r" \1", hotkey.context.name).strip().lower(),
+            hotkey.context.name.replace("_", " ").strip().lower(),
             "<code>" + "; ".join(last_cell) + "</code>",
         ]
         table.append(row)
@@ -55,7 +54,8 @@ def generate_hotkeys_documentation(handle):
     print("Context refers to the currently focused widget.", file=handle)
     print("", file=handle)
     print(
-        make_table(["Shortcut", "Context", "Command"], table), file=handle,
+        make_table(["Shortcut", "Context", "Command"], table),
+        file=handle,
     )
 
 
@@ -88,13 +88,15 @@ def generate_commands_documentation(handle):
             )
 
         print(
-            (cls.help_text + " " + cls.help_text_extra).strip(), file=handle,
+            (cls.help_text + " " + cls.help_text_extra).strip(),
+            file=handle,
         )
         if parser._actions:  # pylint: disable=protected-access
             print(file=handle)
             print(get_usage(cmd_name, parser, backticks=True), file=handle)
             print(
-                get_params_help(cmd_name, parser, backticks=True), file=handle,
+                get_params_help(cmd_name, parser, backticks=True),
+                file=handle,
             )
         print(file=handle)
 
