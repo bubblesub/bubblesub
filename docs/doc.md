@@ -377,7 +377,7 @@ Aliases: `sub-join`
 
 Merges given subtitles together.
 
-Usage: `sub‑merge [-t|--target=selected] [--concat|--concatenate] [--separator=space]`
+Usage: `sub‑merge [-t|--target=selected] [--concat|--concatenate] [--separator=newline]`
 * `-t`, `--target`: subtitles to merge
 * `--concat`, `--concatenate`: merge the subtitles text and notes (otherwise keep only the first subtitle)
 * `--separator`: separator to merge the text with (can be `none`, `space`, `newline`)

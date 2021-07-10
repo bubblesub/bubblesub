@@ -39,7 +39,7 @@ def merge_text(
         return "".join(chunks)
     if separator == SubtitlesMergeSeparator.SPACE:
         return " ".join(map(str.strip, chunks))
-    if separator == SubtitlesMergeSeparator.SPACE:
+    if separator == SubtitlesMergeSeparator.NEWLINE:
         return "\n".join(map(str.strip, chunks))
     raise RuntimeError(f'unknown separator separator: "{separator}"')
 
@@ -100,7 +100,7 @@ class SubtitlesMergeCommand(BaseCommand):
             help=("separator to merge the text with"),
             type=SubtitlesMergeSeparator,
             choices=list(SubtitlesMergeSeparator),
-            default=SubtitlesMergeSeparator.SPACE,
+            default=SubtitlesMergeSeparator.NEWLINE,
         )
 
 
