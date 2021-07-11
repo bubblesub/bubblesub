@@ -194,7 +194,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         self.setPlainText("\n".join(lines))
 
         def get_pos(mark: str) -> T.Tuple[int, int]:
-            row, col_b = self._nvim.eval('getpos("v")')[1:3]
+            row, col_b = self._nvim.eval(f'getpos("{mark}")')[1:3]
             row -= 1
             col_b -= 1
             col = byte_pos_to_string_pos(lines, col_b, row)
