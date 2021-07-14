@@ -57,7 +57,6 @@ class OpenCommand(BaseCommand):
 
         path = await self.args.path.get_load_path(
             file_filter=SUBS_FILE_FILTER,
-            directory=self.api.gui.get_dialog_dir(),
         )
 
         self.api.subs.load_ass(path)
@@ -177,7 +176,6 @@ class LoadVideoCommand(BaseCommand):
     async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
         path = await self.args.path.get_load_path(
             file_filter=VIDEO_FILE_FILTER,
-            directory=self.api.gui.get_dialog_dir(),
         )
 
         # show the prompt earlier before loading anything
@@ -253,7 +251,6 @@ class LoadAudioCommand(BaseCommand):
     async def run(self) -> None:
         path = await self.args.path.get_load_path(
             file_filter=AUDIO_FILE_FILTER,
-            directory=self.api.gui.get_dialog_dir(),
         )
 
         self.api.audio.load_stream(path)

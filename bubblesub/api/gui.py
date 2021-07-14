@@ -40,6 +40,7 @@ class GuiApi(QtCore.QObject):
         :param api: core API
         """
         super().__init__()
+        self.last_directory: T.Optional[Path] = None
         self._api = api
         self._main_window: T.Optional[QtWidgets.QWidget] = None
 
@@ -119,9 +120,11 @@ class GuiApi(QtCore.QObject):
 
         :return: default path
         """
+        if self.last_directory:
+            return self.last_directory
         if self._api.subs.path:
             return self._api.subs.path.parent
-        return None
+        return Path().absolute()
 
     @contextlib.contextmanager
     def throttle_updates(self) -> T.Any:

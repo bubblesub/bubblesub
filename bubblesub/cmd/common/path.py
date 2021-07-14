@@ -33,7 +33,6 @@ class FancyPath:
     async def get_load_path(
         self,
         file_filter: T.Optional[str] = None,
-        directory: T.Optional[Path] = None,
     ) -> Path:
         if self.value:
             path = Path(self.value).expanduser()
@@ -44,9 +43,10 @@ class FancyPath:
         path = await self.api.gui.exec(
             self._show_load_dialog,
             file_filter=file_filter,
-            directory=directory,
+            directory=self.api.gui.get_dialog_dir(),
         )
         if path:
+            self.api.gui.last_directory = path.parent
             return path
 
         raise CommandCanceled
