@@ -16,6 +16,7 @@
 
 """Video API."""
 
+import asyncio
 import bisect
 import fractions
 import threading
@@ -144,7 +145,6 @@ class VideoStream(QtCore.QObject):
         :param width: optional width to render to
         :param height: optional height to render to
         """
-
         if width and height:
             grab_width = width
             grab_height = height
@@ -346,6 +346,27 @@ class VideoStream(QtCore.QObject):
                 .reshape((height, frame.Linesize[0]))[:, 0 : width * 3]
                 .reshape(height, width, 3)
             )
+
+    async def async_get_frame(
+        self, frame_idx: int, width: int, height: int
+    ) -> T.Optional[np.array]:
+        """Get raw video data from the currently loaded video source
+        asynchronously.
+
+        :param frame_idx: frame number
+        :param width: output image width
+        :param height: output image height
+        :return: numpy image
+        """
+        loop = asyncio.get_event_loop()
+        future = loop.create_future()
+
+        def _worker() -> None:
+            result = self.get_frame(frame_idx, width, height)
+            loop.call_soon_threadsafe(future.set_result, result)
+
+        asyncio.get_event_loop().run_in_executor(None, _worker)
+        return await future
 
     def _got_source(self, source: ffms2.VideoSource) -> None:
         with _SAMPLER_LOCK:
