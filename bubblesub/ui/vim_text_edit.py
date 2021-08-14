@@ -57,6 +57,10 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
         self.highlighter: T.Optional[QtGui.QSyntaxHighlighter]
 
+        self.selectionChanged.connect(self._selection_changed)
+        self.cursorPositionChanged.connect(self._cursor_position_changed)
+        self.textChanged.connect(self._text_changed)
+
     @property
     def vim_mode_enabled(self) -> bool:
         return self._vim_mode_enabled
@@ -77,6 +81,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
                     self._sync_ui()
 
     def _text_changed(self) -> None:
+        if self._signals_connected <= 0:
+            return
         if self.vim_mode_enabled and self._nvim:
             with self._ignore_ui_signals(), self._reconnect_guard():
                 text = self.property(self.metaObject().userProperty().name())
@@ -88,11 +94,15 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
                 self._nvim.input("\x1B")
 
     def _cursor_position_changed(self) -> None:
+        if self._signals_connected <= 0:
+            return
         if self.vim_mode_enabled and self._nvim:
             with self._ignore_ui_signals(), self._reconnect_guard():
                 self._sync_ui()
 
     def _selection_changed(self) -> None:
+        if self._signals_connected <= 0:
+            return
         if self.vim_mode_enabled and self._nvim:
             with self._ignore_ui_signals(), self._reconnect_guard():
                 self._sync_ui()
@@ -120,19 +130,9 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
 
     def _disconnect_ui_signals(self) -> None:
         self._signals_connected -= 1
-        if self._signals_connected == 0:
-            self.selectionChanged.disconnect(self._selection_changed)
-            self.cursorPositionChanged.disconnect(
-                self._cursor_position_changed
-            )
-            self.textChanged.disconnect(self._text_changed)
 
     def _connect_ui_signals(self) -> None:
         self._signals_connected += 1
-        if self._signals_connected == 1:
-            self.selectionChanged.connect(self._selection_changed)
-            self.cursorPositionChanged.connect(self._cursor_position_changed)
-            self.textChanged.connect(self._text_changed)
 
     def inputMethodEvent(self, event: QtGui.QInputMethodEvent) -> None:
         if self.vim_mode_enabled and self._nvim:
