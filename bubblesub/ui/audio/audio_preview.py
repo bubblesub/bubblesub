@@ -361,17 +361,25 @@ class AudioPreview(BaseLocalAudioWidget):
         self.repaint_if_needed()
         self._spectrum_worker.clear_tasks()
 
-        max_block_idx = audio_stream.sample_count >> DERIVATION_DISTANCE
+        min_pts = self.pts_from_x(0)
+        max_pts = self.pts_from_x(self.width() * 2 - 1)
+        if audio_stream:
+            min_pts -= audio_stream.delay
+            max_pts -= audio_stream.delay
 
-        blocks_to_update = set()
-        for x in range(self.width() * 2):
-            block_idx = self.block_idx_from_x(x)
-            if block_idx < 0 or (max_block_idx and block_idx >= max_block_idx):
-                continue
-            if block_idx not in self._spectrum_worker.cache:
-                blocks_to_update.add(block_idx)
+        pts_range = np.linspace(min_pts, max_pts, self.width())
+        block_idx_range = np.round(
+            pts_range
+            * (audio_stream.sample_rate if audio_stream else 0)
+            / 1000.0
+        ).astype(dtype=np.int) // (2 ** DERIVATION_DISTANCE)
 
-        for chunk in chunks(list(sorted(blocks_to_update)), CHUNK_SIZE):
+        blocks_to_update = [
+            block_idx
+            for block_idx in block_idx_range
+            if block_idx not in self._spectrum_worker.cache
+        ]
+        for chunk in chunks(blocks_to_update, size=CHUNK_SIZE):
             self._spectrum_worker.schedule_task(reversed(chunk))
 
     def _on_audio_state_change(self, stream: AudioStream) -> None:
