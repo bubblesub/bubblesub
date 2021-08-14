@@ -298,6 +298,6 @@ class Editor(QtWidgets.QWidget):
         self.style_edit.blockSignals(False)
 
         self.setEnabled(True)
+        self._data_widget_mapper.set_current_index(selected[0])
         self.text_edit.reset()
         self.note_edit.reset()
-        self._data_widget_mapper.set_current_index(selected[0])
