@@ -65,14 +65,16 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
     def vim_mode_enabled(self, enabled: bool) -> None:
         self._vim_mode_enabled = enabled
         self._restart_session()
-        self._sync_ui()
+        with self._ignore_ui_signals():
+            self._sync_ui()
 
     def reset(self) -> None:
         if self._vim_mode_enabled and self._nvim:
             with self._reconnect_guard():
                 self._nvim.input("\x1B")
                 self._nvim.input("\x1B")
-                self._sync_ui()
+                with self._ignore_ui_signals():
+                    self._sync_ui()
 
     def _text_changed(self) -> None:
         if self.vim_mode_enabled and self._nvim:
@@ -103,7 +105,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             except OSError as ex:
                 logging.exception(ex)
                 self._restart_session()
-                self._sync_ui()
+                with self._ignore_ui_signals():
+                    self._sync_ui()
         else:
             yield
 
@@ -172,7 +175,8 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             # self._nvim.subscribe("User")
             self._nvim.command("set clipboard+=unnamed")
             self._nvim.command("set clipboard+=unnamedplus")
-            self._sync_ui()
+            with self._ignore_ui_signals():
+                self._sync_ui()
         except (ImportError, OSError) as ex:
             logging.exception(ex)
             self._nvim = None
