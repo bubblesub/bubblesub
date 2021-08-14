@@ -40,7 +40,7 @@ class SubtitlesSetCommand(BaseCommand):
                     "text": sub.text,
                     "note": sub.note,
                     "actor": sub.actor,
-                    "style": sub.style,
+                    "style": sub.style_name,
                 }
 
                 sub.begin_update()
@@ -67,7 +67,7 @@ class SubtitlesSetCommand(BaseCommand):
                     sub.actor = self.args.actor.format(**params)
 
                 if self.args.style is not None:
-                    sub.style = self.args.style.format(**params)
+                    sub.style_name = self.args.style.format(**params)
 
                 if self.args.comment:
                     sub.is_comment = True

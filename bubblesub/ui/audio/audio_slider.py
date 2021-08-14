@@ -39,10 +39,12 @@ class AudioSlider(BaseGlobalAudioWidget):
         api.playback.current_pts_changed.connect(
             self.repaint, QtCore.Qt.DirectConnection
         )
-        api.subs.events.item_modified.connect(self.repaint_if_needed)
-        api.subs.events.items_inserted.connect(self.repaint_if_needed)
-        api.subs.events.items_moved.connect(self.repaint_if_needed)
-        api.subs.events.items_removed.connect(self.repaint_if_needed)
+        api.subs.loaded.connect(self._on_subs_load)
+
+    def _on_subs_load(self) -> None:
+        self._api.subs.events.changed.subscribe(
+            lambda _event: self.repaint_if_needed()
+        )
 
     def _get_paint_cache_key(self) -> int:
         with self._api.video.stream_lock:

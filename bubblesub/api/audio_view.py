@@ -57,10 +57,6 @@ class AudioViewApi(QtCore.QObject):
         audio_api.stream_loaded.connect(self._on_audio_state_change)
         video_api.stream_loaded.connect(self._on_video_state_change)
         subs_api.loaded.connect(self._on_subs_load)
-        subs_api.events.items_inserted.connect(self._extend_view)
-        subs_api.events.items_removed.connect(self._extend_view)
-        subs_api.events.items_moved.connect(self._extend_view)
-        subs_api.events.item_modified.connect(self._extend_view)
 
         self.reset_view()
 
@@ -231,6 +227,9 @@ class AudioViewApi(QtCore.QObject):
 
     def _on_subs_load(self) -> None:
         self.reset_view()
+        self._subs_api.events.changed.subscribe(
+            lambda _event: self._extend_view()
+        )
 
     def _clip(self, value: T.Union[int, float]) -> int:
         return max(min(self._max, int(value)), self._min)

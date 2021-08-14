@@ -172,7 +172,7 @@ class VideoStream(QtCore.QObject):
             self._ass_renderer.set_source(
                 self._subs_api.styles,
                 self._subs_api.events,
-                self._subs_api.meta,
+                self._subs_api.script_info,
                 (grab_width, grab_height),
             )
             subs_image = self._ass_renderer.render(

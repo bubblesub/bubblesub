@@ -19,14 +19,14 @@ import typing as T
 
 import ffms2
 import numpy as np
+from ass_parser import AssEvent
 from PyQt5 import QtCore, QtGui, QtWidgets
 from sortedcontainers import SortedDict
 
 from bubblesub.api import Api
 from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.threading import QueueWorker
-from bubblesub.fmt.ass.event import AssEvent
-from bubblesub.fmt.ass.util import ass_to_plaintext
+from bubblesub.ass_util import ass_to_plaintext
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.themes import ThemeManager
 from bubblesub.ui.util import blend_colors
@@ -199,10 +199,7 @@ class AudioPreview(BaseLocalAudioWidget):
         api.playback.current_pts_changed.connect(
             self.repaint, QtCore.Qt.DirectConnection
         )
-        api.subs.events.item_modified.connect(self.repaint_if_needed)
-        api.subs.events.items_inserted.connect(self.repaint_if_needed)
-        api.subs.events.items_moved.connect(self.repaint_if_needed)
-        api.subs.events.items_removed.connect(self.repaint_if_needed)
+        api.subs.loaded.connect(self._on_subs_load)
         api.playback.volume_changed.connect(self._on_volume_change)
         api.gui.terminated.connect(self.shutdown)
 
@@ -214,6 +211,11 @@ class AudioPreview(BaseLocalAudioWidget):
             "show_text_on_spectrogram"
         ]
 
+    def _on_subs_load(self) -> None:
+        self._api.subs.events.changed.subscribe(
+            lambda _event: self.repaint_if_needed()
+        )
+
     def shutdown(self) -> None:
         self._spectrum_worker.stop()
 
@@ -223,7 +225,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 (
                     # subtitle rectangles
                     tuple(
-                        (event.start, event.end)
+                        (event.start, event.end, event.text)
                         for event in self._api.subs.events
                     ),
                     # frames, keyframes

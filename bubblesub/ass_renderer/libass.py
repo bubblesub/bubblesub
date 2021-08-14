@@ -23,8 +23,7 @@ import ctypes
 import ctypes.util
 import typing as T
 
-import bubblesub.fmt.ass.event
-import bubblesub.fmt.ass.style
+import ass_parser
 
 _libass_path = ctypes.util.find_library("ass") or ctypes.util.find_library(
     "libass"
@@ -280,7 +279,7 @@ class AssStyle(ctypes.Structure):
     def _after_init(self, track: "AssTrack") -> None:
         self._track = track
 
-    def populate(self, style: bubblesub.fmt.ass.style.AssStyle) -> None:
+    def populate(self, style: ass_parser.AssStyle) -> None:
         self.name = _encode_str(style.name)
         self.fontname = _encode_str(style.font_name)
         self.fontsize = style.font_size
@@ -331,11 +330,11 @@ class AssEvent(ctypes.Structure):
                 return i
         return -1
 
-    def populate(self, event: bubblesub.fmt.ass.event.AssEvent) -> None:
+    def populate(self, event: ass_parser.AssEvent) -> None:
         self.start_ms = int(event.start)
         self.duration_ms = int(event.end - event.start)
         self.layer = event.layer
-        self.style_id = self._style_name_to_style_id(event.style)
+        self.style_id = self._style_name_to_style_id(event.style_name)
         self.name = _encode_str(event.actor)
         self.margin_l = event.margin_left
         self.margin_r = event.margin_right
@@ -411,8 +410,8 @@ class AssTrack(ctypes.Structure):
 
     def populate(
         self,
-        style_list: bubblesub.fmt.ass.style.AssStyleList,
-        event_list: bubblesub.fmt.ass.event.AssEventList,
+        style_list: ass_parser.AssStyleList,
+        event_list: ass_parser.AssEventList,
     ) -> None:
         self.type = AssTrack.TYPE_ASS
 

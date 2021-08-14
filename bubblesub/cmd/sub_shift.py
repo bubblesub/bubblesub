@@ -17,12 +17,12 @@
 import argparse
 import typing as T
 
+from ass_parser import AssEvent
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
 from bubblesub.cmd.common import Pts, SubtitlesSelection
-from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.util import time_jump_dialog
 
 

@@ -78,8 +78,9 @@ class SubtitlesMergeCommand(BaseCommand):
                 )
             subs[0].end_update()
 
-            self.api.subs.events.remove(subs[0].index + 1, len(subs) - 1)
-            self.api.subs.selected_indexes = [subs[0].index]
+            idx = subs[0].index
+            del self.api.subs.events[idx + 1 : idx + len(subs)]
+            self.api.subs.selected_indexes = [idx]
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

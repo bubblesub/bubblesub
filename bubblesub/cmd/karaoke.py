@@ -19,11 +19,11 @@ import typing as T
 from copy import copy
 
 import ass_tag_parser
+from ass_parser import AssEvent
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
 from bubblesub.cmd.common import SubtitlesSelection
-from bubblesub.fmt.ass.event import AssEvent
 
 
 class _Syllable:
@@ -59,7 +59,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                     raise CommandError(str(ex))
 
                 idx = sub.index
-                self.api.subs.events.remove(idx, 1)
+                del self.api.subs.events[idx]
 
                 new_subs: T.List[AssEvent] = []
                 for i, syllable in enumerate(syllables):
@@ -72,7 +72,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                     start = sub_copy.end
                     new_subs.append(sub_copy)
 
-                self.api.subs.events.insert(idx, *new_subs)
+                self.api.subs.events[idx:idx] = new_subs
                 new_selection += new_subs
 
             self.api.subs.selected_indexes = [
@@ -153,9 +153,9 @@ class SubtitlesMergeKaraokeCommand(BaseCommand):
             subs[0].end = subs[-1].end
             subs[0].end_update()
 
-            assert subs[0].index is not None
-            self.api.subs.events.remove(subs[0].index + 1, len(subs) - 1)
-            self.api.subs.selected_indexes = [subs[0].index]
+            idx = subs[0].index
+            del self.api.subs.events[idx + 1 : idx + len(subs)]
+            self.api.subs.selected_indexes = [idx]
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

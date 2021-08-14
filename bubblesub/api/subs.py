@@ -19,15 +19,20 @@
 import typing as T
 from pathlib import Path
 
+from ass_parser import (
+    AssEvent,
+    AssEventList,
+    AssFile,
+    AssScriptInfo,
+    AssStyle,
+    AssStyleList,
+    ObservableSequenceItemRemovalEvent,
+    read_ass,
+    write_ass,
+)
 from PyQt5 import QtCore
 
 from bubblesub.cfg import Config
-from bubblesub.fmt.ass.event import AssEvent, AssEventList
-from bubblesub.fmt.ass.file import AssFile
-from bubblesub.fmt.ass.meta import AssMeta
-from bubblesub.fmt.ass.reader import load_ass
-from bubblesub.fmt.ass.style import AssStyle, AssStyleList
-from bubblesub.fmt.ass.writer import write_ass
 from bubblesub.util import first
 
 
@@ -49,12 +54,11 @@ class SubtitlesApi(QtCore.QObject):
         super().__init__()
         self._cfg = cfg
         self._selected_indexes: T.List[int] = []
+        self._selection_to_commit: T.List[AssEvent] = []
         self._path: T.Optional[Path] = None
-
         self.ass_file = AssFile()
 
-        self.meta_changed = self.ass_file.meta.changed
-        self.events.items_removed.connect(self._on_items_removed)
+        self.loaded.connect(self._on_subs_load)
 
     @property
     def events(self) -> AssEventList:
@@ -73,14 +77,14 @@ class SubtitlesApi(QtCore.QObject):
         return self.ass_file.styles
 
     @property
-    def meta(self) -> AssMeta:
+    def script_info(self) -> AssScriptInfo:
         """Return additional information associated with the ASS file.
 
         This holds basic information about ASS version, video resolution etc.
 
         :return: additional information
         """
-        return self.ass_file.meta
+        return self.ass_file.script_info
 
     @property
     def remembered_video_paths(self) -> T.Iterable[Path]:
@@ -88,7 +92,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: paths of the associated video files or empty list if none
         """
-        for segment in (self.meta.get("Video File") or "").split("|"):
+        for segment in (self.script_info.get("Video File") or "").split("|"):
             if segment:
                 path = Path(segment)
                 yield self._path.parent / path if self._path else path
@@ -99,7 +103,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: paths of the associated audio files or empty list if none
         """
-        for segment in (self.meta.get("Audio File") or "").split("|"):
+        for segment in (self.script_info.get("Audio File") or "").split("|"):
             if segment:
                 path = Path(segment)
                 yield self._path.parent / path if self._path else path
@@ -114,7 +118,7 @@ class SubtitlesApi(QtCore.QObject):
             remembered_path.samefile(path) for remembered_path in paths
         ):
             paths.append(path)
-            self.meta.update({"Video File": "|".join(map(str, paths))})
+            self.script_info.update({"Video File": "|".join(map(str, paths))})
 
     def remember_audio_path_if_needed(self, path: Path) -> None:
         """Add given path to associated audio files if it's not there yet.
@@ -126,7 +130,7 @@ class SubtitlesApi(QtCore.QObject):
             remembered_path.samefile(path) for remembered_path in paths
         ):
             paths.append(path)
-            self.meta.update({"Audio File": "|".join(map(str, paths))})
+            self.script_info.update({"Audio File": "|".join(map(str, paths))})
 
     @property
     def language(self) -> T.Optional[str]:
@@ -134,7 +138,7 @@ class SubtitlesApi(QtCore.QObject):
 
         :return: language
         """
-        return T.cast(str, self.meta.get("Language") or "") or None
+        return T.cast(str, self.script_info.get("Language") or "") or None
 
     @language.setter
     def language(self, language: T.Optional[str]) -> None:
@@ -143,9 +147,9 @@ class SubtitlesApi(QtCore.QObject):
         :param language: language
         """
         if language:
-            self.meta.set("Language", language)
+            self.script_info["Language"] = language
         else:
-            self.meta.remove("Language")
+            self.script_info.pop("Language", None)
 
     @property
     def path(self) -> T.Optional[Path]:
@@ -205,11 +209,9 @@ class SubtitlesApi(QtCore.QObject):
         """Load empty ASS file."""
         self._path = None
         self.selected_indexes = []
-        self.ass_file.meta.clear()
-        self.ass_file.events.clear()
-        self.ass_file.styles.clear()
+        self.ass_file = AssFile()
         self.ass_file.styles.append(AssStyle(name=self.default_style_name))
-        self.ass_file.meta.update(
+        self.ass_file.script_info.update(
             {"Language": self._cfg.opt["gui"]["spell_check"]}
         )
         self.loaded.emit()
@@ -222,7 +224,7 @@ class SubtitlesApi(QtCore.QObject):
         assert path
         path = Path(path)
         with path.open("r") as handle:
-            load_ass(handle, self.ass_file)
+            self.ass_file = read_ass(handle)
 
         self._cfg.opt.add_recent_file(path)
 
@@ -249,10 +251,27 @@ class SubtitlesApi(QtCore.QObject):
             self.saved.emit()
             self._cfg.opt.add_recent_file(path)
 
-    def _on_items_removed(self, idx: int, count: int) -> None:
-        new_indexes = list(sorted(self.selected_indexes))
-        for i in reversed(range(idx, idx + count)):
-            new_indexes = [
-                j - 1 if j > i else j for j in new_indexes if j != i
-            ]
-        self.selected_indexes = new_indexes
+    def _on_subs_load(self) -> None:
+        self.events.items_about_to_be_removed.subscribe(
+            self._on_items_about_to_be_removed
+        )
+        self.events.items_removed.subscribe(self._on_items_removed)
+
+    def _on_items_about_to_be_removed(
+        self, event: ObservableSequenceItemRemovalEvent
+    ) -> None:
+        # remember events to re-select before reindexing
+        indexes_about_to_be_removed = [item.index for item in event.items]
+        self._selection_to_commit = [
+            event
+            for event in self.selected_events
+            if event.index not in indexes_about_to_be_removed
+        ]
+
+    def _on_items_removed(
+        self, event: ObservableSequenceItemRemovalEvent
+    ) -> None:
+        # fix selection after reindexing
+        self.selected_indexes = [
+            event.index for event in self._selection_to_commit
+        ]

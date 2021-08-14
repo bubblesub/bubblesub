@@ -21,6 +21,7 @@ import locale
 import typing as T
 
 import mpv
+from ass_parser import write_ass
 from mpv import (
     MPV,
     MpvSubApi,
@@ -39,7 +40,6 @@ from bubblesub.api import Api
 from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.playback import PlaybackFrontendState
 from bubblesub.api.video_stream import VideoStream
-from bubblesub.fmt.ass.writer import write_ass
 from bubblesub.util import ms_to_str
 
 
@@ -108,16 +108,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._timer.setInterval(api.cfg.opt["video"]["subs_sync_interval"])
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
-        api.subs.meta_changed.connect(self._on_subs_change)
-        api.subs.events.item_modified.connect(self._on_subs_change)
-        api.subs.events.items_inserted.connect(self._on_subs_change)
-        api.subs.events.items_removed.connect(self._on_subs_change)
-        api.subs.events.items_moved.connect(self._on_subs_change)
-        api.subs.styles.item_modified.connect(self._on_subs_change)
-        api.subs.styles.items_inserted.connect(self._on_subs_change)
-        api.subs.styles.items_removed.connect(self._on_subs_change)
-        api.subs.styles.items_moved.connect(self._on_subs_change)
-
+        api.subs.loaded.connect(self._on_subs_load)
         api.video.stream_created.connect(self._on_video_state_change)
         api.video.stream_unloaded.connect(self._on_video_state_change)
         api.video.current_stream_switched.connect(self._on_video_state_change)
@@ -188,6 +179,17 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
                 self.mpv_gl, self.on_update_fake_c, None
             )
         _mpv_opengl_cb_uninit_gl(self.mpv_gl)
+
+    def _on_subs_load(self) -> None:
+        self._api.subs.script_info.changed.subscribe(
+            lambda _event: self._on_subs_change()
+        )
+        self._api.subs.events.changed.subscribe(
+            lambda _event: self._on_subs_change()
+        )
+        self._api.subs.styles.changed.subscribe(
+            lambda _event: self._on_subs_change()
+        )
 
     def _on_video_state_change(self, stream: VideoStream) -> None:
         self._sync_media()

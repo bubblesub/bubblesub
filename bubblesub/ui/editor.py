@@ -19,7 +19,7 @@ import typing as T
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.fmt.ass.util import spell_check_ass_line
+from bubblesub.ass_util import spell_check_ass_line
 from bubblesub.spell_check import SpellCheckerError, create_spell_checker
 from bubblesub.ui.model.events import AssEventsModel, AssEventsModelColumn
 from bubblesub.ui.themes import ThemeManager
@@ -40,7 +40,9 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
         self._fmt.setUnderlineStyle(QtGui.QTextCharFormat.SpellCheckUnderline)
         self._fmt.setFontUnderline(True)
 
-        self._api.subs.meta_changed.connect(self.reset)
+        self._api.subs.script_info.changed.subscribe(
+            lambda _event: self.reset()
+        )
 
         self.reset()
 
@@ -174,6 +176,7 @@ class Editor(QtWidgets.QWidget):
         self.start_time_edit = TimeEdit(self, objectName="start-time-editor")
         self.end_time_edit = TimeEdit(self, objectName="end-time-editor")
         self.duration_edit = TimeEdit(self, objectName="duration-editor")
+        self.duration_edit.setDisabled(True)
 
         self.comment_checkbox = QtWidgets.QCheckBox(
             "Comment", self, objectName="comment-checkbox"
@@ -181,9 +184,6 @@ class Editor(QtWidgets.QWidget):
 
         self.text_edit = TextEdit(
             api, self, tabChangesFocus=True, objectName="text-editor"
-        )
-        self.text_edit.highlighter = SpellCheckHighlighter(
-            self._api, self.text_edit.document()
         )
 
         self.note_edit = TextEdit(
@@ -230,8 +230,24 @@ class Editor(QtWidgets.QWidget):
         layout.setStretchFactor(self.note_edit, 1)
         self.setEnabled(False)
 
+        api.subs.loaded.connect(self._on_subs_load)
+        api.subs.selection_changed.connect(self._on_selection_change)
+
+        self._data_widget_mapper: T.Optional[ImmediateDataWidgetMapper] = None
+
+        QtWidgets.QApplication.instance().installEventFilter(self)
+
+    def eventFilter(
+        self, source: QtCore.QObject, event: QtCore.QEvent
+    ) -> bool:
+        if isinstance(source, QtWidgets.QWidget) and self.isAncestorOf(source):
+            if event.type() == QtCore.QEvent.FocusOut:
+                self._api.undo.push()
+        return False
+
+    def _on_subs_load(self) -> None:
         self._data_widget_mapper = ImmediateDataWidgetMapper(
-            model=AssEventsModel(api, self._theme_mgr, self),
+            model=AssEventsModel(self._api, self._theme_mgr, self),
             signal_map={TextEdit: "textChanged"},
         )
         for column, widget in {
@@ -250,21 +266,16 @@ class Editor(QtWidgets.QWidget):
         }:
             self._data_widget_mapper.add_mapping(widget, column)
 
-        api.subs.selection_changed.connect(self._on_selection_change)
-
-        QtWidgets.QApplication.instance().installEventFilter(self)
-
-    def eventFilter(
-        self, source: QtCore.QObject, event: QtCore.QEvent
-    ) -> bool:
-        if isinstance(source, QtWidgets.QWidget) and self.isAncestorOf(source):
-            if event.type() == QtCore.QEvent.FocusOut:
-                self._api.undo.push()
-        return False
+        self.text_edit.highlighter = SpellCheckHighlighter(
+            self._api, self.text_edit.document()
+        )
 
     def _on_selection_change(
         self, selected: T.List[int], _changed: bool
     ) -> None:
+        if not self._data_widget_mapper:
+            return
+
         self._api.undo.push()
 
         if len(selected) != 1:
@@ -282,7 +293,7 @@ class Editor(QtWidgets.QWidget):
         self.style_edit.blockSignals(True)
         self.style_edit.clear()
         self.style_edit.addItems(
-            sorted(list(set(sub.style for sub in self._api.subs.events)))
+            sorted(list(set(sub.style_name for sub in self._api.subs.events)))
         )
         self.style_edit.blockSignals(False)
 

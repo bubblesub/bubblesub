@@ -17,10 +17,11 @@
 import argparse
 import typing as T
 
+from ass_parser import AssEvent
+
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import SubtitlesSelection
-from bubblesub.fmt.ass.event import AssEvent
 
 
 class SubtitleInsertCommand(BaseCommand):
@@ -48,7 +49,7 @@ class SubtitleInsertCommand(BaseCommand):
                 AssEvent(
                     start=start,
                     end=end,
-                    style=self.api.subs.default_style_name,
+                    style_name=self.api.subs.default_style_name,
                 ),
             )
             self.api.subs.selected_indexes = [idx]
@@ -62,7 +63,10 @@ class SubtitleInsertCommand(BaseCommand):
             prev_sub = cur_sub.prev
         else:
             idx = 0
-            cur_sub = self.api.subs.events.get(0)
+            try:
+                cur_sub = self.api.subs.events[0]
+            except IndexError:
+                cur_sub = None
             prev_sub = None
 
         end = cur_sub.start if cur_sub else self._duration
@@ -82,7 +86,10 @@ class SubtitleInsertCommand(BaseCommand):
         else:
             idx = 0
             cur_sub = None
-            next_sub = self.api.subs.events.get(0)
+            try:
+                next_sub = self.api.subs.events[0]
+            except IndexError:
+                next_sub = None
 
         start = cur_sub.end if cur_sub else 0
         end = start + self._duration

@@ -20,12 +20,12 @@ import contextlib
 import pickle
 import typing as T
 import zlib
+from copy import copy
+
+from ass_parser import AssFile
 
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.cfg import Config
-from bubblesub.fmt.ass.event import AssEventList
-from bubblesub.fmt.ass.meta import AssMeta
-from bubblesub.fmt.ass.style import AssStyleList
 
 
 class UndoState:
@@ -33,46 +33,24 @@ class UndoState:
 
     def __init__(
         self,
-        events: AssEventList,
-        styles: AssStyleList,
-        meta: AssMeta,
+        ass_file: AssFile,
         selected_indexes: T.List[int],
     ) -> None:
         """Initialize self.
 
-        :param events: list of events for the currently loaded ASS file
-        :param styles: list of styles for the currently loaded ASS file
-        :param meta: meta dict for the currently loaded ASS file
+        :param ass_file: currently loaded ASS file
         :param selected_indexes: current selection on the subtitle grid
         """
-        self._events = _pickle(events)
-        self._styles = _pickle(styles)
-        self._meta = _pickle(dict(meta.items()))
+        self._ass_file = _pickle(ass_file)
         self.selected_indexes = selected_indexes
 
     @property
-    def events(self) -> AssEventList:
-        """Return list of remembered events.
+    def ass_file(self) -> AssFile:
+        """Return remembered ASS file.
 
-        :return: list of remembered events
+        :return: remembered ASS file
         """
-        return T.cast(AssEventList, _unpickle(self._events))
-
-    @property
-    def styles(self) -> AssStyleList:
-        """Return list of remembered styles.
-
-        :return: list of remembered styles
-        """
-        return T.cast(AssStyleList, _unpickle(self._styles))
-
-    @property
-    def meta(self) -> T.Dict[str, str]:
-        """Return remembered meta dict.
-
-        :return: meta dict
-        """
-        return T.cast(T.Dict[str, str], _unpickle(self._meta))
+        return T.cast(AssFile, _unpickle(self._ass_file))
 
     def __eq__(self, other: T.Any) -> T.Any:
         """Whether two UndoStates are equivalent.
@@ -84,11 +62,7 @@ class UndoState:
         :return: bool or NotImplemented to fall back to default implementation
         """
         if isinstance(other, UndoState):
-            return (
-                self._events == other._events
-                and self._styles == other._styles
-                and self._meta == other._meta
-            )
+            return self.ass_file == other.ass_file
         return NotImplemented
 
     def __ne__(self, other: T.Any) -> T.Any:
@@ -243,15 +217,17 @@ class UndoApi:
 
     def _make_state(self) -> UndoState:
         return UndoState(
-            events=self._subs_api.events,
-            styles=self._subs_api.styles,
-            meta=self._subs_api.meta,
+            ass_file=self._subs_api.ass_file,
             selected_indexes=self._subs_api.selected_indexes,
         )
 
     def _apply_state(self, state: UndoState) -> None:
-        self._subs_api.events.replace(list(state.events))
-        self._subs_api.styles.replace(list(state.styles))
-        self._subs_api.meta.clear()
-        self._subs_api.meta.update(state.meta)
+        self._subs_api.ass_file.events[:] = list(
+            map(copy, state.ass_file.events)
+        )
+        self._subs_api.ass_file.styles[:] = list(
+            map(copy, state.ass_file.styles)
+        )
+        self._subs_api.ass_file.script_info.clear()
+        self._subs_api.ass_file.script_info.update(state.ass_file.script_info)
         self._subs_api.selected_indexes = state.selected_indexes

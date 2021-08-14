@@ -15,28 +15,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import base64
-import pickle
 import typing as T
-import zlib
+from copy import copy
 
+from ass_parser import AssEventList
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
 from bubblesub.cmd.common import SubtitlesSelection
-from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.util import ms_to_str, str_to_ms
-
-
-def _pickle(data: T.Any) -> str:
-    return base64.b64encode(
-        zlib.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
-    ).decode()
-
-
-def _unpickle(text: str) -> T.Any:
-    return pickle.loads(zlib.decompress(base64.b64decode(text.encode())))
 
 
 class SubtitlesCopyCommand(BaseCommand):
@@ -68,7 +56,9 @@ class SubtitlesCopyCommand(BaseCommand):
                 )
             )
         elif self.args.subject == "all":
-            QtWidgets.QApplication.clipboard().setText(_pickle(subs))
+            QtWidgets.QApplication.clipboard().setText(
+                AssEventList(data=list(map(copy, subs))).to_ass_string()
+            )
         else:
             raise AssertionError
 
@@ -113,10 +103,10 @@ class SubtitlesPasteCommand(BaseCommand):
         if not text:
             raise CommandUnavailable("clipboard is empty, aborting")
 
-        items = T.cast(T.List[AssEvent], _unpickle(text))
+        subs = AssEventList.from_ass_string(text)
         with self.api.undo.capture():
-            self.api.subs.events.insert(idx, *items)
-            self.api.subs.selected_indexes = list(range(idx, idx + len(items)))
+            self.api.subs.events[idx:idx] = list(map(copy, subs))
+            self.api.subs.selected_indexes = list(range(idx, idx + len(subs)))
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

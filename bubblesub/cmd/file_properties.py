@@ -249,29 +249,30 @@ class _FilePropertiesDialog(Dialog):
 
     def _load(self) -> None:
         self._options_group_box.res_x_edit.setValue(
-            int(T.cast(str, self._api.subs.meta.get("PlayResX", "0")))
+            int(T.cast(str, self._api.subs.script_info.get("PlayResX", "0")))
         )
         self._options_group_box.res_y_edit.setValue(
-            int(T.cast(str, self._api.subs.meta.get("PlayResY", "0")))
+            int(T.cast(str, self._api.subs.script_info.get("PlayResY", "0")))
         )
 
         self._options_group_box.ycbcr_matrix_combo_box.setCurrentIndex(
             self._options_group_box.ycbcr_matrix_combo_box.findData(
-                self._api.subs.meta.get("YCbCr Matrix")
+                self._api.subs.script_info.get("YCbCr Matrix")
             )
         )
 
         self._options_group_box.wrap_mode_combo_box.setCurrentIndex(
             self._options_group_box.wrap_mode_combo_box.findData(
-                self._api.subs.meta.get("WrapStyle")
+                self._api.subs.script_info.get("WrapStyle")
             )
         )
 
         self._options_group_box.scale_check_box.setChecked(
-            self._api.subs.meta.get("ScaledBorderAndShadow", "yes") == "yes"
+            self._api.subs.script_info.get("ScaledBorderAndShadow", "yes")
+            == "yes"
         )
 
-        for key, value in self._api.subs.meta.items():
+        for key, value in self._api.subs.script_info.items():
             if key not in [
                 "PlayResX",
                 "PlayResY",
@@ -287,11 +288,11 @@ class _FilePropertiesDialog(Dialog):
     @async_slot()
     async def _commit(self) -> None:
         old_res = (
-            int(T.cast(str, self._api.subs.meta.get("PlayResX", "0"))),
-            int(T.cast(str, self._api.subs.meta.get("PlayResY", "0"))),
+            int(T.cast(str, self._api.subs.script_info.get("PlayResX", "0"))),
+            int(T.cast(str, self._api.subs.script_info.get("PlayResY", "0"))),
         )
 
-        self._api.subs.meta.clear()
+        self._api.subs.script_info.clear()
 
         play_res_x = str(self._options_group_box.res_x_edit.value())
         play_res_y = str(self._options_group_box.res_y_edit.value())
@@ -299,7 +300,7 @@ class _FilePropertiesDialog(Dialog):
         wrap_style = self._options_group_box.wrap_mode_combo_box.currentData()
         border_and_shadow = self._options_group_box.scale_check_box.isChecked()
 
-        self._api.subs.meta.update(
+        self._api.subs.script_info.update(
             {
                 "ScriptType": "v4.00+",
                 "PlayResX": play_res_x,
@@ -310,11 +311,11 @@ class _FilePropertiesDialog(Dialog):
             }
         )
 
-        self._api.subs.meta.update(self._metadata_group_box.get_data())
+        self._api.subs.script_info.update(self._metadata_group_box.get_data())
 
         new_res = (
-            int(T.cast(str, self._api.subs.meta.get("PlayResX", "0"))),
-            int(T.cast(str, self._api.subs.meta.get("PlayResY", "0"))),
+            int(T.cast(str, self._api.subs.script_info.get("PlayResX", "0"))),
+            int(T.cast(str, self._api.subs.script_info.get("PlayResY", "0"))),
         )
         if (
             old_res != new_res

@@ -25,24 +25,6 @@ import regex
 from bubblesub.spell_check import BaseSpellChecker
 
 
-def escape_ass_tag(text: str) -> str:
-    """Escape text so that it doesn't get treated as ASS tags.
-
-    :param text: text to escape
-    :return: escaped text
-    """
-    return text.replace("\\", r"\\").replace("{", r"\[").replace("}", r"\]")
-
-
-def unescape_ass_tag(text: str) -> str:
-    """Do the reverse operation to escape_ass_tag().
-
-    :param text: text to unescape
-    :return: unescaped text
-    """
-    return text.replace(r"\\", "\\").replace(r"\[", "{").replace(r"\]", "}")
-
-
 @lru_cache(maxsize=5000)
 def ass_to_plaintext(text: str) -> str:
     """Strip ASS tags from an ASS line.

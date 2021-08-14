@@ -18,12 +18,12 @@ import argparse
 import typing as T
 from copy import copy
 
+from ass_parser import AssEvent
 from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
 from bubblesub.cmd.common import SubtitlesSelection
-from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.util import async_dialog_exec
 from bubblesub.util import make_ranges
 
@@ -61,8 +61,8 @@ class SubtitlesMoveCommand(BaseCommand):
             raise CommandUnavailable("cannot move further up")
         for idx, count in make_ranges(indexes):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
-            self.api.subs.events.insert(idx - 1, *chunk)
-            self.api.subs.events.remove(idx + count, count)
+            self.api.subs.events[idx - 1 : idx - 1] = chunk
+            del self.api.subs.events[idx + count : idx + count + count]
             yield from chunk
 
     def _move_below(self, indexes: T.List[int]) -> T.Iterable[AssEvent]:
@@ -70,8 +70,8 @@ class SubtitlesMoveCommand(BaseCommand):
             raise CommandUnavailable("cannot move further down")
         for idx, count in make_ranges(indexes, reverse=True):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
-            self.api.subs.events.insert(idx + count + 1, *chunk)
-            self.api.subs.events.remove(idx, count)
+            self.api.subs.events[idx + count + 1 : idx + count + 1] = chunk
+            del self.api.subs.events[idx : idx + count]
             yield from chunk
 
     def _move_to(
@@ -83,10 +83,10 @@ class SubtitlesMoveCommand(BaseCommand):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
             chunk.reverse()
             sub_copies += chunk
-            self.api.subs.events.remove(idx, count)
+            del self.api.subs.events[idx : idx + count]
 
         sub_copies.reverse()
-        self.api.subs.events.insert(base_idx, *sub_copies)
+        self.api.subs.events[base_idx:base_idx] = sub_copies
         return sub_copies
 
     async def _show_dialog(

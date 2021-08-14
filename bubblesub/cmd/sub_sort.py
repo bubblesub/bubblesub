@@ -16,6 +16,7 @@
 
 import argparse
 import enum
+from copy import copy
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
@@ -47,7 +48,7 @@ class SubtitlesSortCommand(BaseCommand):
             SortStyle.START: "start",
             SortStyle.END: "end",
             SortStyle.ACTOR: "actor",
-            SortStyle.STYLE: "style",
+            SortStyle.STYLE: "style_name",
             SortStyle.LAYER: "layer",
         }[self.args.style]
         with self.api.undo.capture(), self.api.gui.throttle_updates():
@@ -57,7 +58,9 @@ class SubtitlesSortCommand(BaseCommand):
                 events = sorted(
                     events, key=lambda event: getattr(event, attr_name)
                 )
-                self.api.subs.events[idx : idx + count] = events
+                self.api.subs.events[idx : idx + count] = list(
+                    map(copy, events)
+                )
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

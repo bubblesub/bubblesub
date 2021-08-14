@@ -36,15 +36,8 @@ class SubtitlesDeleteCommand(BaseCommand):
             if not indexes:
                 raise CommandUnavailable("nothing to delete")
 
-            new_selection = set(self.api.subs.selected_events) - set(
-                self.api.subs.events[idx] for idx in indexes
-            )
-
-            self.api.subs.selected_indexes = [
-                sub.index for sub in new_selection if sub.index is not None
-            ]
             for start_idx, count in make_ranges(indexes, reverse=True):
-                self.api.subs.events.remove(start_idx, count)
+                del self.api.subs.events[start_idx : start_idx + count]
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

@@ -19,11 +19,11 @@ import typing as T
 from copy import copy
 from dataclasses import dataclass
 
+from ass_parser import AssEvent
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.audio_view import AudioViewApi
-from bubblesub.fmt.ass.event import AssEvent
 
 SLIDER_SIZE = 20
 
@@ -128,7 +128,7 @@ def create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
         AssEvent(
             start=insertion_point.start,
             end=insertion_point.end,
-            style=api.subs.default_style_name,
+            style_name=api.subs.default_style_name,
         ),
     )
     api.subs.selected_indexes = [insertion_point.idx]

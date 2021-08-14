@@ -123,9 +123,6 @@ class Application:
             except ConfigError as ex:
                 api.log.error(str(ex))
 
-            # load empty file
-            api.subs.unload()
-
             if self._splash:
                 self._splash.showMessage("Loading commands...")
             api.cmd.reload_commands()
@@ -135,6 +132,9 @@ class Application:
             main_window = MainWindow(api)
             api.gui.set_main_window(main_window)
             logger.set_main_window(main_window)
+
+            # load empty file
+            api.subs.unload()
 
             main_window.show()
 

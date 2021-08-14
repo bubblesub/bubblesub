@@ -20,11 +20,11 @@ import enum
 import re
 import typing as T
 
+from ass_parser import AssEvent
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.util import (
     Dialog,
     async_dialog_exec,

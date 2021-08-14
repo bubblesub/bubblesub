@@ -19,14 +19,18 @@ from copy import copy
 
 import PIL.Image
 import PIL.ImageQt
+from ass_parser import (
+    AssEvent,
+    AssEventList,
+    AssScriptInfo,
+    AssStyle,
+    AssStyleList,
+)
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass_renderer import AssRenderer
-from bubblesub.fmt.ass.event import AssEvent, AssEventList
-from bubblesub.fmt.ass.meta import AssMeta
-from bubblesub.fmt.ass.style import AssStyle, AssStyleList
 from bubblesub.ui.assets import get_assets
 from bubblesub.ui.font_combo_box import FontComboBox, refresh_font_db
 from bubblesub.ui.model.styles import AssStylesModel, AssStylesModelColumn
@@ -144,12 +148,12 @@ class _StylePreview(QtWidgets.QGroupBox):
             start=0,
             end=1000,
             text=self.preview_text.replace("\n", "\\N"),
-            style=fake_style.name,
+            style_name=fake_style.name,
         )
         fake_event_list = AssEventList()
         fake_event_list.append(fake_event)
 
-        fake_meta = AssMeta()
+        fake_script_info = AssScriptInfo()
 
         image = PIL.Image.new(mode="RGBA", size=resolution)
 
@@ -161,7 +165,7 @@ class _StylePreview(QtWidgets.QGroupBox):
                     image.paste(background, (x, y))
 
         self._renderer.set_source(
-            fake_style_list, fake_event_list, fake_meta, resolution
+            fake_style_list, fake_event_list, fake_script_info, resolution
         )
         subs_image = self._renderer.render(
             time=0,
@@ -316,7 +320,7 @@ class _StyleList(QtWidgets.QWidget):
 
         self._styles_list_view.selectionModel().clear()
         with self._api.undo.capture():
-            self._api.subs.styles.remove(idx, 1)
+            del self._api.subs.styles[idx]
 
     def _on_duplicate_button_click(self, event: QtGui.QMouseEvent) -> None:
         style = self._selected_style
@@ -381,8 +385,8 @@ class _StyleList(QtWidgets.QWidget):
         with self._api.undo.capture():
             style.name = new_name
             for line in self._api.subs.events:
-                if line.style == old_name:
-                    line.style = new_name
+                if line.style_name == old_name:
+                    line.style_name = new_name
 
         self._styles_list_view.selectionModel().select(
             self._model.index(idx, 0), QtCore.QItemSelectionModel.Select

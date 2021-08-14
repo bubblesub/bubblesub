@@ -22,10 +22,10 @@ import typing as T
 from dataclasses import dataclass
 
 import parsimonious
+from ass_parser import AssEvent
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandError
-from bubblesub.fmt.ass.event import AssEvent
 from bubblesub.ui.util import time_jump_dialog
 
 GRAMMAR = r"""
@@ -382,7 +382,10 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     ) -> T.Any:
         _, num, boundary = _flatten(visited)
         idx = max(1, min(num, len(self._api.subs.events))) - 1
-        sub = self._api.subs.events.get(idx)
+        try:
+            sub = self._api.subs.events[idx]
+        except IndexError:
+            sub = None
         return _Time(_Token.start_end(sub, boundary) if sub else 0)
 
     async def visit_frame(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:

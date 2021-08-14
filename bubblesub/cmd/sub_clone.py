@@ -18,10 +18,11 @@ import argparse
 import typing as T
 from copy import copy
 
+from ass_parser import AssEvent
+
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandUnavailable
 from bubblesub.cmd.common import SubtitlesSelection
-from bubblesub.fmt.ass.event import AssEvent
 
 
 class SubtitlesCloneCommand(BaseCommand):

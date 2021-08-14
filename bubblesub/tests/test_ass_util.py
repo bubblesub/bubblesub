@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for bubblesub.fmt.ass.util module."""
+"""Tests for bubblesub.ass_util module."""
 
 import typing as T
 
 import pytest
 
-from bubblesub.fmt.ass.util import iter_words_ass_line
+from bubblesub.ass_util import iter_words_ass_line
 
 
 @pytest.mark.parametrize(

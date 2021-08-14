@@ -70,10 +70,16 @@ class Audio(QtWidgets.QSplitter):
         self.setHandleWidth(0)
         self.setOrientation(QtCore.Qt.Vertical)
 
-        api.subs.events.items_inserted.connect(self._sync_selection)
-        api.subs.events.items_removed.connect(self._sync_selection)
-        api.subs.events.items_moved.connect(self._sync_selection)
-        api.subs.selection_changed.connect(
+        api.subs.loaded.connect(self._on_subs_load)
+
+    def _on_subs_load(self) -> None:
+        self._api.subs.events.items_removed.subscribe(
+            lambda _event: self._sync_selection()
+        )
+        self._api.subs.events.items_inserted.subscribe(
+            lambda _event: self._sync_selection()
+        )
+        self._api.subs.selection_changed.connect(
             lambda _rows, _changed: self._sync_selection()
         )
 

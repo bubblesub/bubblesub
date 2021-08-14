@@ -18,11 +18,11 @@ import enum
 import typing as T
 from dataclasses import dataclass
 
+from ass_parser import AssEvent
 from PyQt5 import QtCore, QtGui
 
 from bubblesub.api import Api
-from bubblesub.fmt.ass.event import AssEvent
-from bubblesub.fmt.ass.util import character_count
+from bubblesub.ass_util import character_count
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 from bubblesub.ui.themes import ThemeManager
 from bubblesub.ui.util import blend_colors
@@ -162,7 +162,7 @@ class _LongDurationColumn(_IntPropertyColumn):
 _COLUMNS: T.Dict[AssEventsModelColumn, _Column] = {
     AssEventsModelColumn.START: _TimePropertyColumn("Start", "start"),
     AssEventsModelColumn.END: _TimePropertyColumn("End", "end"),
-    AssEventsModelColumn.ASS_STYLE: _TextPropertyColumn("Style", "style"),
+    AssEventsModelColumn.ASS_STYLE: _TextPropertyColumn("Style", "style_name"),
     AssEventsModelColumn.ACTOR: _TextPropertyColumn("Actor", "actor"),
     AssEventsModelColumn.TEXT: _TextPropertyColumn("Text", "text"),
     AssEventsModelColumn.NOTE: _TextPropertyColumn("Note", "note"),

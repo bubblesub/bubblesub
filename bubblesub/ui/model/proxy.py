@@ -16,9 +16,15 @@
 
 import typing as T
 
+from ass_parser.observable_sequence_mixin import (
+    ObservableSequenceItemInsertionEvent,
+    ObservableSequenceItemModificationEvent,
+    ObservableSequenceItemRemovalEvent,
+)
 from PyQt5 import QtCore
 
 from bubblesub.model import ObservableList
+from bubblesub.util import make_ranges
 
 
 class ObservableListTableAdapter(QtCore.QAbstractTableModel):
@@ -34,19 +40,11 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         """
         super().__init__(parent)
         self._list = list_
-        self._list.item_modified.connect(self._proxy_data_changed)
-        self._list.items_about_to_be_inserted.connect(
-            self._proxy_items_about_to_be_inserted
+        self._list.items_modified.subscribe(self._proxy_data_changed)
+        self._list.items_inserted.subscribe(self._proxy_items_inserted)
+        self._list.items_about_to_be_removed.subscribe(
+            self._proxy_items_removed
         )
-        self._list.items_about_to_be_removed.connect(
-            self._proxy_items_about_to_be_removed
-        )
-        self._list.items_about_to_be_moved.connect(
-            self._proxy_items_about_to_be_moved
-        )
-        self._list.items_inserted.connect(self._proxy_items_inserted)
-        self._list.items_removed.connect(self._proxy_items_removed)
-        self._list.items_moved.connect(self._proxy_items_moved)
 
     def rowCount(
         self, _parent: QtCore.QModelIndex = QtCore.QModelIndex()
@@ -114,8 +112,11 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     ) -> bool:
         raise NotImplementedError("not implemented")
 
-    def _proxy_data_changed(self, row_idx: int) -> None:
-        # XXX: this causes qt to call .data() for EVERY VISIBLE CELL. really.
+    def _proxy_data_changed(
+        self, event: ObservableSequenceItemModificationEvent
+    ) -> None:
+        row_idx = event.item.index
+        # XXX: this causes qt to call .data() for EVERY VISIBLE CELL. sic.
         # self.dataChanged.emit(
         #     self.index(row_idx, 0),
         #     self.index(row_idx, self.columnCount() - 1),
@@ -128,54 +129,14 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
                 [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole],
             )
 
-    def _proxy_items_about_to_be_inserted(
-        self, row_idx: int, count: int
+    def _proxy_items_inserted(
+        self, event: ObservableSequenceItemInsertionEvent
     ) -> None:
-        if count:
-            self.rowsAboutToBeInserted.emit(
-                QtCore.QModelIndex(), row_idx, row_idx + count - 1
-            )
+        for idx, count in make_ranges(item.index for item in event.items):
+            self.rowsInserted.emit(QtCore.QModelIndex(), idx, idx + count - 1)
 
-    def _proxy_items_about_to_be_removed(
-        self, row_idx: int, count: int
+    def _proxy_items_removed(
+        self, event: ObservableSequenceItemRemovalEvent
     ) -> None:
-        if count:
-            self.rowsAboutToBeRemoved.emit(
-                QtCore.QModelIndex(), row_idx, row_idx + count - 1
-            )
-
-    def _proxy_items_about_to_be_moved(
-        self, row_idx: int, count: int, new_row_idx: int
-    ) -> None:
-        if count:
-            self.rowsAboutToBeMoved.emit(
-                QtCore.QModelIndex(),
-                row_idx,
-                row_idx + count - 1,
-                QtCore.QModelIndex(),
-                new_row_idx,
-            )
-
-    def _proxy_items_inserted(self, row_idx: int, count: int) -> None:
-        if count:
-            self.rowsInserted.emit(
-                QtCore.QModelIndex(), row_idx, row_idx + count - 1
-            )
-
-    def _proxy_items_removed(self, row_idx: int, count: int) -> None:
-        if count:
-            self.rowsRemoved.emit(
-                QtCore.QModelIndex(), row_idx, row_idx + count - 1
-            )
-
-    def _proxy_items_moved(
-        self, row_idx: int, count: int, new_row_idx: int
-    ) -> None:
-        if count:
-            self.rowsMoved.emit(
-                QtCore.QModelIndex(),
-                row_idx,
-                row_idx + count - 1,
-                QtCore.QModelIndex(),
-                new_row_idx,
-            )
+        for idx, count in make_ranges(item.index for item in event.items):
+            self.rowsRemoved.emit(QtCore.QModelIndex(), idx, idx + count - 1)

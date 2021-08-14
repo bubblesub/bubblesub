@@ -55,6 +55,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         super().__init__(parent, **kwargs)
         self._connect_ui_signals()
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
+        self.highlighter: T.Optional[QtGui.QSyntaxHighlighter]
 
     @property
     def vim_mode_enabled(self) -> bool:

@@ -17,9 +17,9 @@
 import enum
 import typing as T
 
+from ass_parser import AssColor, AssStyle
 from PyQt5 import QtCore, QtGui
 
-from bubblesub.fmt.ass.style import AssColor, AssStyle
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 
 

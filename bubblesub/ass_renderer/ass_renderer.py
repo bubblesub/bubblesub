@@ -23,11 +23,9 @@ import typing as T
 
 import numpy as np
 import PIL.Image
+from ass_parser import AssEventList, AssScriptInfo, AssStyleList
 
 from bubblesub.ass_renderer import libass
-from bubblesub.fmt.ass.event import AssEventList
-from bubblesub.fmt.ass.meta import AssMeta
-from bubblesub.fmt.ass.style import AssStyleList
 
 
 class AssRenderer:
@@ -41,40 +39,40 @@ class AssRenderer:
         self._track: T.Optional[libass.AssTrack] = None
         self.style_list: T.Optional[AssStyleList] = None
         self.event_list: T.Optional[AssEventList] = None
-        self.meta: T.Optional[AssMeta] = None
+        self.script_info: T.Optional[AssScriptInfo] = None
         self.video_resolution: T.Optional[T.Tuple[int, int]] = None
 
     def set_source(
         self,
         style_list: AssStyleList,
         event_list: AssEventList,
-        meta: AssMeta,
+        script_info: AssScriptInfo,
         video_resolution: T.Tuple[int, int],
     ) -> None:
         """Set source ASS data.
 
         :param style_list: list of ASS styles
         :param event_list: list of ASS events
-        :param meta: ASS metadata
+        :param script_info: ASS script info
         :param video_resolution: (width, height) tuple
         """
         self.style_list = style_list
         self.event_list = event_list
-        self.meta = meta
+        self.script_info = script_info
         self.video_resolution = video_resolution
 
         self._track = self._ctx.make_track()
         self._track.populate(style_list, event_list)
 
         self._track.play_res_x = int(
-            meta.get("PlayResX") or video_resolution[0]
+            script_info.get("PlayResX") or video_resolution[0]
         )
         self._track.play_res_y = int(
-            meta.get("PlayResY") or video_resolution[1]
+            script_info.get("PlayResY") or video_resolution[1]
         )
-        self._track.wrap_style = int(meta.get("WrapStyle") or 1)
+        self._track.wrap_style = int(script_info.get("WrapStyle") or 1)
         self._track.scaled_border_and_shadow = (
-            meta.get("ScaledBorderAndShadow", "yes") == "yes"
+            script_info.get("ScaledBorderAndShadow", "yes") == "yes"
         )
 
         self._renderer.storage_size = (
