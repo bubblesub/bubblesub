@@ -23,7 +23,7 @@ import pytest
 TIMEOUT = 4
 
 
-@pytest.mark.ci
+@pytest.mark.gui
 def test_run() -> None:
     """Test if bubblesub is able to run.
 

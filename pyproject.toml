@@ -72,3 +72,8 @@ extension-pkg-whitelist = [
 
 [tool.pylint.miscellaneous]
 notes = ["FIXME", "TODO"]
+
+[tool.pytest.ini_options]
+markers = [
+    "gui: tests that need qt (deselect with '-m \"not gui\"')",
+]
