@@ -201,19 +201,19 @@ class SubtitlesGrid(QTableView):
             return
         header = self.horizontalHeader()
         header.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
-        for col_idx in {AssEventsModelColumn.TEXT, AssEventsModelColumn.NOTE}:
+        for col_idx in [AssEventsModelColumn.TEXT, AssEventsModelColumn.NOTE]:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
                 col_idx, QHeaderView.Stretch
             )
-        for col_idx in {
+        for col_idx in [
             AssEventsModelColumn.LONG_DURATION,
             AssEventsModelColumn.LAYER,
             AssEventsModelColumn.MARGIN_VERTICAL,
             AssEventsModelColumn.MARGIN_LEFT,
             AssEventsModelColumn.MARGIN_RIGHT,
             AssEventsModelColumn.IS_COMMENT,
-        }:
+        ]:
             self.setColumnHidden(col_idx, True)
         for column in AssEventsModelColumn:
             action = QAction(self)
@@ -264,14 +264,11 @@ class SubtitlesGrid(QTableView):
         return list(rows)
 
     def _on_subs_load(self) -> None:
-        try:
-            self.setModel(AssEventsModel(self._api, self._theme_mgr, self))
-            self.setSelectionBehavior(QAbstractItemView.SelectRows)
-            self.selectionModel().selectionChanged.connect(
-                self._sync_grid_selection_to_api
-            )
-        except Exception as ex:
-            print(ex)
+        self.setModel(AssEventsModel(self._api, self._theme_mgr, self))
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.selectionModel().selectionChanged.connect(
+            self._sync_grid_selection_to_api
+        )
         self.scrollTo(
             self.model().index(0, 0),
             self.ScrollHint(

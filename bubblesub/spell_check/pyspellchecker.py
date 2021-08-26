@@ -35,8 +35,8 @@ class PySpellCheckerSpellChecker(BaseSpellChecker):
         self._ignored: set[str] = set()
         try:
             self._dict = spellchecker.SpellChecker(language=language)
-        except ValueError:
-            raise DictNotFound(language)
+        except ValueError as ex:
+            raise DictNotFound(language) from ex
 
     def add(self, word: str) -> None:
         """Add a word globally.

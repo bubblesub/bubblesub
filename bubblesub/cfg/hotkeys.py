@@ -101,7 +101,9 @@ class HotkeysConfig(SubConfig):
                 try:
                     self._loads(user_path.read_text())
                 except ConfigError as ex:
-                    raise ConfigError(f"error loading {user_path}: {ex}")
+                    raise ConfigError(
+                        f"error loading {user_path}: {ex}"
+                    ) from ex
 
     def _loads(self, text: str) -> None:
         cur_context = HotkeyContext.GLOBAL
@@ -114,16 +116,18 @@ class HotkeysConfig(SubConfig):
             if match:
                 try:
                     cur_context = HotkeyContext(match.group(1))
-                except ValueError:
+                except ValueError as ex:
                     raise ConfigError(
                         f'"{match.group(1)}" is not a valid hotkey context'
-                    )
+                    ) from ex
                 continue
 
             try:
                 shortcut, cmdline = re.split(r"\s+", line, maxsplit=1)
-            except ValueError:
-                raise ConfigError(f"syntax error near line #{i} ({line})")
+            except ValueError as ex:
+                raise ConfigError(
+                    f"syntax error near line #{i} ({line})"
+                ) from ex
             self._hotkeys.append(
                 Hotkey(context=cur_context, shortcut=shortcut, cmdline=cmdline)
             )

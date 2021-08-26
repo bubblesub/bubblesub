@@ -56,7 +56,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 try:
                     syllables = list(self._get_syllables(sub.text))
                 except ass_tag_parser.ParseError as ex:
-                    raise CommandError(str(ex))
+                    raise CommandError(str(ex)) from ex
 
                 idx = sub.index
                 del self.api.subs.events[idx]

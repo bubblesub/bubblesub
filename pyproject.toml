@@ -6,3 +6,69 @@ known_third_party = ["PIL", "PyQt5", "ass_tag_parser", "docstring_parser", "ench
 known_library = ["dataclasses"]
 profile = "black"
 line_length = 79
+
+[tool.pylint.master]
+jobs = 0
+
+[tool.pylint.basic]
+good-names = [
+    "ex","_","w","h","i","j","x","y","x1","x2","y1","y2",
+    "classproperty",
+    "headerData",
+    "columnCount",
+    "rowCount",
+    "keyPressEvent",
+    "inputMethodEvent",
+    "focusInEvent",
+    "mousePressEvent",
+    "mouseMoveEvent",
+    "mouseReleaseEvent",
+    "resizeEvent",
+    "paintEvent",
+    "wheelEvent",
+    "changeEvent",
+    "closeEvent",
+    "highlightBlock",
+    "keyboardSearch",
+    "setData",
+    "initializeGL",
+    "paintGL",
+    "sizeHint",
+    "showMessage",
+    "eventFilter"
+]
+
+[tool.pylint.format]
+max-line-length = 79
+
+[tool.pylint.messages_control]
+reports = false
+disable = [
+    "import-error",
+    "missing-docstring",
+    "unused-argument",
+    "duplicate-code",
+    "too-many-return-statements",
+    "too-many-arguments",
+    "too-many-locals",
+    "too-many-instance-attributes",
+    "too-many-public-methods",
+    "too-few-public-methods",
+    "no-self-use",
+]
+
+[tool.pylint.typecheck]
+ignored-modules = [
+    "PyQt5.QtGui",
+    "PyQt5.QtCore",
+    "PyQt5.QtWidgets",
+    "numpy",
+]
+
+extension-pkg-whitelist = [
+    "mpv",
+    "PyQt5.QtOpenGL"
+]
+
+[tool.pylint.miscellaneous]
+notes = ["FIXME", "TODO"]

@@ -150,7 +150,9 @@ class MenuConfig(SubConfig):
                 try:
                     self._loads(user_path.read_text())
                 except ConfigError as ex:
-                    raise ConfigError(f"error loading {user_path}: {ex}")
+                    raise ConfigError(
+                        f"error loading {user_path}: {ex}"
+                    ) from ex
 
     def _loads(self, text: str) -> None:
         sections: dict[MenuContext, str] = {}
@@ -165,10 +167,10 @@ class MenuConfig(SubConfig):
             if match:
                 try:
                     cur_context = MenuContext(match.group(1))
-                except ValueError:
+                except ValueError as ex:
                     raise ConfigError(
                         f'"{match.group(1)}" is not a valid menu context'
-                    )
+                    ) from ex
                 continue
 
             if cur_context not in sections:

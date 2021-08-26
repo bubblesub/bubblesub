@@ -18,7 +18,7 @@ def main() -> None:
     base_theme_content = base_theme_path.read_text()
     needed_svg_files = re.findall(r"[^/]+\.svg", base_theme_content)
 
-    for theme in {"dark", "light"}:
+    for theme in ["dark", "light"]:
         variables_path = data_dir / f"palette-{theme}.scss"
 
         namespace = Namespace()

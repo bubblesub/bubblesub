@@ -77,6 +77,7 @@ class VideoBandWorker(QueueWorker):
 
     def _on_video_stream_unload(self, stream: VideoStream) -> None:
         with _CACHE_LOCK:
+            # pylint: disable=fixme
             # TODO: this also clears queue for unrelated streams!
             self.clear_tasks()
             cache_name = self._get_cache_name(stream)
@@ -176,7 +177,7 @@ class VideoPreview(BaseLocalAudioWidget):
             self._pixels.data,
             self._pixels.shape[1],
             self._pixels.shape[0],
-            self._pixels.strides[0],
+            self._pixels.strides[0],  # pylint: disable=unsubscriptable-object
             QImage.Format_RGB888,
         )
         painter.save()

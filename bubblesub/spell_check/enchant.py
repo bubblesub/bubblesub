@@ -36,8 +36,8 @@ class EnchantSpellChecker(BaseSpellChecker):
         super().__init__(language)
         try:
             self._dict = enchant.Dict(language)
-        except enchant.errors.DictNotFoundError:
-            raise DictNotFound(language)
+        except enchant.errors.DictNotFoundError as ex:
+            raise DictNotFound(language) from ex
 
     def add(self, word: str) -> None:
         """Add a word globally.

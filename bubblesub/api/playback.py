@@ -18,7 +18,7 @@
 
 import enum
 from fractions import Fraction
-from typing import Optional, Union
+from typing import Optional
 
 from PyQt5.QtCore import QObject, Qt, pyqtSignal
 
@@ -138,10 +138,8 @@ class PlaybackApi(QObject):
 
         :param value: new playback rate
         """
-        if value < MIN_PLAYBACK_SPEED:
-            value = MIN_PLAYBACK_SPEED
-        if value > MAX_PLAYBACK_SPEED:
-            value = MAX_PLAYBACK_SPEED
+        value = max(value, MIN_PLAYBACK_SPEED)
+        value = min(value, MAX_PLAYBACK_SPEED)
         if value != self._playback_speed:
             self._playback_speed = value
             self.playback_speed_changed.emit()
@@ -160,10 +158,8 @@ class PlaybackApi(QObject):
 
         :param value: new volume
         """
-        if value < MIN_VOLUME:
-            value = MIN_VOLUME
-        if value > MAX_VOLUME:
-            value = MAX_VOLUME
+        value = max(value, MIN_VOLUME)
+        value = min(value, MAX_VOLUME)
         if value != self._volume:
             self._volume = value
             self.volume_changed.emit()

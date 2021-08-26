@@ -179,8 +179,10 @@ class SubtitlesPasteIntoCommand(BaseCommand):
                         times.append(
                             (str_to_ms(start.strip()), str_to_ms(end.strip()))
                         )
-                    except ValueError:
-                        raise ValueError(f"invalid time format: {line}")
+                    except ValueError as ex:
+                        raise ValueError(
+                            f"invalid time format: {line}"
+                        ) from ex
 
                 for time, sub in zip(times, subs):
                     sub.start = time[0]

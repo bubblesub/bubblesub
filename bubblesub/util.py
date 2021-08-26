@@ -32,10 +32,7 @@ def ms_to_times(milliseconds: int) -> tuple[int, int, int, int]:
     :param milliseconds: PTS
     :return: tuple with hours, minutes, seconds and milliseconds
     """
-    if milliseconds < 0:
-        milliseconds = 0
-
-    milliseconds = int(round(milliseconds))
+    milliseconds = int(round(max(milliseconds, 0)))
     hours, milliseconds = divmod(milliseconds, 3_600_000)
     minutes, milliseconds = divmod(milliseconds, 60000)
     seconds, milliseconds = divmod(milliseconds, 1000)

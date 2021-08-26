@@ -154,6 +154,7 @@ class Editor(QWidget):
     def __init__(
         self, api: Api, theme_mgr: ThemeManager, parent: QWidget
     ) -> None:
+        # pylint: disable=too-many-statements
         super().__init__(parent)
         self._api = api
         self._theme_mgr = theme_mgr

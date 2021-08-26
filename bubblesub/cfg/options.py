@@ -61,7 +61,9 @@ class OptionsConfig(SubConfig):
                 try:
                     self._loads(user_path.read_text())
                 except ConfigError as ex:
-                    raise ConfigError(f"error loading {user_path}: {ex}")
+                    raise ConfigError(
+                        f"error loading {user_path}: {ex}"
+                    ) from ex
         self.changed.emit()
 
     def save(self, root_dir: Path) -> None:

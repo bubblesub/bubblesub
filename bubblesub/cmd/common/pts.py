@@ -152,8 +152,8 @@ class _Token(enum.IntEnum):
         mapping = {_Token.PREVIOUS: -1, _Token.CURRENT: 0, _Token.NEXT: 1}
         try:
             return mapping[token]
-        except LookupError:
-            raise NotImplementedError(f'unknown direction: "{token}"')
+        except LookupError as ex:
+            raise NotImplementedError(f'unknown direction: "{token}"') from ex
 
 
 class _TimeUnit(enum.IntEnum):
@@ -307,8 +307,8 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         time1, operator, time2 = _flatten(visited)
         try:
             func = {"+": _Time.add, "-": _Time.sub}[operator]
-        except LookupError:
-            raise NotImplementedError(f"unknown operator: {operator}")
+        except LookupError as ex:
+            raise NotImplementedError(f"unknown operator: {operator}") from ex
         return func(time1, time2, self._api)
 
     async def visit_line(self, node: Any, visited: list[Any]) -> Any:
@@ -331,8 +331,8 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
                 "f": _Token.FIRST,
                 "l": _Token.LAST,
             }[node.text]
-        except LookupError:
-            raise NotImplementedError(f"unknown relation: {node.text}")
+        except LookupError as ex:
+            raise NotImplementedError(f"unknown relation: {node.text}") from ex
 
     async def visit_start(self, node: Any, visited: list[Any]) -> Any:
         return _Token.START
@@ -489,4 +489,4 @@ class Pts:
             node_visitor = _PtsNodeVisitor(self._api, origin)
             return await node_visitor.parse(self.expr.strip())
         except parsimonious.exceptions.ParseError as ex:
-            raise CommandError(f"syntax error near {ex.pos}: {ex}")
+            raise CommandError(f"syntax error near {ex.pos}: {ex}") from ex

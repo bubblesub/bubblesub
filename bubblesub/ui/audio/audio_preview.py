@@ -120,8 +120,7 @@ class SpectrumWorker(QueueWorker):
             first_sample -= (
                 video_stream.timecodes[0] * audio_stream.sample_rate // 1000
             )
-        if first_sample < 0:
-            first_sample = 0
+        first_sample = max(first_sample, 0)
 
         samples = audio_stream.get_samples(first_sample, sample_count)
         samples = np.mean(samples, axis=1)
@@ -456,7 +455,7 @@ class AudioPreview(BaseLocalAudioWidget):
             self._pixels.data,
             self._pixels.shape[1],
             self._pixels.shape[0],
-            self._pixels.strides[0],
+            self._pixels.strides[0],  # pylint: disable=unsubscriptable-object
             QImage.Format_Indexed8,
         )
         image.setColorTable(self._color_table)
