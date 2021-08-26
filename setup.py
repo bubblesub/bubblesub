@@ -29,6 +29,7 @@ install_packages = [
     "regex",
     "pyqtcolordialog",
     "python-mpv",
+    "ass-parser",
     "ass_tag_parser",
     "Pillow",
     "pyyaml",
