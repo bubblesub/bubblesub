@@ -370,7 +370,8 @@ class _StyleList(QWidget):
         idx = style.index
 
         with self._api.undo.capture():
-            self._api.subs.styles.move(idx, 1, idx - 1)
+            self._api.subs.styles[idx : idx + 1] = []
+            self._api.subs.styles[idx - 1 : idx - 1] = [style]
         self._styles_list_view.selectionModel().select(
             self._model.index(idx - 1, 0),
             QItemSelectionModel.SelectionFlag(
@@ -385,7 +386,8 @@ class _StyleList(QWidget):
         idx = style.index
 
         with self._api.undo.capture():
-            self._api.subs.styles.move(idx, 1, idx + 1)
+            self._api.subs.styles[idx : idx + 1] = []
+            self._api.subs.styles[idx + 1 : idx + 1] = [style]
         self._styles_list_view.selectionModel().select(
             self._model.index(idx + 1, 0),
             QItemSelectionModel.SelectionFlag(
