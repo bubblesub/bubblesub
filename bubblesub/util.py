@@ -17,11 +17,11 @@
 """Miscellaneous functions and classes for general purpose usage."""
 
 import ast
-import fractions
 import itertools
 import operator
 import re
 from collections.abc import Iterable
+from fractions import Fraction
 from pathlib import Path
 from typing import Any, Union
 
@@ -84,7 +84,7 @@ def str_to_ms(text: str) -> int:
     raise ValueError(f'invalid time format: "{text}"')
 
 
-def eval_expr(expr: str) -> Union[int, float, fractions.Fraction]:
+def eval_expr(expr: str) -> Union[int, float, Fraction]:
     """Evaluate simple expression.
 
     :param expr: expression to evaluate
@@ -101,9 +101,9 @@ def eval_expr(expr: str) -> Union[int, float, fractions.Fraction]:
         ast.USub: operator.neg,
     }
 
-    def _eval(node: ast.expr) -> Union[int, float, fractions.Fraction]:
+    def _eval(node: ast.expr) -> Union[int, float, Fraction]:
         if isinstance(node, ast.Num):
-            return fractions.Fraction(node.n)
+            return Fraction(node.n)
         if isinstance(node, ast.BinOp):
             return op_map[type(node.op)](_eval(node.left), _eval(node.right))
         if isinstance(node, ast.UnaryOp):

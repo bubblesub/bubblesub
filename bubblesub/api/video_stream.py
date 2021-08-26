@@ -18,10 +18,10 @@
 
 import asyncio
 import bisect
-import fractions
 import threading
 import time
 import uuid
+from fractions import Fraction
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -97,8 +97,8 @@ class VideoStream(QtCore.QObject):
         self._path = path
         self._timecodes: list[int] = []
         self._keyframes: list[int] = []
-        self._frame_rate = fractions.Fraction(0, 1)
-        self._aspect_ratio = fractions.Fraction(1, 1)
+        self._frame_rate = Fraction(0, 1)
+        self._aspect_ratio = Fraction(1, 1)
         self._width = 0
         self._height = 0
 
@@ -245,7 +245,7 @@ class VideoStream(QtCore.QObject):
         return ret
 
     @property
-    def frame_rate(self) -> fractions.Fraction:
+    def frame_rate(self) -> Fraction:
         """Return the frame rate.
 
         :return: video frame rate
@@ -269,7 +269,7 @@ class VideoStream(QtCore.QObject):
         return self._height
 
     @property
-    def aspect_ratio(self) -> fractions.Fraction:
+    def aspect_ratio(self) -> Fraction:
         """Return the frame aspect ratio.
 
         :return: video frame aspect ratio
@@ -383,13 +383,13 @@ class VideoStream(QtCore.QObject):
             self._timecodes.sort()
             self._keyframes.sort()
 
-            self._frame_rate = fractions.Fraction(
+            self._frame_rate = Fraction(
                 self._source.properties.FPSNumerator,
                 self._source.properties.FPSDenominator,
             )
 
             self._aspect_ratio = (
-                fractions.Fraction(
+                Fraction(
                     self._source.properties.SARNum,
                     self._source.properties.SARDen,
                 )
@@ -397,7 +397,7 @@ class VideoStream(QtCore.QObject):
                     self._source.properties.SARNum
                     and self._source.properties.SARDen
                 )
-                else fractions.Fraction(1, 1)
+                else Fraction(1, 1)
             )
 
             frame = source.get_frame(0)

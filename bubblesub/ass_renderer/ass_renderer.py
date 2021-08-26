@@ -18,7 +18,7 @@
 """Module for drawing ASS structures to numpy bitmaps."""
 
 import ctypes
-import fractions
+from fractions import Fraction
 from typing import Optional, Union
 
 import numpy as np
@@ -83,7 +83,7 @@ class AssRenderer:
         self._renderer.pixel_aspect = 1.0
 
     def render(
-        self, time: int, aspect_ratio: Union[float, fractions.Fraction]
+        self, time: int, aspect_ratio: Union[float, Fraction]
     ) -> PIL.Image:
         """Render the ASS data to a PIL.Image bitmap.
 

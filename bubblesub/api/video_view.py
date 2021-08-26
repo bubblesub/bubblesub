@@ -16,7 +16,7 @@
 
 """API for video viewport."""
 
-import fractions
+from fractions import Fraction
 from typing import Union
 
 from PyQt5 import QtCore
@@ -37,15 +37,15 @@ class VideoViewApi(QtCore.QObject):
         """
         super().__init__()
 
-        self._zoom = fractions.Fraction(0, 1)
-        self._pan = (fractions.Fraction(0, 1), fractions.Fraction(0, 1))
+        self._zoom = Fraction(0, 1)
+        self._pan = (Fraction(0, 1), Fraction(0, 1))
 
         subs_api.loaded.connect(self.reset_view)
 
         self.reset_view()
 
     @property
-    def zoom(self) -> fractions.Fraction:
+    def zoom(self) -> Fraction:
         """Return zoom factor.
 
         :return: zoom factor
@@ -53,19 +53,19 @@ class VideoViewApi(QtCore.QObject):
         return self._zoom
 
     @zoom.setter
-    def zoom(self, value: Union[fractions.Fraction, int, float]) -> None:
+    def zoom(self, value: Union[Fraction, int, float]) -> None:
         """Set new zoom factor.
 
         :param value: new zoom factor
         """
-        if not isinstance(value, fractions.Fraction):
-            value = fractions.Fraction(value)
+        if not isinstance(value, Fraction):
+            value = Fraction(value)
         if value != self._zoom:
             self._zoom = value
             self.zoom_changed.emit()
 
     @property
-    def pan(self) -> tuple[fractions.Fraction, fractions.Fraction]:
+    def pan(self) -> tuple[Fraction, Fraction]:
         """Return pan.
 
         :return: pan
@@ -73,9 +73,7 @@ class VideoViewApi(QtCore.QObject):
         return self._pan
 
     @pan.setter
-    def pan(
-        self, value: tuple[fractions.Fraction, fractions.Fraction]
-    ) -> None:
+    def pan(self, value: tuple[Fraction, Fraction]) -> None:
         """Set new pan.
 
         :param value: new pan
@@ -85,7 +83,7 @@ class VideoViewApi(QtCore.QObject):
             self.pan_changed.emit()
 
     @property
-    def pan_x(self) -> fractions.Fraction:
+    def pan_x(self) -> Fraction:
         """Return x pan position.
 
         :return: x pan position
@@ -93,7 +91,7 @@ class VideoViewApi(QtCore.QObject):
         return self._pan[0]
 
     @pan_x.setter
-    def pan_x(self, value: fractions.Fraction) -> None:
+    def pan_x(self, value: Fraction) -> None:
         """Set new x pan position.
 
         :param value: new x pan position
@@ -101,7 +99,7 @@ class VideoViewApi(QtCore.QObject):
         self.pan = (value, self.pan[1])
 
     @property
-    def pan_y(self) -> fractions.Fraction:
+    def pan_y(self) -> Fraction:
         """Return y pan position.
 
         :return: y pan position
@@ -109,7 +107,7 @@ class VideoViewApi(QtCore.QObject):
         return self._pan[1]
 
     @pan_y.setter
-    def pan_y(self, value: fractions.Fraction) -> None:
+    def pan_y(self, value: Fraction) -> None:
         """Set new y pan position.
 
         :param value: new y pan position
@@ -118,5 +116,5 @@ class VideoViewApi(QtCore.QObject):
 
     def reset_view(self) -> None:
         """Resets the view to the defaults."""
-        self.zoom = fractions.Fraction(0, 1)
-        self.pan = (fractions.Fraction(0, 1), fractions.Fraction(0, 1))
+        self.zoom = Fraction(0, 1)
+        self.pan = (Fraction(0, 1), Fraction(0, 1))

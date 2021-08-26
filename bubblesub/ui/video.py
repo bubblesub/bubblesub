@@ -15,9 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
-import fractions
 import re
 from collections.abc import Callable
+from fractions import Fraction
 from math import floor
 from typing import Any, Optional
 
@@ -261,7 +261,7 @@ class ZoomVideoMouseHandler(VideoMouseHandler):
         )
 
     def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
-        self._api.video.view.zoom = fractions.Fraction(0, 1)
+        self._api.video.view.zoom = Fraction(0, 1)
 
 
 class PanVideoMouseHandler(VideoMouseHandler):
@@ -289,8 +289,8 @@ class PanVideoMouseHandler(VideoMouseHandler):
 
     def on_middle_click(self, event: QtGui.QMouseEvent) -> None:
         self._api.video.view.pan = (
-            fractions.Fraction(0, 1),
-            fractions.Fraction(0, 1),
+            Fraction(0, 1),
+            Fraction(0, 1),
         )
 
 
@@ -603,10 +603,10 @@ class VideoModeButtons(QtWidgets.QToolBar):
             self._btn_group.setExclusive(True)
 
     def _on_reset_btn_click(self) -> None:
-        self._api.video.view.zoom = fractions.Fraction(0, 1)
+        self._api.video.view.zoom = Fraction(0, 1)
         self._api.video.view.pan = (
-            fractions.Fraction(0, 1),
-            fractions.Fraction(0, 1),
+            Fraction(0, 1),
+            Fraction(0, 1),
         )
 
 

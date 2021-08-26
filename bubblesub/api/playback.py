@@ -17,7 +17,7 @@
 """Playback API. Exposes functions to interact with audio/video player."""
 
 import enum
-import fractions
+from fractions import Fraction
 from typing import Optional, Union
 
 from PyQt5 import QtCore
@@ -27,10 +27,10 @@ from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.video import VideoApi
 
-MIN_PLAYBACK_SPEED = fractions.Fraction(0.1)
-MAX_PLAYBACK_SPEED = fractions.Fraction(10)
-MIN_VOLUME = fractions.Fraction(0)
-MAX_VOLUME = fractions.Fraction(200)
+MIN_PLAYBACK_SPEED = Fraction(0.1)
+MAX_PLAYBACK_SPEED = Fraction(10)
+MIN_VOLUME = Fraction(0)
+MAX_VOLUME = Fraction(200)
 
 
 class PlaybackFrontendState(enum.Enum):
@@ -77,8 +77,8 @@ class PlaybackApi(QtCore.QObject):
         self._audio_api = audio_api
 
         self._state = PlaybackFrontendState.NOT_READY
-        self._playback_speed = fractions.Fraction(1.0)
-        self._volume = fractions.Fraction(100.0)
+        self._playback_speed = Fraction(1.0)
+        self._volume = Fraction(100.0)
         self._is_muted = False
         self._is_paused = True
         self._current_pts = 0
@@ -125,7 +125,7 @@ class PlaybackApi(QtCore.QObject):
             self.state_changed.emit(self.state)
 
     @property
-    def playback_speed(self) -> fractions.Fraction:
+    def playback_speed(self) -> Fraction:
         """Return playback rate for the currently loaded video.
 
         :return: playback rate for the currently loaded video, 1.0 if no video
@@ -133,15 +133,13 @@ class PlaybackApi(QtCore.QObject):
         return self._playback_speed
 
     @playback_speed.setter
-    def playback_speed(
-        self, value: Union[fractions.Fraction, int, float]
-    ) -> None:
+    def playback_speed(self, value: Union[Fraction, int, float]) -> None:
         """Set new playback rate for the currently loaded video.
 
         :param value: new playback rate
         """
-        if not isinstance(value, fractions.Fraction):
-            value = fractions.Fraction(value)
+        if not isinstance(value, Fraction):
+            value = Fraction(value)
         if value < MIN_PLAYBACK_SPEED:
             value = MIN_PLAYBACK_SPEED
         if value > MAX_PLAYBACK_SPEED:
@@ -151,7 +149,7 @@ class PlaybackApi(QtCore.QObject):
             self.playback_speed_changed.emit()
 
     @property
-    def volume(self) -> fractions.Fraction:
+    def volume(self) -> Fraction:
         """Return volume for the currently loaded video.
 
         :return: volume for the currently loaded video, 100.0 if no video
@@ -159,13 +157,13 @@ class PlaybackApi(QtCore.QObject):
         return self._volume
 
     @volume.setter
-    def volume(self, value: Union[fractions.Fraction, int, float]) -> None:
+    def volume(self, value: Union[Fraction, int, float]) -> None:
         """Set new volume for the currently loaded video.
 
         :param value: new volume
         """
-        if not isinstance(value, fractions.Fraction):
-            value = fractions.Fraction(value)
+        if not isinstance(value, Fraction):
+            value = Fraction(value)
         if value < MIN_VOLUME:
             value = MIN_VOLUME
         if value > MAX_VOLUME:
