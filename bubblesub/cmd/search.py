@@ -161,7 +161,7 @@ class _ActorSearchModeHandler(_SearchModeHandler):
 
 class _StyleSearchModeHandler(_SearchModeHandler):
     def get_subject_text(self, sub: AssEvent) -> str:
-        return sub.style
+        return sub.style_name
 
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.style = value
