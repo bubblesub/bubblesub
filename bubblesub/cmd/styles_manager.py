@@ -298,11 +298,13 @@ class _StyleList(QWidget):
         style = AssStyle(name=style_name)
         self._api.subs.styles.append(style)
         idx = style.index
-        assert idx is not None
 
         self._styles_list_view.selectionModel().select(
             self._model.index(idx, 0),
-            QItemSelectionModel.Clear | QItemSelectionModel.Select,
+            QItemSelectionModel.SelectionFlag(
+                QItemSelectionModel.SelectionFlag.Clear
+                | QItemSelectionModel.SelectionFlag.Select
+            ),
         )
 
     async def _prompt_for_unique_style_name(
@@ -334,14 +336,12 @@ class _StyleList(QWidget):
     async def _on_remove_button_click(self) -> None:
         style = self._selected_style
         assert style is not None
+        idx = style.index
 
         if not await show_prompt(
             f'Are you sure you want to remove style "{style.name}"?', self
         ):
             return
-
-        idx = self._api.subs.styles.index(style)
-        assert idx is not None
 
         self._styles_list_view.selectionModel().clear()
         with self._api.undo.capture():
@@ -350,9 +350,7 @@ class _StyleList(QWidget):
     def _on_duplicate_button_click(self, event: QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
-
-        idx = self._api.subs.styles.index(style)
-        assert idx is not None
+        idx = style.index
 
         style_copy = copy(style)
         style_copy.name += " (copy)"
@@ -360,44 +358,47 @@ class _StyleList(QWidget):
             self._api.subs.styles.insert(idx + 1, style_copy)
         self._styles_list_view.selectionModel().select(
             self._model.index(idx + 1, 0),
-            QItemSelectionModel.Clear | QItemSelectionModel.Select,
+            QItemSelectionModel.SelectionFlag(
+                QItemSelectionModel.SelectionFlag.Clear
+                | QItemSelectionModel.SelectionFlag.Select
+            ),
         )
 
     def _on_move_up_button_click(self, event: QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
-
-        idx = self._api.subs.styles.index(style)
-        assert idx is not None
+        idx = style.index
 
         with self._api.undo.capture():
             self._api.subs.styles.move(idx, 1, idx - 1)
         self._styles_list_view.selectionModel().select(
             self._model.index(idx - 1, 0),
-            QItemSelectionModel.Clear | QItemSelectionModel.Select,
+            QItemSelectionModel.SelectionFlag(
+                QItemSelectionModel.SelectionFlag.Clear
+                | QItemSelectionModel.SelectionFlag.Select
+            ),
         )
 
     def _on_move_down_button_click(self, event: QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
-
-        idx = self._api.subs.styles.index(style)
-        assert idx is not None
+        idx = style.index
 
         with self._api.undo.capture():
             self._api.subs.styles.move(idx, 1, idx + 1)
         self._styles_list_view.selectionModel().select(
             self._model.index(idx + 1, 0),
-            QItemSelectionModel.Clear | QItemSelectionModel.Select,
+            QItemSelectionModel.SelectionFlag(
+                QItemSelectionModel.SelectionFlag.Clear
+                | QItemSelectionModel.SelectionFlag.Select
+            ),
         )
 
     @async_slot()
     async def _on_rename_button_click(self) -> None:
         style = self._selected_style
         assert style is not None
-
-        idx = self._api.subs.styles.index(style)
-        assert idx is not None
+        idx = style.index
 
         old_name = style.name
         new_name = await self._prompt_for_unique_style_name(old_name)
@@ -411,7 +412,7 @@ class _StyleList(QWidget):
                     line.style_name = new_name
 
         self._styles_list_view.selectionModel().select(
-            self._model.index(idx, 0), QItemSelectionModel.Select
+            self._model.index(idx, 0), QItemSelectionModel.SelectionFlag.Select
         )
 
 

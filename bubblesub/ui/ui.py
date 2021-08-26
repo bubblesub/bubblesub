@@ -19,11 +19,11 @@ import asyncio
 import sys
 import traceback as tb
 import types
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import quamash
 from PyQt5.QtCore import Qt, QThread, pyqtRemoveInputHook
-from PyQt5.QtGui import QPaintEvent, QPixmap
+from PyQt5.QtGui import QColor, QGradient, QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from bubblesub.api import Api
@@ -38,19 +38,30 @@ class MySplashScreen(QSplashScreen):
         super().__init__(*args, **kwargs)
         self._painted = False
 
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setWindowFlags(
-            Qt.SplashScreen | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+            Qt.WindowType(
+                Qt.WindowType.SplashScreen
+                | Qt.WindowType.FramelessWindowHint
+                | Qt.WindowType.WindowStaysOnTopHint
+            )
         )
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
     def paintEvent(self, event: QPaintEvent) -> None:
         super().paintEvent(event)
         self._painted = True
 
-    def showMessage(self, text: str) -> None:
+    def showMessage(
+        self,
+        text: str,
+        alignment: int = Qt.AlignmentFlag.AlignLeft,
+        color: Union[QColor, Qt.GlobalColor, QGradient] = Qt.GlobalColor.black,
+    ) -> None:
         self._painted = False
-        super().showMessage(text, Qt.AlignBottom, Qt.white)
+        super().showMessage(
+            text, Qt.AlignmentFlag.AlignBottom, Qt.GlobalColor.white
+        )
         self._ensure_painted()
 
     def _ensure_painted(self) -> None:

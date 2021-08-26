@@ -18,32 +18,36 @@
 
 import threading
 import uuid
-from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
-from typing import Any, Generic, Optional, Protocol, TypeVar
+from typing import ClassVar, Generic, Optional, TypeVar
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtBoundSignal, pyqtSignal
 
 from bubblesub.api.threading import synchronized
 
 
-class TStream(Protocol):  # pylint: disable=no-member
-    """Base stream protocol."""
+class BaseStream:
+    """Base stream."""
 
     uid: uuid.UUID
-    loaded: pyqtSignal
-    changed: pyqtSignal
-    errored: pyqtSignal
-    path: Path
+    loaded: ClassVar[pyqtBoundSignal]
+    changed: ClassVar[pyqtBoundSignal]
+    errored: ClassVar[pyqtBoundSignal]
+
+    @property
+    def path(self) -> Path:
+        """Return stream source path.
+
+        :return: path
+        """
+        raise NotImplementedError("not implemented")
 
 
-_TStream = TypeVar("_TStream", bound="TStream")
-
-BaseStreamsApiTypeHint: Any = Generic[_TStream]
+TStream = TypeVar("TStream", bound="BaseStream")
 
 
-class BaseStreamsApi(QObject, BaseStreamsApiTypeHint):
+class BaseStreamsApi(Generic[TStream], QObject):
     """Common functions for audio and video stream manager APIs."""
 
     stream_lock = threading.RLock()
@@ -163,7 +167,7 @@ class BaseStreamsApi(QObject, BaseStreamsApiTypeHint):
 
     @property
     @synchronized(lock=stream_lock)
-    def streams(self) -> Iterable[TStream]:
+    def streams(self) -> list[TStream]:
         """Return all loaded streams.
 
         :return: list of streams

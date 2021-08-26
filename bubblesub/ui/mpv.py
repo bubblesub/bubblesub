@@ -45,7 +45,7 @@ from bubblesub.api.video_stream import VideoStream
 from bubblesub.util import ms_to_str
 
 
-def get_proc_addr(_, name):
+def get_proc_addr(_: Any, name: bytes) -> int:
     glctx = QGLContext.currentContext()
     if glctx is None:
         return None
@@ -75,7 +75,9 @@ class MpvWidget(QOpenGLWidget):
         self.on_update_fake_c = OpenGlCbUpdateFn(self.on_update_fake)
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
         _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_c, None)
-        self.frameSwapped.connect(self.swapped, Qt.DirectConnection)
+        self.frameSwapped.connect(
+            self.swapped, Qt.ConnectionType.DirectConnection
+        )
 
         for key, value in {
             # "config": False,
@@ -116,7 +118,7 @@ class MpvWidget(QOpenGLWidget):
         api.audio.stream_unloaded.connect(self._on_audio_state_change)
         api.audio.current_stream_switched.connect(self._on_audio_state_change)
         api.playback.request_seek.connect(
-            self._on_request_seek, Qt.DirectConnection
+            self._on_request_seek, Qt.ConnectionType.DirectConnection
         )
         api.playback.request_playback.connect(self._on_request_playback)
         api.playback.playback_speed_changed.connect(
@@ -136,10 +138,10 @@ class MpvWidget(QOpenGLWidget):
 
         self._timer.start()
 
-    def initializeGL(self):
+    def initializeGL(self) -> None:
         _mpv_opengl_cb_init_gl(self.mpv_gl, None, self.get_proc_addr_c, None)
 
-    def paintGL(self):
+    def paintGL(self) -> None:
         ratio = self.devicePixelRatioF()
         w = int(self.width() * ratio)
         h = int(self.height() * ratio)
@@ -148,7 +150,7 @@ class MpvWidget(QOpenGLWidget):
         )
 
     @pyqtSlot()
-    def maybe_update(self):
+    def maybe_update(self) -> None:
         if self._destroyed:
             return
         if self.window().isMinimized():
@@ -160,19 +162,19 @@ class MpvWidget(QOpenGLWidget):
         else:
             self.update()
 
-    def on_update(self, ctx=None):
+    def on_update(self, ctx: Any = None) -> None:
         # maybe_update method should run on the thread that creates the
         # OpenGLContext, which in general is the main thread.
         # QMetaObject.invokeMethod can do this trick.
         QMetaObject.invokeMethod(self, "maybe_update")
 
-    def on_update_fake(self, ctx=None):
+    def on_update_fake(self, ctx: Any = None) -> None:
         pass
 
-    def swapped(self):
+    def swapped(self) -> None:
         _mpv_opengl_cb_report_flip(self.mpv_gl, 0)
 
-    def closeEvent(self, _):
+    def closeEvent(self, _: Any) -> None:
         self.makeCurrent()
         if self.mpv_gl:
             _mpv_opengl_cb_set_update_callback(
@@ -202,10 +204,10 @@ class MpvWidget(QOpenGLWidget):
         self.mpv.pause = True
         self.mpv.loadfile("null://")
         external_files: set[str] = set()
-        for stream in self._api.video.streams:
-            external_files.add(str(stream.path))
-        for stream in self._api.audio.streams:
-            external_files.add(str(stream.path))
+        for video_stream in self._api.video.streams:
+            external_files.add(str(video_stream.path))
+        for audio_stream in self._api.audio.streams:
+            external_files.add(str(audio_stream.path))
         self.mpv.external_files = list(external_files)
         if not external_files:
             self._api.playback.state = PlaybackFrontendState.NOT_READY
@@ -304,21 +306,24 @@ class MpvWidget(QOpenGLWidget):
         vid: Optional[int] = None
         aid: Optional[int] = None
 
+        current_audio_stream = self._api.audio.current_stream
+        current_video_stream = self._api.video.current_stream
+
         for track in track_list:
             track_type = track["type"]
             track_path = track.get("external-filename")
 
             if (
                 track_type == "video"
-                and self._api.video.current_stream
-                and self._api.video.current_stream.path.samefile(track_path)
+                and current_video_stream
+                and current_video_stream.path.samefile(track_path)
             ):
                 vid = track["id"]
 
             if (
                 track_type == "audio"
-                and self._api.audio.current_stream
-                and self._api.audio.current_stream.path.samefile(track_path)
+                and current_audio_stream
+                and current_audio_stream.path.samefile(track_path)
             ):
                 aid = track["id"]
 
@@ -331,9 +336,7 @@ class MpvWidget(QOpenGLWidget):
             self._api.log.debug(f"playback: changing aid to {aid}")
 
         delay = (
-            self._api.audio.current_stream.delay
-            if self._api.audio.current_stream
-            else 0
+            current_audio_stream.delay if current_audio_stream else 0
         ) / 1000.0
         if self.mpv.audio_delay != delay:
             self.mpv.audio_delay = delay

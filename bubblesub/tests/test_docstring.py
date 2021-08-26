@@ -21,7 +21,7 @@ import contextlib
 import re
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import docstring_parser
 import pytest
@@ -39,7 +39,9 @@ IGNORED_ARGUMENTS = {
 
 
 def get_nodes() -> Iterable[
-    tuple[Path, Union[ast.FunctionDef, ast.ClassDef, ast.Module], str]
+    tuple[
+        Path, Union[ast.FunctionDef, ast.ClassDef, ast.Module], Optional[str]
+    ]
 ]:
     """List AST nodes and their docstrings.
 
@@ -183,9 +185,9 @@ def test_function_docstrings_validity(
     :param docstring: AST node docstring
     """
     with decorated_log(path, node):
-        docstring = docstring_parser.parse(docstring)
-        verify_function_params(node, docstring)
-        verify_function_returns(node, docstring)
+        parsed_docstring = docstring_parser.parse(docstring)
+        verify_function_params(node, parsed_docstring)
+        verify_function_returns(node, parsed_docstring)
 
 
 @pytest.mark.parametrize(

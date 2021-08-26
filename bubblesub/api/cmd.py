@@ -29,7 +29,7 @@ import traceback
 import types
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, NoReturn, Optional, Union
 
 from pluginbase import PluginBase
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -72,7 +72,7 @@ class BadInvocation(CommandError):
 class CommandArgumentParser(argparse.ArgumentParser):
     """Overloaded ArgumentParser, suitable for commands."""
 
-    def error(self, message: str) -> None:
+    def error(self, message: str) -> NoReturn:
         """Rather than exiting, raise an exception.
 
         :param message: error message about to be shown to the user

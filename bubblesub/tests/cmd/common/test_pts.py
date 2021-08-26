@@ -52,7 +52,7 @@ def _mock_subs_api(
         event.prev = events[i - 1] if i > 0 else None
         event.next = events[i + 1] if i + 1 < len(events) else None
 
-    def _mock_get(idx: int) -> Mock:
+    def _mock_get(idx: int) -> Optional[Mock]:
         try:
             return events[idx]
         except IndexError:

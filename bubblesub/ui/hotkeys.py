@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import functools
+from functools import partial
 from typing import Optional, Union
 
 from PyQt5.QtCore import Qt
@@ -47,7 +47,9 @@ class HotkeyManager:
 
     def _rebuild(self) -> None:
         for qt_shortcut, _cmds in self._cmd_map.values():
-            qt_shortcut.setParent(None)
+            qt_shortcut.setEnabled(False)
+        self._cmd_map.clear()
+
         for hotkey in self._api.cfg.hotkeys:
             self._set_hotkey(hotkey.context, hotkey.shortcut, hotkey.cmdline)
 
@@ -70,12 +72,9 @@ class HotkeyManager:
         shortcut = shortcut.lower()
 
         if cmdline is None:
-            result: Optional[
-                tuple[QShortcut, list[BaseCommand]],
-            ] = self._cmd_map.pop((widget, shortcut), None)
-            if result:
+            if result := self._cmd_map.pop((widget, shortcut), None):
                 qt_shortcut, _cmds = result
-                qt_shortcut.setParent(None)
+                qt_shortcut.setEnabled(False)
             return
 
         # parse cmdline here to report configuration errors early
@@ -95,13 +94,11 @@ class HotkeyManager:
                     for cmd in cmds:
                         self._api.cmd.run(cmd)
                     break
-                widget = widget.parent()
+                widget = widget.parentWidget()
 
         qt_shortcut = QShortcut(QKeySequence(shortcut), widget)
-        qt_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
+        qt_shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
         qt_shortcut.activatedAmbiguously.connect(qt_shortcut.activated.emit)
-        qt_shortcut.activated.connect(
-            functools.partial(_on_activate, shortcut)
-        )
+        qt_shortcut.activated.connect(partial(_on_activate, shortcut))
 
         self._cmd_map[widget, shortcut] = (qt_shortcut, cmds)

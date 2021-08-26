@@ -48,7 +48,7 @@ class VideoBandWorker(QueueWorker):
         self.signals = VideoBandWorkerSignals()
         self._video_api = video_api
 
-        self.cache: dict[uuid.UUID, np.array] = {}
+        self.cache: dict[uuid.UUID, np.ndarray] = {}
 
         video_api.stream_loaded.connect(self._on_video_stream_load)
 
@@ -107,7 +107,7 @@ class VideoPreview(BaseLocalAudioWidget):
         super().__init__(api, parent)
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
 
-        self._pixels: np.array = np.zeros([0, 0, 3], dtype=np.uint8)
+        self._pixels: np.ndarray = np.zeros([0, 0, 3], dtype=np.uint8)
 
         self._worker = VideoBandWorker(api.log, api.video)
         self._worker.signals.cache_updated.connect(self.repaint)
@@ -165,9 +165,7 @@ class VideoPreview(BaseLocalAudioWidget):
         max_pts = self.pts_from_x(self.width() - 1)
 
         pts_range = np.linspace(min_pts, max_pts, self.width())
-        frame_idx_range = self._api.video.current_stream.frame_idx_from_pts(
-            pts_range
-        )
+        frame_idx_range = current_stream.frame_idx_from_pts(pts_range)
 
         cache = self._worker.cache.get(current_stream.uid)
         if cache is not None:

@@ -58,9 +58,9 @@ class SubtitlesSortCommand(BaseCommand):
                 events = sorted(
                     events, key=lambda event: getattr(event, attr_name)
                 )
-                self.api.subs.events[idx : idx + count] = list(
-                    map(copy, events)
-                )
+                self.api.subs.events[idx : idx + count] = [
+                    copy(event) for event in events
+                ]
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

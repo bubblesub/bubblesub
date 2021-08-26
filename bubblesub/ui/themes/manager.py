@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import functools
 import re
 import weakref
+from functools import lru_cache
 from typing import Any
 
 from PyQt5.QtCore import QObject
@@ -67,8 +67,8 @@ class ThemeManager(QObject):
     def current_theme(self) -> BaseTheme:
         return self._theme
 
-    @functools.lru_cache(maxsize=None)
-    def get_color(self, color_name: str) -> None:
+    @lru_cache(maxsize=None)
+    def get_color(self, color_name: str) -> QColor:
         if color_name not in self._theme.palette:
             return QColor()
         color_name = self._theme.palette[color_name]

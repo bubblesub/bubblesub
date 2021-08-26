@@ -189,17 +189,17 @@ class _MetadataGroupBox(QGroupBox):
         )
 
         self._table_view.verticalHeader().setDefaultSectionSize(
-            self._table_view.fontMetrics().height() * 1.8
+            int(self._table_view.fontMetrics().height() * 1.8)
         )
 
         strip = QWidget(self)
         add_row_button = QPushButton("Add new row", strip)
         del_rows_button = QPushButton("Remove selected rows", strip)
-        layout = QHBoxLayout(strip)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(add_row_button)
-        layout.addWidget(del_rows_button)
-        layout.addStretch()
+        strip_layout = QHBoxLayout(strip)
+        strip_layout.setContentsMargins(0, 0, 0, 0)
+        strip_layout.addWidget(add_row_button)
+        strip_layout.addWidget(del_rows_button)
+        strip_layout.addStretch()
 
         add_row_button.clicked.connect(self._on_add_button_click)
         del_rows_button.clicked.connect(self._on_delete_rows_button_click)
@@ -239,7 +239,7 @@ class _FilePropertiesDialog(Dialog):
         self._metadata_group_box = _MetadataGroupBox(self)
 
         strip = QDialogButtonBox(self)
-        strip.setOrientation(Qt.Horizontal)
+        strip.setOrientation(Qt.Orientation.Horizontal)
         strip.addButton("OK", strip.AcceptRole)
         apply_button = strip.addButton("Apply", strip.ApplyRole)
         apply_button.clicked.connect(self._commit)
@@ -257,7 +257,7 @@ class _FilePropertiesDialog(Dialog):
         self.accepted.connect(self._commit)
 
         self._load()
-        self.setAttribute(Qt.WA_DeleteOnClose, False)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
         self.setWindowTitle("File properties")
         self.resize(600, 600)
 

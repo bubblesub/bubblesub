@@ -84,7 +84,7 @@ class PlaybackApi(QObject):
         self._current_pts = 0
 
         self.receive_current_pts_change.connect(
-            self._on_current_pts_change, Qt.DirectConnection
+            self._on_current_pts_change, Qt.ConnectionType.DirectConnection
         )
 
     def seek(self, pts: int, precise: bool = True) -> None:
@@ -133,13 +133,11 @@ class PlaybackApi(QObject):
         return self._playback_speed
 
     @playback_speed.setter
-    def playback_speed(self, value: Union[Fraction, int, float]) -> None:
+    def playback_speed(self, value: Fraction) -> None:
         """Set new playback rate for the currently loaded video.
 
         :param value: new playback rate
         """
-        if not isinstance(value, Fraction):
-            value = Fraction(value)
         if value < MIN_PLAYBACK_SPEED:
             value = MIN_PLAYBACK_SPEED
         if value > MAX_PLAYBACK_SPEED:
@@ -157,13 +155,11 @@ class PlaybackApi(QObject):
         return self._volume
 
     @volume.setter
-    def volume(self, value: Union[Fraction, int, float]) -> None:
+    def volume(self, value: Fraction) -> None:
         """Set new volume for the currently loaded video.
 
         :param value: new volume
         """
-        if not isinstance(value, Fraction):
-            value = Fraction(value)
         if value < MIN_VOLUME:
             value = MIN_VOLUME
         if value > MAX_VOLUME:

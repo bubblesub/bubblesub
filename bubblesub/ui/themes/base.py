@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import functools
+from functools import lru_cache
 from pathlib import Path
 
 from PyQt5.QtCore import QSize, Qt
@@ -30,7 +30,10 @@ class BaseTheme:
 
     def apply(self) -> None:
         QApplication.setStyle("fusion")
-        QApplication.instance().setStyleSheet(
+
+        app = QApplication.instance()
+        assert app
+        app.setStyleSheet(
             (ASSETS_DIR / f"{self.name}.qss")
             .read_text()
             .replace("$ASSETS_DIR", str(ASSETS_DIR))
@@ -40,12 +43,12 @@ class BaseTheme:
     def palette(self) -> dict[str, str]:
         raise NotImplementedError("not implemented")
 
-    @functools.lru_cache(maxsize=None)
+    @lru_cache(maxsize=None)
     def get_icon(self, name: str) -> QIcon:
         pixmap = QPixmap(str(self.get_icon_path(name))).scaled(
             QSize(48, 48),
-            Qt.KeepAspectRatio,
-            Qt.SmoothTransformation,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
         )
         return QIcon(pixmap)
 

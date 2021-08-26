@@ -50,3 +50,12 @@ def create_spell_checker(language: str) -> BaseSpellChecker:
         pass
 
     raise SpellCheckerNotFound
+
+
+__all__ = [
+    "BaseSpellChecker",
+    "DictNotFound",
+    "SpellCheckerError",
+    "SpellCheckerNotFound",
+    "create_spell_checker",
+]

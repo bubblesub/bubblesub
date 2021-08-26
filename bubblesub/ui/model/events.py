@@ -186,7 +186,7 @@ _COLUMNS: dict[AssEventsModelColumn, _Column] = {
 }
 
 
-class AssEventsModel(ObservableListTableAdapter):
+class AssEventsModel(ObservableListTableAdapter[AssEvent]):
     def __init__(
         self,
         api: Api,
@@ -200,36 +200,41 @@ class AssEventsModel(ObservableListTableAdapter):
         self._options = AssEventsModelOptions(**kwargs)
 
     def headerData(
-        self, idx: int, orientation: int, role: int = Qt.DisplayRole
+        self,
+        idx: int,
+        orientation: int,
+        role: int = Qt.ItemDataRole.DisplayRole,
     ) -> Any:
-        if orientation == Qt.Vertical:
-            if role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Vertical:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return idx + 1
-            if role == Qt.TextAlignmentRole:
-                return Qt.AlignRight
+            if role == Qt.ItemDataRole.TextAlignmentRole:
+                return Qt.AlignmentFlag.AlignRight
 
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Horizontal:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return _COLUMNS[AssEventsModelColumn(idx)].header
-            if role == Qt.TextAlignmentRole:
+            if role == Qt.ItemDataRole.TextAlignmentRole:
                 if idx in {
                     AssEventsModelColumn.TEXT,
                     AssEventsModelColumn.NOTE,
                 }:
-                    return Qt.AlignLeft | Qt.AlignVCenter
-                return Qt.AlignCenter
+                    return (
+                        Qt.AlignmentFlag.AlignLeft
+                        | Qt.AlignmentFlag.AlignVCenter
+                    )
+                return Qt.AlignmentFlag.AlignCenter
 
         return QVariant()
 
-    def flags(self, index: QModelIndex) -> int:
-        ret = Qt.ItemIsEnabled
-        ret |= Qt.ItemIsSelectable
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+        ret = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
         if (
             self._options.editable
             and _COLUMNS[AssEventsModelColumn(index.column())].editable
         ):
-            ret |= Qt.ItemIsEditable
-        return cast(int, ret)
+            ret |= Qt.ItemFlag.ItemIsEditable
+        return Qt.ItemFlags(cast(Qt.ItemFlag, ret))
 
     @property
     def _column_count(self) -> int:
@@ -238,25 +243,27 @@ class AssEventsModel(ObservableListTableAdapter):
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> Any:
         subtitle = self._list[row_idx]
 
-        if role == Qt.BackgroundRole:
+        if role == Qt.ItemDataRole.BackgroundRole:
             if subtitle.is_comment:
                 return self._theme_mgr.get_color("grid/comment")
             if col_idx == AssEventsModelColumn.CHARS_PER_SEC:
                 return self._get_background_cps(subtitle)
 
-        if role == Qt.TextAlignmentRole:
+        if role == Qt.ItemDataRole.TextAlignmentRole:
             if col_idx in {
                 AssEventsModelColumn.TEXT,
                 AssEventsModelColumn.NOTE,
             }:
-                return Qt.AlignLeft | Qt.AlignVCenter
-            return Qt.AlignCenter
+                return (
+                    Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+                )
+            return Qt.AlignmentFlag.AlignCenter
 
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             column = _COLUMNS[AssEventsModelColumn(col_idx)]
             return column.display(subtitle)
 
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             column = _COLUMNS[AssEventsModelColumn(col_idx)]
             return column.read(subtitle)
 

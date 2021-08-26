@@ -50,8 +50,8 @@ from bubblesub.ui.themes import ThemeManager
 from bubblesub.util import all_subclasses
 
 EPSILON = 1e-7
-LOCK_X_AXIS_MODIFIER = Qt.ShiftModifier
-LOCK_Y_AXIS_MODIFIER = Qt.ControlModifier
+LOCK_X_AXIS_MODIFIER = Qt.KeyboardModifier.ShiftModifier
+LOCK_Y_AXIS_MODIFIER = Qt.KeyboardModifier.ControlModifier
 PAN_X_MODIFIER = LOCK_Y_AXIS_MODIFIER
 PAN_Y_MODIFIER = LOCK_X_AXIS_MODIFIER
 
@@ -364,9 +364,9 @@ class SubRotationHandler(VideoMouseHandler):
                 )
 
     def _get_axis(self, event: QMouseEvent) -> str:
-        if event.modifiers() & Qt.ShiftModifier:
+        if event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
             return "y"
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             return "x"
         return "z"
 
@@ -447,28 +447,37 @@ class VideoMouseModeController(QObject):
             self._api.video.view.zoom += event.angleDelta().y() / 15 / 100
 
     def on_mouse_press(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.MiddleButton:
+        if event.button() == Qt.MouseButton.MiddleButton:
             if self.current_handler:
                 self.current_handler.on_middle_click(event)
             return
         self._dragging = event.button()
-        if event.button() == Qt.LeftButton and self.current_handler:
+        if (
+            event.button() == Qt.MouseButton.LeftButton
+            and self.current_handler
+        ):
             self.current_handler.on_drag_start(event)
             self.current_handler.on_drag_move(event)
-        if event.button() == Qt.RightButton:
+        if event.button() == Qt.MouseButton.RightButton:
             self._handlers[VideoInteractionMode.PAN].on_drag_start(event)
             self._handlers[VideoInteractionMode.PAN].on_drag_move(event)
 
     def on_mouse_move(self, event: QMouseEvent) -> None:
-        if self._dragging == Qt.LeftButton and self.current_handler:
+        if (
+            self._dragging == Qt.MouseButton.LeftButton
+            and self.current_handler
+        ):
             self.current_handler.on_drag_move(event)
-        if self._dragging == Qt.RightButton:
+        if self._dragging == Qt.MouseButton.RightButton:
             self._handlers[VideoInteractionMode.PAN].on_drag_move(event)
 
     def on_mouse_release(self, event: QMouseEvent) -> None:
-        if self._dragging == Qt.LeftButton and self.current_handler:
+        if (
+            self._dragging == Qt.MouseButton.LeftButton
+            and self.current_handler
+        ):
             self.current_handler.on_drag_release(event)
-        if self._dragging == Qt.RightButton:
+        if self._dragging == Qt.MouseButton.RightButton:
             self._handlers[VideoInteractionMode.PAN].on_drag_release(event)
         self._dragging = None
 
@@ -505,7 +514,11 @@ class VideoPreview(MpvWidget):
         super().resizeEvent(event)
 
     def _on_mode_change(self, mode: Optional[VideoInteractionMode]) -> None:
-        self.setCursor(Qt.ArrowCursor if mode is None else Qt.CrossCursor)
+        self.setCursor(
+            Qt.CursorShape.ArrowCursor
+            if mode is None
+            else Qt.CursorShape.CrossCursor
+        )
 
 
 class VideoModeButtons(QToolBar):
@@ -521,7 +534,7 @@ class VideoModeButtons(QToolBar):
         self._theme_mgr = theme_mgr
         self._controller = controller
 
-        self.setOrientation(Qt.Vertical)
+        self.setOrientation(Qt.Orientation.Vertical)
         self.setObjectName("video-controller")
 
         self._btn_group = QButtonGroup(self)
@@ -613,10 +626,7 @@ class VideoModeButtons(QToolBar):
 
     def _on_reset_btn_click(self) -> None:
         self._api.video.view.zoom = Fraction(0, 1)
-        self._api.video.view.pan = (
-            Fraction(0, 1),
-            Fraction(0, 1),
-        )
+        self._api.video.view.pan = (Fraction(0, 1), Fraction(0, 1))
 
 
 class VideoPlaybackButtons(QWidget):
@@ -686,7 +696,7 @@ class VideoPlaybackButtons(QWidget):
         self._on_video_pause_change()
 
     def _on_playback_speed_spinbox_change(self) -> None:
-        self._api.playback.playback_speed = (
+        self._api.playback.playback_speed = Fraction(
             self._playback_speed_spinbox.value()
         )
         self._on_video_playback_speed_change()
@@ -706,7 +716,7 @@ class VideoPlaybackButtons(QWidget):
     def _on_video_playback_speed_change(self) -> None:
         self._disconnect_ui_signals()
         self._playback_speed_spinbox.setValue(
-            self._api.playback.playback_speed
+            float(self._api.playback.playback_speed)
         )
         self._connect_ui_signals()
 
@@ -725,8 +735,8 @@ class VideoVolumeControl(QWidget):
         self._theme_mgr = theme_mgr
 
         self._volume_slider = QSlider(self)
-        self._volume_slider.setMinimum(float(MIN_VOLUME))
-        self._volume_slider.setMaximum(float(MAX_VOLUME))
+        self._volume_slider.setMinimum(int(MIN_VOLUME))
+        self._volume_slider.setMaximum(int(MAX_VOLUME))
         self._volume_slider.setToolTip("Volume")
 
         self._mute_btn = QPushButton(self)
@@ -737,7 +747,7 @@ class VideoVolumeControl(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._volume_slider)
         layout.addWidget(self._mute_btn)
-        layout.setAlignment(self._volume_slider, Qt.AlignHCenter)
+        layout.setAlignment(self._volume_slider, Qt.AlignmentFlag.AlignHCenter)
 
         self.setObjectName("video-volume")
         self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Minimum)
@@ -763,7 +773,7 @@ class VideoVolumeControl(QWidget):
         self._mute_btn.clicked.disconnect(self._on_mute_checkbox_click)
 
     def _on_volume_slider_value_change(self) -> None:
-        self._api.playback.volume = self._volume_slider.value()
+        self._api.playback.volume = Fraction(self._volume_slider.value())
 
     def _on_mute_checkbox_click(self) -> None:
         self._api.playback.is_muted = self._mute_btn.isChecked()

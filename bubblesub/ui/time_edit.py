@@ -34,14 +34,14 @@ class _TimeLineEdit(QLineEdit):
         """
         super().keyPressEvent(event)
 
-        if not event.key() in (Qt.Key_Up, Qt.Key_Down):
+        if not event.key() in (Qt.Key.Key_Up, Qt.Key.Key_Down):
             return
 
         value = self.parent().get_value()
         delta = 10
-        if event.key() == Qt.Key_Up:
+        if event.key() == Qt.Key.Key_Up:
             value += delta
-        elif event.key() == Qt.Key_Down:
+        elif event.key() == Qt.Key.Key_Down:
             value -= delta
 
         self.parent().set_value(value)

@@ -56,7 +56,7 @@ WAVE_FORMAT_PCM = 0x0001
 WAVE_FORMAT_IEEE_FLOAT = 0x0003
 
 
-def write_wav(handle: IO[bytes], rate: int, data: np.array) -> None:
+def write_wav(handle: IO[bytes], rate: int, data: np.ndarray) -> None:
     """Write a numpy array of samples as a single uncompressed WAV file.
 
     To write multiple-channels, use a 2-D array of shape (Nsamples, Nchannels).

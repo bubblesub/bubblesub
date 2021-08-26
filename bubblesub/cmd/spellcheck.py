@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Optional
+from typing import Optional, cast
 
-from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtCore import QModelIndex, Qt
 from PyQt5.QtGui import QStandardItem, QStandardItemModel, QTextCursor
 from PyQt5.QtWidgets import (
     QAbstractButton,
@@ -79,7 +79,7 @@ class _SpellCheckDialog(Dialog):
         box_layout.addWidget(self._suggestions_list_view)
 
         strip = QDialogButtonBox(self)
-        strip.setOrientation(Qt.Vertical)
+        strip.setOrientation(Qt.Orientation.Vertical)
         self.add_btn = strip.addButton("Add to dictionary", strip.ActionRole)
         self.ignore_btn = strip.addButton("Ignore", strip.ActionRole)
         self.ignore_all_btn = strip.addButton("Ignore all", strip.ActionRole)
@@ -108,7 +108,9 @@ class _SpellCheckDialog(Dialog):
 
     @property
     def text_edit(self) -> QWidget:
-        return self._main_window.findChild(QWidget, "text-editor")
+        return cast(
+            QWidget, self._main_window.findChild(QWidget, "text-editor")
+        )
 
     async def _replace(self) -> None:
         text = self.text_edit.toPlainText()
@@ -179,8 +181,8 @@ class _SpellCheckDialog(Dialog):
             item.setEditable(False)
             self._suggestions_list_view.model().appendRow(item)
 
-    def _on_suggestion_click(self, event: QEvent) -> None:
-        self._replacement_text_edit.setText(event.data())
+    def _on_suggestion_click(self, index: QModelIndex) -> None:
+        self._replacement_text_edit.setText(index.data())
 
 
 class SpellCheckCommand(BaseCommand):

@@ -66,25 +66,25 @@ class MainWindow(QMainWindow):
         self.editor_splitter = build_splitter(
             self,
             [(4, self.audio), (1, self.editor)],
-            orientation=Qt.Vertical,
+            orientation=Qt.Orientation.Vertical,
         )
 
         self.top_bar = build_splitter(
             self,
             [(1, self.video), (1, self.editor_splitter)],
-            orientation=Qt.Horizontal,
+            orientation=Qt.Orientation.Horizontal,
         )
 
         self.console_splitter = build_splitter(
             self,
             [(2, self.subs_grid), (1, self.console)],
-            orientation=Qt.Horizontal,
+            orientation=Qt.Orientation.Horizontal,
         )
 
         self.main_splitter = build_splitter(
             self,
             [(1, self.top_bar), (5, self.console_splitter)],
-            orientation=Qt.Vertical,
+            orientation=Qt.Orientation.Vertical,
         )
 
         self.video.layout().setContentsMargins(0, 0, 2, 0)
@@ -130,11 +130,14 @@ class MainWindow(QMainWindow):
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._setup_menu)
         api.cfg.opt.changed.connect(self._setup_menu)
-        QApplication.instance().installEventFilter(self)
+
+        app = QApplication.instance()
+        assert app
+        app.installEventFilter(self)
 
     def eventFilter(self, source: QObject, event: QEvent) -> bool:
         if (
-            event.type() == QEvent.WindowBlocked
+            event.type() == QEvent.Type.WindowBlocked
             and not self._api.playback.is_paused
         ):
             # pause video for modal dialogs

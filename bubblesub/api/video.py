@@ -18,16 +18,14 @@
 
 from pathlib import Path
 
-from bubblesub.api.base_streams_api import BaseStreamsApi, TStream
+from bubblesub.api.base_streams_api import BaseStreamsApi
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
 from bubblesub.api.video_stream import VideoStream
 
-VideoApiBaseClass = BaseStreamsApi[VideoStream]
 
-
-class VideoApi(VideoApiBaseClass):
+class VideoApi(BaseStreamsApi[VideoStream]):
     """Manages video streams."""
 
     def __init__(
@@ -47,7 +45,7 @@ class VideoApi(VideoApiBaseClass):
         self._log_api = log_api
         self._subs_api = subs_api
 
-    def _create_stream(self, path: Path) -> TStream:
+    def _create_stream(self, path: Path) -> VideoStream:
         return VideoStream(
             self._threading_api, self._log_api, self._subs_api, path
         )

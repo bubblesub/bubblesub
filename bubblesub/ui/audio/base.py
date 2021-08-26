@@ -137,7 +137,7 @@ def create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
 
 
 class DragModeExecutor:
-    drag_mode = NotImplemented
+    drag_mode: DragMode = NotImplemented
 
     def __init__(self, api: Api) -> None:
         self._api = api
@@ -307,14 +307,14 @@ class BaseAudioWidget(QWidget):
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         if self._drag_mode:
-            self.setCursor(Qt.SizeHorCursor)
+            self.setCursor(Qt.CursorShape.SizeHorCursor)
             self._apply_drag(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         self.end_drag_mode()
 
     def wheelEvent(self, event: QWheelEvent) -> None:
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self._zoomed(
                 event.angleDelta().y(), event.pos().x() / self.width()
             )
@@ -330,16 +330,17 @@ class BaseAudioWidget(QWidget):
         self._drag_mode_executors[self._drag_mode].apply_drag(event, pts)
 
     def end_drag_mode(self) -> None:
-        self.setCursor(Qt.ArrowCursor)
+        self.setCursor(Qt.CursorShape.ArrowCursor)
         if self._drag_mode:
             self._drag_mode_executors[self._drag_mode].end_drag()
             self._drag_mode = None
 
     def _apply_drag(self, event: QMouseEvent) -> None:
-        pts = self.pts_from_x(event.x())
-        self._drag_mode_executors[self._drag_mode].apply_drag(event, pts)
+        if self._drag_mode:
+            pts = self.pts_from_x(event.x())
+            self._drag_mode_executors[self._drag_mode].apply_drag(event, pts)
 
-    def _zoomed(self, delta: int, mouse_x: int) -> None:
+    def _zoomed(self, delta: int, mouse_x: float) -> None:
         if not self._view.size:
             return
         cur_factor = self._view.view_size / self._view.size
@@ -354,8 +355,8 @@ class BaseAudioWidget(QWidget):
         self._view.move_view(int(distance))
 
     def _draw_frame(self, painter: QPainter, bottom_line: bool) -> None:
-        painter.setPen(QPen(self.palette().text(), 1, Qt.SolidLine))
-        painter.setBrush(Qt.NoBrush)
+        painter.setPen(QPen(self.palette().text(), 1, Qt.PenStyle.SolidLine))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawRect(
             0,
             0,

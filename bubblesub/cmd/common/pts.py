@@ -400,9 +400,10 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         if direction == _Token.FIRST:
             return _Time(1, _TimeUnit.FRAME)
         if direction == _Token.LAST:
-            return _Time(
-                len(self._api.video.current_stream.timecodes), _TimeUnit.FRAME
-            )
+            current_stream = self._api.video.current_stream
+            if not current_stream or not current_stream.timecodes:
+                raise CommandError("timecode information is not available")
+            return _Time(len(current_stream.timecodes), _TimeUnit.FRAME)
         if direction == _Token.CURRENT:
             return _Time(origin)
         delta = _Token.delta_from_direction(direction)
@@ -414,8 +415,11 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         if direction == _Token.FIRST:
             return _Time(1, _TimeUnit.KEYFRAME)
         if direction == _Token.LAST:
+            current_stream = self._api.video.current_stream
+            if not current_stream or not current_stream.keyframes:
+                raise CommandError("timecode information is not available")
             return _Time(
-                len(self._api.video.current_stream.keyframes),
+                len(current_stream.keyframes),
                 _TimeUnit.KEYFRAME,
             )
         delta = _Token.delta_from_direction(direction)

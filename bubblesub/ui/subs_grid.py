@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import datetime
-import functools
 import re
+from functools import partial
 from typing import Optional
 
 from PyQt5.QtCore import (
@@ -83,12 +83,14 @@ class SubtitlesGridDelegate(QStyledItemDelegate):
         model = self.parent().model()
         if not model:
             return
-        text = self._process_text(model.data(index, Qt.DisplayRole))
-        alignment = model.data(index, Qt.TextAlignmentRole)
-        background = model.data(index, Qt.BackgroundRole)
+        text = self._process_text(
+            model.data(index, Qt.ItemDataRole.DisplayRole)
+        )
+        alignment = model.data(index, Qt.ItemDataRole.TextAlignmentRole)
+        background = model.data(index, Qt.ItemDataRole.BackgroundRole)
 
         painter.save()
-        if option.state & QStyle.State_Selected:
+        if option.state & QStyle.StateFlag.State_Selected:
             self._paint_selected(painter, option, text, alignment)
         else:
             self._paint_regular(painter, option, text, alignment, background)
@@ -104,7 +106,7 @@ class SubtitlesGridDelegate(QStyledItemDelegate):
         text: str,
         alignment: int,
     ) -> None:
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(option.palette.color(QPalette.Highlight))
         painter.drawRect(option.rect)
 
@@ -120,7 +122,7 @@ class SubtitlesGridDelegate(QStyledItemDelegate):
         background: QColor,
     ) -> None:
         if not isinstance(background, QVariant):
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QBrush(background))
             painter.drawRect(option.rect)
 
@@ -166,7 +168,7 @@ class SubtitlesGrid(QTableView):
         self._last_seek = datetime.datetime.min
 
         self._timer = QTimer(self)
-        self._timer.setInterval(SEEK_THRESHOLD.total_seconds())
+        self._timer.setInterval(int(SEEK_THRESHOLD.total_seconds()))
         self._timer.timeout.connect(self._execute_scheduled_seek)
 
         self._subs_grid_delegate = SubtitlesGridDelegate(
@@ -182,7 +184,7 @@ class SubtitlesGrid(QTableView):
         api.subs.selection_changed.connect(self._sync_api_selection_to_grid)
 
     def _setup_subs_menu(self) -> None:
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._open_subs_menu)
         self._rebuild_subs_menu()
 
@@ -198,7 +200,7 @@ class SubtitlesGrid(QTableView):
         if not self.model():
             return
         header = self.horizontalHeader()
-        header.setContextMenuPolicy(Qt.ActionsContextMenu)
+        header.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
         for col_idx in {AssEventsModelColumn.TEXT, AssEventsModelColumn.NOTE}:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
@@ -214,16 +216,14 @@ class SubtitlesGrid(QTableView):
         }:
             self.setColumnHidden(col_idx, True)
         for column in AssEventsModelColumn:
-            action = QAction(
-                self,
-                text=self.model().headerData(column, Qt.Horizontal),
-                checkable=True,
-                checked=not self.isColumnHidden(column),
+            action = QAction(self)
+            action.setText(
+                self.model().headerData(column, Qt.Orientation.Horizontal)
             )
+            action.setCheckable(True)
+            action.setChecked(not self.isColumnHidden(column))
             action.setData(column)
-            action.changed.connect(
-                functools.partial(self.toggle_column, action)
-            )
+            action.changed.connect(partial(self.toggle_column, action))
             header.addAction(action)
 
     def toggle_column(self, action: QAction) -> None:
@@ -257,7 +257,7 @@ class SubtitlesGrid(QTableView):
 
     def _collect_rows(self) -> list[int]:
         if not self.selectionModel():
-            return
+            return []
         rows = set()
         for index in self.selectionModel().selectedIndexes():
             rows.add(index.row())
@@ -273,7 +273,10 @@ class SubtitlesGrid(QTableView):
         except Exception as ex:
             print(ex)
         self.scrollTo(
-            self.model().index(0, 0), self.EnsureVisible | self.PositionAtTop
+            self.model().index(0, 0),
+            self.ScrollHint(
+                self.ScrollHint.EnsureVisible | self.ScrollHint.PositionAtTop
+            ),
         )
 
         self._setup_subs_menu()
@@ -320,9 +323,11 @@ class SubtitlesGrid(QTableView):
 
         self.selectionModel().select(
             selection,
-            QItemSelectionModel.Rows
-            | QItemSelectionModel.Current
-            | QItemSelectionModel.Select,
+            QItemSelectionModel.SelectionFlag(
+                QItemSelectionModel.SelectionFlag.Rows
+                | QItemSelectionModel.SelectionFlag.Current
+                | QItemSelectionModel.SelectionFlag.Select
+            ),
         )
 
         self.selectionModel().selectionChanged.connect(

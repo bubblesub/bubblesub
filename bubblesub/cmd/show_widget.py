@@ -16,10 +16,10 @@
 
 import argparse
 
-from PyQt5.QtWidgets import QMainWindow, QWidget
+from PyQt5 import QtWidgets
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand
+from bubblesub.api.cmd import BaseCommand, CommandUnavailable
 from bubblesub.cmd.common import BooleanOperation
 from bubblesub.ui.views import TargetWidget
 
@@ -37,8 +37,12 @@ class ShowWidgetCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QMainWindow) -> None:
-        widget = main_window.findChild(QWidget, str(self.args.target))
+    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+        widget = main_window.findChild(
+            QtWidgets.QWidget, str(self.args.target)
+        )
+        if not widget:
+            raise CommandUnavailable
         widget.setVisible(self.args.mode.apply(widget.isVisible()))
 
     @staticmethod

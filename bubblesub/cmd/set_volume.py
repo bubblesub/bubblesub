@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
+from fractions import Fraction
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
@@ -29,7 +30,7 @@ class SetVolumeCommand(BaseCommand):
         new_value = eval_expr(
             self.args.expression.format(self.api.playback.volume)
         )
-        assert isinstance(new_value, type(self.api.playback.volume))
+        assert isinstance(new_value, Fraction)
         self.api.playback.volume = new_value
 
     @staticmethod

@@ -14,23 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from ass_parser.observable_sequence_mixin import (
     ObservableSequenceItemInsertionEvent,
     ObservableSequenceItemModificationEvent,
     ObservableSequenceItemRemovalEvent,
+    ObservableSequenceMixin,
 )
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, QObject, Qt
 
-from bubblesub.model import ObservableList
 from bubblesub.util import make_ranges
 
+TItem = TypeVar("TItem")
 
-class ObservableListTableAdapter(QAbstractTableModel):
+
+class ObservableListTableAdapter(Generic[TItem], QAbstractTableModel):
     """Make ObservableList usable as Qt's QAbstractTableModel."""
 
-    def __init__(self, parent: QObject, list_: ObservableList[Any]) -> None:
+    def __init__(
+        self, parent: QObject, list_: ObservableSequenceMixin[TItem]
+    ) -> None:
         """Initialize self.
 
         :param parent: owner object
@@ -60,7 +64,9 @@ class ObservableListTableAdapter(QAbstractTableModel):
         """
         return self._column_count
 
-    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Any:
+    def data(
+        self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole
+    ) -> Any:
         """Retrieve cell data at the specified position.
 
         :param index: cell position
@@ -75,7 +81,7 @@ class ObservableListTableAdapter(QAbstractTableModel):
         self,
         index: QModelIndex,
         value: Any,
-        role: int = Qt.DisplayRole,
+        role: int = Qt.ItemDataRole.DisplayRole,
     ) -> bool:
         """Update cell data at the specified position.
 
@@ -84,7 +90,7 @@ class ObservableListTableAdapter(QAbstractTableModel):
         :param role: what kind of information to set
         :return: whether the cell was changed
         """
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             row_idx = index.row()
             col_idx = index.column()
             if row_idx not in range(len(self._list)):
@@ -112,13 +118,13 @@ class ObservableListTableAdapter(QAbstractTableModel):
         # self.dataChanged.emit(
         #     self.index(row_idx, 0),
         #     self.index(row_idx, self.columnCount() - 1),
-        #     [Qt.DisplayRole | Qt.BackgroundRole]
+        #     [Qt.ItemDataRole.DisplayRole | Qt.ItemDataRole.BackgroundRole]
         # )
         for col_idx in range(self.columnCount()):
             self.dataChanged.emit(
                 self.index(row_idx, col_idx),
                 self.index(row_idx, col_idx),
-                [Qt.DisplayRole, Qt.BackgroundRole],
+                [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.BackgroundRole],
             )
 
     def _proxy_items_inserted(

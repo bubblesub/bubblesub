@@ -146,21 +146,19 @@ _WRITER_MAP = {
 }
 
 
-class AssStylesModel(ObservableListTableAdapter):
-    def flags(self, index: QModelIndex) -> int:
-        if index.column() == AssStylesModelColumn.NAME:
-            return cast(int, Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        return cast(
-            int,
-            Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable,
-        )
+class AssStylesModel(ObservableListTableAdapter[AssStyle]):
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+        ret = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+        if index.column() != AssStylesModelColumn.NAME:
+            ret |= Qt.ItemFlag.ItemIsEditable
+        return Qt.ItemFlags(cast(Qt.ItemFlag, ret))
 
     @property
     def _column_count(self) -> int:
         return len(AssStylesModelColumn)
 
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> Any:
-        if role in (Qt.DisplayRole, Qt.EditRole):
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             style = self._list[row_idx]
             return _READER_MAP[AssStylesModelColumn(col_idx)](style)
         return QVariant()

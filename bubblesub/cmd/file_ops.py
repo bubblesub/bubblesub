@@ -19,7 +19,7 @@ import argparse
 from PyQt5.QtWidgets import QMainWindow
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand, CommandCanceled
+from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
 from bubblesub.cmd.common import FancyPath
 from bubblesub.ui.util import (
     AUDIO_FILE_FILTER,
@@ -90,7 +90,8 @@ class ReopenCommand(BaseCommand):
             return
 
         path = self.api.subs.path
-        assert path
+        if not path:
+            raise CommandUnavailable
         self.api.subs.load_ass(path)
         self.api.log.info(f"reloaded {path}")
 
@@ -318,9 +319,11 @@ class SetAudioDelayCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.audio.current_stream
+        return self.api.audio.current_stream is not None
 
     async def run(self) -> None:
+        if not self.api.audio.current_stream:
+            raise CommandUnavailable
         self.api.audio.current_stream.delay = self.args.delay
 
     @staticmethod

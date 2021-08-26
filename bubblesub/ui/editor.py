@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from PyQt5.QtCore import QEvent, QObject, Qt
 from PyQt5.QtGui import (
@@ -54,7 +54,7 @@ class SpellCheckHighlighter(QSyntaxHighlighter):
         super().__init__(*args)
         self._api = api
         self._fmt = QTextCharFormat()
-        self._fmt.setUnderlineColor(Qt.red)
+        self._fmt.setUnderlineColor(Qt.GlobalColor.red)
         self._fmt.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
         self._fmt.setFontUnderline(True)
 
@@ -89,8 +89,8 @@ class SpellCheckHighlighter(QSyntaxHighlighter):
 
 
 class TextEdit(VimTextEdit):
-    def __init__(self, api: Api, parent: QWidget, **kwargs: Any) -> None:
-        super().__init__(parent, **kwargs)
+    def __init__(self, api: Api, parent: QWidget) -> None:
+        super().__init__(parent)
         self._z_mode = False
         self._api = api
         try:
@@ -107,7 +107,7 @@ class TextEdit(VimTextEdit):
         self.vim_mode_enabled = self._api.cfg.opt["basic"]["vim_mode"]
 
     def wheelEvent(self, event: QWheelEvent) -> None:
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             distance = 1 if event.angleDelta().y() > 0 else -1
             new_size = self.font().pointSize() + distance
             if new_size < 5:
@@ -158,65 +158,70 @@ class Editor(QWidget):
         self._api = api
         self._theme_mgr = theme_mgr
 
-        self.style_edit = QComboBox(
-            self,
-            editable=True,
-            minimumWidth=200,
-            insertPolicy=QComboBox.NoInsert,
-            objectName="style-editor",
-        )
+        self.style_edit = QComboBox(self)
+        self.style_edit.setEditable(True)
+        self.style_edit.setMinimumWidth(200)
+        self.style_edit.setInsertPolicy(QComboBox.NoInsert)
+        self.style_edit.setObjectName("style-editor")
 
-        self.actor_edit = QComboBox(
-            self,
-            editable=True,
-            insertPolicy=QComboBox.NoInsert,
-            objectName="actor-editor",
-        )
+        self.actor_edit = QComboBox(self)
+        self.actor_edit.setEditable(True)
+        self.actor_edit.setInsertPolicy(QComboBox.NoInsert)
+        self.actor_edit.setObjectName("actor-editor")
 
-        self.layer_edit = QSpinBox(self, minimum=0, objectName="layer-editor")
+        self.layer_edit = QSpinBox(self)
+        self.layer_edit.setObjectName("layer-editor")
+        self.layer_edit.setMinimum(0)
 
-        self.margin_l_edit = QSpinBox(
-            self, minimum=0, maximum=999, objectName="margin-left-editor"
-        )
+        self.margin_l_edit = QSpinBox(self)
+        self.margin_l_edit.setObjectName("margin-left-editor")
+        self.margin_l_edit.setMinimum(0)
+        self.margin_l_edit.setMaximum(999)
 
-        self.margin_v_edit = QSpinBox(
-            self, minimum=0, maximum=999, objectName="margin-vertical-editor"
-        )
+        self.margin_v_edit = QSpinBox(self)
+        self.margin_v_edit.setObjectName("margin-vertical-editor")
+        self.margin_v_edit.setMinimum(0)
+        self.margin_v_edit.setMaximum(999)
 
-        self.margin_r_edit = QSpinBox(
-            self, minimum=0, maximum=999, objectName="margin-right-editor"
-        )
+        self.margin_r_edit = QSpinBox(self)
+        self.margin_r_edit.setObjectName("margin-right-editor")
+        self.margin_r_edit.setMinimum(0)
+        self.margin_r_edit.setMaximum(999)
 
-        self.start_time_edit = TimeEdit(self, objectName="start-time-editor")
-        self.end_time_edit = TimeEdit(self, objectName="end-time-editor")
-        self.duration_edit = TimeEdit(self, objectName="duration-editor")
+        self.start_time_edit = TimeEdit(self)
+        self.start_time_edit.setObjectName("start-time-editor")
+
+        self.end_time_edit = TimeEdit(self)
+        self.end_time_edit.setObjectName("end-time-editor")
+
+        self.duration_edit = TimeEdit(self)
+        self.duration_edit.setObjectName("duration-editor")
         self.duration_edit.setDisabled(True)
 
-        self.comment_checkbox = QCheckBox(
-            "Comment", self, objectName="comment-checkbox"
-        )
+        self.comment_checkbox = QCheckBox("Comment", self)
+        self.comment_checkbox.setObjectName("comment-checkbox")
 
-        self.text_edit = TextEdit(
-            api, self, tabChangesFocus=True, objectName="text-editor"
-        )
+        self.text_edit = TextEdit(api, self)
+        self.text_edit.setTabChangesFocus(True)
+        self.text_edit.setObjectName("text-editor")
 
-        self.note_edit = TextEdit(
-            api,
-            self,
-            tabChangesFocus=True,
-            placeholderText="Notes",
-            objectName="note-editor",
-        )
+        self.note_edit = TextEdit(api, self)
+        self.note_edit.setTabChangesFocus(True)
+        self.note_edit.setPlaceholderText("Notes")
+        self.note_edit.setObjectName("note-editor")
 
-        margins_layout = QHBoxLayout(spacing=4)
+        margins_layout = QHBoxLayout()
+        margins_layout.setSpacing(4)
         margins_layout.setContentsMargins(0, 0, 0, 0)
         margins_layout.addWidget(self.margin_l_edit)
         margins_layout.addWidget(self.margin_v_edit)
         margins_layout.addWidget(self.margin_r_edit)
 
-        bar_layout = QGridLayout(spacing=4)
+        bar_layout = QGridLayout()
+        bar_layout.setSpacing(4)
         bar_layout.setContentsMargins(0, 0, 0, 0)
-        for row, column, label, widget in {
+
+        widget_map: set[tuple[int, int, str, Union[QWidget, QLayout]]] = {
             (0, 0, "Style:", self.style_edit),
             (1, 0, "Actor:", self.actor_edit),
             (2, 0, "Layer:", self.layer_edit),
@@ -225,7 +230,8 @@ class Editor(QWidget):
             (1, 1, "End time:", self.end_time_edit),
             (2, 1, "Duration:", self.duration_edit),
             (3, 1, "", self.comment_checkbox),
-        }:
+        }
+        for row, column, label, widget in widget_map:
             if label:
                 bar_layout.addWidget(QLabel(label, self), row, column * 2)
             if isinstance(widget, QLayout):
@@ -233,7 +239,8 @@ class Editor(QWidget):
             else:
                 bar_layout.addWidget(widget, row, column * 2 + 1)
 
-        layout = QHBoxLayout(self, spacing=6)
+        layout = QHBoxLayout(self)
+        layout.setSpacing(6)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(bar_layout)
         layout.addWidget(self.text_edit)
@@ -247,11 +254,13 @@ class Editor(QWidget):
 
         self._data_widget_mapper: Optional[ImmediateDataWidgetMapper] = None
 
-        QApplication.instance().installEventFilter(self)
+        app = QApplication.instance()
+        assert app
+        app.installEventFilter(self)
 
     def eventFilter(self, source: QObject, event: QEvent) -> bool:
         if isinstance(source, QWidget) and self.isAncestorOf(source):
-            if event.type() == QEvent.FocusOut:
+            if event.type() == QEvent.Type.FocusOut:
                 self._api.undo.push()
         return False
 
@@ -260,7 +269,7 @@ class Editor(QWidget):
             model=AssEventsModel(self._api, self._theme_mgr, self),
             signal_map={TextEdit: "textChanged"},
         )
-        for column, widget in {
+        widget_map: set[tuple[AssEventsModelColumn, QWidget]] = {
             (AssEventsModelColumn.START, self.start_time_edit),
             (AssEventsModelColumn.END, self.end_time_edit),
             (AssEventsModelColumn.LONG_DURATION, self.duration_edit),
@@ -273,7 +282,8 @@ class Editor(QWidget):
             (AssEventsModelColumn.IS_COMMENT, self.comment_checkbox),
             (AssEventsModelColumn.TEXT, self.text_edit),
             (AssEventsModelColumn.NOTE, self.note_edit),
-        }:
+        }
+        for column, widget in widget_map:
             self._data_widget_mapper.add_mapping(widget, column)
 
         self.text_edit.highlighter = SpellCheckHighlighter(

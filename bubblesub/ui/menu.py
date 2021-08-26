@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import asyncio
-import functools
+from functools import partial
 from pathlib import Path
 from typing import Any, Union
 
@@ -25,7 +25,7 @@ from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
 from bubblesub.api.log import LogApi
 from bubblesub.cfg.hotkeys import HotkeyContext
-from bubblesub.cfg.menu import MenuItem
+from bubblesub.cfg.menu import MenuItem, MenuItemType
 from bubblesub.ui.themes import BaseTheme
 
 HotkeyMap = dict[tuple[HotkeyContext, str], str]
@@ -33,8 +33,8 @@ HotkeyMap = dict[tuple[HotkeyContext, str], str]
 
 def _window_from_menu(menu: QMenu) -> QWidget:
     window = menu
-    while window.parent() is not None:
-        window = window.parent()
+    while window.parentWidget() is not None:
+        window = window.parentWidget()
     return window
 
 
@@ -79,7 +79,7 @@ class LoadRecentFileAction(QAction):
         self.api = api
         self.path = path
         self.triggered.connect(self._on_trigger)
-        self.setText(path)
+        self.setText(str(path))
 
     def _on_trigger(self) -> None:
         self.api.subs.load_ass(self.path)
@@ -119,11 +119,16 @@ class MenuBuilder:
         self.hotkey_map = _build_hotkey_map(api)
 
     def build(self, parent: QWidget, menu_item: MenuItem) -> None:
-        method_name = "build_" + menu_item.type.value
-        if hasattr(self, method_name):
-            getattr(self, method_name)(parent, menu_item)
-        else:
-            self.api.log.error(f"unexpected menu item {menu_item.type.value}")
+        builder_map = {
+            MenuItemType.SEPARATOR: self.build_separator,
+            MenuItemType.SUB_MENU: self.build_submenu,
+            MenuItemType.COMMAND: self.build_command,
+            MenuItemType.RECENT_FILES: self.build_recent_files,
+            MenuItemType.PLUGINS: self.build_plugins,
+            MenuItemType.THEMES: self.build_themes,
+        }
+        builder = builder_map[menu_item.type]
+        builder(parent, menu_item)
 
     def build_separator(self, parent: QWidget, item: MenuItem) -> None:
         parent.addSeparator()
@@ -132,14 +137,16 @@ class MenuBuilder:
         if item.label:
             parent = parent.addMenu(item.label)
         recent_files = self.api.cfg.opt.get("recent_files", [])
-        if recent_files:
-            for recent_file in recent_files:
-                action = LoadRecentFileAction(self.api, recent_file, parent)
-                parent.addAction(action)
-        else:
+
+        if not recent_files:
             action = QAction(parent)
             action.setText("(no recent files found)")
             action.setEnabled(False)
+            parent.addAction(action)
+            return
+
+        for recent_file in recent_files:
+            action = LoadRecentFileAction(self.api, recent_file, parent)
             parent.addAction(action)
 
     def build_plugins(self, parent: QWidget, item: MenuItem) -> None:
@@ -166,12 +173,6 @@ class MenuBuilder:
         submenu = parent.addMenu(item.label)
         for subitem in item.children or []:
             self.build(submenu, subitem)
-
-    def build_placeholder(self, parent: QWidget, item: MenuItem) -> None:
-        action = QAction(parent)
-        action.setText(item.label)
-        action.setEnabled(False)
-        parent.addAction(action)
 
     def build_command(self, parent: QWidget, item: MenuItem) -> None:
         assert item.label
@@ -201,11 +202,9 @@ def setup_menu(
 
     if hasattr(parent, "aboutToShow"):
         parent.aboutToShow.connect(
-            functools.partial(_on_menu_about_to_show, api.log, parent)
+            partial(_on_menu_about_to_show, api.log, parent)
         )
-        parent.aboutToHide.connect(
-            functools.partial(_on_menu_about_to_hide, parent)
-        )
+        parent.aboutToHide.connect(partial(_on_menu_about_to_hide, parent))
 
     menu_builder = MenuBuilder(api, context)
     for node in root_item.children or []:

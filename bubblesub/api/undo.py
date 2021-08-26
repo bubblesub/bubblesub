@@ -223,12 +223,12 @@ class UndoApi:
         )
 
     def _apply_state(self, state: UndoState) -> None:
-        self._subs_api.ass_file.events[:] = list(
-            map(copy, state.ass_file.events)
-        )
-        self._subs_api.ass_file.styles[:] = list(
-            map(copy, state.ass_file.styles)
-        )
+        self._subs_api.ass_file.events[:] = [
+            copy(event) for event in state.ass_file.events
+        ]
+        self._subs_api.ass_file.styles[:] = [
+            copy(style) for style in state.ass_file.styles
+        ]
         self._subs_api.ass_file.script_info.clear()
         self._subs_api.ass_file.script_info.update(state.ass_file.script_info)
         self._subs_api.selected_indexes = state.selected_indexes

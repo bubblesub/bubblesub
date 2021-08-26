@@ -39,7 +39,7 @@ class AudioSlider(BaseGlobalAudioWidget):
         api.audio.view.selection_changed.connect(self.repaint_if_needed)
         api.audio.view.view_changed.connect(self.repaint_if_needed)
         api.playback.current_pts_changed.connect(
-            self.repaint, Qt.DirectConnection
+            self.repaint, Qt.ConnectionType.DirectConnection
         )
         api.subs.loaded.connect(self._on_subs_load)
 
@@ -75,9 +75,9 @@ class AudioSlider(BaseGlobalAudioWidget):
         painter.end()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.begin_drag_mode(DragMode.AUDIO_VIEW, event)
-        elif event.button() == Qt.MiddleButton:
+        elif event.button() == Qt.MouseButton.MiddleButton:
             self.begin_drag_mode(DragMode.AUDIO_VIEW, event)
             self.end_drag_mode()
 
@@ -89,15 +89,15 @@ class AudioSlider(BaseGlobalAudioWidget):
             QPen(
                 self._theme_mgr.get_color("spectrogram/video-marker"),
                 1,
-                Qt.SolidLine,
+                Qt.PenStyle.SolidLine,
             )
         )
-        painter.setBrush(Qt.NoBrush)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawLine(x, 0, x, self.height())
 
     def _draw_subtitle_rects(self, painter: QPainter) -> None:
         h = self.height()
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         color = self.palette().highlight().color()
         color.setAlpha(40)
         painter.setBrush(QBrush(color))
@@ -109,7 +109,7 @@ class AudioSlider(BaseGlobalAudioWidget):
     def _draw_slider(self, painter: QPainter) -> None:
         h = self.height()
         band_size = h // 4
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(self.palette().highlight()))
         x1 = round(self.pts_to_x(self._view.view_start))
         x2 = round(self.pts_to_x(self._view.view_end))

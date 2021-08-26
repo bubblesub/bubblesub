@@ -44,7 +44,7 @@ class AudioTimeline(BaseLocalAudioWidget):
 
         api.audio.view.view_changed.connect(self.repaint_if_needed)
         api.playback.current_pts_changed.connect(
-            self.repaint, Qt.DirectConnection
+            self.repaint, Qt.ConnectionType.DirectConnection
         )
 
     def _get_paint_cache_key(self) -> int:
@@ -75,9 +75,9 @@ class AudioTimeline(BaseLocalAudioWidget):
         painter.end()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.begin_drag_mode(DragMode.VIDEO_POSITION, event)
-        elif event.button() == Qt.MiddleButton:
+        elif event.button() == Qt.MouseButton.MiddleButton:
             self.begin_drag_mode(DragMode.VIDEO_POSITION, event)
             self.end_drag_mode()
 
@@ -91,7 +91,7 @@ class AudioTimeline(BaseLocalAudioWidget):
             int(self._view.view_end + one_minute) // one_minute
         ) * one_minute
 
-        painter.setPen(QPen(self.palette().text(), 1, Qt.SolidLine))
+        painter.setPen(QPen(self.palette().text(), 1, Qt.PenStyle.SolidLine))
         painter.setFont(QFont(self.font().family(), 8))
         text_height = painter.fontMetrics().capHeight()
 
@@ -120,12 +120,12 @@ class AudioTimeline(BaseLocalAudioWidget):
                     text = "{:02}".format((pts % one_minute) // one_second)
             else:
                 continue
-            painter.drawText(x + 2, text_height + (h - text_height) / 2, text)
+            painter.drawText(x + 2, text_height + (h - text_height) // 2, text)
 
     def _draw_keyframes(self, painter: QPainter) -> None:
         h = painter.viewport().height()
         color = self._theme_mgr.get_color("spectrogram/keyframe")
-        painter.setPen(QPen(color, 1, Qt.SolidLine))
+        painter.setPen(QPen(color, 1, Qt.PenStyle.SolidLine))
         if self._api.video.current_stream:
             for keyframe in self._api.video.current_stream.keyframes:
                 timecode = self._api.video.current_stream.timecodes[keyframe]
@@ -136,7 +136,7 @@ class AudioTimeline(BaseLocalAudioWidget):
         if not self._api.playback.current_pts:
             return
         x = round(self.pts_to_x(self._api.playback.current_pts))
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self._theme_mgr.get_color("spectrogram/video-marker"))
 
         width = 7

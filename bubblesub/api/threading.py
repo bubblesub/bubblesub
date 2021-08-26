@@ -16,41 +16,34 @@
 
 """Threading API."""
 
-import functools
 import queue
-import threading
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import Any, ContextManager, TypeVar, cast
 
 from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
 
 from bubblesub.api.log import LogApi
 
+TFunction = TypeVar("TFunction", bound=Callable[..., Any])
 
-def synchronized(wrapped: Any = None, lock: Any = None) -> Any:
+
+def synchronized(lock: ContextManager) -> Callable[[TFunction], TFunction]:
     """A decorator that lets the passed function run only when given lock is
-    active. If there is no lock passed, the function uses its own internal
-    lock.
+    active.
 
-    :param wrapped: function to decorate
     :param lock: lock to use
     :return: decorated function
     """
-    if wrapped is None:
-        return functools.partial(synchronized, lock=lock)
 
-    if lock is None:
-        lock = threading.RLock()
+    def _outer(func: TFunction) -> TFunction:
+        def _inner(*args: Any, **kwargs: Any) -> Any:
+            with lock:
+                return func(*args, **kwargs)
 
-    @functools.wraps(wrapped)
-    def _wrapper(*args: Any, **kwargs: Any) -> Any:
-        assert lock
-        assert wrapped
-        with lock:
-            return wrapped(*args, **kwargs)
+        return cast(TFunction, _inner)
 
-    return _wrapper
+    return _outer
 
 
 class _WorkerSignals(QObject):

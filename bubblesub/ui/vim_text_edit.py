@@ -19,7 +19,7 @@
 import contextlib
 import logging
 from collections.abc import Iterator
-from typing import Any, Optional
+from typing import Optional
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import (
@@ -32,16 +32,16 @@ from PyQt5.QtGui import (
 from PyQt5.QtWidgets import QPlainTextEdit, QTextEdit, QWidget
 
 KEYMAP = {
-    Qt.Key_Return: "<CR>",
-    Qt.Key_Escape: "\x1B",
-    Qt.Key_Backspace: "<BS>",
-    Qt.Key_Delete: "<Del>",
-    Qt.Key_Right: "<Right>",
-    Qt.Key_Left: "<Left>",
-    Qt.Key_Up: "<Up>",
-    Qt.Key_Down: "<Down>",
-    Qt.Key_Home: "<Home>",
-    Qt.Key_End: "<End>",
+    Qt.Key.Key_Return: "<CR>",
+    Qt.Key.Key_Escape: "\x1B",
+    Qt.Key.Key_Backspace: "<BS>",
+    Qt.Key.Key_Delete: "<Del>",
+    Qt.Key.Key_Right: "<Right>",
+    Qt.Key.Key_Left: "<Left>",
+    Qt.Key.Key_Up: "<Up>",
+    Qt.Key.Key_Down: "<Down>",
+    Qt.Key.Key_Home: "<Home>",
+    Qt.Key.Key_End: "<End>",
 }
 
 
@@ -56,12 +56,12 @@ def rel_pos_to_abs_pos(lines: list[str], row: int, col: int) -> int:
 
 
 class VimTextEdit(QPlainTextEdit):
-    def __init__(self, parent: QWidget, **kwargs: Any) -> None:
+    def __init__(self, parent: QWidget) -> None:
         self._nvim = None
         self._vim_mode_enabled = False
-        self.vim_arguments = []
+        self.vim_arguments: list[str] = []
         self._signals_connected = 0
-        super().__init__(parent, **kwargs)
+        super().__init__(parent)
         self._connect_ui_signals()
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.highlighter: Optional[QSyntaxHighlighter]
@@ -171,7 +171,7 @@ class VimTextEdit(QPlainTextEdit):
             with self._ignore_ui_signals():
                 self._sync_ui()
 
-    def _restart_session(self):
+    def _restart_session(self) -> None:
         try:
             from pynvim import attach
 
@@ -180,8 +180,8 @@ class VimTextEdit(QPlainTextEdit):
                 argv=["/usr/bin/env", "nvim", "--embed", "--headless"]
                 + self.vim_arguments,
             )
-            # self._nvim.command("map zp doau User play_current_audio<CR>")
-            # self._nvim.subscribe("User")
+            if not self._nvim:
+                return
             self._nvim.command("set clipboard+=unnamed")
             self._nvim.command("set clipboard+=unnamedplus")
             with self._ignore_ui_signals():

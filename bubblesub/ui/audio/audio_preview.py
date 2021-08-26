@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import bisect
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 import ffms2
 import numpy as np
@@ -58,6 +58,14 @@ DERIVATION_DISTANCE = 6
 CHUNK_SIZE = 50
 
 
+if TYPE_CHECKING:
+    # pylint: disable=unsubscriptable-object
+    SpectrumColumn = np.ndarray[Literal[1], "np.dtype[np.uint8]"]
+else:
+    # prevent runtime TypeError: 'numpy._DTypeMeta' object is not subscriptable
+    SpectrumColumn = Any
+
+
 class SpectrumWorkerSignals(QObject):
     finished = pyqtSignal()
 
@@ -68,7 +76,7 @@ class SpectrumWorker(QueueWorker):
         self.signals = SpectrumWorkerSignals()
         self._api = api
 
-        self.cache: dict[int, list[int]] = SortedDict()
+        self.cache: dict[int, SpectrumColumn] = SortedDict()
 
         if pyfftw is not None:
             self._input = pyfftw.empty_aligned(
@@ -97,7 +105,9 @@ class SpectrumWorker(QueueWorker):
         if anything_changed:
             self.signals.finished.emit()
 
-    def _get_spectrogram_for_block_idx(self, block_idx: int) -> np.array:
+    def _get_spectrogram_for_block_idx(
+        self, block_idx: int
+    ) -> Optional[SpectrumColumn]:
         audio_stream = self._api.audio.current_stream
         video_stream = self._api.video.current_stream
         if not audio_stream or not audio_stream.is_ready or self._fftw is None:
@@ -198,7 +208,7 @@ class AudioPreview(BaseLocalAudioWidget):
 
         self._mouse_pos: Optional[QPoint] = None
         self._color_table: list[int] = []
-        self._pixels: np.array = np.zeros([0, 0], dtype=np.uint8)
+        self._pixels: np.ndarray = np.zeros([0, 0], dtype=np.uint8)
 
         self._generate_color_table()
 
@@ -212,7 +222,7 @@ class AudioPreview(BaseLocalAudioWidget):
 
         api.audio.view.selection_changed.connect(self.repaint_if_needed)
         api.playback.current_pts_changed.connect(
-            self.repaint, Qt.DirectConnection
+            self.repaint, Qt.ConnectionType.DirectConnection
         )
         api.subs.loaded.connect(self._on_subs_load)
         api.playback.volume_changed.connect(self._on_volume_change)
@@ -263,9 +273,10 @@ class AudioPreview(BaseLocalAudioWidget):
             )
 
     def eventFilter(self, source: QObject, event: QEvent) -> bool:
-        if event.type() in {QEvent.KeyPress, QEvent.KeyRelease}:
+        if event.type() in {QEvent.Type.KeyPress, QEvent.Type.KeyRelease}:
+            assert isinstance(event, (QKeyEvent, QMouseEvent))
             self._update_cursor(event)
-        if event.type() in {QEvent.Enter, QEvent.Leave}:
+        if event.type() in {QEvent.Type.Enter, QEvent.Type.Leave}:
             self._update_cursor(None)
         return False
 
@@ -294,10 +305,14 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.end()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        ctrl = event.modifiers() & Qt.ControlModifier
-        shift = event.modifiers() & Qt.ShiftModifier
+        ctrl = event.modifiers() & Qt.KeyboardModifier.ControlModifier
+        shift = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
 
-        if event.button() == Qt.LeftButton and not shift and not ctrl:
+        if (
+            event.button() == Qt.MouseButton.LeftButton
+            and not shift
+            and not ctrl
+        ):
             for rect in self._rects:
                 if (
                     rect.label_x1 <= event.x() <= rect.label_x2
@@ -310,7 +325,7 @@ class AudioPreview(BaseLocalAudioWidget):
                     )
                     return
 
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.begin_drag_mode(
                 DragMode.SUBTITLE_START
                 if shift
@@ -319,7 +334,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 else DragMode.SELECTION_START,
                 event,
             )
-        elif event.button() == Qt.RightButton:
+        elif event.button() == Qt.MouseButton.RightButton:
             self.begin_drag_mode(
                 DragMode.SUBTITLE_END
                 if shift
@@ -328,7 +343,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 else DragMode.SELECTION_END,
                 event,
             )
-        elif event.button() == Qt.MiddleButton:
+        elif event.button() == Qt.MouseButton.MiddleButton:
             self.begin_drag_mode(
                 DragMode.SUBTITLE_SPLIT if ctrl else DragMode.VIDEO_POSITION,
                 event,
@@ -349,7 +364,9 @@ class AudioPreview(BaseLocalAudioWidget):
             for i in range(256)
         ]
         self._pens = {
-            color: QPen(self._theme_mgr.get_color(color), 1, Qt.SolidLine)
+            color: QPen(
+                self._theme_mgr.get_color(color), 1, Qt.PenStyle.SolidLine
+            )
             for color in self._theme_mgr.current_theme.palette.keys()
         }
         self._brushes = {
@@ -383,7 +400,7 @@ class AudioPreview(BaseLocalAudioWidget):
             pts_range
             * (audio_stream.sample_rate if audio_stream else 0)
             / 1000.0
-        ).astype(dtype=np.int) // (2 ** DERIVATION_DISTANCE)
+        ).astype(dtype=np.int32) // (2 ** DERIVATION_DISTANCE)
 
         blocks_to_update = [
             block_idx
@@ -419,7 +436,7 @@ class AudioPreview(BaseLocalAudioWidget):
             pts_range
             * (audio_stream.sample_rate if audio_stream else 0)
             / 1000.0
-        ).astype(dtype=np.int) // (2 ** DERIVATION_DISTANCE)
+        ).astype(dtype=np.int32) // (2 ** DERIVATION_DISTANCE)
 
         for x, block_idx in enumerate(block_idx_range):
             column = zero_column
@@ -447,15 +464,6 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.scale(1, painter.viewport().height() / (pixels.shape[1] - 1))
         painter.drawPixmap(0, 0, QPixmap.fromImage(image))
         painter.restore()
-
-    def block_idx_from_x(self, x: int) -> int:
-        audio_stream = self._api.audio.current_stream
-        pts = self.pts_from_x(x)
-        pts -= audio_stream.delay if audio_stream else 0
-        return (
-            int(pts * self._api.audio.current_stream.sample_rate / 1000.0)
-            >> DERIVATION_DISTANCE
-        )
 
     def _draw_keyframes(self, painter: QPainter) -> None:
         h = painter.viewport().height()
@@ -526,7 +534,9 @@ class AudioPreview(BaseLocalAudioWidget):
                         rect.label_y1,
                         rect.x2 - rect.label_x2 - rect.text_margin * 2,
                         rect.y2 - rect.label_y2,
-                        Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap,
+                        Qt.AlignmentFlag.AlignLeft
+                        | Qt.AlignmentFlag.AlignTop
+                        | Qt.TextFlag.TextWordWrap,
                         ass_to_plaintext(rect.event.text).replace("\n", " "),
                     )
 
@@ -547,7 +557,7 @@ class AudioPreview(BaseLocalAudioWidget):
         if not self._api.playback.current_pts:
             return
         x = round(self.pts_to_x(self._api.playback.current_pts))
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self._brushes["spectrogram/video-marker"])
 
         width = 7
@@ -574,7 +584,7 @@ class AudioPreview(BaseLocalAudioWidget):
         x = round(self.pts_to_x(pts))
 
         painter.setPen(self._pens["spectrogram/mouse-marker"])
-        painter.setBrush(Qt.NoBrush)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawLine(x, 0, x, painter.viewport().height())
 
     def _update_cursor(
@@ -588,7 +598,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 pts = self._api.video.current_stream.align_pts_to_near_frame(
                     pts
                 )
-            x = self.pts_to_x(pts)
+            x = int(self.pts_to_x(pts))
             self.update(x, 0, x, self.height())
 
         self._mouse_pos = pos if self.geometry().contains(pos) else None
@@ -599,7 +609,7 @@ class AudioPreview(BaseLocalAudioWidget):
                 pts = self._api.video.current_stream.align_pts_to_near_frame(
                     pts
                 )
-            x = self.pts_to_x(pts)
+            x = int(self.pts_to_x(pts))
             self.update(x, 0, x, self.height())
 
         if self._drag_mode or not event:
@@ -608,15 +618,15 @@ class AudioPreview(BaseLocalAudioWidget):
         # using QApplication.keyboardModifiers() is unreliable,
         # as it doesn't hold up to date values (at least on X11)
         modifiers = event.modifiers()
-        if modifiers == Qt.ShiftModifier:
-            self.setCursor(Qt.SplitHCursor)
-        elif modifiers == Qt.ControlModifier:
-            self.setCursor(Qt.SizeHorCursor)
+        if modifiers == Qt.KeyboardModifier.ShiftModifier:
+            self.setCursor(Qt.CursorShape.SplitHCursor)
+        elif modifiers == Qt.KeyboardModifier.ControlModifier:
+            self.setCursor(Qt.CursorShape.SizeHorCursor)
         elif any(
             rect.label_x1 <= pos.x() <= rect.label_x2
             and rect.label_y1 <= pos.y() <= rect.label_y2
             for rect in self._rects
         ):
-            self.setCursor(Qt.PointingHandCursor)
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
         else:
-            self.setCursor(Qt.CrossCursor)
+            self.setCursor(Qt.CursorShape.CrossCursor)

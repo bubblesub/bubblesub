@@ -104,7 +104,7 @@ class SubtitlesPasteCommand(BaseCommand):
 
         subs = AssEventList.from_ass_string(text)
         with self.api.undo.capture():
-            self.api.subs.events[idx:idx] = list(map(copy, subs))
+            self.api.subs.events[idx:idx] = [copy(sub) for sub in subs]
             self.api.subs.selected_indexes = list(range(idx, idx + len(subs)))
 
     @staticmethod

@@ -86,11 +86,11 @@ class _SearchModeHandler(abc.ABC):
     def get_subject_widget_name(self) -> str:
         raise NotImplementedError("not implemented")
 
-    def get_subject_widget(self) -> QWidget:
+    def get_subject_widget(self) -> Optional[QWidget]:
         widget = self.main_window.findChild(
             QWidget, self.get_subject_widget_name()
         )
-        if isinstance(widget, QComboBox):
+        if widget and isinstance(widget, QComboBox):
             widget = widget.lineEdit()
         return widget
 
@@ -98,6 +98,8 @@ class _SearchModeHandler(abc.ABC):
         self, selection_start: int, selection_end: int
     ) -> None:
         widget = self.get_subject_widget()
+        if not widget:
+            raise ValueError("widget is not currently available")
         if isinstance(widget, QPlainTextEdit):
             cursor = widget.textCursor()
             cursor.setPosition(selection_start)
@@ -113,6 +115,8 @@ class _SearchModeHandler(abc.ABC):
 
     def get_selection_from_widget(self) -> tuple[int, int]:
         widget = self.get_subject_widget()
+        if not widget:
+            return (0, 0)
         if isinstance(widget, QPlainTextEdit):
             cursor = widget.textCursor()
             return (cursor.selectionStart(), cursor.selectionEnd())
@@ -125,6 +129,8 @@ class _SearchModeHandler(abc.ABC):
 
     def get_widget_text(self) -> str:
         widget = self.get_subject_widget()
+        if not widget:
+            return ""
         if isinstance(widget, QPlainTextEdit):
             return cast(str, widget.toPlainText())
         if isinstance(widget, QLineEdit):
@@ -133,6 +139,8 @@ class _SearchModeHandler(abc.ABC):
 
     def set_widget_text(self, text: str) -> None:
         widget = self.get_subject_widget()
+        if not widget:
+            raise ValueError("widget is not currently available")
         if isinstance(widget, QPlainTextEdit):
             widget.document().setPlainText(text)
         if isinstance(widget, QLineEdit):
@@ -150,7 +158,7 @@ class _TextSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.text = value.replace("\n", "\\N")
 
-    def get_subject_widget_name(self) -> QWidget:
+    def get_subject_widget_name(self) -> str:
         return "text-editor"
 
 
@@ -161,7 +169,7 @@ class _NoteSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.note = value.replace("\n", "\\N")
 
-    def get_subject_widget_name(self) -> QWidget:
+    def get_subject_widget_name(self) -> str:
         return "note-editor"
 
 
@@ -172,7 +180,7 @@ class _ActorSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.actor = value
 
-    def get_subject_widget_name(self) -> QWidget:
+    def get_subject_widget_name(self) -> str:
         return "actor-editor"
 
 
@@ -183,7 +191,7 @@ class _StyleSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.style = value
 
-    def get_subject_widget_name(self) -> QWidget:
+    def get_subject_widget_name(self) -> str:
         return "style-editor"
 
 
@@ -331,7 +339,7 @@ class _SearchTextEdit(QComboBox):
         self.setInsertPolicy(QComboBox.NoInsert)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         completer = self.completer()
-        completer.setCaseSensitivity(Qt.CaseSensitive)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseSensitive)
         self.setCompleter(completer)
 
 
@@ -356,7 +364,7 @@ class _SearchDialog(Dialog):
         replace_label = QLabel("Text to replace with:", self)
 
         strip = QDialogButtonBox(self)
-        strip.setOrientation(Qt.Vertical)
+        strip.setOrientation(Qt.Orientation.Vertical)
         self.find_next_btn = strip.addButton("Find next", strip.ActionRole)
         self.find_next_btn.setDefault(True)
         self.find_prev_btn = strip.addButton("Find previous", strip.ActionRole)
@@ -373,17 +381,14 @@ class _SearchDialog(Dialog):
         settings_box_layout = QVBoxLayout(settings_box)
         settings_box_layout.setSpacing(16)
         settings_box_layout.setContentsMargins(0, 0, 0, 0)
-        for widget in [
-            search_label,
-            self.search_text_edit,
-            replace_label,
-            self.replacement_text_edit,
-            self.case_chkbox,
-            self.regex_chkbox,
-            self.search_mode_group_box,
-            strip,
-        ]:
-            settings_box_layout.addWidget(widget)
+        settings_box_layout.addWidget(search_label)
+        settings_box_layout.addWidget(self.search_text_edit)
+        settings_box_layout.addWidget(replace_label)
+        settings_box_layout.addWidget(self.replacement_text_edit)
+        settings_box_layout.addWidget(self.case_chkbox)
+        settings_box_layout.addWidget(self.regex_chkbox)
+        settings_box_layout.addWidget(self.search_mode_group_box)
+        settings_box_layout.addWidget(strip)
 
         if not show_replace_controls:
             replace_label.hide()

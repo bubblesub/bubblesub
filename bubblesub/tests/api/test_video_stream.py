@@ -177,8 +177,8 @@ def test_align_pts_to_near_frame(origin: int, expected: int) -> None:
 )
 def test_frame_idx_from_pts(
     timecodes: list[int],
-    pts: Union[float, int, np.array],
-    expected: Union[int, np.array],
+    pts: Union[float, int, np.ndarray],
+    expected: Union[int, np.ndarray],
 ) -> None:
     """Test getting frame index from PTS.
 

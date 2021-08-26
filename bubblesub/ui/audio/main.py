@@ -48,7 +48,7 @@ class Audio(QSplitter):
         self._slider = AudioSlider(self._api, theme_mgr, self)
 
         self.setObjectName("spectrogram")
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         top_part = QWidget(self)
         top_part_layout = QVBoxLayout(top_part)
@@ -69,7 +69,7 @@ class Audio(QSplitter):
         self.setStretchFactor(0, 3)
         self.setStretchFactor(1, 1)
         self.setHandleWidth(0)
-        self.setOrientation(Qt.Vertical)
+        self.setOrientation(Qt.Orientation.Vertical)
 
         api.subs.loaded.connect(self._on_subs_load)
 

@@ -16,8 +16,8 @@
 
 import asyncio
 import contextlib
-import functools
 from collections.abc import Callable
+from functools import partial, wraps
 from pathlib import Path
 from typing import Any, Optional, cast
 
@@ -77,17 +77,17 @@ AUDIO_FILE_FILTER = (
 
 
 def async_slot(*args: Any) -> Callable[..., Callable[..., None]]:
-    def real_decorator(
-        func: Callable[..., "asyncio.Future[Any]"]
+    def _outer(
+        func: Callable[..., asyncio.Future[Any]]
     ) -> Callable[..., None]:
         @pyqtSlot(*args)
-        @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> None:
+        @wraps(func)
+        def _inner(*args: Any, **kwargs: Any) -> None:
             asyncio.ensure_future(func(*args, **kwargs))
 
-        return wrapper
+        return _inner
 
-    return real_decorator
+    return _outer
 
 
 def async_dialog_exec(dialog: QDialog) -> Any:
@@ -193,7 +193,7 @@ class Dialog(QDialog):
 
     def __init__(self, main_window: QMainWindow) -> None:
         super().__init__(main_window)
-        self.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
 
     def done(self, code: int) -> None:
         ret = super().done(code)
@@ -308,7 +308,7 @@ async def time_jump_dialog(
 def get_text_edit_row_height(editor: QPlainTextEdit, rows: int) -> int:
     metrics = QFontMetrics(editor.document().defaultFont())
     margins = editor.contentsMargins()
-    return (
+    return int(
         metrics.lineSpacing() * rows
         + (editor.document().documentMargin() + editor.frameWidth()) * 2
         + margins.top()
@@ -321,7 +321,7 @@ class ImmediateDataWidgetMapper(QObject):
     def __init__(
         self,
         model: QAbstractItemModel,
-        signal_map: Optional[dict[QWidget, str]] = None,
+        signal_map: Optional[dict[type[QWidget], str]] = None,
     ) -> None:
         super().__init__()
         self._model = model
@@ -330,7 +330,7 @@ class ImmediateDataWidgetMapper(QObject):
         self._item_delegate = QItemDelegate(self)
         self._ignoring = 0
 
-        self._signal_map: dict[QWidget, str] = {
+        self._signal_map: dict[type[QWidget], str] = {
             QCheckBox: "clicked",
             QSpinBox: "valueChanged",
             QDoubleSpinBox: "valueChanged",
@@ -347,9 +347,7 @@ class ImmediateDataWidgetMapper(QObject):
         for type_, signal_name in self._signal_map.items():
             if isinstance(widget, type_):
                 signal = getattr(widget, signal_name)
-                signal.connect(
-                    functools.partial(self._widget_data_change, idx)
-                )
+                signal.connect(partial(self._widget_data_change, idx))
                 self._mappings.append((widget, idx))
                 return
         raise RuntimeError(f'unknown widget type: "{type(widget)}"')
@@ -388,7 +386,9 @@ class ImmediateDataWidgetMapper(QObject):
         cur_value = (
             QVariant()
             if row_idx is None
-            else self._model.index(row_idx, col_idx).data(Qt.EditRole)
+            else self._model.index(row_idx, col_idx).data(
+                Qt.ItemDataRole.EditRole
+            )
         )
         prev_value = widget.property(name)
         if cur_value != prev_value:
@@ -405,13 +405,13 @@ class ImmediateDataWidgetMapper(QObject):
         name = widget.metaObject().userProperty().name()
         cur_value = widget.property(name)
         prev_value = self._model.data(
-            self._model.index(row_idx, col_idx), Qt.EditRole
+            self._model.index(row_idx, col_idx), Qt.ItemDataRole.EditRole
         )
         if cur_value != prev_value:
             self._model.setData(
                 self._model.index(row_idx, col_idx),
                 cur_value,
-                Qt.EditRole,
+                Qt.ItemDataRole.EditRole,
             )
 
     @contextlib.contextmanager
@@ -426,9 +426,10 @@ class ImmediateDataWidgetMapper(QObject):
 def build_splitter(
     parent: QWidget,
     widgets: list[tuple[int, QWidget]],
-    orientation: int,
+    orientation: Qt.Orientation,
 ) -> QSplitter:
-    splitter = QSplitter(parent, orientation=orientation)
+    splitter = QSplitter(parent)
+    splitter.setOrientation(orientation)
     for i, item in enumerate(widgets):
         stretch_factor, widget = item
         splitter.addWidget(widget)

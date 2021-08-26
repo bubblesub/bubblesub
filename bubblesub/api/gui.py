@@ -87,6 +87,8 @@ class GuiApi(QObject):
         """
         if not self._api.undo.needs_save:
             return True
+        if not self._main_window:  # GUI was not created yet
+            return True
 
         doc_path = self._api.subs.path
         doc_name = doc_path.name if doc_path else "Untitled"

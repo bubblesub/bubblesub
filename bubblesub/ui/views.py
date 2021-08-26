@@ -106,25 +106,29 @@ class ViewManager(QObject):
 
     def restore_view(self) -> None:
         self._view = View(self._api.cfg.opt["view"]["current"])
-        for widget in TargetWidget:
+        for widget_type in TargetWidget:
             visibility = self._api.cfg.opt["gui"]["visibility"].get(
-                widget.value
+                widget_type.value
             )
             if visibility is not None:
-                self._main_window.findChild(QWidget, widget.value).setVisible(
-                    visibility
+                widget = self._main_window.findChild(
+                    QWidget, widget_type.value
                 )
+                if widget:
+                    widget.setVisible(visibility)
 
     def store_view(self) -> None:
         visibility_map = {}
         for target_widget in TargetWidget:
             widget = self._main_window.findChild(QWidget, target_widget.value)
+            if not widget:
+                continue
 
-            parent = widget.parent()
+            parent = widget.parentWidget()
             parents_visible = parent.isVisible()
             while parent:
                 parents_visible &= parent.isVisible()
-                parent = parent.parent()
+                parent = parent.parentWidget()
 
             if parents_visible:
                 visibility_map[target_widget.value] = widget.isVisible()
@@ -138,7 +142,7 @@ class ViewManager(QObject):
         self._view = view
         self._api.playback.is_paused = True
 
-        for widget, visible in visibility_map.items():
-            self._main_window.findChild(QWidget, widget.value).setVisible(
-                visible
-            )
+        for widget_type, is_visible in visibility_map.items():
+            widget = self._main_window.findChild(QWidget, widget_type.value)
+            if widget:
+                widget.setVisible(is_visible)

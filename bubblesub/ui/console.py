@@ -106,7 +106,7 @@ class ConsoleSyntaxHighlight(QSyntaxHighlighter):
         self._invisible_fmt = QTextCharFormat()
         self._invisible_fmt.setFontStretch(1)
         self._invisible_fmt.setFontPointSize(1)
-        self._invisible_fmt.setForeground(Qt.transparent)
+        self._invisible_fmt.setForeground(Qt.GlobalColor.transparent)
 
         self._regex = re.compile(
             r"^"
@@ -134,7 +134,7 @@ class ConsoleSyntaxHighlight(QSyntaxHighlighter):
             "c": self._get_format("console/command"),
             "timestamp": self._get_format("console/timestamp"),
         }
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
         self.rehighlight()
         QApplication.restoreOverrideCursor()
 
@@ -215,7 +215,7 @@ class ConsoleLogWindow(QTextEdit):
         self._syntax_highlight.update_style_map()
 
     def wheelEvent(self, event: QWheelEvent) -> None:
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             distance = 1 if event.angleDelta().y() > 0 else -1
             font = self._syntax_highlight.get_font()
             new_size = font.pointSize() + distance
@@ -260,13 +260,15 @@ class ConsoleInput(QLineEdit):
         self.textEdited.connect(self._on_edit)
 
     def event(self, event: QEvent) -> bool:
-        if event.type() != QEvent.KeyPress:
+        if event.type() != QEvent.Type.KeyPress:
             return super().event(event)
+
+        assert isinstance(event, QKeyEvent)
 
         if not self.text():
             return super().event(event)
 
-        if event.key() not in {Qt.Key_Tab, Qt.Key_Backtab}:
+        if event.key() not in {Qt.Key.Key_Tab, Qt.Key.Key_Backtab}:
             return super().event(event)
 
         if self._compl is None:
@@ -274,9 +276,9 @@ class ConsoleInput(QLineEdit):
             if not compl.suggestions:
                 return True
             self._compl = compl
-            self._compl.index = 0 if event.key() == Qt.Key_Tab else -1
+            self._compl.index = 0 if event.key() == Qt.Key.Key_Tab else -1
         else:
-            self._compl.index += 1 if event.key() == Qt.Key_Tab else 1
+            self._compl.index += 1 if event.key() == Qt.Key.Key_Tab else 1
 
         self._compl.index %= len(self._compl.suggestions)
         self.setText(
@@ -287,14 +289,14 @@ class ConsoleInput(QLineEdit):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if not self._edited or not self.text():
-            if event.key() == Qt.Key_Up:
+            if event.key() == Qt.Key.Key_Up:
                 if self._history_pos > 0:
                     self._history_pos -= 1
                     self.setText(self._history[self._history_pos])
                     self._edited = False
                 return
 
-            if event.key() == Qt.Key_Down:
+            if event.key() == Qt.Key.Key_Down:
                 if self._history_pos + 1 < len(self._history):
                     self._history_pos += 1
                     self.setText(self._history[self._history_pos])

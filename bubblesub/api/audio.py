@@ -19,14 +19,12 @@
 from pathlib import Path
 
 from bubblesub.api.audio_stream import AudioStream
-from bubblesub.api.base_streams_api import BaseStreamsApi, TStream
+from bubblesub.api.base_streams_api import BaseStreamsApi
 from bubblesub.api.log import LogApi
 from bubblesub.api.threading import ThreadingApi
 
-AudioApiBaseClass = BaseStreamsApi[AudioStream]
 
-
-class AudioApi(AudioApiBaseClass):
+class AudioApi(BaseStreamsApi[AudioStream]):
     """Manages audio streams."""
 
     def __init__(self, threading_api: ThreadingApi, log_api: LogApi) -> None:
@@ -39,5 +37,5 @@ class AudioApi(AudioApiBaseClass):
         self._threading_api = threading_api
         self._log_api = log_api
 
-    def _create_stream(self, path: Path) -> TStream:
+    def _create_stream(self, path: Path) -> AudioStream:
         return AudioStream(self._threading_api, self._log_api, path)

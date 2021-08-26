@@ -23,13 +23,14 @@ import time
 import uuid
 from fractions import Fraction
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, ClassVar, Optional, Union, cast
 
 import ffms2
 import numpy as np
 import PIL.Image
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtBoundSignal, pyqtSignal
 
+from bubblesub.api.base_streams_api import BaseStream
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
@@ -66,12 +67,12 @@ def _load_video_source(
         return source
 
 
-class VideoStream(QObject):
+class VideoStream(BaseStream, QObject):
     """The video API."""
 
-    errored = pyqtSignal()
-    changed = pyqtSignal()
-    loaded = pyqtSignal()
+    errored = cast(ClassVar[pyqtBoundSignal], pyqtSignal())
+    changed = cast(ClassVar[pyqtBoundSignal], pyqtSignal())
+    loaded = cast(ClassVar[pyqtBoundSignal], pyqtSignal())
 
     def __init__(
         self,
@@ -164,6 +165,8 @@ class VideoStream(QObject):
         pts = self.align_pts_to_prev_frame(pts)
         idx = self.timecodes.index(pts)
         frame = self.get_frame(idx, grab_width, grab_height)
+        if not frame:
+            raise RuntimeError(f"error while grabbing frame #{idx}")
         if not frame.flags.c_contiguous:
             frame = frame.copy(order="C")
         image = PIL.Image.frombytes("RGB", (grab_width, grab_height), frame)
@@ -233,14 +236,14 @@ class VideoStream(QObject):
         return pts
 
     def frame_idx_from_pts(
-        self, pts: Union[float, int, np.array]
-    ) -> Union[int, np.array]:
+        self, pts: Union[float, int, np.ndarray]
+    ) -> Union[int, np.ndarray]:
         """Get index of a frame that contains given PTS.
 
         :param pts: PTS to search for
         :return: frame index, -1 if not found
         """
-        ret = np.searchsorted(self.timecodes, pts, "right").astype(np.int)
+        ret = np.searchsorted(self.timecodes, pts, "right").astype(np.int32)
         ret = np.clip(ret - 1, a_min=0 if self.timecodes else -1, a_max=None)
         return ret
 
@@ -318,7 +321,7 @@ class VideoStream(QObject):
 
     def get_frame(
         self, frame_idx: int, width: int, height: int
-    ) -> Optional[np.array]:
+    ) -> Optional[np.ndarray]:
         """Get raw video data from the currently loaded video source.
 
         :param frame_idx: frame number
@@ -349,7 +352,7 @@ class VideoStream(QObject):
 
     async def async_get_frame(
         self, frame_idx: int, width: int, height: int
-    ) -> Optional[np.array]:
+    ) -> Optional[np.ndarray]:
         """Get raw video data from the currently loaded video source
         asynchronously.
 

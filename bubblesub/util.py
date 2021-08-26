@@ -20,10 +20,10 @@ import ast
 import itertools
 import operator
 import re
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from fractions import Fraction
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, TypeVar, Union
 
 
 def ms_to_times(milliseconds: int) -> tuple[int, int, int, int]:
@@ -90,27 +90,35 @@ def eval_expr(expr: str) -> Union[int, float, Fraction]:
     :param expr: expression to evaluate
     :return: scalar result
     """
+    TNumber = TypeVar("TNumber", bound=Union[int, float, Fraction])
 
-    op_map = {
+    bin_ops: dict[type, Callable[[TNumber, TNumber], TNumber]] = {
         ast.Add: operator.add,
         ast.Sub: operator.sub,
         ast.Mult: operator.mul,
         ast.Div: operator.truediv,
         ast.Pow: operator.pow,
         ast.BitXor: operator.xor,
+    }
+
+    unary_ops: dict[type, Callable[[TNumber], TNumber]] = {
         ast.USub: operator.neg,
     }
 
-    def _eval(node: ast.expr) -> Union[int, float, Fraction]:
-        if isinstance(node, ast.Num):
-            return Fraction(node.n)
+    def _eval(node: ast.AST) -> Union[int, float, Fraction]:
+        if isinstance(node, ast.Constant) and isinstance(
+            node.value, (int, float, str)
+        ):
+            return Fraction(node.value)
         if isinstance(node, ast.BinOp):
-            return op_map[type(node.op)](_eval(node.left), _eval(node.right))
+            return bin_ops[type(node.op)](_eval(node.left), _eval(node.right))
         if isinstance(node, ast.UnaryOp):
-            return op_map[type(node.op)](_eval(node.operand))
+            return unary_ops[type(node.op)](_eval(node.operand))
+        if isinstance(node, ast.Expression):
+            return _eval(node.body)
         raise TypeError(node)
 
-    return _eval(ast.parse(str(expr), mode="eval").body)
+    return _eval(ast.parse(str(expr), mode="eval"))
 
 
 def make_ranges(

@@ -21,12 +21,13 @@ import time
 import uuid
 from contextlib import nullcontext
 from pathlib import Path
-from typing import IO, ContextManager, Optional, Union, cast
+from typing import IO, ClassVar, ContextManager, Optional, Union, cast
 
 import ffms2
 import numpy as np
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtBoundSignal, pyqtSignal
 
+from bubblesub.api.base_streams_api import BaseStream
 from bubblesub.api.log import LogApi
 from bubblesub.api.threading import ThreadingApi
 from bubblesub.fmt.wav import write_wav
@@ -73,12 +74,12 @@ def _load_audio_source(
         return source
 
 
-class AudioStream(QObject):
+class AudioStream(BaseStream, QObject):
     """The audio source."""
 
-    errored = pyqtSignal()
-    changed = pyqtSignal()
-    loaded = pyqtSignal()
+    errored = cast(ClassVar[pyqtBoundSignal], pyqtSignal())
+    changed = cast(ClassVar[pyqtBoundSignal], pyqtSignal())
+    loaded = cast(ClassVar[pyqtBoundSignal], pyqtSignal())
 
     def __init__(
         self, threading_api: ThreadingApi, log_api: LogApi, path: Path
@@ -202,7 +203,7 @@ class AudioStream(QObject):
         self._delay = value
         self.changed.emit()
 
-    def get_samples(self, start_frame: int, count: int) -> np.array:
+    def get_samples(self, start_frame: int, count: int) -> np.ndarray:
         """Get raw audio samples from the currently loaded audio source.
         Doesn't take delay into account.
 
@@ -259,7 +260,7 @@ class AudioStream(QObject):
         with ctx as handle:
             write_wav(handle, self.sample_rate, samples)
 
-    def _create_empty_sample_buffer(self) -> np.array:
+    def _create_empty_sample_buffer(self) -> np.ndarray:
         return np.zeros(
             0,
             dtype={

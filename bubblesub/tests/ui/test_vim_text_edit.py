@@ -28,16 +28,16 @@ from PyQt5.QtWidgets import QWidget
 from bubblesub.ui.vim_text_edit import VimTextEdit
 
 KEYMAP = {
-    "<CR>": Qt.Key_Return,
-    "<Esc>": Qt.Key_Escape,
-    "<BS>": Qt.Key_Backspace,
-    "<Del>": Qt.Key_Delete,
-    "<Right>": Qt.Key_Right,
-    "<Left>": Qt.Key_Left,
-    "<Up>": Qt.Key_Up,
-    "<Down>": Qt.Key_Down,
-    "<Home>": Qt.Key_Home,
-    "<End>": Qt.Key_End,
+    "<CR>": Qt.Key.Key_Return,
+    "<Esc>": Qt.Key.Key_Escape,
+    "<BS>": Qt.Key.Key_Backspace,
+    "<Del>": Qt.Key.Key_Delete,
+    "<Right>": Qt.Key.Key_Right,
+    "<Left>": Qt.Key.Key_Left,
+    "<Up>": Qt.Key.Key_Up,
+    "<Down>": Qt.Key.Key_Down,
+    "<Home>": Qt.Key.Key_Home,
+    "<End>": Qt.Key.Key_End,
 }
 
 TESTS = []
@@ -561,7 +561,7 @@ def root_qt_widget() -> QWidget:
 @pytest.fixture(scope="session")
 def text_edit(  # pylint: disable=redefined-outer-name
     qapp: Any, root_qt_widget: QWidget
-) -> None:
+) -> QWidget:
     """Construct VimTextEdit instance for testing.
 
     :param qapp: test QApplication
@@ -598,11 +598,11 @@ def test_vim_text_edit(  # pylint: disable=redefined-outer-name
             key_num = KEYMAP[key]
             key_text = ""
         else:
-            key_num = ord(key)
+            key_num = Qt.Key(ord(key))
             key_text = key
         text_edit.keyPressEvent(
             QKeyEvent(
-                QEvent.KeyPress,
+                QEvent.Type.KeyPress,
                 key_num,
                 Qt.KeyboardModifiers(),
                 0,
@@ -613,7 +613,7 @@ def test_vim_text_edit(  # pylint: disable=redefined-outer-name
         )
         text_edit.keyReleaseEvent(
             QKeyEvent(
-                QEvent.KeyRelease,
+                QEvent.Type.KeyRelease,
                 key_num,
                 Qt.KeyboardModifiers(),
                 0,
