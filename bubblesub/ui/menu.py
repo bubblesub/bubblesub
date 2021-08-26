@@ -16,8 +16,8 @@
 
 import asyncio
 import functools
-import typing as T
 from pathlib import Path
+from typing import Any, Union
 
 from PyQt5 import QtWidgets
 
@@ -28,7 +28,7 @@ from bubblesub.cfg.hotkeys import HotkeyContext
 from bubblesub.cfg.menu import MenuItem
 from bubblesub.ui.themes import BaseTheme
 
-HotkeyMap = T.Dict[T.Tuple[HotkeyContext, str], str]
+HotkeyMap = dict[tuple[HotkeyContext, str], str]
 
 
 def _window_from_menu(menu: QtWidgets.QMenu) -> QtWidgets.QWidget:
@@ -73,7 +73,7 @@ class CommandAction(QtWidgets.QAction):
 
 class LoadRecentFileAction(QtWidgets.QAction):
     def __init__(
-        self, api: Api, path: T.Union[str, Path], parent: QtWidgets.QWidget
+        self, api: Api, path: Union[str, Path], parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
@@ -87,7 +87,7 @@ class LoadRecentFileAction(QtWidgets.QAction):
 
 class LoadThemeAction(QtWidgets.QAction):
     def __init__(
-        self, api: Api, theme: T.Type[BaseTheme], parent: QtWidgets.QWidget
+        self, api: Api, theme: type[BaseTheme], parent: QtWidgets.QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
@@ -201,7 +201,7 @@ def setup_menu(
     parent: QtWidgets.QWidget,
     root_item: MenuItem,
     context: HotkeyContext,
-) -> T.Any:
+) -> Any:
     for action in parent.actions():
         parent.removeAction(action)
 

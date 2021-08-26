@@ -18,8 +18,9 @@
 
 import bisect
 import enum
-import typing as T
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any, Optional
 
 import parsimonious
 from ass_parser import AssEvent
@@ -85,27 +86,25 @@ class _AsyncNodeVisitor:
 
     grammar = None
 
-    async def visit(self, node: T.Any) -> T.Any:
+    async def visit(self, node: Any) -> Any:
         method = getattr(self, "visit_" + node.expr_name, self.generic_visit)
         return await method(node, [await self.visit(n) for n in node])
 
-    async def generic_visit(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def generic_visit(self, node: Any, visited: list[Any]) -> Any:
         raise NotImplementedError(
             "No visitor method was defined for this expression: %s"
             % node.expr.as_rule()
         )
 
-    async def parse(self, text: str, pos: int = 0) -> T.Any:
+    async def parse(self, text: str, pos: int = 0) -> Any:
         return await self._parse_or_match(text, pos, "parse")
 
-    async def match(self, text: str, pos: int = 0) -> T.Any:
+    async def match(self, text: str, pos: int = 0) -> Any:
         return await self._parse_or_match(text, pos, "match")
 
     async def _parse_or_match(
         self, text: str, pos: int, method_name: str
-    ) -> T.Any:
+    ) -> Any:
         if not self.grammar:
             raise RuntimeError(
                 "The {cls}.{method}() shortcut won't work because {cls} was "
@@ -131,7 +130,7 @@ class _Token(enum.IntEnum):
     END = enum.auto()
 
     @staticmethod
-    def start_end(obj: T.Any, token: "_Token") -> T.Any:
+    def start_end(obj: Any, token: "_Token") -> Any:
         if token == _Token.START:
             return obj.start
         if token == _Token.END:
@@ -139,7 +138,7 @@ class _Token(enum.IntEnum):
         raise NotImplementedError(f'unknown boundary: "{token}"')
 
     @staticmethod
-    def prev_next(obj: T.Any, token: "_Token") -> T.Any:
+    def prev_next(obj: Any, token: "_Token") -> Any:
         if token == _Token.PREVIOUS:
             return obj.prev
         if token == _Token.CURRENT:
@@ -185,7 +184,7 @@ class _Time:
         time1: "_Time",
         time2: "_Time",
         api: Api,
-        func: T.Callable[[int, int], int],
+        func: Callable[[int, int], int],
     ) -> "_Time":
         """Performs time arithmetic.
 
@@ -234,7 +233,7 @@ class _Time:
         raise NotImplementedError(f"unknown unit: {self.unit}")
 
 
-def _flatten(items: T.Any) -> T.List[T.Any]:
+def _flatten(items: Any) -> list[Any]:
     if isinstance(items, (list, tuple)):
         return [
             item
@@ -245,7 +244,7 @@ def _flatten(items: T.Any) -> T.List[T.Any]:
     return [items]
 
 
-def _bisect(source: T.List[int], origin: int, delta: int) -> int:
+def _bisect(source: list[int], origin: int, delta: int) -> int:
     if delta >= 0:
         # find leftmost value greater than origin
         idx = bisect.bisect_right(source, origin)
@@ -279,22 +278,20 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
     unwrapped_exceptions = (CommandError,)
     grammar = parsimonious.Grammar(GRAMMAR)
 
-    def __init__(self, api: Api, origin: T.Optional[int]) -> None:
+    def __init__(self, api: Api, origin: Optional[int]) -> None:
         self._api = api
         self._origin = origin
 
     # --- grammar features ---
 
-    async def generic_visit(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def generic_visit(self, node: Any, visited: list[Any]) -> Any:
         if not node.expr_name and not node.children:
             return node.text
         return _flatten(visited)
 
     async def visit_unary_operation(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+        self, node: Any, visited: list[Any]
+    ) -> Any:
         operator, time = _flatten(visited)
         if self._origin is not None:
             return await self.visit_binary_operation(
@@ -305,8 +302,8 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         return time
 
     async def visit_binary_operation(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+        self, node: Any, visited: list[Any]
+    ) -> Any:
         time1, operator, time2 = _flatten(visited)
         try:
             func = {"+": _Time.add, "-": _Time.sub}[operator]
@@ -314,22 +311,18 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
             raise NotImplementedError(f"unknown operator: {operator}")
         return func(time1, time2, self._api)
 
-    async def visit_line(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_line(self, node: Any, visited: list[Any]) -> Any:
         return _flatten(visited)[0].unpack(self._api)
 
     # --- basic tokens ---
 
-    async def visit_integer(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_integer(self, node: Any, visited: list[Any]) -> Any:
         return int(node.text)
 
-    async def visit_decimal(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_decimal(self, node: Any, visited: list[Any]) -> Any:
         return float(node.text)
 
-    async def visit_rel(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_rel(self, node: Any, visited: list[Any]) -> Any:
         try:
             return {
                 "c": _Token.CURRENT,
@@ -341,45 +334,35 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         except LookupError:
             raise NotImplementedError(f"unknown relation: {node.text}")
 
-    async def visit_start(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_start(self, node: Any, visited: list[Any]) -> Any:
         return _Token.START
 
-    async def visit_end(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_end(self, node: Any, visited: list[Any]) -> Any:
         return _Token.END
 
     # --- times ---
 
-    async def visit_milliseconds(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_milliseconds(self, node: Any, visited: list[Any]) -> Any:
         return _Time(_flatten(visited)[0])
 
-    async def visit_seconds(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_seconds(self, node: Any, visited: list[Any]) -> Any:
         return _Time(int(_flatten(visited)[0] * 1000))
 
-    async def visit_minutes(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_minutes(self, node: Any, visited: list[Any]) -> Any:
         visited = _flatten(visited)
         minutes = visited[0]
         seconds = visited[2] if len(visited) >= 3 and visited[2] else 0
         seconds += minutes * 60
         return _Time(int(seconds * 1000))
 
-    async def visit_colon_time(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_colon_time(self, node: Any, visited: list[Any]) -> Any:
         value = float("0." + (node.match.group("ms") or "0"))
         value += int(node.match.group("s") or "0")
         value += int(node.match.group("m") or "0") * 60
         value += int(node.match.group("h") or "0") * 3600
         return _Time(int(value * 1000))
 
-    async def visit_subtitle(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_subtitle(self, node: Any, visited: list[Any]) -> Any:
         _, num, boundary = _flatten(visited)
         idx = max(1, min(num, len(self._api.subs.events))) - 1
         try:
@@ -388,21 +371,17 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
             sub = None
         return _Time(_Token.start_end(sub, boundary) if sub else 0)
 
-    async def visit_frame(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_frame(self, node: Any, visited: list[Any]) -> Any:
         num, _ = _flatten(visited)
         return _Time(num, _TimeUnit.FRAME)
 
-    async def visit_keyframe(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_keyframe(self, node: Any, visited: list[Any]) -> Any:
         num, _ = _flatten(visited)
         return _Time(num, _TimeUnit.KEYFRAME)
 
-    async def visit_rel_subtitle(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_rel_subtitle(self, node: Any, visited: list[Any]) -> Any:
         direction, _, boundary = _flatten(visited)
-        sub: T.Optional[AssEvent]
+        sub: Optional[AssEvent]
         try:
             if direction == _Token.FIRST:
                 sub = self._api.subs.events[0]
@@ -415,9 +394,7 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
             sub = None
         return _Time(_Token.start_end(sub, boundary) if sub else 0)
 
-    async def visit_rel_frame(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_rel_frame(self, node: Any, visited: list[Any]) -> Any:
         direction, _ = _flatten(visited)
         origin = self._api.playback.current_pts
         if direction == _Token.FIRST:
@@ -431,9 +408,7 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         delta = _Token.delta_from_direction(direction)
         return _Time(_apply_frame(self._api, origin, delta))
 
-    async def visit_rel_keyframe(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_rel_keyframe(self, node: Any, visited: list[Any]) -> Any:
         direction, _ = _flatten(visited)
         origin = self._api.playback.current_pts
         if direction == _Token.FIRST:
@@ -447,8 +422,8 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         return _Time(_apply_keyframe(self._api, origin, delta))
 
     async def visit_audio_selection(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+        self, node: Any, visited: list[Any]
+    ) -> Any:
         _, boundary = _flatten(visited)
         if boundary == _Token.START:
             return _Time(self._api.audio.view.selection_start)
@@ -456,9 +431,7 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
             return _Time(self._api.audio.view.selection_end)
         raise NotImplementedError(f'unknown boundary: "{boundary}"')
 
-    async def visit_audio_view(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+    async def visit_audio_view(self, node: Any, visited: list[Any]) -> Any:
         _, boundary = _flatten(visited)
         if boundary == _Token.START:
             return _Time(self._api.audio.view.view_start)
@@ -467,17 +440,17 @@ class _PtsNodeVisitor(_AsyncNodeVisitor):
         raise NotImplementedError(f'unknown boundary: "{boundary}"')
 
     async def visit_default_duration(
-        self, node: T.Any, visited: T.List[T.Any]
-    ) -> T.Any:
+        self, node: Any, visited: list[Any]
+    ) -> Any:
         return _Time(self._api.cfg.opt["subs"]["default_duration"])
 
-    async def visit_min(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_min(self, node: Any, visited: list[Any]) -> Any:
         return _Time(0)
 
-    async def visit_max(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_max(self, node: Any, visited: list[Any]) -> Any:
         return _Time(self._api.playback.max_pts)
 
-    async def visit_dialog(self, node: T.Any, visited: T.List[T.Any]) -> T.Any:
+    async def visit_dialog(self, node: Any, visited: list[Any]) -> Any:
         ret = await self._api.gui.exec(
             time_jump_dialog,
             relative_checked=False,
@@ -500,14 +473,14 @@ class Pts:
         self.expr = expr
 
     async def get(
-        self, origin: T.Optional[int] = None, align_to_near_frame: bool = False
+        self, origin: Optional[int] = None, align_to_near_frame: bool = False
     ) -> int:
         ret = await self._get(origin)
         if align_to_near_frame and self._api.video.current_stream:
             ret = self._api.video.current_stream.align_pts_to_near_frame(ret)
         return ret
 
-    async def _get(self, origin: T.Optional[int]) -> int:
+    async def _get(self, origin: Optional[int]) -> int:
         try:
             node_visitor = _PtsNodeVisitor(self._api, origin)
             return await node_visitor.parse(self.expr.strip())

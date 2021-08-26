@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
 from collections import OrderedDict
+from typing import cast
 
 import ass_tag_parser
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -192,8 +192,8 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
         layout.addWidget(self._table_view)
         layout.addWidget(strip)
 
-    def get_data(self) -> T.Dict[str, str]:
-        metadata: T.Dict[str, str] = OrderedDict()
+    def get_data(self) -> dict[str, str]:
+        metadata: dict[str, str] = OrderedDict()
         for y in range(self.model.rowCount()):
             visual_y = self._table_view.verticalHeader().visualIndex(y)
             key = self.model.item(visual_y, 0).text().strip()
@@ -249,10 +249,10 @@ class _FilePropertiesDialog(Dialog):
 
     def _load(self) -> None:
         self._options_group_box.res_x_edit.setValue(
-            int(T.cast(str, self._api.subs.script_info.get("PlayResX", "0")))
+            int(cast(str, self._api.subs.script_info.get("PlayResX", "0")))
         )
         self._options_group_box.res_y_edit.setValue(
-            int(T.cast(str, self._api.subs.script_info.get("PlayResY", "0")))
+            int(cast(str, self._api.subs.script_info.get("PlayResY", "0")))
         )
 
         self._options_group_box.ycbcr_matrix_combo_box.setCurrentIndex(
@@ -288,8 +288,8 @@ class _FilePropertiesDialog(Dialog):
     @async_slot()
     async def _commit(self) -> None:
         old_res = (
-            int(T.cast(str, self._api.subs.script_info.get("PlayResX", "0"))),
-            int(T.cast(str, self._api.subs.script_info.get("PlayResY", "0"))),
+            int(cast(str, self._api.subs.script_info.get("PlayResX", "0"))),
+            int(cast(str, self._api.subs.script_info.get("PlayResY", "0"))),
         )
 
         self._api.subs.script_info.clear()
@@ -314,8 +314,8 @@ class _FilePropertiesDialog(Dialog):
         self._api.subs.script_info.update(self._metadata_group_box.get_data())
 
         new_res = (
-            int(T.cast(str, self._api.subs.script_info.get("PlayResX", "0"))),
-            int(T.cast(str, self._api.subs.script_info.get("PlayResY", "0"))),
+            int(cast(str, self._api.subs.script_info.get("PlayResX", "0"))),
+            int(cast(str, self._api.subs.script_info.get("PlayResY", "0"))),
         )
         if (
             old_res != new_res

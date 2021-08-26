@@ -18,8 +18,6 @@
 
 # pylint: disable=import-outside-toplevel
 
-import typing as T
-
 from .common import (
     BaseSpellChecker,
     DictNotFound,

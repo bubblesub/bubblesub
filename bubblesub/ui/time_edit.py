@@ -16,7 +16,7 @@
 
 """Definition of the TimeEdit widget."""
 
-import typing as T
+from typing import Any
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -52,7 +52,7 @@ class TimeEdit(QtWidgets.QWidget):
         self,
         parent: QtWidgets.QWidget,
         allow_negative: bool = False,
-        **kwargs: T.Any,
+        **kwargs: Any,
     ) -> None:
         """Initialize self.
 

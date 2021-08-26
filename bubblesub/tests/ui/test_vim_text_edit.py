@@ -17,8 +17,8 @@
 """Test VimTextEdit class."""
 
 import re
-import typing as T
 from pathlib import Path
+from typing import Any
 
 import pytest
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -558,7 +558,7 @@ def root_qt_widget() -> QtWidgets.QWidget:
 
 @pytest.fixture(scope="session")
 def text_edit(  # pylint: disable=redefined-outer-name
-    qapp: T.Any, root_qt_widget: QtWidgets.QWidget
+    qapp: Any, root_qt_widget: QtWidgets.QWidget
 ) -> None:
     """Construct VimTextEdit instance for testing.
 

@@ -18,8 +18,9 @@
 
 import enum
 import re
-import typing as T
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any, Optional
 
 from PyQt5 import QtCore
 
@@ -73,7 +74,7 @@ class HotkeysConfig(SubConfig):
     def __init__(self) -> None:
         """Initialize self."""
         super().__init__()
-        self._hotkeys: T.List[Hotkey] = []
+        self._hotkeys: list[Hotkey] = []
         self._signals = _HotkeysConfigSignals()
         self.load(None)
 
@@ -87,7 +88,7 @@ class HotkeysConfig(SubConfig):
         if not user_path.exists():
             user_path.write_text((DATA_DIR / "hotkeys.example").read_text())
 
-    def load(self, root_dir: T.Optional[Path]) -> None:
+    def load(self, root_dir: Optional[Path]) -> None:
         """Load internals of this config from the specified directory.
 
         :param root_dir: directory where to look for the matching config file
@@ -127,14 +128,14 @@ class HotkeysConfig(SubConfig):
                 Hotkey(context=cur_context, shortcut=shortcut, cmdline=cmdline)
             )
 
-    def __iter__(self) -> T.Iterator[Hotkey]:
+    def __iter__(self) -> Iterator[Hotkey]:
         """Let users iterate directly over this config.
 
         :return: iterator
         """
         return iter(self._hotkeys)
 
-    def __getitem__(self, key: T.Any) -> T.Optional[str]:
+    def __getitem__(self, key: Any) -> Optional[str]:
         """Retrieve hotkey cmdline by shortcut.
 
         :param key: shortcut
@@ -146,7 +147,7 @@ class HotkeysConfig(SubConfig):
                 return hotkey.cmdline
         return None
 
-    def __setitem__(self, key: T.Any, cmdline: T.Optional[str]) -> None:
+    def __setitem__(self, key: Any, cmdline: Optional[str]) -> None:
         """Update hotkey cmdline by shortcut.
         If cmdline is None, remove the hotkey.
 
@@ -175,7 +176,7 @@ class HotkeysConfig(SubConfig):
         self._hotkeys.append(hotkey)
         self.added.emit(hotkey)
 
-    def _parse_key(self, key: T.Any) -> T.Tuple[HotkeyContext, str]:
+    def _parse_key(self, key: Any) -> tuple[HotkeyContext, str]:
         msg = "key must be a context-shortcut tuple"
         assert isinstance(key, tuple), msg
         assert len(key) == 2, msg

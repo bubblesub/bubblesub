@@ -15,9 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
-import typing as T
 from copy import copy
 from dataclasses import dataclass
+from typing import Optional, cast
 
 from ass_parser import AssEvent
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -139,7 +139,7 @@ class DragModeExecutor:
 
     def __init__(self, api: Api) -> None:
         self._api = api
-        self.selected_events: T.List[AssEvent] = []
+        self.selected_events: list[AssEvent] = []
 
     def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         self.selected_events = self._api.subs.selected_events[:]
@@ -244,8 +244,8 @@ class SubtitleSplitDragModeExecutor(DragModeExecutor):
 
     def __init__(self, api: Api) -> None:
         super().__init__(api)
-        self.source_events: T.List[AssEvent] = []
-        self.copied_events: T.List[AssEvent] = []
+        self.source_events: list[AssEvent] = []
+        self.copied_events: list[AssEvent] = []
 
     def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
         super().begin_drag(event, pts)
@@ -279,7 +279,7 @@ class BaseAudioWidget(QtWidgets.QWidget):
     def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
         super().__init__(parent)
         self._api = api
-        self._drag_mode: T.Optional[DragMode] = None
+        self._drag_mode: Optional[DragMode] = None
         self._drag_mode_executors = {
             executor.drag_mode: executor(self._api)
             for executor in DragModeExecutor.__subclasses__()
@@ -387,7 +387,7 @@ class BaseLocalAudioWidget(BaseAudioWidget):
 
 class BaseGlobalAudioWidget(BaseAudioWidget):
     def pts_to_x(self, pts: int) -> float:
-        scale = T.cast(int, self.width()) / max(1, self._view.size)
+        scale = cast(int, self.width()) / max(1, self._view.size)
         return (pts - self._view.min) * scale
 
     def pts_from_x(self, x: float) -> int:

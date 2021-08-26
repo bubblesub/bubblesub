@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
+from typing import Any
 
 from ass_parser.observable_sequence_mixin import (
     ObservableSequenceItemInsertionEvent,
@@ -31,7 +31,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     """Make ObservableList usable as Qt's QAbstractTableModel."""
 
     def __init__(
-        self, parent: QtCore.QObject, list_: ObservableList[T.Any]
+        self, parent: QtCore.QObject, list_: ObservableList[Any]
     ) -> None:
         """Initialize self.
 
@@ -68,7 +68,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
 
     def data(
         self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole
-    ) -> T.Any:
+    ) -> Any:
         """Retrieve cell data at the specified position.
 
         :param index: cell position
@@ -82,7 +82,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     def setData(
         self,
         index: QtCore.QModelIndex,
-        value: T.Any,
+        value: Any,
         role: int = QtCore.Qt.DisplayRole,
     ) -> bool:
         """Update cell data at the specified position.
@@ -104,11 +104,11 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
     def _column_count(self) -> int:
         raise NotImplementedError("not implemented")
 
-    def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
+    def _get_data(self, row_idx: int, col_idx: int, role: int) -> Any:
         raise NotImplementedError("not implemented")
 
     def _set_data(
-        self, row_idx: int, col_idx: int, role: int, new_value: T.Any
+        self, row_idx: int, col_idx: int, role: int, new_value: Any
     ) -> bool:
         raise NotImplementedError("not implemented")
 

@@ -16,8 +16,8 @@
 
 """Path object that's capable of prompting user with load/save dialogs."""
 
-import typing as T
 from pathlib import Path
+from typing import Any, Optional
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled, CommandUnavailable
@@ -32,7 +32,7 @@ class FancyPath:
 
     async def get_load_path(
         self,
-        file_filter: T.Optional[str] = None,
+        file_filter: Optional[str] = None,
     ) -> Path:
         if self.value:
             path = Path(self.value).expanduser()
@@ -53,9 +53,9 @@ class FancyPath:
 
     async def get_save_path(
         self,
-        file_filter: T.Optional[str] = None,
-        directory: T.Optional[Path] = None,
-        default_file_name: T.Optional[str] = None,
+        file_filter: Optional[str] = None,
+        directory: Optional[Path] = None,
+        default_file_name: Optional[str] = None,
     ) -> Path:
         if self.value:
             return Path(self.value).expanduser()
@@ -76,11 +76,11 @@ class FancyPath:
         raise CommandCanceled
 
     async def _show_load_dialog(
-        self, *args: T.Any, **kwargs: T.Any
-    ) -> T.Optional[Path]:
+        self, *args: Any, **kwargs: Any
+    ) -> Optional[Path]:
         return await load_dialog(*args, **kwargs)
 
     async def _show_save_dialog(
-        self, *args: T.Any, **kwargs: T.Any
-    ) -> T.Optional[Path]:
+        self, *args: Any, **kwargs: Any
+    ) -> Optional[Path]:
         return await save_dialog(*args, **kwargs)

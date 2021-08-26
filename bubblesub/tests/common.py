@@ -17,7 +17,7 @@
 """Shared utility functions for tests."""
 
 import argparse
-import typing as T
+from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
@@ -28,7 +28,7 @@ APP_ROOT_DIR = Path(__file__).parent.parent
 TESTS_ROOT_DIR = APP_ROOT_DIR / "tests"
 
 
-def collect_source_files(root: Path = APP_ROOT_DIR) -> T.Iterable[Path]:
+def collect_source_files(root: Path = APP_ROOT_DIR) -> Iterable[Path]:
     """Return source files belonging to bubblesub.
 
     :param root: root dir, defaulting to the whole project

@@ -17,17 +17,18 @@
 """Common class for audio and video stream manager APIs."""
 
 import threading
-import typing as T
 import uuid
+from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
+from typing import Any, Generic, Optional, Protocol, TypeVar
 
 from PyQt5 import QtCore
 
 from bubblesub.api.threading import synchronized
 
 
-class TStream(T.Protocol):  # pylint: disable=no-member
+class TStream(Protocol):  # pylint: disable=no-member
     """Base stream protocol."""
 
     uid: uuid.UUID
@@ -37,9 +38,9 @@ class TStream(T.Protocol):  # pylint: disable=no-member
     path: Path
 
 
-_TStream = T.TypeVar("_TStream", bound="TStream")
+_TStream = TypeVar("_TStream", bound="TStream")
 
-BaseStreamsApiTypeHint: T.Any = T.Generic[_TStream]
+BaseStreamsApiTypeHint: Any = Generic[_TStream]
 
 
 class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
@@ -58,8 +59,8 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
     def __init__(self) -> None:
         """Initialize self."""
         super().__init__()
-        self._streams: T.List[TStream] = []
-        self._current_stream: T.Optional[TStream] = None
+        self._streams: list[TStream] = []
+        self._current_stream: Optional[TStream] = None
 
     @synchronized(lock=stream_lock)
     def unload_all_streams(self) -> None:
@@ -95,7 +96,7 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
         return True
 
-    def get_stream_index(self, uid: uuid.UUID) -> T.Optional[int]:
+    def get_stream_index(self, uid: uuid.UUID) -> Optional[int]:
         """Returns index of the given stream uid.
 
         :param uid: stream to get the index of
@@ -127,7 +128,7 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
         self.stream_unloaded.emit(old_stream)
 
     @synchronized(lock=stream_lock)
-    def switch_stream(self, uid: T.Optional[uuid.UUID]) -> None:
+    def switch_stream(self, uid: Optional[uuid.UUID]) -> None:
         """Switches streams.
 
         :param uid: stream to switch to
@@ -135,7 +136,7 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
         if uid is None:
             self._set_current_stream(None)
         else:
-            stream: T.Optional[TStream]
+            stream: Optional[TStream]
             for stream in self._streams:
                 if stream.uid == uid:
                     break
@@ -153,7 +154,7 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
     @property
     @synchronized(lock=stream_lock)
-    def current_stream(self) -> T.Optional[TStream]:
+    def current_stream(self) -> Optional[TStream]:
         """Return currently loaded stream.
 
         :return: stream
@@ -162,14 +163,14 @@ class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
 
     @property
     @synchronized(lock=stream_lock)
-    def streams(self) -> T.Iterable[TStream]:
+    def streams(self) -> Iterable[TStream]:
         """Return all loaded streams.
 
         :return: list of streams
         """
         return self._streams[:]
 
-    def _set_current_stream(self, stream: T.Optional[TStream]) -> None:
+    def _set_current_stream(self, stream: Optional[TStream]) -> None:
         if stream != self._current_stream:
             self._current_stream = stream
             self.current_stream_switched.emit(self._current_stream)

@@ -21,7 +21,8 @@
 
 import ctypes
 import ctypes.util
-import typing as T
+from collections.abc import Callable, Iterator
+from typing import Any, Optional
 
 import ass_parser
 
@@ -38,21 +39,21 @@ assert _libc_path, "libc was not found"
 _libc = ctypes.cdll.LoadLibrary(_libc_path)
 
 
-def _encode_str(text: T.Optional[str]) -> T.Optional[bytes]:
+def _encode_str(text: Optional[str]) -> Optional[bytes]:
     return None if text is None else text.encode("utf-8")
 
 
-def _color_to_int(color: T.Tuple[int, int, int, int]) -> int:
+def _color_to_int(color: tuple[int, int, int, int]) -> int:
     red, green, blue, alpha = color
     return alpha | (blue << 8) | (green << 16) | (red << 24)
 
 
 class AssImageSequence:
-    def __init__(self, renderer: "AssRenderer", head_ptr: T.Any) -> None:
+    def __init__(self, renderer: "AssRenderer", head_ptr: Any) -> None:
         self.renderer = renderer
         self.head_ptr = head_ptr
 
-    def __iter__(self) -> T.Iterator["AssImage"]:
+    def __iter__(self) -> Iterator["AssImage"]:
         cur = self.head_ptr
         while cur:
             yield cur.contents
@@ -65,7 +66,7 @@ class AssImage(ctypes.Structure):
     TYPE_SHADOW = 2
 
     @property
-    def rgba(self) -> T.Tuple[int, int, int, int]:
+    def rgba(self) -> tuple[int, int, int, int]:
         color = self.color
         alpha = color & 0xFF
         blue = (color >> 8) & 0xFF
@@ -73,7 +74,7 @@ class AssImage(ctypes.Structure):
         red = (color >> 24) & 0xFF
         return (red, green, blue, alpha)
 
-    def __getitem__(self, loc: T.Tuple[int, int]) -> int:
+    def __getitem__(self, loc: tuple[int, int]) -> int:
         x, y = loc
         return ord(self.bitmap[y * self.stride + x])
 
@@ -92,12 +93,12 @@ AssImage._fields_ = [
 
 
 def _make_libass_setter(
-    name: str, types: T.List[T.Any]
-) -> T.Callable[[T.Any, T.Any], T.Any]:
+    name: str, types: list[Any]
+) -> Callable[[Any, Any], Any]:
     fun = _libass[name]
     fun.argtypes = [ctypes.c_void_p] + types
 
-    def setter(self: T.Any, v: T.Any) -> None:
+    def setter(self: Any, v: Any) -> None:
         if len(types) == 1:
             fun(ctypes.byref(self), v)
         else:
@@ -107,8 +108,8 @@ def _make_libass_setter(
     return setter
 
 
-def _make_libass_property(name: str, types: T.List[T.Any]) -> property:
-    def getter(self: T.Any) -> T.Any:
+def _make_libass_property(name: str, types: list[Any]) -> property:
+    def getter(self: Any) -> Any:
         return self._internal_fields.get(name)
 
     return property(getter, _make_libass_setter(name, types))
@@ -120,12 +121,12 @@ class AssContext(ctypes.Structure):
         "ass_set_extract_fonts", [ctypes.c_int]
     )
 
-    def __new__(cls) -> T.Any:
+    def __new__(cls) -> Any:
         return _libass.ass_library_init().contents
 
     def __init__(self) -> None:
         super().__init__()
-        self._internal_fields: T.Any = {}
+        self._internal_fields: Any = {}
 
         if not ctypes.byref(self):
             raise RuntimeError("could not initialize libass")
@@ -187,7 +188,7 @@ class AssRenderer(ctypes.Structure):
     def _after_init(self, ctx: "AssContext") -> None:
         self._ctx = ctx
         self._fonts_set = False
-        self._internal_fields: T.Any = {}
+        self._internal_fields: Any = {}
 
         self.frame_size = (640, 480)
         self.storage_size = (640, 480)
@@ -202,9 +203,9 @@ class AssRenderer(ctypes.Structure):
 
     def set_fonts(
         self,
-        default_font: T.Optional[str] = None,
-        default_family: T.Optional[str] = None,
-        fontconfig_config: T.Optional[str] = None,
+        default_font: Optional[str] = None,
+        default_family: Optional[str] = None,
+        fontconfig_config: Optional[str] = None,
     ) -> None:
         _libass.ass_set_fonts(
             ctypes.byref(self),
@@ -376,7 +377,7 @@ class AssTrack(ctypes.Structure):
         self._ctx = ctx
 
     @property
-    def styles(self) -> T.List[AssStyle]:
+    def styles(self) -> list[AssStyle]:
         if self.n_styles == 0:
             return []
         return ctypes.cast(
@@ -384,7 +385,7 @@ class AssTrack(ctypes.Structure):
         ).contents
 
     @property
-    def events(self) -> T.List[AssEvent]:
+    def events(self) -> list[AssEvent]:
         if self.n_events == 0:
             return []
         return ctypes.cast(

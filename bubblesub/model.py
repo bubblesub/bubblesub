@@ -16,11 +16,12 @@
 
 """Common containers, decorators, etc."""
 
-import typing as T
+from collections.abc import Iterator
+from typing import Any, Generic, Optional, TypeVar, Union, overload
 
 from PyQt5 import QtCore
 
-TItem = T.TypeVar("TItem")
+TItem = TypeVar("TItem")
 
 
 class ObservableObject:
@@ -31,7 +32,7 @@ class ObservableObject:
         self._setattr_impl = self._setattr_normal
         self._dirty = False
 
-    def __setattr__(self, prop: str, new_value: T.Any) -> None:
+    def __setattr__(self, prop: str, new_value: Any) -> None:
         """Set attribute.
 
         Called whenever the user changes any of the class attributes.
@@ -52,7 +53,7 @@ class ObservableObject:
                 if new_value != old_value:
                     self._setattr_impl(prop, new_value)
 
-    def _setattr_normal(self, prop: str, new_value: T.Any) -> None:
+    def _setattr_normal(self, prop: str, new_value: Any) -> None:
         """Regular implementation of attribute setter.
 
         Calls _before_change and _after_change immediately.
@@ -64,7 +65,7 @@ class ObservableObject:
         super().__setattr__(prop, new_value)
         self._after_change()
 
-    def _setattr_throttled(self, prop: str, new_value: T.Any) -> None:
+    def _setattr_throttled(self, prop: str, new_value: Any) -> None:
         """Throttled implementation of attribute setter.
 
         Doesn't call _after_change until after the user calls the .end_update()
@@ -123,7 +124,7 @@ class _ObservableListSignals(QtCore.QObject):
     items_moved = QtCore.pyqtSignal([int, int, int])
 
 
-class ObservableList(T.Generic[TItem]):
+class ObservableList(Generic[TItem]):
     """Alternative to QtCore.QAbstractListModel that simplifies indexing."""
 
     item_modified = property(lambda self: self._signals.item_modified)
@@ -144,16 +145,16 @@ class ObservableList(T.Generic[TItem]):
         """Initialize self."""
         super().__init__()
         self._signals = _ObservableListSignals()
-        self._items: T.List[TItem] = []
+        self._items: list[TItem] = []
 
-    def __getstate__(self) -> T.Any:
+    def __getstate__(self) -> Any:
         """Return pickle compatible object representation.
 
         :return: object representation
         """
         return self._items
 
-    def __setstate__(self, state: T.Any) -> None:
+    def __setstate__(self, state: Any) -> None:
         """Load class state from pickle compatible object representation.
 
         :param state: object representation
@@ -174,8 +175,8 @@ class ObservableList(T.Generic[TItem]):
         """
         return bool(self._items)
 
-    @T.overload
-    def __getitem__(self, idx: slice) -> T.List[TItem]:
+    @overload
+    def __getitem__(self, idx: slice) -> list[TItem]:
         """Retrieve item at given position.
 
         :param idx: item position
@@ -183,7 +184,7 @@ class ObservableList(T.Generic[TItem]):
         """
         ...
 
-    @T.overload  # pylint: disable=function-redefined
+    @overload  # pylint: disable=function-redefined
     def __getitem__(self, idx: int) -> TItem:
         """Retrieve item at given position.
 
@@ -193,8 +194,8 @@ class ObservableList(T.Generic[TItem]):
         ...
 
     def __getitem__(
-        self, idx: T.Any
-    ) -> T.Any:  # pylint: disable=function-redefined
+        self, idx: Any
+    ) -> Any:  # pylint: disable=function-redefined
         """Retrieve item at given position.
 
         :param idx: item position
@@ -202,7 +203,7 @@ class ObservableList(T.Generic[TItem]):
         """
         return self._items[idx]
 
-    def __setitem__(self, idx: T.Union[slice, int], value: T.Any) -> None:
+    def __setitem__(self, idx: Union[slice, int], value: Any) -> None:
         """Set item at given position.
 
         :param idx: position to modify
@@ -231,14 +232,14 @@ class ObservableList(T.Generic[TItem]):
             self.items_removed.emit(idx, 1)
             self.items_inserted.emit(idx, 1)
 
-    def __iter__(self) -> T.Iterator[TItem]:
+    def __iter__(self) -> Iterator[TItem]:
         """Iterate directly over the collection values.
 
         :return: iterator
         """
         yield from self._items
 
-    def __reversed__(self) -> T.Iterator[TItem]:
+    def __reversed__(self) -> Iterator[TItem]:
         """Iterate over the collection values in a reverse order.
 
         :return: iterator
@@ -246,8 +247,8 @@ class ObservableList(T.Generic[TItem]):
         yield from self._items[::-1]
 
     def get(
-        self, idx: int, default: T.Optional[TItem] = None
-    ) -> T.Optional[TItem]:
+        self, idx: int, default: Optional[TItem] = None
+    ) -> Optional[TItem]:
         """Retrieve item at given position.
 
         :param idx: item's position
@@ -258,7 +259,7 @@ class ObservableList(T.Generic[TItem]):
             return default
         return self._items[idx]
 
-    def index(self, item: TItem) -> T.Optional[int]:
+    def index(self, item: TItem) -> Optional[int]:
         """Look up item's position in the collection.
 
         :param item: item to look up
@@ -326,7 +327,7 @@ class ObservableList(T.Generic[TItem]):
         self._items = self._items[:new_idx] + items + self._items[new_idx:]
         self.items_moved.emit(idx, count, new_idx)
 
-    def replace(self, values: T.List[TItem]) -> None:
+    def replace(self, values: list[TItem]) -> None:
         """Replace the entire collection with new content.
 
         Emits items_about_to_be_removed, items_removed,

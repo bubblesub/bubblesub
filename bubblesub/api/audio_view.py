@@ -16,7 +16,7 @@
 
 """API for GUI spectrogram."""
 
-import typing as T
+from typing import Union
 
 from PyQt5 import QtCore
 
@@ -231,5 +231,5 @@ class AudioViewApi(QtCore.QObject):
             lambda _event: self._extend_view()
         )
 
-    def _clip(self, value: T.Union[int, float]) -> int:
+    def _clip(self, value: Union[int, float]) -> int:
         return max(min(self._max, int(value)), self._min)

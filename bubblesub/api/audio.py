@@ -16,7 +16,6 @@
 
 """Audio stream API."""
 
-import typing as T
 from pathlib import Path
 
 from bubblesub.api.audio_stream import AudioStream
@@ -24,10 +23,7 @@ from bubblesub.api.base_streams_api import BaseStreamsApi, TStream
 from bubblesub.api.log import LogApi
 from bubblesub.api.threading import ThreadingApi
 
-if T.TYPE_CHECKING:
-    AudioApiBaseClass = BaseStreamsApi[AudioStream]
-else:
-    AudioApiBaseClass = BaseStreamsApi
+AudioApiBaseClass = BaseStreamsApi[AudioStream]
 
 
 class AudioApi(AudioApiBaseClass):

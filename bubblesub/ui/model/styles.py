@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
-import typing as T
+from collections.abc import Callable
+from typing import Any, cast
 
 from ass_parser import AssColor, AssStyle
 from PyQt5 import QtCore, QtGui
@@ -58,18 +59,18 @@ class AssStylesModelColumn(enum.IntEnum):
 
 
 def _getattr_proxy(
-    prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[AssStyle], T.Any]:
-    def func(style: AssStyle) -> T.Any:
+    prop_name: str, wrapper: Callable[[Any], Any]
+) -> Callable[[AssStyle], Any]:
+    def func(style: AssStyle) -> Any:
         return wrapper(getattr(style, prop_name))
 
     return func
 
 
 def _setattr_proxy(
-    prop_name: str, wrapper: T.Callable[[T.Any], T.Any]
-) -> T.Callable[[AssStyle, T.Any], None]:
-    def func(style: AssStyle, value: T.Any) -> None:
+    prop_name: str, wrapper: Callable[[Any], Any]
+) -> Callable[[AssStyle, Any], None]:
+    def func(style: AssStyle, value: Any) -> None:
         setattr(style, prop_name, wrapper(value))
 
     return func
@@ -147,10 +148,10 @@ _WRITER_MAP = {
 class AssStylesModel(ObservableListTableAdapter):
     def flags(self, index: QtCore.QModelIndex) -> int:
         if index.column() == AssStylesModelColumn.NAME:
-            return T.cast(
+            return cast(
                 int, QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
             )
-        return T.cast(
+        return cast(
             int,
             QtCore.Qt.ItemIsEnabled
             | QtCore.Qt.ItemIsSelectable
@@ -161,14 +162,14 @@ class AssStylesModel(ObservableListTableAdapter):
     def _column_count(self) -> int:
         return len(AssStylesModelColumn)
 
-    def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
+    def _get_data(self, row_idx: int, col_idx: int, role: int) -> Any:
         if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
             style = self._list[row_idx]
             return _READER_MAP[AssStylesModelColumn(col_idx)](style)
         return QtCore.QVariant()
 
     def _set_data(
-        self, row_idx: int, col_idx: int, role: int, new_value: T.Any
+        self, row_idx: int, col_idx: int, role: int, new_value: Any
     ) -> bool:
         style = self._list[row_idx]
         try:

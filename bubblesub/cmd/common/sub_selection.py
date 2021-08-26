@@ -17,8 +17,9 @@
 """Subtitles selection, usable as an argument to commands."""
 
 import itertools
-import typing as T
+from collections.abc import Iterable
 from math import inf
+from typing import Any, Optional
 
 import regex
 from ass_parser import AssEvent
@@ -34,9 +35,7 @@ IDX_REGEX = regex.compile(
 )
 
 
-def _split_by_delim(
-    source: T.List[T.Any], delim: str
-) -> T.Iterable[T.List[T.Any]]:
+def _split_by_delim(source: list[Any], delim: str) -> Iterable[list[Any]]:
     return (
         list(chunk)
         for is_delim, chunk in itertools.groupby(
@@ -46,12 +45,12 @@ def _split_by_delim(
     )
 
 
-def _match_indexes(target: str) -> T.Optional[T.List[int]]:
+def _match_indexes(target: str) -> Optional[list[int]]:
     match = IDX_REGEX.match(target)
     if not match:
         return None
 
-    ret: T.List[int] = []
+    ret: list[int] = []
 
     for group in _split_by_delim(match.captures("token"), ","):
         if len(group) == 1:
@@ -70,7 +69,7 @@ def _match_indexes(target: str) -> T.Optional[T.List[int]]:
     return ret
 
 
-def _filter_indexes(api: Api, indexes: T.List[int]) -> T.Iterable[int]:
+def _filter_indexes(api: Api, indexes: list[int]) -> Iterable[int]:
     valid_indexes = range(len(api.subs.events))
     for idx in indexes:
         if idx in valid_indexes:
@@ -107,7 +106,7 @@ class SubtitlesSelection:
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
-    async def get_all_indexes(self) -> T.List[int]:
+    async def get_all_indexes(self) -> list[int]:
         func = {
             "all": self._get_all,
             "none": self._get_none,
@@ -129,23 +128,23 @@ class SubtitlesSelection:
 
         raise ValueError(f'unknown selection target: "{self.target}"')
 
-    async def get_indexes(self) -> T.List[int]:
+    async def get_indexes(self) -> list[int]:
         return [
             idx
             for idx in await self.get_all_indexes()
             if idx in range(len(self.api.subs.events))
         ]
 
-    async def get_subtitles(self) -> T.List[AssEvent]:
+    async def get_subtitles(self) -> list[AssEvent]:
         return [self.api.subs.events[idx] for idx in await self.get_indexes()]
 
-    async def _get_all(self) -> T.List[int]:
+    async def _get_all(self) -> list[int]:
         return list(range(len(self.api.subs.events)))
 
-    async def _get_none(self) -> T.List[int]:
+    async def _get_none(self) -> list[int]:
         return []
 
-    async def _get_one_above(self) -> T.List[int]:
+    async def _get_one_above(self) -> list[int]:
         if self.api.subs.selected_indexes:
             return [max(0, self.api.subs.selected_indexes[0] - 1)]
         target_sub = first(
@@ -159,7 +158,7 @@ class SubtitlesSelection:
             return [target_sub.index]
         return [len(self.api.subs.events) - 1]
 
-    async def _get_one_below(self) -> T.List[int]:
+    async def _get_one_below(self) -> list[int]:
         if self.api.subs.selected_indexes:
             return [
                 min(
@@ -176,17 +175,17 @@ class SubtitlesSelection:
             return [target_sub.index]
         return [0]
 
-    async def _get_selected(self) -> T.List[int]:
+    async def _get_selected(self) -> list[int]:
         return self.api.subs.selected_indexes
 
-    async def _get_first(self) -> T.List[int]:
+    async def _get_first(self) -> list[int]:
         return [0] if self.api.subs.events else []
 
-    async def _get_last(self) -> T.List[int]:
+    async def _get_last(self) -> list[int]:
         length = len(self.api.subs.events)
         return [length - 1] if length else []
 
-    async def _get_ask_number(self) -> T.List[int]:
+    async def _get_ask_number(self) -> list[int]:
         if not self.api.subs.events:
             return []
         value = await self.api.gui.exec(self._show_number_dialog)
@@ -194,7 +193,7 @@ class SubtitlesSelection:
             raise CommandCanceled
         return [value - 1]
 
-    async def _get_ask_time(self) -> T.List[int]:
+    async def _get_ask_time(self) -> list[int]:
         if not self.api.subs.events:
             return []
         value = await self.api.gui.exec(self._show_time_dialog)
@@ -204,7 +203,7 @@ class SubtitlesSelection:
 
     async def _show_number_dialog(
         self, main_window: QtWidgets.QMainWindow
-    ) -> T.Optional[int]:
+    ) -> Optional[int]:
         dialog = QtWidgets.QInputDialog(main_window)
         dialog.setLabelText("Line number to jump to:")
         dialog.setIntMinimum(1)
@@ -218,7 +217,7 @@ class SubtitlesSelection:
 
     async def _show_time_dialog(
         self, main_window: QtWidgets.QMainWindow
-    ) -> T.Optional[int]:
+    ) -> Optional[int]:
         ret = await time_jump_dialog(
             main_window,
             value=(

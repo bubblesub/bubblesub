@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import typing as T
 from copy import copy
 
 from ass_parser import AssEvent
@@ -42,7 +41,7 @@ class SubtitlesCloneCommand(BaseCommand):
             if not indexes:
                 raise CommandUnavailable("nothing to clone")
 
-            sub_copies: T.List[AssEvent] = []
+            sub_copies: list[AssEvent] = []
             for idx in reversed(indexes):
                 sub_copy = copy(self.api.subs.events[idx])
                 self.api.subs.events.insert(idx + 1, sub_copy)

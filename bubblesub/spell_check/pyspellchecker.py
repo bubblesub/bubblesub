@@ -16,7 +16,7 @@
 
 """Spell checker based on the pyspellchecker library."""
 
-import typing as T
+from collections.abc import Iterable
 
 import spellchecker
 
@@ -32,7 +32,7 @@ class PySpellCheckerSpellChecker(BaseSpellChecker):
         :param language: language to check the spelling with
         """
         super().__init__(language)
-        self._ignored: T.Set[str] = set()
+        self._ignored: set[str] = set()
         try:
             self._dict = spellchecker.SpellChecker(language=language)
         except ValueError:
@@ -60,7 +60,7 @@ class PySpellCheckerSpellChecker(BaseSpellChecker):
         """
         return word in self._ignored or self._dict.known([word])
 
-    def suggest(self, word: str) -> T.Iterable[str]:
+    def suggest(self, word: str) -> Iterable[str]:
         """Check for similar words to the given word.
 
         :param word: word to check

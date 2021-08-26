@@ -17,7 +17,7 @@
 import datetime
 import functools
 import re
-import typing as T
+from typing import Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -141,7 +141,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
             self.fontMetrics().height() + MAGIC_MARGIN
         )
 
-        self._scheduled_seek: T.Optional[int] = None
+        self._scheduled_seek: Optional[int] = None
         self._last_seek = datetime.datetime.min
 
         self._timer = QtCore.QTimer(self)
@@ -234,7 +234,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
     def _open_subs_menu(self, position: QtCore.QPoint) -> None:
         self._subs_menu.exec_(self.viewport().mapToGlobal(position))
 
-    def _collect_rows(self) -> T.List[int]:
+    def _collect_rows(self) -> list[int]:
         if not self.selectionModel():
             return
         rows = set()
@@ -259,7 +259,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self._setup_header_menu()
 
     def _sync_grid_selection_to_api(
-        self, selected: T.List[int], deselected: T.List[int]
+        self, selected: list[int], deselected: list[int]
     ) -> None:
         rows = self._collect_rows()
         if rows != self._api.subs.selected_indexes:
@@ -272,7 +272,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
             )
 
     def _sync_api_selection_to_grid(
-        self, rows: T.List[int], changed: bool
+        self, rows: list[int], changed: bool
     ) -> None:
         if not self.model():
             return
@@ -311,7 +311,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self.setUpdatesEnabled(True)
 
     def _sync_api_selection_to_video(
-        self, rows: T.List[int], _changed: bool
+        self, rows: list[int], _changed: bool
     ) -> None:
         if (
             len(rows) == 1

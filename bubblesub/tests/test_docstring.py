@@ -19,8 +19,9 @@
 import ast
 import contextlib
 import re
-import typing as T
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Any, Union
 
 import docstring_parser
 import pytest
@@ -37,8 +38,8 @@ IGNORED_ARGUMENTS = {
 }
 
 
-def get_nodes() -> T.Iterable[
-    T.Tuple[Path, T.Union[ast.FunctionDef, ast.ClassDef, ast.Module], str]
+def get_nodes() -> Iterable[
+    tuple[Path, Union[ast.FunctionDef, ast.ClassDef, ast.Module], str]
 ]:
     """List AST nodes and their docstrings.
 
@@ -55,7 +56,7 @@ _NODES = list(get_nodes())
 
 
 @contextlib.contextmanager
-def decorated_log(path: Path, node: ast.AST) -> T.Any:
+def decorated_log(path: Path, node: ast.AST) -> Any:
     """Improve assertions by showing information about the offending AST node.
 
     :param path: path of the file

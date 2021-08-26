@@ -16,8 +16,9 @@
 
 """Tests for bubblesub.api.video module."""
 
-import typing as T
+from collections.abc import Callable
 from pathlib import Path
+from typing import Union
 from unittest.mock import Mock, PropertyMock, patch
 
 import numpy as np
@@ -29,7 +30,7 @@ from bubblesub.api.video import VideoStream
 def _test_align_pts_to_frame(
     origin: int,
     expected: int,
-    align_func: T.Callable[[VideoStream], T.Callable[[int], int]],
+    align_func: Callable[[VideoStream], Callable[[int], int]],
 ) -> None:
     """Test aligning PTS to frames using a few mocked frames.
 
@@ -175,9 +176,9 @@ def test_align_pts_to_near_frame(origin: int, expected: int) -> None:
     ],
 )
 def test_frame_idx_from_pts(
-    timecodes: T.List[int],
-    pts: T.Union[float, int, np.array],
-    expected: T.Union[int, np.array],
+    timecodes: list[int],
+    pts: Union[float, int, np.array],
+    expected: Union[int, np.array],
 ) -> None:
     """Test getting frame index from PTS.
 

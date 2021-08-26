@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
+from typing import Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -131,7 +131,7 @@ class _SpellCheckDialog(Dialog):
 
     def _iter_to_next_mispelt_match(
         self,
-    ) -> T.Optional[T.Tuple[int, int, int, str]]:
+    ) -> Optional[tuple[int, int, int, str]]:
         cursor = self.text_edit.textCursor()
         while self._lines_to_spellcheck:
             line = self._lines_to_spellcheck[0]

@@ -18,7 +18,8 @@
 
 import contextlib
 import logging
-import typing as T
+from collections.abc import Iterator
+from typing import Any, Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -36,18 +37,18 @@ KEYMAP = {
 }
 
 
-def byte_pos_to_string_pos(lines: T.List[str], col_b: int, row: int) -> int:
+def byte_pos_to_string_pos(lines: list[str], col_b: int, row: int) -> int:
     return len(lines[row].encode()[:col_b].decode())
 
 
-def rel_pos_to_abs_pos(lines: T.List[str], row: int, col: int) -> int:
+def rel_pos_to_abs_pos(lines: list[str], row: int, col: int) -> int:
     return sum(len(lines[y]) + 1 for y in range(row)) + min(
         len(lines[row]), col
     )
 
 
 class VimTextEdit(QtWidgets.QPlainTextEdit):
-    def __init__(self, parent: QtWidgets.QWidget, **kwargs: T.Any) -> None:
+    def __init__(self, parent: QtWidgets.QWidget, **kwargs: Any) -> None:
         self._nvim = None
         self._vim_mode_enabled = False
         self.vim_arguments = []
@@ -55,7 +56,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         super().__init__(parent, **kwargs)
         self._connect_ui_signals()
         self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
-        self.highlighter: T.Optional[QtGui.QSyntaxHighlighter]
+        self.highlighter: Optional[QtGui.QSyntaxHighlighter]
 
         self.selectionChanged.connect(self._selection_changed)
         self.cursorPositionChanged.connect(self._cursor_position_changed)
@@ -108,7 +109,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
                 self._sync_ui()
 
     @contextlib.contextmanager
-    def _reconnect_guard(self) -> T.Iterator[None]:
+    def _reconnect_guard(self) -> Iterator[None]:
         if self.vim_mode_enabled and self._nvim:
             try:
                 yield
@@ -121,7 +122,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             yield
 
     @contextlib.contextmanager
-    def _ignore_ui_signals(self) -> T.Iterator[None]:
+    def _ignore_ui_signals(self) -> Iterator[None]:
         self._disconnect_ui_signals()
         try:
             yield
@@ -198,7 +199,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         lines = list(self._nvim.current.buffer)
         self.setPlainText("\n".join(lines))
 
-        def get_pos(mark: str) -> T.Tuple[int, int]:
+        def get_pos(mark: str) -> tuple[int, int]:
             row, col_b = self._nvim.eval(f'getpos("{mark}")')[1:3]
             row -= 1
             col_b -= 1

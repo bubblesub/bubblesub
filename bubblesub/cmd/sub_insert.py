@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import typing as T
+from typing import Optional
 
 from ass_parser import AssEvent
 
@@ -54,9 +54,9 @@ class SubtitleInsertCommand(BaseCommand):
             )
             self.api.subs.selected_indexes = [idx]
 
-    def _insert_before(self, indexes: T.List[int]) -> T.Tuple[int, int, int]:
-        cur_sub: T.Optional[AssEvent]
-        prev_sub: T.Optional[AssEvent]
+    def _insert_before(self, indexes: list[int]) -> tuple[int, int, int]:
+        cur_sub: Optional[AssEvent]
+        prev_sub: Optional[AssEvent]
         if indexes:
             idx = indexes[0]
             cur_sub = self.api.subs.events[idx]
@@ -75,9 +75,9 @@ class SubtitleInsertCommand(BaseCommand):
             start = min(prev_sub.end, end)
         return idx, start, end
 
-    def _insert_after(self, indexes: T.List[int]) -> T.Tuple[int, int, int]:
-        cur_sub: T.Optional[AssEvent]
-        next_sub: T.Optional[AssEvent]
+    def _insert_after(self, indexes: list[int]) -> tuple[int, int, int]:
+        cur_sub: Optional[AssEvent]
+        next_sub: Optional[AssEvent]
         if indexes:
             idx = indexes[-1]
             cur_sub = self.api.subs.events[idx]

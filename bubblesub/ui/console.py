@@ -17,8 +17,8 @@
 import argparse
 import datetime
 import re
-import typing as T
 from dataclasses import dataclass
+from typing import Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -36,7 +36,7 @@ class Completion:
     suffix: str
     index: int
     start_pos: int
-    suggestions: T.List[str]
+    suggestions: list[str]
 
 
 def collect_command_names(compl: Completion, api: Api) -> None:
@@ -83,7 +83,7 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
         self._font = QtGui.QFontDatabase.systemFont(
             QtGui.QFontDatabase.FixedFont
         )
-        self._style_map: T.Dict[str, QtGui.QTextCharFormat] = {}
+        self._style_map: dict[str, QtGui.QTextCharFormat] = {}
 
         self._invisible_fmt = QtGui.QTextCharFormat()
         self._invisible_fmt.setFontStretch(1)
@@ -230,9 +230,9 @@ class ConsoleInput(QtWidgets.QLineEdit):
         super().__init__(parent)
         self._api = api
         self._edited = False
-        self._compl: T.Optional[Completion] = None
+        self._compl: Optional[Completion] = None
 
-        self._history: T.List[str] = []
+        self._history: list[str] = []
         self._history_pos = 0
 
         self.setObjectName("console-input")

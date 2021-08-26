@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import typing as T
 
 from ass_parser import AssEvent
 from PyQt5 import QtWidgets
@@ -58,7 +57,7 @@ class SubtitlesShiftCommand(BaseCommand):
                 sub.end_update()
 
     async def _get_delta(
-        self, subs: T.List[AssEvent], main_window: QtWidgets.QMainWindow
+        self, subs: list[AssEvent], main_window: QtWidgets.QMainWindow
     ) -> Pts:
         ret = await time_jump_dialog(
             main_window,

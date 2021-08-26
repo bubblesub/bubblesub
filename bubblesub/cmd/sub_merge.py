@@ -16,7 +16,7 @@
 
 import argparse
 import enum
-import typing as T
+from collections.abc import Iterable
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandUnavailable
@@ -37,7 +37,7 @@ def strip_whitespace(text: str) -> str:
 
 
 def merge_text(
-    chunks: T.Iterable[str], separator: SubtitlesMergeSeparator
+    chunks: Iterable[str], separator: SubtitlesMergeSeparator
 ) -> str:
     if separator == SubtitlesMergeSeparator.NONE:
         return "".join(chunks)

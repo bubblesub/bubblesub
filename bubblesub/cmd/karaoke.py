@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import typing as T
+from collections.abc import Iterable
 from copy import copy
 
 import ass_tag_parser
@@ -45,7 +45,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
         if not subs:
             raise CommandUnavailable("nothing to split")
 
-        new_selection: T.List[AssEvent] = []
+        new_selection: list[AssEvent] = []
         with self.api.undo.capture(), self.api.gui.throttle_updates():
             for sub in subs:
                 if "\\k" not in sub.text:
@@ -61,7 +61,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 idx = sub.index
                 del self.api.subs.events[idx]
 
-                new_subs: T.List[AssEvent] = []
+                new_subs: list[AssEvent] = []
                 for i, syllable in enumerate(syllables):
                     sub_copy = copy(sub)
                     sub_copy.start = start
@@ -79,9 +79,9 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 sub.index for sub in new_selection if sub.index is not None
             ]
 
-    def _get_syllables(self, text: str) -> T.Iterable[_Syllable]:
-        chunks: T.List[T.List[ass_tag_parser.AssItem]] = [[]]
-        durations: T.List[int] = [0]
+    def _get_syllables(self, text: str) -> Iterable[_Syllable]:
+        chunks: list[list[ass_tag_parser.AssItem]] = [[]]
+        durations: list[int] = [0]
 
         for item in ass_tag_parser.parse_ass(text):
             if isinstance(item, ass_tag_parser.AssTagKaraoke):

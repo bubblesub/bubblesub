@@ -3,7 +3,6 @@ import argparse
 import asyncio
 import concurrent.futures
 import io
-import typing as T
 
 import speech_recognition as sr
 from ass_parser import AssEvent
@@ -36,7 +35,7 @@ class SpeechRecognitionCommand(BaseCommand):
             await self.args.target.get_subtitles(),
         )
 
-    def run_in_background(self, events: T.List[AssEvent]) -> None:
+    def run_in_background(self, events: list[AssEvent]) -> None:
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             future_to_event = {
                 executor.submit(self.recognize, event): event

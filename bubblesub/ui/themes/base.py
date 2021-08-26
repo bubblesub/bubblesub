@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import functools
-import typing as T
 from pathlib import Path
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -36,7 +35,7 @@ class BaseTheme:
         )
 
     @property
-    def palette(self) -> T.Dict[str, str]:
+    def palette(self) -> dict[str, str]:
         raise NotImplementedError("not implemented")
 
     @functools.lru_cache(maxsize=None)

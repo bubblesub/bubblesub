@@ -18,7 +18,7 @@
 
 import enum
 import fractions
-import typing as T
+from typing import Optional, Union
 
 from PyQt5 import QtCore
 
@@ -97,7 +97,7 @@ class PlaybackApi(QtCore.QObject):
         if pts != self.current_pts:
             self.request_seek.emit(pts, precise)
 
-    def play(self, start: int, end: T.Optional[int]) -> None:
+    def play(self, start: int, end: Optional[int]) -> None:
         """Play the currently loaded video at specified PTS range.
 
         :param start: start PTS
@@ -134,7 +134,7 @@ class PlaybackApi(QtCore.QObject):
 
     @playback_speed.setter
     def playback_speed(
-        self, value: T.Union[fractions.Fraction, int, float]
+        self, value: Union[fractions.Fraction, int, float]
     ) -> None:
         """Set new playback rate for the currently loaded video.
 
@@ -159,7 +159,7 @@ class PlaybackApi(QtCore.QObject):
         return self._volume
 
     @volume.setter
-    def volume(self, value: T.Union[fractions.Fraction, int, float]) -> None:
+    def volume(self, value: Union[fractions.Fraction, int, float]) -> None:
         """Set new volume for the currently loaded video.
 
         :param value: new volume

@@ -18,10 +18,10 @@
 
 import threading
 import time
-import typing as T
 import uuid
 from contextlib import nullcontext
 from pathlib import Path
+from typing import IO, ContextManager, Optional, Union, cast
 
 import ffms2
 import numpy as np
@@ -37,7 +37,7 @@ _SAMPLER_LOCK = threading.Lock()
 
 def _load_audio_source(
     log_api: LogApi, uid: uuid.UUID, path: Path
-) -> T.Optional[ffms2.AudioSource]:
+) -> Optional[ffms2.AudioSource]:
     """Create FFMS audio source.
 
     :param log_api: logging API
@@ -101,11 +101,11 @@ class AudioStream(QtCore.QObject):
         self._bits_per_sample = 0
         self._sample_count = 0
         self._sample_rate = 0
-        self._sample_format: T.Optional[int] = None
+        self._sample_format: Optional[int] = None
         self._path = path
         self._delay = 0
 
-        self._source: T.Union[None, ffms2.AudioSource] = None
+        self._source: Union[None, ffms2.AudioSource] = None
 
         self._log_api.info(f"audio: loading {path}")
         self._threading_api.schedule_task(
@@ -154,7 +154,7 @@ class AudioStream(QtCore.QObject):
         return self._sample_rate
 
     @property
-    def sample_format(self) -> T.Optional[int]:
+    def sample_format(self) -> Optional[int]:
         """Return sample format for currently loaded audio source.
 
         :return: sample format or None if no audio source
@@ -226,7 +226,7 @@ class AudioStream(QtCore.QObject):
 
     def save_wav(
         self,
-        path_or_handle: T.Union[Path, T.IO[bytes]],
+        path_or_handle: Union[Path, IO[bytes]],
         start_pts: int,
         end_pts: int,
     ) -> None:
@@ -250,7 +250,7 @@ class AudioStream(QtCore.QObject):
         if samples.dtype.name in ("float32", "float64"):
             samples = (samples * (1 << 31)).astype(np.int32)
 
-        ctx: T.ContextManager[T.IO[bytes]]
+        ctx: ContextManager[IO[bytes]]
         if isinstance(path_or_handle, Path):
             ctx = path_or_handle.open("wb")
         else:
@@ -271,25 +271,21 @@ class AudioStream(QtCore.QObject):
             }[self.sample_format],
         ).reshape(0, max(1, self.channel_count))
 
-    def _got_source(self, source: T.Optional[ffms2.AudioSource]) -> None:
+    def _got_source(self, source: Optional[ffms2.AudioSource]) -> None:
         self._source = source
 
         if source is None:
             self.errored.emit()
             return
 
-        self._min_time = round(
-            T.cast(float, source.properties.FirstTime) * 1000
-        )
-        self._max_time = round(
-            T.cast(float, source.properties.LastTime) * 1000
-        )
-        self._channel_count = T.cast(int, source.properties.Channels)
-        self._bits_per_sample = T.cast(int, source.properties.BitsPerSample)
-        self._sample_count = T.cast(int, source.properties.NumSamples)
-        self._sample_rate = T.cast(int, source.properties.SampleRate)
-        self._sample_format = T.cast(
-            T.Optional[int], source.properties.SampleFormat
+        self._min_time = round(cast(float, source.properties.FirstTime) * 1000)
+        self._max_time = round(cast(float, source.properties.LastTime) * 1000)
+        self._channel_count = cast(int, source.properties.Channels)
+        self._bits_per_sample = cast(int, source.properties.BitsPerSample)
+        self._sample_count = cast(int, source.properties.NumSamples)
+        self._sample_rate = cast(int, source.properties.SampleRate)
+        self._sample_format = cast(
+            Optional[int], source.properties.SampleFormat
         )
         self.loaded.emit()
 

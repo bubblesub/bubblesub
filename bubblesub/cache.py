@@ -17,8 +17,8 @@
 """Caching utilities."""
 
 import pickle
-import typing as T
 from pathlib import Path
+from typing import Any
 
 from bubblesub.data import USER_CACHE_DIR
 
@@ -42,7 +42,7 @@ def get_cache_file_path(cache_name: str) -> Path:
     return get_cache_dir() / (cache_name + CACHE_SUFFIX)
 
 
-def load_cache(cache_name: str) -> T.Any:
+def load_cache(cache_name: str) -> Any:
     """Load cached object from disk.
 
     :param cache_name: name of cache file
@@ -58,7 +58,7 @@ def load_cache(cache_name: str) -> T.Any:
     return None
 
 
-def save_cache(cache_name: str, data: T.Any) -> None:
+def save_cache(cache_name: str, data: Any) -> None:
     """Save object to disk cache.
 
     :param cache_name: name of cache file

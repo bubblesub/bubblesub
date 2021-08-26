@@ -17,7 +17,7 @@
 """API for video viewport."""
 
 import fractions
-import typing as T
+from typing import Union
 
 from PyQt5 import QtCore
 
@@ -53,7 +53,7 @@ class VideoViewApi(QtCore.QObject):
         return self._zoom
 
     @zoom.setter
-    def zoom(self, value: T.Union[fractions.Fraction, int, float]) -> None:
+    def zoom(self, value: Union[fractions.Fraction, int, float]) -> None:
         """Set new zoom factor.
 
         :param value: new zoom factor
@@ -65,7 +65,7 @@ class VideoViewApi(QtCore.QObject):
             self.zoom_changed.emit()
 
     @property
-    def pan(self) -> T.Tuple[fractions.Fraction, fractions.Fraction]:
+    def pan(self) -> tuple[fractions.Fraction, fractions.Fraction]:
         """Return pan.
 
         :return: pan
@@ -74,7 +74,7 @@ class VideoViewApi(QtCore.QObject):
 
     @pan.setter
     def pan(
-        self, value: T.Tuple[fractions.Fraction, fractions.Fraction]
+        self, value: tuple[fractions.Fraction, fractions.Fraction]
     ) -> None:
         """Set new pan.
 

@@ -17,14 +17,14 @@
 """Tests for bubblesub command naming."""
 
 import re
-import typing as T
+from collections.abc import Iterable
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.tests.common import api  # pylint: disable=unused-import
 
 
-def normalize_class_name(name: str) -> T.Iterable[str]:
+def normalize_class_name(name: str) -> Iterable[str]:
     """Cater for some conventions in class naming.
 
     For example, while commands are named sub-*, classes should be named
@@ -34,7 +34,7 @@ def normalize_class_name(name: str) -> T.Iterable[str]:
     :return: collection of names that are okay
     """
 
-    def _handler(match: T.Match) -> str:
+    def _handler(match: re.Match) -> str:
         if match.start() == 0:
             return match.group().lower()
         return "-" + match.group(0).lower()
@@ -54,7 +54,7 @@ def normalize_class_name(name: str) -> T.Iterable[str]:
     yield name
 
 
-def normalize_command_name(name: str) -> T.Iterable[str]:
+def normalize_command_name(name: str) -> Iterable[str]:
     """Allow some leeway in command naming.
 
     :param name: name to normalize

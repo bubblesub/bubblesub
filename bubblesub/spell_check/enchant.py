@@ -18,7 +18,7 @@
 
 # pylint: disable=no-member
 
-import typing as T
+from collections.abc import Iterable
 
 import enchant
 
@@ -61,7 +61,7 @@ class EnchantSpellChecker(BaseSpellChecker):
         """
         return self._dict.check(word)
 
-    def suggest(self, word: str) -> T.Iterable[str]:
+    def suggest(self, word: str) -> Iterable[str]:
         """Check for similar words to the given word.
 
         :param word: word to check

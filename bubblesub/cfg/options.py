@@ -17,8 +17,8 @@
 """Main program options."""
 
 import collections
-import typing as T
 from pathlib import Path
+from typing import Any, Optional, Union
 
 import yaml
 from PyQt5 import QtCore
@@ -44,11 +44,11 @@ class OptionsConfig(SubConfig):
     def __init__(self) -> None:
         """Initialize self."""
         super().__init__()
-        self._storage: T.Dict[str, T.Any] = {}
+        self._storage: dict[str, Any] = {}
         self._signals = _OptionsConfigSignals()
         self.load(None)
 
-    def load(self, root_dir: T.Optional[Path]) -> None:
+    def load(self, root_dir: Optional[Path]) -> None:
         """Load internals of this config from the specified directory.
 
         :param root_dir: directory where to look for the matching config file
@@ -76,7 +76,7 @@ class OptionsConfig(SubConfig):
     def _loads(self, text: str) -> None:
         self._merge(self._storage, yaml.load(text, Loader=yaml.SafeLoader))
 
-    def _merge(self, target: T.Any, source: T.Any) -> T.Any:
+    def _merge(self, target: Any, source: Any) -> Any:
         for key, value in source.items():
             if isinstance(value, collections.abc.Mapping):
                 target[key] = self._merge(target.get(key, {}), value)
@@ -87,7 +87,7 @@ class OptionsConfig(SubConfig):
     def _dumps(self) -> str:
         return yaml.dump(self._storage, indent=4, default_flow_style=False)
 
-    def __getitem__(self, key: T.Any) -> T.Any:
+    def __getitem__(self, key: Any) -> Any:
         """Return given configuration item.
 
         :param key: key to retrieve
@@ -95,7 +95,7 @@ class OptionsConfig(SubConfig):
         """
         return self._storage[key]
 
-    def __setitem__(self, key: T.Any, value: T.Any) -> None:
+    def __setitem__(self, key: Any, value: Any) -> None:
         """Update given configuration item.
 
         :param key: key to update
@@ -103,7 +103,7 @@ class OptionsConfig(SubConfig):
         """
         self._storage[key] = value
 
-    def __contains__(self, key: T.Any) -> bool:
+    def __contains__(self, key: Any) -> bool:
         """Checks if a given key exists.
 
         :param key: key to check
@@ -111,7 +111,7 @@ class OptionsConfig(SubConfig):
         """
         return key in self._storage
 
-    def get(self, key: T.Any, default: T.Any = None) -> T.Any:
+    def get(self, key: Any, default: Any = None) -> Any:
         """Return given configuration item if it exists, default value
         otherwise.
 
@@ -121,7 +121,7 @@ class OptionsConfig(SubConfig):
         """
         return self._storage.get(key, default)
 
-    def add_recent_file(self, path: T.Union[Path, str]) -> None:
+    def add_recent_file(self, path: Union[Path, str]) -> None:
         """Record given path as recently used.
 
         :param path: path to record

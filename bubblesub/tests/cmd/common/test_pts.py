@@ -17,7 +17,7 @@
 """Test Pts class."""
 
 import asyncio
-import typing as T
+from typing import Any, Optional, Union
 from unittest.mock import Mock
 
 import pytest
@@ -28,10 +28,10 @@ from bubblesub.cmd.common import Pts
 
 def _assert_pts_value(
     pts: Pts,
-    expected_value: T.Union[int, T.Type[CommandError]],
-    origin: T.Optional[int] = None,
+    expected_value: Union[int, type[CommandError]],
+    origin: Optional[int] = None,
 ) -> None:
-    actual_value: T.Union[int, T.Type[CommandError]] = 0
+    actual_value: Union[int, type[CommandError]] = 0
     try:
         actual_value = asyncio.get_event_loop().run_until_complete(
             pts.get(origin=origin)
@@ -43,7 +43,7 @@ def _assert_pts_value(
 
 
 def _mock_subs_api(
-    sub_times: T.List[T.Tuple[int, int]], sub_selection: T.List[int]
+    sub_times: list[tuple[int, int]], sub_selection: list[int]
 ) -> Mock:
     events = []
     for start, end in sub_times:
@@ -58,10 +58,10 @@ def _mock_subs_api(
         except IndexError:
             return None
 
-    def _mock_getitem(cls: T.Any, idx: int) -> Mock:
+    def _mock_getitem(cls: Any, idx: int) -> Mock:
         return events[idx]
 
-    def _mock_len(cls: T.Any) -> int:
+    def _mock_len(cls: Any) -> int:
         return len(events)
 
     subs_api = Mock()
@@ -129,8 +129,8 @@ def _mock_subs_api(
 )
 def test_basic_arithmetic(
     expr: str,
-    origin: T.Optional[int],
-    expected_value: T.Union[int, T.Type[CommandError]],
+    origin: Optional[int],
+    expected_value: Union[int, type[CommandError]],
 ) -> None:
     """Test time arithemtic.
 
@@ -177,8 +177,8 @@ def test_basic_arithmetic(
 )
 def test_subtitles(
     expr: str,
-    sub_times: T.List[T.Tuple[int, int]],
-    sub_selection: T.List[int],
+    sub_times: list[tuple[int, int]],
+    sub_selection: list[int],
     expected_value: int,
 ) -> None:
     """Test first, last, current, previous, next and selected subtitle
@@ -264,10 +264,10 @@ def test_subtitles(
 )
 def test_frames(
     expr: str,
-    frame_times: T.List[int],
-    cur_frame_idx: T.Any,
-    keyframe_indexes: T.List[int],
-    expected_value: T.Union[int, T.Type[CommandError]],
+    frame_times: list[int],
+    cur_frame_idx: Any,
+    keyframe_indexes: list[int],
+    expected_value: Union[int, type[CommandError]],
 ) -> None:
     """Test frame and keyframe arithmetic.
 
@@ -294,8 +294,8 @@ def test_frames(
 )
 def test_audio_selection(
     expr: str,
-    selection: T.Tuple[int, int],
-    expected_value: T.Union[int, T.Type[CommandError]],
+    selection: tuple[int, int],
+    expected_value: Union[int, type[CommandError]],
 ) -> None:
     """Test audio selection magic strings.
 
@@ -314,7 +314,7 @@ def test_audio_selection(
     "expr,view,expected_value", [("av.s", (1, 2), 1), ("av.e", (1, 2), 2)]
 )
 def test_audio_view(
-    expr: str, view: T.Tuple[int, int], expected_value: int
+    expr: str, view: tuple[int, int], expected_value: int
 ) -> None:
     """Test spectrogram viewport magic strings.
 

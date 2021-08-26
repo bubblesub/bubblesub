@@ -16,8 +16,10 @@
 
 """Various ASS utilities."""
 
-import typing as T
+import re
+from collections.abc import Iterable
 from functools import lru_cache
+from typing import cast
 
 import ass_tag_parser
 import regex
@@ -58,7 +60,7 @@ def character_count(text: str) -> int:
     )
 
 
-def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
+def iter_words_ass_line(text: str) -> Iterable[re.Match[str]]:
     """Iterate over words within an ASS line.
 
     Doesn't take into account effects such as text invisibility etc.
@@ -70,8 +72,8 @@ def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
         r"\\[Nnh]", "  ", text  # two spaces to preserve match positions
     )
 
-    return T.cast(
-        T.Iterable[T.Match[str]],
+    return cast(
+        Iterable[re.Match[str]],
         regex.finditer(
             r"[\p{L}\p{S}\p{N}][\p{L}\p{S}\p{N}\p{P}]*\p{L}|\p{L}", text
         ),
@@ -81,7 +83,7 @@ def iter_words_ass_line(text: str) -> T.Iterable[T.Match[str]]:
 @lru_cache(maxsize=500)
 def spell_check_ass_line(
     spell_checker: BaseSpellChecker, text: str
-) -> T.Iterable[T.Tuple[int, int, str]]:
+) -> Iterable[tuple[int, int, str]]:
     """Iterate over badly spelled words within an ASS line.
 
     Doesn't take into account effects such as text invisibility etc.
@@ -95,7 +97,7 @@ def spell_check_ass_line(
     except ass_tag_parser.ParseError:
         return []
 
-    results: T.List[T.Tuple[int, int, str]] = []
+    results: list[tuple[int, int, str]] = []
 
     for item in ass_line:
         if isinstance(item, ass_tag_parser.AssText):

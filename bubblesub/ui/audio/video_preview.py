@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import threading
-import typing as T
 import uuid
+from typing import Any
 
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -46,11 +46,11 @@ class VideoBandWorker(QueueWorker):
         self.signals = VideoBandWorkerSignals()
         self._video_api = video_api
 
-        self.cache: T.Dict[uuid.UUID, np.array] = {}
+        self.cache: dict[uuid.UUID, np.array] = {}
 
         video_api.stream_loaded.connect(self._on_video_stream_load)
 
-    def _process_task(self, task: T.Any) -> None:
+    def _process_task(self, task: Any) -> None:
         stream, frame_indexes = task
         anything_changed = False
         for frame_idx in frame_indexes:

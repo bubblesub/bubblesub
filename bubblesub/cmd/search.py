@@ -18,7 +18,7 @@ import abc
 import argparse
 import enum
 import re
-import typing as T
+from typing import Any, Optional, cast
 
 from ass_parser import AssEvent
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -46,7 +46,7 @@ class SearchMode(enum.IntEnum):
 
 def _create_search_regex(
     text: str, case_sensitive: bool, use_regexes: bool
-) -> T.Pattern[str]:
+) -> re.Pattern[str]:
     return re.compile(
         text if use_regexes else re.escape(text),
         flags=0 if case_sensitive else re.I,
@@ -94,7 +94,7 @@ class _SearchModeHandler(abc.ABC):
             raise AssertionError(f"unknown search widget type ({type(widget)}")
         widget.setFocus()
 
-    def get_selection_from_widget(self) -> T.Tuple[int, int]:
+    def get_selection_from_widget(self) -> tuple[int, int]:
         widget = self.get_subject_widget()
         if isinstance(widget, QtWidgets.QPlainTextEdit):
             cursor = widget.textCursor()
@@ -109,7 +109,7 @@ class _SearchModeHandler(abc.ABC):
     def get_widget_text(self) -> str:
         widget = self.get_subject_widget()
         if isinstance(widget, QtWidgets.QPlainTextEdit):
-            return T.cast(str, widget.toPlainText())
+            return cast(str, widget.toPlainText())
         if isinstance(widget, QtWidgets.QLineEdit):
             return widget.text()
         raise AssertionError(f"unknown search widget type ({type(widget)})")
@@ -170,7 +170,7 @@ class _StyleSearchModeHandler(_SearchModeHandler):
         return "style-editor"
 
 
-_HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
+_HANDLERS: dict[SearchMode, type[_SearchModeHandler]] = {
     SearchMode.TEXT: _TextSearchModeHandler,
     SearchMode.NOTE: _NoteSearchModeHandler,
     SearchMode.ACTOR: _ActorSearchModeHandler,
@@ -180,11 +180,11 @@ _HANDLERS: T.Dict[SearchMode, T.Type[_SearchModeHandler]] = {
 
 def _narrow_match(
     handler: _SearchModeHandler,
-    matches: T.List[T.Match[str]],
+    matches: list[re.Match[str]],
     idx: int,
-    selected_idx: T.Optional[int],
+    selected_idx: Optional[int],
     reverse: bool,
-) -> T.Optional[T.Match[str]]:
+) -> Optional[re.Match[str]]:
     if idx == selected_idx:
         selection_start, selection_end = handler.get_selection_from_widget()
         if selection_end == selection_start:
@@ -205,7 +205,10 @@ def _narrow_match(
 
 
 def _search(
-    api: Api, handler: _SearchModeHandler, regex: T.Pattern[str], reverse: bool
+    api: Api,
+    handler: _SearchModeHandler,
+    regex: re.Pattern[str],
+    reverse: bool,
 ) -> bool:
     num_lines = len(api.subs.events)
     if not api.subs.has_selection:
@@ -251,7 +254,10 @@ def _replace_selection(handler: _SearchModeHandler, new_text: str) -> None:
 
 
 def _replace_all(
-    api: Api, handler: _SearchModeHandler, regex: T.Pattern[str], new_text: str
+    api: Api,
+    handler: _SearchModeHandler,
+    regex: re.Pattern[str],
+    new_text: str,
 ) -> int:
     count = 0
     with api.undo.capture():
@@ -267,7 +273,7 @@ def _replace_all(
 
 
 def _count(
-    api: Api, handler: _SearchModeHandler, regex: T.Pattern[str]
+    api: Api, handler: _SearchModeHandler, regex: re.Pattern[str]
 ) -> int:
     count = 0
     for sub in api.subs.events:
@@ -386,7 +392,7 @@ class _SearchDialog(Dialog):
         self._update_replacement_enabled()
         self.search_text_edit.lineEdit().selectAll()
 
-    def reject(self) -> T.Any:
+    def reject(self) -> Any:
         self._save_opt()
         return super().reject()
 
@@ -469,24 +475,24 @@ class _SearchDialog(Dialog):
         self._opt["mode"] = int(self._mode)
 
     @property
-    def _opt(self) -> T.Any:
+    def _opt(self) -> Any:
         return self._api.cfg.opt["search"]
 
     @property
     def _text(self) -> str:
-        return T.cast(str, self.search_text_edit.currentText())
+        return cast(str, self.search_text_edit.currentText())
 
     @property
     def _target_text(self) -> str:
-        return T.cast(str, self.replacement_text_edit.text())
+        return cast(str, self.replacement_text_edit.text())
 
     @property
     def _use_regexes(self) -> bool:
-        return T.cast(bool, self.regex_chkbox.isChecked())
+        return cast(bool, self.regex_chkbox.isChecked())
 
     @property
     def _case_sensitive(self) -> bool:
-        return T.cast(bool, self.case_chkbox.isChecked())
+        return cast(bool, self.case_chkbox.isChecked())
 
     @property
     def _mode(self) -> SearchMode:
@@ -497,7 +503,7 @@ class _SearchDialog(Dialog):
         return _HANDLERS[self._mode](self._main_window)
 
     @property
-    def _search_regex(self) -> T.Pattern[str]:
+    def _search_regex(self) -> re.Pattern[str]:
         return _create_search_regex(
             self._text, self._case_sensitive, self._use_regexes
         )

@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from bubblesub.api import Api
@@ -32,7 +30,7 @@ def refresh_font_db() -> None:
     font_db.removeAllApplicationFonts()
 
 
-def _get_font_families() -> T.List[str]:
+def _get_font_families() -> list[str]:
     return list(
         sorted(
             {

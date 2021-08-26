@@ -27,8 +27,9 @@ import io
 import time
 import traceback
 import types
-import typing as T
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Any, Optional, Union
 
 from pluginbase import PluginBase
 from PyQt5 import QtCore
@@ -52,7 +53,7 @@ class CommandCanceled(CommandError):
 class CommandUnavailable(CommandError):
     """The given command cannot be evaluated."""
 
-    def __init__(self, text: T.Optional[str] = None) -> None:
+    def __init__(self, text: Optional[str] = None) -> None:
         """Initialize self.
 
         :param text: optional text error
@@ -84,14 +85,14 @@ class CommandArgumentParser(argparse.ArgumentParser):
         raise BadInvocation(message)
 
 
-def split_invocation(invocation: str) -> T.List[T.List[str]]:
+def split_invocation(invocation: str) -> list[list[str]]:
     """Split invocation into name and arguments array.
 
     :param invocation: command line to parse
     :return: tuple containing command name and arguments
     """
-    cmds: T.List[T.List[str]] = []
-    cmd: T.List[str] = []
+    cmds: list[list[str]] = []
+    cmd: list[str] = []
 
     invocation = invocation.strip()
     while invocation:
@@ -136,7 +137,7 @@ class BaseCommand(abc.ABC):
     silent = False
     """Whether to echo the command invocation."""
 
-    names: T.List[str] = NotImplemented
+    names: list[str] = NotImplemented
     """Command names. Must be globally unique and should be human readable."""
 
     help_text: str = NotImplemented
@@ -201,13 +202,13 @@ class CommandApi(QtCore.QObject):
         """
         super().__init__()
         self._api = api
-        self._cmd_registry: T.Dict[str, T.Tuple[str, T.Type[BaseCommand]]] = {}
-        self._plugin_menu: T.List[MenuItem] = []
+        self._cmd_registry: dict[str, tuple[str, type[BaseCommand]]] = {}
+        self._plugin_menu: list[MenuItem] = []
         self._plugin_base = PluginBase(package="bubblesub.api.cmd.plugins")
-        self._plugin_sources: T.Dict[str, T.Any] = {}
-        self._plugin_modules: T.List[T.Any] = []
+        self._plugin_sources: dict[str, Any] = {}
+        self._plugin_modules: list[Any] = []
 
-    def run_cmdline(self, cmdline: T.Union[str, T.List[T.List[str]]]) -> None:
+    def run_cmdline(self, cmdline: Union[str, list[list[str]]]) -> None:
         """Run given cmdline.
 
         :param cmdline: either a list of command arguments, or a plain string
@@ -216,14 +217,14 @@ class CommandApi(QtCore.QObject):
             self.run(cmd)
 
     def parse_cmdline(
-        self, cmdline: T.Union[str, T.List[T.List[str]]]
-    ) -> T.List[BaseCommand]:
+        self, cmdline: Union[str, list[list[str]]]
+    ) -> list[BaseCommand]:
         """Create BaseCommand instances based on given invocation.
 
         :param cmdline: either a list of command arguments, or a plain string
         :return: list of command instances
         """
-        ret: T.List[BaseCommand] = []
+        ret: list[BaseCommand] = []
         if not isinstance(cmdline, list):
             cmdline = split_invocation(cmdline)
 
@@ -284,7 +285,7 @@ class CommandApi(QtCore.QObject):
             self._api.log.debug(f"{cmd.invocation}: took {took:.04f} s")
         return True
 
-    def get(self, name: str) -> T.Optional[T.Type[BaseCommand]]:
+    def get(self, name: str) -> Optional[type[BaseCommand]]:
         """Return class by command name.
 
         :param name: name to search for
@@ -294,14 +295,14 @@ class CommandApi(QtCore.QObject):
         return cls
 
     def get_all(
-        self, identifier: T.Optional[str] = None
-    ) -> T.Iterable[T.Type[BaseCommand]]:
+        self, identifier: Optional[str] = None
+    ) -> Iterable[type[BaseCommand]]:
         """Return list of all registered command types.
 
         :param identifier: optional filter
         :return: list of types
         """
-        ret: T.Set[T.Type[BaseCommand]] = set()
+        ret: set[type[BaseCommand]] = set()
         for cls_identifier, cls in self._cmd_registry.values():
             if cls_identifier == identifier or identifier is None:
                 ret.add(cls)
@@ -321,7 +322,7 @@ class CommandApi(QtCore.QObject):
             )
         self.commands_loaded.emit()
 
-    def get_plugin_menu_items(self) -> T.List[MenuItem]:
+    def get_plugin_menu_items(self) -> list[MenuItem]:
         """Return plugin menu items.
 
         :return: plugins menu

@@ -17,8 +17,9 @@
 import enum
 import fractions
 import re
-import typing as T
+from collections.abc import Callable
 from math import floor
+from typing import Any, Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -70,7 +71,7 @@ class MousePosCalculator:
 
     def get_video_pos(
         self, event: QtGui.QMouseEvent
-    ) -> T.Optional[QtCore.QPointF]:
+    ) -> Optional[QtCore.QPointF]:
         if not self._api.video.current_stream:
             return None
 
@@ -164,7 +165,7 @@ class AbsolutePositionVideoMouseHandler(VideoMouseHandler):
     def _get_ass_tag(self, x: float, y: float) -> str:
         raise NotImplementedError("not implemented")
 
-    def _get_regex(self) -> T.Pattern:
+    def _get_regex(self) -> re.Pattern[str]:
         raise NotImplementedError("not implemented")
 
 
@@ -235,7 +236,7 @@ class RelativeAxisVideoMouseHandler(VideoMouseHandler):
     def _get_ass_tag(self, axis: str, value: float) -> str:
         raise NotImplementedError("not implemented")
 
-    def _get_regex(self, axis: str) -> T.Pattern:
+    def _get_regex(self, axis: str) -> re.Pattern[str]:
         raise NotImplementedError("not implemented")
 
 
@@ -299,7 +300,7 @@ class SubPositionVideoMouseHandler(AbsolutePositionVideoMouseHandler):
     def _get_ass_tag(self, x: float, y: float) -> str:
         return f"{{\\pos({x:.2f},{y:.2f})}}"
 
-    def _get_regex(self) -> T.Pattern:
+    def _get_regex(self) -> re.Pattern[str]:
         return re.compile(r"\\pos\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
 
@@ -356,7 +357,7 @@ class SubRotationHandler(VideoMouseHandler):
             return "x"
         return "z"
 
-    def _get_regex(self, axis: str) -> T.Pattern:
+    def _get_regex(self, axis: str) -> re.Pattern[str]:
         return re.compile(rf"\\fr{axis}(?P<value>-?[0-9\.]+)")
 
 
@@ -366,7 +367,7 @@ class SubRotationOriginVideoMouseHandler(AbsolutePositionVideoMouseHandler):
     def _get_ass_tag(self, x: float, y: float) -> str:
         return f"{{\\org({x:.2f},{y:.2f})}}"
 
-    def _get_regex(self) -> T.Pattern:
+    def _get_regex(self) -> re.Pattern[str]:
         return re.compile(r"\\org\((?P<x>-?[0-9\.]+),(?P<y>-?[0-9\.]+)\)")
 
 
@@ -377,7 +378,7 @@ class SubShearVideoMouseHandler(RelativeAxisVideoMouseHandler):
     def _get_ass_tag(self, axis: str, value: float) -> str:
         return f"{{\\fa{axis}{value:.2f}}}"
 
-    def _get_regex(self, axis: str) -> T.Pattern:
+    def _get_regex(self, axis: str) -> re.Pattern[str]:
         return re.compile(rf"\\fa{axis}(?P<value>-?[0-9\.]+)")
 
 
@@ -390,7 +391,7 @@ class SubScaleVideoMouseHandler(RelativeAxisVideoMouseHandler):
     def _get_ass_tag(self, axis: str, value: float) -> str:
         return f"{{\\fsc{axis}{value:.2f}}}"
 
-    def _get_regex(self, axis: str) -> T.Pattern:
+    def _get_regex(self, axis: str) -> re.Pattern[str]:
         return re.compile(rf"\\fsc{axis}(?P<value>-?[0-9\.]+)")
 
 
@@ -402,8 +403,8 @@ class VideoMouseModeController(QtCore.QObject):
         self.mouse_pos_calc = MousePosCalculator(api)
         self._api = api
 
-        self._dragging: T.Optional[QtCore.Qt.MouseButton] = None
-        self._mode: T.Optional[VideoInteractionMode] = None
+        self._dragging: Optional[QtCore.Qt.MouseButton] = None
+        self._mode: Optional[VideoInteractionMode] = None
         self._handlers = {
             cls.mode: cls(api, self.mouse_pos_calc)
             for cls in all_subclasses(VideoMouseHandler)
@@ -411,17 +412,17 @@ class VideoMouseModeController(QtCore.QObject):
         }
 
     @property
-    def mode(self) -> T.Optional[VideoInteractionMode]:
+    def mode(self) -> Optional[VideoInteractionMode]:
         return self._mode
 
     @mode.setter
-    def mode(self, value: T.Optional[VideoInteractionMode]) -> None:
+    def mode(self, value: Optional[VideoInteractionMode]) -> None:
         if value != self._mode:
             self._mode = value
             self.mode_changed.emit(self._mode)
 
     @property
-    def current_handler(self) -> T.Optional[VideoMouseHandler]:
+    def current_handler(self) -> Optional[VideoMouseHandler]:
         return None if self._mode is None else self._handlers[self._mode]
 
     def on_wheel_turn(self, event: QtGui.QWheelEvent) -> None:
@@ -490,7 +491,7 @@ class VideoPreview(MpvWidget):
         self._controller.mouse_pos_calc.display_height = self.height()
         super().resizeEvent(event)
 
-    def _on_mode_change(self, mode: T.Optional[VideoInteractionMode]) -> None:
+    def _on_mode_change(self, mode: Optional[VideoInteractionMode]) -> None:
         self.setCursor(
             QtCore.Qt.ArrowCursor if mode is None else QtCore.Qt.CrossCursor
         )
@@ -551,7 +552,7 @@ class VideoModeButtons(QtWidgets.QToolBar):
         )
 
     def _add_action_btn(
-        self, icon_name: str, tooltip: str, callback: T.Callable[[], T.Any]
+        self, icon_name: str, tooltip: str, callback: Callable[[], Any]
     ) -> None:
         btn = QtWidgets.QToolButton(self)
         btn.setToolTip(tooltip)

@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
-
 from PyQt5 import QtWidgets
 
 import bubblesub.api
@@ -73,7 +71,7 @@ class StatusBar(QtWidgets.QStatusBar):
             def format_range(low: int, high: int) -> str:
                 return f"{low}..{high}" if low != high else str(low)
 
-            ranges: T.List[T.Tuple[int, int]] = []
+            ranges: list[tuple[int, int]] = []
             for idx in self._api.subs.selected_indexes:
                 if ranges and ranges[-1][1] == idx - 1:
                     ranges[-1] = (ranges[-1][0], idx)

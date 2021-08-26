@@ -17,7 +17,7 @@
 """Test SubtitlesSelection class."""
 
 import asyncio
-import typing as T
+from typing import Any, Union
 from unittest.mock import Mock
 
 import pytest
@@ -69,9 +69,9 @@ from bubblesub.cmd.common import SubtitlesSelection
 def test_get_all_indexes(
     expr: str,
     sub_count: int,
-    sub_selection: T.Union[T.List[int], T.Any],
-    current_pts: T.Union[int, T.Any],
-    expected_indexes: T.Union[T.List[int], T.Type[CommandError]],
+    sub_selection: Union[list[int], Any],
+    current_pts: Union[int, Any],
+    expected_indexes: Union[list[int], type[CommandError]],
 ) -> None:
     """Test that parsing various inputs returns expected subtitle indexes.
 
@@ -105,7 +105,7 @@ def test_get_all_indexes(
 
     sub_selection = SubtitlesSelection(api, expr)
 
-    actual_indexes: T.Union[T.List[int], T.Type[CommandError]] = []
+    actual_indexes: Union[list[int], type[CommandError]] = []
     try:
         actual_indexes = asyncio.get_event_loop().run_until_complete(
             sub_selection.get_all_indexes()

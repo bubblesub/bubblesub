@@ -19,7 +19,7 @@ import asyncio
 import sys
 import traceback as tb
 import types
-import typing as T
+from typing import Any, Optional
 
 import quamash
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -32,7 +32,7 @@ from bubblesub.ui.main_window import MainWindow
 
 
 class MySplashScreen(QtWidgets.QSplashScreen):
-    def __init__(self, *args: T.Any, **kwargs: T.Any) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._painted = False
 
@@ -62,8 +62,8 @@ class MySplashScreen(QtWidgets.QSplashScreen):
 class Logger:
     def __init__(self, api: Api) -> None:
         self._api = api
-        self._main_window: T.Optional[MainWindow] = None
-        self._queued_logs: T.List[T.Tuple["LogLevel", str]] = []
+        self._main_window: Optional[MainWindow] = None
+        self._queued_logs: list[tuple["LogLevel", str]] = []
 
         sys.excepthook = self._on_error
         api.log.logged.connect(self._on_log)
@@ -82,7 +82,7 @@ class Logger:
 
     def _on_error(
         self,
-        type_: T.Type[BaseException],
+        type_: type[BaseException],
         value: BaseException,
         traceback: types.TracebackType,
     ) -> None:
@@ -95,7 +95,7 @@ class Logger:
 class Application:
     def __init__(self, args: argparse.Namespace):
         self._args = args
-        self._splash: T.Optional[QtWidgets.QSplashScreen] = None
+        self._splash: Optional[QtWidgets.QSplashScreen] = None
 
         QtCore.pyqtRemoveInputHook()
 

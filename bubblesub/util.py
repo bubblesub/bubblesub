@@ -21,11 +21,12 @@ import fractions
 import itertools
 import operator
 import re
-import typing as T
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Any, Union
 
 
-def ms_to_times(milliseconds: int) -> T.Tuple[int, int, int, int]:
+def ms_to_times(milliseconds: int) -> tuple[int, int, int, int]:
     """Convert PTS to tuple symbolizing time.
 
     :param milliseconds: PTS
@@ -83,7 +84,7 @@ def str_to_ms(text: str) -> int:
     raise ValueError(f'invalid time format: "{text}"')
 
 
-def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
+def eval_expr(expr: str) -> Union[int, float, fractions.Fraction]:
     """Evaluate simple expression.
 
     :param expr: expression to evaluate
@@ -100,7 +101,7 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
         ast.USub: operator.neg,
     }
 
-    def _eval(node: ast.expr) -> T.Union[int, float, fractions.Fraction]:
+    def _eval(node: ast.expr) -> Union[int, float, fractions.Fraction]:
         if isinstance(node, ast.Num):
             return fractions.Fraction(node.n)
         if isinstance(node, ast.BinOp):
@@ -113,8 +114,8 @@ def eval_expr(expr: str) -> T.Union[int, float, fractions.Fraction]:
 
 
 def make_ranges(
-    indexes: T.Iterable[int], reverse: bool = False
-) -> T.Iterable[T.Tuple[int, int]]:
+    indexes: Iterable[int], reverse: bool = False
+) -> Iterable[tuple[int, int]]:
     """Group indexes together into a list of consecutive ranges.
 
     :param indexes: list of source indexes
@@ -133,7 +134,7 @@ def make_ranges(
         yield (start_idx, end_idx + 1 - start_idx)
 
 
-def sanitize_file_name(file_name: T.Union[Path, str]) -> str:
+def sanitize_file_name(file_name: Union[Path, str]) -> str:
     """Remove unusable characters from a file name.
 
     :param file_name: file name to sanitize
@@ -149,7 +150,7 @@ def sanitize_file_name(file_name: T.Union[Path, str]) -> str:
     return file_name
 
 
-def chunks(source: T.List[T.Any], size: int) -> T.Iterable[T.List[T.Any]]:
+def chunks(source: list[Any], size: int) -> Iterable[list[Any]]:
     """Yield successive chunks of given size from source.
 
     :param source: source list
@@ -160,7 +161,7 @@ def chunks(source: T.List[T.Any], size: int) -> T.Iterable[T.List[T.Any]]:
         yield source[i : i + size]
 
 
-def first(source: T.Iterable[T.Any], default: T.Any = None) -> T.Any:
+def first(source: Iterable[Any], default: Any = None) -> Any:
     """Return first element from a list or default value if the list is empty.
 
     :param source: source list
@@ -184,7 +185,7 @@ def ucfirst(source: str) -> str:
     return source[0].upper() + source[1:]
 
 
-def all_subclasses(cls: T.Any) -> T.Set[T.Any]:
+def all_subclasses(cls: Any) -> set[Any]:
     """Return all subclasses of the given class.
 
     :param cls: class to inspect

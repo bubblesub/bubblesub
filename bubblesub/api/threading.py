@@ -20,14 +20,15 @@ import functools
 import queue
 import threading
 import time
-import typing as T
+from collections.abc import Callable
+from typing import Any
 
 from PyQt5 import QtCore
 
 from bubblesub.api.log import LogApi
 
 
-def synchronized(wrapped: T.Any = None, lock: T.Any = None) -> T.Any:
+def synchronized(wrapped: Any = None, lock: Any = None) -> Any:
     """A decorator that lets the passed function run only when given lock is
     active. If there is no lock passed, the function uses its own internal
     lock.
@@ -43,7 +44,7 @@ def synchronized(wrapped: T.Any = None, lock: T.Any = None) -> T.Any:
         lock = threading.RLock()
 
     @functools.wraps(wrapped)
-    def _wrapper(*args: T.Any, **kwargs: T.Any) -> T.Any:
+    def _wrapper(*args: Any, **kwargs: Any) -> Any:
         assert lock
         assert wrapped
         with lock:
@@ -69,7 +70,7 @@ class QueueWorker(QtCore.QRunnable):
         self._running = False
         self._clearing = False
         self._queue: queue.Queue[  # pylint: disable=unsubscriptable-object
-            T.Any
+            Any
         ] = queue.Queue()
 
     def run(self) -> None:
@@ -97,7 +98,7 @@ class QueueWorker(QtCore.QRunnable):
         with self._log_api.exception_guard():
             self._finished()
 
-    def _process_task(self, task: T.Any) -> None:
+    def _process_task(self, task: Any) -> None:
         """Process a task and return a result.
 
         :param task: task to process
@@ -109,7 +110,7 @@ class QueueWorker(QtCore.QRunnable):
         self._running = False
         self._queue.put(None)  # make sure run() exits
 
-    def schedule_task(self, task_data: T.Any) -> None:
+    def schedule_task(self, task_data: Any) -> None:
         """Put a new task onto internal task queue.
 
         :param task_data: task to process
@@ -140,7 +141,7 @@ class QueueWorker(QtCore.QRunnable):
 class OneShotWorker(QtCore.QRunnable):
     """Worker thread for one shot tasks."""
 
-    def __init__(self, log_api: LogApi, func: T.Callable[[], T.Any]) -> None:
+    def __init__(self, log_api: LogApi, func: Callable[[], Any]) -> None:
         """Initialize self.
 
         :param log_api: logging API
@@ -172,8 +173,8 @@ class ThreadingApi:
 
     def schedule_task(
         self,
-        function: T.Callable[..., T.Any],
-        complete_callback: T.Callable[..., T.Any],
+        function: Callable[..., Any],
+        complete_callback: Callable[..., Any],
     ) -> None:
         """Schedule a task to run in the background thread pool.
 

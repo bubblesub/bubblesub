@@ -17,7 +17,7 @@
 """Shared definitions of spell checker classes."""
 
 import abc
-import typing as T
+from collections.abc import Iterable
 
 
 class SpellCheckerError(Exception):
@@ -79,7 +79,7 @@ class BaseSpellChecker:
         """
 
     @abc.abstractmethod
-    def suggest(self, word: str) -> T.Iterable[str]:
+    def suggest(self, word: str) -> Iterable[str]:
         """Check for similar words to the given word.
 
         :param word: word to check

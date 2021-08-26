@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import enum
-import typing as T
 from dataclasses import dataclass
+from typing import Any, cast
 
 from ass_parser import AssEvent
 from PyQt5 import QtCore, QtGui
@@ -59,13 +59,13 @@ class _Column:
     def __init__(self, header: str) -> None:
         self.header = header
 
-    def display(self, sub: AssEvent) -> T.Any:
+    def display(self, sub: AssEvent) -> Any:
         raise NotImplementedError("not implemented")
 
-    def read(self, sub: AssEvent) -> T.Any:
+    def read(self, sub: AssEvent) -> Any:
         raise NotImplementedError("not implemented")
 
-    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
+    def write(self, sub: AssEvent, value: Any) -> Any:
         raise NotImplementedError("not implemented")
 
 
@@ -74,50 +74,50 @@ class _PropertyColumn(_Column):
         super().__init__(header)
         self._property_name = property_name
 
-    def display(self, sub: AssEvent) -> T.Any:
+    def display(self, sub: AssEvent) -> Any:
         return getattr(sub, self._property_name)
 
-    def read(self, sub: AssEvent) -> T.Any:
+    def read(self, sub: AssEvent) -> Any:
         return getattr(sub, self._property_name)
 
-    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
+    def write(self, sub: AssEvent, value: Any) -> Any:
         setattr(sub, self._property_name, value)
 
 
 class _BoolPropertyColumn(_PropertyColumn):
-    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
+    def write(self, sub: AssEvent, value: Any) -> Any:
         setattr(sub, self._property_name, bool(value))
 
 
 class _IntPropertyColumn(_PropertyColumn):
-    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
+    def write(self, sub: AssEvent, value: Any) -> Any:
         setattr(sub, self._property_name, int(value))
 
 
 class _TextPropertyColumn(_PropertyColumn):
-    def display(self, sub: AssEvent) -> T.Any:
+    def display(self, sub: AssEvent) -> Any:
         ret = getattr(sub, self._property_name)
         ret = ret.replace("\n", "\\N")
         return ret
 
-    def read(self, sub: AssEvent) -> T.Any:
+    def read(self, sub: AssEvent) -> Any:
         ret = getattr(sub, self._property_name)
         ret = ret.replace("\\N", "\n")
         return ret
 
-    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
+    def write(self, sub: AssEvent, value: Any) -> Any:
         value = value.replace("\n", "\\N")
         setattr(sub, self._property_name, value)
 
 
 class _TimePropertyColumn(_PropertyColumn):
-    def display(self, sub: AssEvent) -> T.Any:
+    def display(self, sub: AssEvent) -> Any:
         return ms_to_str(getattr(sub, self._property_name))
 
-    def read(self, sub: AssEvent) -> T.Any:
+    def read(self, sub: AssEvent) -> Any:
         return getattr(sub, self._property_name)
 
-    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
+    def write(self, sub: AssEvent, value: Any) -> Any:
         setattr(sub, self._property_name, int(value))
 
 
@@ -127,7 +127,7 @@ class _CpsColumn(_Column):
     def __init__(self) -> None:
         super().__init__("CPS")
 
-    def display(self, sub: AssEvent) -> T.Any:
+    def display(self, sub: AssEvent) -> Any:
         return (
             "{:.1f}".format(
                 character_count(sub.text) / max(1, sub.duration / 1000.0)
@@ -136,10 +136,10 @@ class _CpsColumn(_Column):
             else "-"
         )
 
-    def read(self, sub: AssEvent) -> T.Any:
+    def read(self, sub: AssEvent) -> Any:
         raise NotImplementedError("not implemented")
 
-    def write(self, sub: AssEvent, value: T.Any) -> T.Any:
+    def write(self, sub: AssEvent, value: Any) -> Any:
         raise NotImplementedError("not implemented")
 
 
@@ -147,7 +147,7 @@ class _ShortDurationColumn(_IntPropertyColumn):
     def __init__(self) -> None:
         super().__init__("Duration", "duration")
 
-    def display(self, sub: AssEvent) -> T.Any:
+    def display(self, sub: AssEvent) -> Any:
         return f"{sub.duration / 1000.0:.1f}"
 
 
@@ -155,11 +155,11 @@ class _LongDurationColumn(_IntPropertyColumn):
     def __init__(self) -> None:
         super().__init__("Duration (long)", "duration")
 
-    def display(self, sub: AssEvent) -> T.Any:
+    def display(self, sub: AssEvent) -> Any:
         return ms_to_str(sub.duration)
 
 
-_COLUMNS: T.Dict[AssEventsModelColumn, _Column] = {
+_COLUMNS: dict[AssEventsModelColumn, _Column] = {
     AssEventsModelColumn.START: _TimePropertyColumn("Start", "start"),
     AssEventsModelColumn.END: _TimePropertyColumn("End", "end"),
     AssEventsModelColumn.ASS_STYLE: _TextPropertyColumn("Style", "style_name"),
@@ -191,7 +191,7 @@ class AssEventsModel(ObservableListTableAdapter):
         api: Api,
         theme_mgr: ThemeManager,
         parent: QtCore.QObject,
-        **kwargs: T.Any,
+        **kwargs: Any,
     ) -> None:
         super().__init__(parent, api.subs.events)
         self._api = api
@@ -200,7 +200,7 @@ class AssEventsModel(ObservableListTableAdapter):
 
     def headerData(
         self, idx: int, orientation: int, role: int = QtCore.Qt.DisplayRole
-    ) -> T.Any:
+    ) -> Any:
         if orientation == QtCore.Qt.Vertical:
             if role == QtCore.Qt.DisplayRole:
                 return idx + 1
@@ -228,13 +228,13 @@ class AssEventsModel(ObservableListTableAdapter):
             and _COLUMNS[AssEventsModelColumn(index.column())].editable
         ):
             ret |= QtCore.Qt.ItemIsEditable
-        return T.cast(int, ret)
+        return cast(int, ret)
 
     @property
     def _column_count(self) -> int:
         return len(AssEventsModelColumn)
 
-    def _get_data(self, row_idx: int, col_idx: int, role: int) -> T.Any:
+    def _get_data(self, row_idx: int, col_idx: int, role: int) -> Any:
         subtitle = self._list[row_idx]
 
         if role == QtCore.Qt.BackgroundRole:
@@ -262,7 +262,7 @@ class AssEventsModel(ObservableListTableAdapter):
         return QtCore.QVariant()
 
     def _set_data(
-        self, row_idx: int, col_idx: int, role: int, new_value: T.Any
+        self, row_idx: int, col_idx: int, role: int, new_value: Any
     ) -> bool:
         subtitle = self._list[row_idx]
         column = _COLUMNS[AssEventsModelColumn(col_idx)]
@@ -272,7 +272,7 @@ class AssEventsModel(ObservableListTableAdapter):
             return False
         return True
 
-    def _get_background_cps(self, subtitle: AssEvent) -> T.Any:
+    def _get_background_cps(self, subtitle: AssEvent) -> Any:
         if subtitle.duration == 0:
             return QtCore.QVariant()
 

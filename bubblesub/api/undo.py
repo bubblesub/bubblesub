@@ -18,9 +18,10 @@
 
 import contextlib
 import pickle
-import typing as T
 import zlib
+from collections.abc import Iterator
 from copy import copy
+from typing import Any, Optional, cast
 
 from ass_parser import AssFile
 
@@ -34,7 +35,7 @@ class UndoState:
     def __init__(
         self,
         ass_file: AssFile,
-        selected_indexes: T.List[int],
+        selected_indexes: list[int],
     ) -> None:
         """Initialize self.
 
@@ -50,9 +51,9 @@ class UndoState:
 
         :return: remembered ASS file
         """
-        return T.cast(AssFile, _unpickle(self._ass_file))
+        return cast(AssFile, _unpickle(self._ass_file))
 
-    def __eq__(self, other: T.Any) -> T.Any:
+    def __eq__(self, other: Any) -> Any:
         """Whether two UndoStates are equivalent.
 
         Needed to tell if nothing has changed when deciding whether to push
@@ -65,7 +66,7 @@ class UndoState:
             return self.ass_file == other.ass_file
         return NotImplemented
 
-    def __ne__(self, other: T.Any) -> T.Any:
+    def __ne__(self, other: Any) -> Any:
         """Opposite of __eq__.
 
         :param other: object to compare self with
@@ -77,7 +78,7 @@ class UndoState:
         return not result
 
 
-def _pickle(data: T.Any) -> bytes:
+def _pickle(data: Any) -> bytes:
     """Serialize data and use compression to save memory usage.
 
     :param data: object to serialize
@@ -86,7 +87,7 @@ def _pickle(data: T.Any) -> bytes:
     return zlib.compress(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
 
 
-def _unpickle(data: bytes) -> T.Any:
+def _unpickle(data: bytes) -> Any:
     """Deserialize data.
 
     :param data: serialized data
@@ -108,9 +109,9 @@ class UndoApi:
         """
         self._cfg = cfg
         self._subs_api = subs_api
-        self._stack: T.List[UndoState] = []
+        self._stack: list[UndoState] = []
         self._stack_pos = -1
-        self._saved_state: T.Optional[UndoState] = None
+        self._saved_state: Optional[UndoState] = None
         self._ignore = False
 
         self._subs_api.loaded.connect(self._on_subtitles_load)
@@ -141,7 +142,7 @@ class UndoApi:
         return self._stack_pos + 1 < len(self._stack)
 
     @contextlib.contextmanager
-    def capture(self) -> T.Iterator[None]:
+    def capture(self) -> Iterator[None]:
         """Execute user operation and record the application state after it.
 
         Doesn't push onto undo stack if nothing has changed.

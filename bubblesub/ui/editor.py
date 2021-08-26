@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
+from typing import Any, Optional
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -32,7 +32,7 @@ from bubblesub.ui.vim_text_edit import VimTextEdit
 
 
 class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
-    def __init__(self, api: Api, *args: T.Any) -> None:
+    def __init__(self, api: Api, *args: Any) -> None:
         super().__init__(*args)
         self._api = api
         self._fmt = QtGui.QTextCharFormat()
@@ -72,7 +72,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
 
 class TextEdit(VimTextEdit):
     def __init__(
-        self, api: Api, parent: QtWidgets.QWidget, **kwargs: T.Any
+        self, api: Api, parent: QtWidgets.QWidget, **kwargs: Any
     ) -> None:
         super().__init__(parent, **kwargs)
         self._z_mode = False
@@ -233,7 +233,7 @@ class Editor(QtWidgets.QWidget):
         api.subs.loaded.connect(self._on_subs_load)
         api.subs.selection_changed.connect(self._on_selection_change)
 
-        self._data_widget_mapper: T.Optional[ImmediateDataWidgetMapper] = None
+        self._data_widget_mapper: Optional[ImmediateDataWidgetMapper] = None
 
         QtWidgets.QApplication.instance().installEventFilter(self)
 
@@ -271,7 +271,7 @@ class Editor(QtWidgets.QWidget):
         )
 
     def _on_selection_change(
-        self, selected: T.List[int], _changed: bool
+        self, selected: list[int], _changed: bool
     ) -> None:
         if not self._data_widget_mapper:
             return

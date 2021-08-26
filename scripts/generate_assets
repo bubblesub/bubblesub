@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import re
-import typing as T
 from pathlib import Path
 
 from scss import Compiler
@@ -32,7 +31,7 @@ def main() -> None:
             )
         )
 
-        variables: T.Dict[str, str] = {}
+        variables: dict[str, str] = {}
         for line in variables_path.read_text().splitlines():
             match = re.match(r"\$(.*):\s+([^;]*)", line)
             key = match.group(1)

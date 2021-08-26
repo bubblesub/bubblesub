@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
 from pathlib import Path
 
 from PyQt5 import QtWidgets
@@ -33,7 +32,7 @@ class SystemLightTheme(BaseTheme):
         QtWidgets.QApplication.instance().setStyleSheet("")
 
     @property
-    def palette(self) -> T.Dict[str, str]:
+    def palette(self) -> dict[str, str]:
         return LightTheme().palette
 
     def get_icon_path(self, name: str) -> Path:
@@ -49,7 +48,7 @@ class SystemDarkTheme(BaseTheme):
         QtWidgets.QApplication.instance().setStyleSheet("")
 
     @property
-    def palette(self) -> T.Dict[str, str]:
+    def palette(self) -> dict[str, str]:
         return DarkTheme().palette
 
     def get_icon_path(self, name: str) -> Path:

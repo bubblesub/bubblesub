@@ -21,9 +21,9 @@ import bisect
 import fractions
 import threading
 import time
-import typing as T
 import uuid
 from pathlib import Path
+from typing import Any, Optional, Union
 
 import ffms2
 import numpy as np
@@ -42,7 +42,7 @@ _PIX_FMT = [ffms2.get_pix_fmt("rgb24")]
 
 def _load_video_source(
     log_api: LogApi, uid: uuid.UUID, path: Path
-) -> T.Optional[ffms2.VideoSource]:
+) -> Optional[ffms2.VideoSource]:
     """Create video source.
 
     :param log_api: logging API
@@ -95,17 +95,17 @@ class VideoStream(QtCore.QObject):
         self.uid = uuid.uuid4()
 
         self._path = path
-        self._timecodes: T.List[int] = []
-        self._keyframes: T.List[int] = []
+        self._timecodes: list[int] = []
+        self._keyframes: list[int] = []
         self._frame_rate = fractions.Fraction(0, 1)
         self._aspect_ratio = fractions.Fraction(1, 1)
         self._width = 0
         self._height = 0
 
         self._ass_renderer = AssRenderer()
-        self._source: T.Union[None, ffms2.VideoSource] = None
+        self._source: Union[None, ffms2.VideoSource] = None
 
-        self._last_output_fmt: T.Any = None
+        self._last_output_fmt: Any = None
 
         self._log_api.info(f"video: loading {path}")
         self._threading_api.schedule_task(
@@ -134,8 +134,8 @@ class VideoStream(QtCore.QObject):
         pts: int,
         path: Path,
         include_subtitles: bool,
-        width: T.Optional[int],
-        height: T.Optional[int],
+        width: Optional[int],
+        height: Optional[int],
     ) -> None:
         """Save a screenshot into specified destination.
 
@@ -233,8 +233,8 @@ class VideoStream(QtCore.QObject):
         return pts
 
     def frame_idx_from_pts(
-        self, pts: T.Union[float, int, np.array]
-    ) -> T.Union[int, np.array]:
+        self, pts: Union[float, int, np.array]
+    ) -> Union[int, np.array]:
         """Get index of a frame that contains given PTS.
 
         :param pts: PTS to search for
@@ -277,7 +277,7 @@ class VideoStream(QtCore.QObject):
         return self._aspect_ratio
 
     @property
-    def timecodes(self) -> T.List[int]:
+    def timecodes(self) -> list[int]:
         """Return video frames' PTS.
 
         :return: video frames' PTS
@@ -287,7 +287,7 @@ class VideoStream(QtCore.QObject):
         return self._timecodes
 
     @property
-    def keyframes(self) -> T.List[int]:
+    def keyframes(self) -> list[int]:
         """Return video keyframes' indexes.
 
         :return: video keyframes' indexes
@@ -318,7 +318,7 @@ class VideoStream(QtCore.QObject):
 
     def get_frame(
         self, frame_idx: int, width: int, height: int
-    ) -> T.Optional[np.array]:
+    ) -> Optional[np.array]:
         """Get raw video data from the currently loaded video source.
 
         :param frame_idx: frame number
@@ -349,7 +349,7 @@ class VideoStream(QtCore.QObject):
 
     async def async_get_frame(
         self, frame_idx: int, width: int, height: int
-    ) -> T.Optional[np.array]:
+    ) -> Optional[np.array]:
         """Get raw video data from the currently loaded video source
         asynchronously.
 

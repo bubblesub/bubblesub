@@ -16,7 +16,7 @@
 
 """Boolean operation."""
 
-import typing as T
+from typing import Any
 
 
 class BooleanOperation:
@@ -33,14 +33,14 @@ class BooleanOperation:
     def __hash__(self) -> int:
         return hash(self.operation)
 
-    def __eq__(self, other: T.Any) -> bool:
+    def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, BooleanOperation)
             and self.operation == other.operation
         )
 
     @classmethod
-    def choices(cls: T.Any) -> T.List[T.Any]:
+    def choices(cls: Any) -> list[Any]:
         return [cls(choice) for choice in cls.YES + cls.NO + cls.TOGGLE]
 
     def apply(self, origin: bool) -> bool:

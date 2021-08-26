@@ -16,8 +16,9 @@
 
 """Subtitles API."""
 
-import typing as T
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Optional, Union, cast
 
 from ass_parser import (
     AssEvent,
@@ -53,9 +54,9 @@ class SubtitlesApi(QtCore.QObject):
         """
         super().__init__()
         self._cfg = cfg
-        self._selected_indexes: T.List[int] = []
-        self._selection_to_commit: T.List[AssEvent] = []
-        self._path: T.Optional[Path] = None
+        self._selected_indexes: list[int] = []
+        self._selection_to_commit: list[AssEvent] = []
+        self._path: Optional[Path] = None
         self.ass_file = AssFile()
 
         self.loaded.connect(self._on_subs_load)
@@ -87,7 +88,7 @@ class SubtitlesApi(QtCore.QObject):
         return self.ass_file.script_info
 
     @property
-    def remembered_video_paths(self) -> T.Iterable[Path]:
+    def remembered_video_paths(self) -> Iterable[Path]:
         """Return path of the associated video files.
 
         :return: paths of the associated video files or empty list if none
@@ -98,7 +99,7 @@ class SubtitlesApi(QtCore.QObject):
                 yield self._path.parent / path if self._path else path
 
     @property
-    def remembered_audio_paths(self) -> T.Iterable[Path]:
+    def remembered_audio_paths(self) -> Iterable[Path]:
         """Return path of the associated audio files.
 
         :return: paths of the associated audio files or empty list if none
@@ -133,15 +134,15 @@ class SubtitlesApi(QtCore.QObject):
             self.script_info.update({"Audio File": "|".join(map(str, paths))})
 
     @property
-    def language(self) -> T.Optional[str]:
+    def language(self) -> Optional[str]:
         """Return the language of the subtitles, in ISO 639-1 form.
 
         :return: language
         """
-        return T.cast(str, self.script_info.get("Language") or "") or None
+        return cast(str, self.script_info.get("Language") or "") or None
 
     @language.setter
-    def language(self, language: T.Optional[str]) -> None:
+    def language(self, language: Optional[str]) -> None:
         """Set the language of the subtitles, in ISO 639-1 form.
 
         :param language: language
@@ -152,7 +153,7 @@ class SubtitlesApi(QtCore.QObject):
             self.script_info.pop("Language", None)
 
     @property
-    def path(self) -> T.Optional[Path]:
+    def path(self) -> Optional[Path]:
         """Return path of the currently loaded ASS file.
 
         :return: path of the currently loaded ASS file or None if no file
@@ -168,7 +169,7 @@ class SubtitlesApi(QtCore.QObject):
         return len(self.selected_indexes) > 0
 
     @property
-    def selected_indexes(self) -> T.List[int]:
+    def selected_indexes(self) -> list[int]:
         """Return indexes of the selected events.
 
         :return: indexes of the selected events
@@ -176,7 +177,7 @@ class SubtitlesApi(QtCore.QObject):
         return self._selected_indexes
 
     @selected_indexes.setter
-    def selected_indexes(self, new_selection: T.List[int]) -> None:
+    def selected_indexes(self, new_selection: list[int]) -> None:
         """Update event selection.
 
         :param new_selection: new list of selected indexes
@@ -187,7 +188,7 @@ class SubtitlesApi(QtCore.QObject):
         self.selection_changed.emit(new_selection, changed)
 
     @property
-    def selected_events(self) -> T.List[AssEvent]:
+    def selected_events(self) -> list[AssEvent]:
         """Return list of selected events.
 
         :return: list of selected events
@@ -216,7 +217,7 @@ class SubtitlesApi(QtCore.QObject):
         )
         self.loaded.emit()
 
-    def load_ass(self, path: T.Union[str, Path]) -> None:
+    def load_ass(self, path: Union[str, Path]) -> None:
         """Load specified ASS file.
 
         :param path: path to load the file from
@@ -233,7 +234,7 @@ class SubtitlesApi(QtCore.QObject):
         self.loaded.emit()
 
     def save_ass(
-        self, path: T.Union[str, Path], remember_path: bool = False
+        self, path: Union[str, Path], remember_path: bool = False
     ) -> None:
         """Save current state to the specified file.
 

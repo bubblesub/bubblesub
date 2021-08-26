@@ -18,9 +18,10 @@
 
 import enum
 import re
-import typing as T
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import DATA_DIR
@@ -53,16 +54,16 @@ class MenuItem:
     """Menu item in GUI."""
 
     type: MenuItemType
-    label: T.Optional[str] = None
-    cmdline: T.Optional[str] = None
-    children: T.Optional[T.List["MenuItem"]] = None
+    label: Optional[str] = None
+    cmdline: Optional[str] = None
+    children: Optional[list["MenuItem"]] = None
 
 
 def _get_node(token: str) -> MenuItem:
     if token == "-":
         return MenuItem(type=MenuItemType.SEPARATOR)
 
-    label: T.Optional[str]
+    label: Optional[str]
     if "|" in token:
         label, artifact = token.split("|", 2)
     else:
@@ -87,7 +88,7 @@ def _get_node(token: str) -> MenuItem:
 
 
 def _recurse_tree(
-    parent: MenuItem, parent_depth: int, source: T.List[str]
+    parent: MenuItem, parent_depth: int, source: list[str]
 ) -> None:
     while source:
         last_line = source[0].rstrip()
@@ -118,7 +119,7 @@ class MenuConfig(SubConfig):
     def __init__(self) -> None:
         """Initialize self."""
         super().__init__()
-        self._menu: T.Dict[MenuContext, MenuItem] = {}
+        self._menu: dict[MenuContext, MenuItem] = {}
         self.load(None)
 
     def create_example_file(self, root_dir: Path) -> None:
@@ -131,7 +132,7 @@ class MenuConfig(SubConfig):
         if not user_path.exists():
             user_path.write_text((DATA_DIR / "menu.example").read_text())
 
-    def load(self, root_dir: T.Optional[Path]) -> None:
+    def load(self, root_dir: Optional[Path]) -> None:
         """Load internals of this config from the specified directory.
 
         :param root_dir: directory where to look for the matching config file
@@ -152,7 +153,7 @@ class MenuConfig(SubConfig):
                     raise ConfigError(f"error loading {user_path}: {ex}")
 
     def _loads(self, text: str) -> None:
-        sections: T.Dict[MenuContext, str] = {}
+        sections: dict[MenuContext, str] = {}
         cur_context = MenuContext.MAIN_MENU
         lines = text.split("\n")
         while lines:
@@ -188,7 +189,7 @@ class MenuConfig(SubConfig):
 
     def __iter__(
         self,
-    ) -> T.Iterator[T.Tuple[MenuContext, MenuItem]]:
+    ) -> Iterator[tuple[MenuContext, MenuItem]]:
         """Let users iterate directly over this config.
 
         :return: iterator
@@ -225,7 +226,7 @@ class SubMenu(MenuItem):
     """Backwards-compatible class for creating submenus."""
 
     def __init__(
-        self, name: str, children: T.Optional[T.List[MenuItem]] = None
+        self, name: str, children: Optional[list[MenuItem]] = None
     ) -> None:
         """Initialize self.
 

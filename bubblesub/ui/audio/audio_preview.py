@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import bisect
-import typing as T
+from typing import Any, Optional, Union
 
 import ffms2
 import numpy as np
@@ -53,7 +53,7 @@ class SpectrumWorker(QueueWorker):
         self.signals = SpectrumWorkerSignals()
         self._api = api
 
-        self.cache: T.Dict[int, T.List[int]] = SortedDict()
+        self.cache: dict[int, list[int]] = SortedDict()
 
         if pyfftw is not None:
             self._input = pyfftw.empty_aligned(
@@ -72,7 +72,7 @@ class SpectrumWorker(QueueWorker):
             )
             self._fftw = None
 
-    def _process_task(self, task: T.Any) -> None:
+    def _process_task(self, task: Any) -> None:
         anything_changed = False
         for block_idx in task:
             out = self._get_spectrogram_for_block_idx(block_idx)
@@ -179,10 +179,10 @@ class AudioPreview(BaseLocalAudioWidget):
         self._theme_mgr = theme_mgr
 
         self.setMinimumHeight(int(SLIDER_SIZE * 1.5))
-        self._rects: T.List[SubtitleRect] = []
+        self._rects: list[SubtitleRect] = []
 
-        self._mouse_pos: T.Optional[QtCore.QPoint] = None
-        self._color_table: T.List[int] = []
+        self._mouse_pos: Optional[QtCore.QPoint] = None
+        self._color_table: list[int] = []
         self._pixels: np.array = np.zeros([0, 0], dtype=np.uint8)
 
         self._generate_color_table()
@@ -569,7 +569,7 @@ class AudioPreview(BaseLocalAudioWidget):
         painter.drawLine(x, 0, x, painter.viewport().height())
 
     def _update_cursor(
-        self, event: T.Union[QtGui.QKeyEvent, QtGui.QMouseEvent, None]
+        self, event: Union[QtGui.QKeyEvent, QtGui.QMouseEvent, None]
     ) -> None:
         pos = self.mapFromGlobal(QtGui.QCursor().pos())
 

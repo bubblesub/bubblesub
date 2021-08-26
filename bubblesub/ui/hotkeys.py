@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import functools
-import typing as T
+from typing import Optional, Union
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -26,14 +26,14 @@ from bubblesub.cfg.hotkeys import Hotkey, HotkeyContext
 
 class HotkeyManager:
     def __init__(
-        self, api: Api, context_map: T.Dict[HotkeyContext, QtWidgets.QWidget]
+        self, api: Api, context_map: dict[HotkeyContext, QtWidgets.QWidget]
     ) -> None:
         self._api = api
         self._hotkey_context_map = context_map
 
-        self._cmd_map: T.Dict[
-            T.Tuple[QtWidgets.QWidget, str],
-            T.Tuple[QtWidgets.QShortcut, T.List[BaseCommand]],
+        self._cmd_map: dict[
+            tuple[QtWidgets.QWidget, str],
+            tuple[QtWidgets.QShortcut, list[BaseCommand]],
         ] = {}
 
         self._rebuild()
@@ -62,14 +62,14 @@ class HotkeyManager:
         self,
         context: HotkeyContext,
         shortcut: str,
-        cmdline: T.Optional[T.Union[str, T.List[T.List[str]]]],
+        cmdline: Optional[Union[str, list[list[str]]]],
     ) -> None:
         widget = self._hotkey_context_map[context]
         shortcut = shortcut.lower()
 
         if cmdline is None:
-            result: T.Optional[
-                T.Tuple[QtWidgets.QShortcut, T.List[BaseCommand]],
+            result: Optional[
+                tuple[QtWidgets.QShortcut, list[BaseCommand]],
             ] = self._cmd_map.pop((widget, shortcut), None)
             if result:
                 qt_shortcut, _cmds = result

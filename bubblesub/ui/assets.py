@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
+from collections.abc import Iterable
 from pathlib import Path
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 
 
-def get_assets(directory_name: str) -> T.Iterable[Path]:
+def get_assets(directory_name: str) -> Iterable[Path]:
     """Get path to all static assets under given directory name.
 
     :param directory_name: directory that contains relevant assets

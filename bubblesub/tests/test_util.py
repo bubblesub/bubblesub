@@ -16,7 +16,7 @@
 
 """Tests for bubblesub.util module."""
 
-import typing as T
+from collections.abc import Iterable
 
 import pytest
 
@@ -45,9 +45,9 @@ from bubblesub.util import make_ranges
     ],
 )
 def test_make_ranges(
-    indexes: T.Iterable[int],
+    indexes: Iterable[int],
     reverse: bool,
-    expected_ranges: T.List[T.Tuple[int, int]],
+    expected_ranges: list[tuple[int, int]],
 ) -> None:
     """Test whether make_ranges function produces correct ranges.
 

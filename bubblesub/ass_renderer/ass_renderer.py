@@ -19,7 +19,7 @@
 
 import ctypes
 import fractions
-import typing as T
+from typing import Optional, Union
 
 import numpy as np
 import PIL.Image
@@ -36,18 +36,18 @@ class AssRenderer:
         self._ctx = libass.AssContext()
         self._renderer = self._ctx.make_renderer()
         self._renderer.set_fonts()
-        self._track: T.Optional[libass.AssTrack] = None
-        self.style_list: T.Optional[AssStyleList] = None
-        self.event_list: T.Optional[AssEventList] = None
-        self.script_info: T.Optional[AssScriptInfo] = None
-        self.video_resolution: T.Optional[T.Tuple[int, int]] = None
+        self._track: Optional[libass.AssTrack] = None
+        self.style_list: Optional[AssStyleList] = None
+        self.event_list: Optional[AssEventList] = None
+        self.script_info: Optional[AssScriptInfo] = None
+        self.video_resolution: Optional[tuple[int, int]] = None
 
     def set_source(
         self,
         style_list: AssStyleList,
         event_list: AssEventList,
         script_info: AssScriptInfo,
-        video_resolution: T.Tuple[int, int],
+        video_resolution: tuple[int, int],
     ) -> None:
         """Set source ASS data.
 
@@ -83,7 +83,7 @@ class AssRenderer:
         self._renderer.pixel_aspect = 1.0
 
     def render(
-        self, time: int, aspect_ratio: T.Union[float, fractions.Fraction]
+        self, time: int, aspect_ratio: Union[float, fractions.Fraction]
     ) -> PIL.Image:
         """Render the ASS data to a PIL.Image bitmap.
 

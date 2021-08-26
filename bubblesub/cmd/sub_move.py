@@ -15,8 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import typing as T
+from collections.abc import Iterable
 from copy import copy
+from typing import cast
 
 from ass_parser import AssEvent
 from PyQt5 import QtWidgets
@@ -56,7 +57,7 @@ class SubtitlesMoveCommand(BaseCommand):
                 sub.index for sub in sub_copies if sub.index is not None
             ]
 
-    def _move_above(self, indexes: T.List[int]) -> T.Iterable[AssEvent]:
+    def _move_above(self, indexes: list[int]) -> Iterable[AssEvent]:
         if indexes[0] == 0:
             raise CommandUnavailable("cannot move further up")
         for idx, count in make_ranges(indexes):
@@ -65,7 +66,7 @@ class SubtitlesMoveCommand(BaseCommand):
             del self.api.subs.events[idx + count : idx + count + count]
             yield from chunk
 
-    def _move_below(self, indexes: T.List[int]) -> T.Iterable[AssEvent]:
+    def _move_below(self, indexes: list[int]) -> Iterable[AssEvent]:
         if indexes[-1] + 1 == len(self.api.subs.events):
             raise CommandUnavailable("cannot move further down")
         for idx, count in make_ranges(indexes, reverse=True):
@@ -75,9 +76,9 @@ class SubtitlesMoveCommand(BaseCommand):
             yield from chunk
 
     def _move_to(
-        self, indexes: T.List[int], base_idx: int
-    ) -> T.Iterable[AssEvent]:
-        sub_copies: T.List[AssEvent] = []
+        self, indexes: list[int], base_idx: int
+    ) -> Iterable[AssEvent]:
+        sub_copies: list[AssEvent] = []
 
         for idx, count in make_ranges(indexes, reverse=True):
             chunk = [copy(s) for s in self.api.subs.events[idx : idx + count]]
@@ -90,7 +91,7 @@ class SubtitlesMoveCommand(BaseCommand):
         return sub_copies
 
     async def _show_dialog(
-        self, main_window: QtWidgets.QMainWindow, indexes: T.List[int]
+        self, main_window: QtWidgets.QMainWindow, indexes: list[int]
     ) -> int:
         dialog = QtWidgets.QInputDialog(main_window)
         dialog.setLabelText("Line number to move subtitles to:")
@@ -101,7 +102,7 @@ class SubtitlesMoveCommand(BaseCommand):
         dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
         if not await async_dialog_exec(dialog):
             raise CommandCanceled
-        return T.cast(int, dialog.intValue()) - 1
+        return cast(int, dialog.intValue()) - 1
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

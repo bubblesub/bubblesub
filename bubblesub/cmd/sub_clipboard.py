@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
-import typing as T
 from copy import copy
 
 from ass_parser import AssEventList
@@ -173,7 +172,7 @@ class SubtitlesPasteIntoCommand(BaseCommand):
                     sub.note = line
 
             elif self.args.subject == "times":
-                times: T.List[T.Tuple[int, int]] = []
+                times: list[tuple[int, int]] = []
                 for line in lines:
                     try:
                         start, end = line.split("-", 1)

@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import typing as T
 from copy import copy
+from typing import Optional, cast
 
 import PIL.Image
 import PIL.ImageQt
@@ -113,7 +113,7 @@ class _StylePreview(QtWidgets.QGroupBox):
         return self._editor.toPlainText()
 
     @property
-    def _selected_style(self) -> T.Optional[AssStyle]:
+    def _selected_style(self) -> Optional[AssStyle]:
         try:
             idx = self._selection_model.selectedIndexes()[0].row()
         except IndexError:
@@ -233,18 +233,18 @@ class _StyleList(QtWidgets.QWidget):
         layout.addWidget(strip)
 
     @property
-    def _selected_style(self) -> T.Optional[AssStyle]:
+    def _selected_style(self) -> Optional[AssStyle]:
         selected_row = self._selected_row
         if selected_row is None:
             return None
         return self._api.subs.styles[selected_row]
 
     @property
-    def _selected_row(self) -> T.Optional[int]:
+    def _selected_row(self) -> Optional[int]:
         indexes = self._styles_list_view.selectedIndexes()
         if not indexes:
             return None
-        return T.cast(int, indexes[0].row())
+        return cast(int, indexes[0].row())
 
     def _on_selection_change(
         self,
@@ -282,7 +282,7 @@ class _StyleList(QtWidgets.QWidget):
 
     async def _prompt_for_unique_style_name(
         self, style_name: str = ""
-    ) -> T.Optional[str]:
+    ) -> Optional[str]:
         prompt_text = "Name of the new style:"
         while True:
             dialog = QtWidgets.QInputDialog(self)

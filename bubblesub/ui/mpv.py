@@ -18,7 +18,7 @@
 
 import io
 import locale
-import typing as T
+from typing import Any, Optional
 
 import mpv
 from ass_parser import write_ass
@@ -55,7 +55,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
     _schedule_update = QtCore.pyqtSignal()
 
     def __init__(
-        self, api: Api, parent: T.Optional[QtWidgets.QWidget] = None
+        self, api: Api, parent: Optional[QtWidgets.QWidget] = None
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -201,7 +201,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
     def _sync_media(self) -> None:
         self.mpv.pause = True
         self.mpv.loadfile("null://")
-        external_files: T.Set[str] = set()
+        external_files: set[str] = set()
         for stream in self._api.video.streams:
             external_files.add(str(stream.path))
         for stream in self._api.audio.streams:
@@ -238,7 +238,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self.mpv.command("sub_add", "memory://" + handle.getvalue())
         self._need_subs_refresh = False
 
-    def _set_end(self, end: T.Optional[int]) -> None:
+    def _set_end(self, end: Optional[int]) -> None:
         if not self._api.playback.is_ready:
             return
         if end is None:
@@ -254,7 +254,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self.mpv.seek(ms_to_str(pts), "absolute", "exact")
 
     def _on_request_playback(
-        self, start: T.Optional[int], end: T.Optional[int]
+        self, start: Optional[int], end: Optional[int]
     ) -> None:
         if start is not None:
             self.mpv.seek(ms_to_str(start), "absolute")
@@ -299,10 +299,10 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self._api.playback.state = PlaybackFrontendState.READY
         self._need_subs_refresh = True
 
-    def _on_track_list_ready(self, track_list: T.Any) -> None:
+    def _on_track_list_ready(self, track_list: Any) -> None:
         # self._api.log.debug(json.dumps(track_list, indent=4))
-        vid: T.Optional[int] = None
-        aid: T.Optional[int] = None
+        vid: Optional[int] = None
+        aid: Optional[int] = None
 
         for track in track_list:
             track_type = track["type"]
@@ -343,18 +343,16 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         else:
             self._api.playback.state = PlaybackFrontendState.NOT_READY
 
-    def _on_mpv_time_pos_change(
-        self, prop_name: str, new_value: T.Any
-    ) -> None:
+    def _on_mpv_time_pos_change(self, prop_name: str, new_value: Any) -> None:
         pts = round((new_value or 0) * 1000)
         self._api.playback.receive_current_pts_change.emit(pts)
 
-    def _on_mpv_pause_change(self, prop_name: str, new_value: T.Any) -> None:
+    def _on_mpv_pause_change(self, prop_name: str, new_value: Any) -> None:
         self._api.playback.pause_changed.disconnect(self._on_pause_change)
         self._api.playback.is_paused = new_value
         self._api.playback.pause_changed.connect(self._on_pause_change)
 
     def _on_mpv_track_list_change(
-        self, prop_name: str, new_value: T.Any
+        self, prop_name: str, new_value: Any
     ) -> None:
         self._on_track_list_ready(new_value)

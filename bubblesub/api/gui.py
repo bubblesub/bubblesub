@@ -17,8 +17,9 @@
 """GUI API."""
 
 import contextlib
-import typing as T
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any, Optional
 
 from PyQt5 import QtCore, QtWidgets
 
@@ -40,9 +41,9 @@ class GuiApi(QtCore.QObject):
         :param api: core API
         """
         super().__init__()
-        self.last_directory: T.Optional[Path] = None
+        self.last_directory: Optional[Path] = None
         self._api = api
-        self._main_window: T.Optional[QtWidgets.QWidget] = None
+        self._main_window: Optional[QtWidgets.QWidget] = None
 
     def set_main_window(self, main_window: QtWidgets.QWidget) -> None:
         """Set main window instance, needed to interact with the GUI.
@@ -64,8 +65,8 @@ class GuiApi(QtCore.QObject):
         return widget.isVisible()
 
     async def exec(
-        self, func: T.Callable[..., T.Any], *args: T.Any, **kwargs: T.Any
-    ) -> T.Any:
+        self, func: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> Any:
         """Execute function in GUI thread.
 
         :param func: function to execute
@@ -115,7 +116,7 @@ class GuiApi(QtCore.QObject):
         assert response in {box.Cancel, box.NoButton}
         return False
 
-    def get_dialog_dir(self) -> T.Optional[Path]:
+    def get_dialog_dir(self) -> Optional[Path]:
         """Retrieve default dialog path.
 
         :return: default path
@@ -127,7 +128,7 @@ class GuiApi(QtCore.QObject):
         return Path().absolute()
 
     @contextlib.contextmanager
-    def throttle_updates(self) -> T.Any:
+    def throttle_updates(self) -> Any:
         """Throttle updates to GUI."""
         self.request_begin_update.emit()
         try:

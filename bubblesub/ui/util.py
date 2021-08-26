@@ -17,8 +17,9 @@
 import asyncio
 import contextlib
 import functools
-import typing as T
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any, Optional, cast
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from pyqtcolordialog import QColorDialog
@@ -34,13 +35,13 @@ AUDIO_FILE_FILTER = (
 )
 
 
-def async_slot(*args: T.Any) -> T.Callable[..., T.Callable[..., None]]:
+def async_slot(*args: Any) -> Callable[..., Callable[..., None]]:
     def real_decorator(
-        func: T.Callable[..., "asyncio.Future[T.Any]"]
-    ) -> T.Callable[..., None]:
+        func: Callable[..., "asyncio.Future[Any]"]
+    ) -> Callable[..., None]:
         @QtCore.pyqtSlot(*args)
         @functools.wraps(func)
-        def wrapper(*args: T.Any, **kwargs: T.Any) -> None:
+        def wrapper(*args: Any, **kwargs: Any) -> None:
             asyncio.ensure_future(func(*args, **kwargs))
 
         return wrapper
@@ -48,7 +49,7 @@ def async_slot(*args: T.Any) -> T.Callable[..., T.Callable[..., None]]:
     return real_decorator
 
 
-def async_dialog_exec(dialog: QtWidgets.QDialog) -> T.Any:
+def async_dialog_exec(dialog: QtWidgets.QDialog) -> Any:
     future: "asyncio.Future" = asyncio.Future()
     dialog.finished.connect(future.set_result)
     dialog.open()
@@ -166,12 +167,12 @@ class Dialog(QtWidgets.QDialog):
 async def load_dialog(
     parent: QtWidgets.QWidget,
     file_filter: str,
-    directory: T.Optional[Path] = None,
-) -> T.Optional[Path]:
+    directory: Optional[Path] = None,
+) -> Optional[Path]:
     real_directory = (
         str(directory)
         if directory is not None
-        else T.cast(str, QtCore.QDir.homePath())
+        else cast(str, QtCore.QDir.homePath())
     )
     dialog = QtWidgets.QFileDialog(
         parent, "Open File", directory=real_directory, filter=file_filter
@@ -185,14 +186,14 @@ async def load_dialog(
 
 async def save_dialog(
     parent: QtWidgets.QWidget,
-    file_filter: T.Optional[str],
-    directory: T.Optional[Path] = None,
-    file_name: T.Optional[str] = None,
-) -> T.Optional[Path]:
+    file_filter: Optional[str],
+    directory: Optional[Path] = None,
+    file_name: Optional[str] = None,
+) -> Optional[Path]:
     real_directory = (
         str(directory)
         if directory is not None
-        else T.cast(str, QtCore.QDir.homePath())
+        else cast(str, QtCore.QDir.homePath())
     )
     if file_name:
         real_directory += "/" + file_name
@@ -217,7 +218,7 @@ async def time_jump_dialog(
     absolute_label: str = "Time:",
     relative_checked: bool = True,
     show_radio: bool = True,
-) -> T.Optional[T.Tuple[int, bool]]:
+) -> Optional[tuple[int, bool]]:
     class TimeJumpDialog(QtWidgets.QDialog):
         def __init__(self, parent: QtWidgets.QWidget) -> None:
             super().__init__(parent)
@@ -262,7 +263,7 @@ async def time_jump_dialog(
                 self._label.setText(absolute_label)
             self._time_edit.set_allow_negative(is_relative)
 
-        def value(self) -> T.Tuple[int, bool]:
+        def value(self) -> tuple[int, bool]:
             return (self._time_edit.get_value(), self._radio_rel.isChecked())
 
     dialog = TimeJumpDialog(parent)
@@ -289,16 +290,16 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
     def __init__(
         self,
         model: QtCore.QAbstractItemModel,
-        signal_map: T.Optional[T.Dict[QtWidgets.QWidget, str]] = None,
+        signal_map: Optional[dict[QtWidgets.QWidget, str]] = None,
     ) -> None:
         super().__init__()
         self._model = model
-        self._mappings: T.List[T.Tuple[QtWidgets.QWidget, int]] = []
-        self._row_idx: T.Optional[int] = None
+        self._mappings: list[tuple[QtWidgets.QWidget, int]] = []
+        self._row_idx: Optional[int] = None
         self._item_delegate = QtWidgets.QItemDelegate(self)
         self._ignoring = 0
 
-        self._signal_map: T.Dict[QtWidgets.QWidget, str] = {
+        self._signal_map: dict[QtWidgets.QWidget, str] = {
             QtWidgets.QCheckBox: "clicked",
             QtWidgets.QSpinBox: "valueChanged",
             QtWidgets.QDoubleSpinBox: "valueChanged",
@@ -322,7 +323,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
                 return
         raise RuntimeError(f'unknown widget type: "{type(widget)}"')
 
-    def set_current_index(self, row_idx: T.Optional[int]) -> None:
+    def set_current_index(self, row_idx: Optional[int]) -> None:
         self._row_idx = row_idx
         for widget, col_idx in self._mappings:
             self._write_to_widget(widget, row_idx, col_idx)
@@ -348,7 +349,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
                 self._write_to_widget(widget, self._row_idx, col_idx)
 
     def _write_to_widget(
-        self, widget: QtWidgets.QWidget, row_idx: T.Optional[int], col_idx: int
+        self, widget: QtWidgets.QWidget, row_idx: Optional[int], col_idx: int
     ) -> None:
         if self._ignoring:
             return
@@ -383,7 +384,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
             )
 
     @contextlib.contextmanager
-    def _ignore_signals(self) -> T.Any:
+    def _ignore_signals(self) -> Any:
         self._ignoring += 1
         try:
             yield
@@ -393,7 +394,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
 
 def build_splitter(
     parent: QtWidgets.QWidget,
-    widgets: T.List[T.Tuple[int, QtWidgets.QWidget]],
+    widgets: list[tuple[int, QtWidgets.QWidget]],
     orientation: int,
 ) -> QtWidgets.QSplitter:
     splitter = QtWidgets.QSplitter(parent, orientation=orientation)

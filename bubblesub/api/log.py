@@ -20,7 +20,7 @@ import contextlib
 import datetime
 import enum
 import traceback
-import typing as T
+from collections.abc import Iterator
 
 from PyQt5 import QtCore
 
@@ -101,7 +101,7 @@ class LogApi(QtCore.QObject):
             self.logged.emit(level, line)
 
     @contextlib.contextmanager
-    def exception_guard(self) -> T.Iterator[None]:
+    def exception_guard(self) -> Iterator[None]:
         """Eats exceptions and logs then as an error.
 
         :return: context manager

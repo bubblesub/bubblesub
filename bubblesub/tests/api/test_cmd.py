@@ -16,8 +16,6 @@
 
 """Tests for bubblesub.api.cmd module."""
 
-import typing as T
-
 import pytest
 
 from bubblesub.api.cmd import split_invocation
@@ -41,9 +39,7 @@ from bubblesub.api.cmd import split_invocation
         ('"herp""derp', [["herpderp"]]),
     ],
 )
-def test_split_invocation(
-    invocation: str, expected: T.List[T.List[str]]
-) -> None:
+def test_split_invocation(invocation: str, expected: list[list[str]]) -> None:
     """Test parsing of CLI invocations.
 
     :param invocation: input expression to parse
