@@ -26,25 +26,20 @@ from PyQt5 import QtCore
 
 from bubblesub.api.threading import synchronized
 
-# TODO: remove this condition when switching to Python 3.7
-if T.TYPE_CHECKING:
 
-    class TStream(T.Protocol):  # pylint: disable=no-member
-        """Base stream protocol."""
+class TStream(T.Protocol):  # pylint: disable=no-member
+    """Base stream protocol."""
 
-        uid: uuid.UUID
-        loaded: QtCore.pyqtSignal
-        changed: QtCore.pyqtSignal
-        errored: QtCore.pyqtSignal
-        path: Path
+    uid: uuid.UUID
+    loaded: QtCore.pyqtSignal
+    changed: QtCore.pyqtSignal
+    errored: QtCore.pyqtSignal
+    path: Path
 
-    _TStream = T.TypeVar("_TStream", bound="TStream")
 
-    BaseStreamsApiTypeHint: T.Any = T.Generic[_TStream]
-else:
-    # Python 3.6 compatibility
-    BaseStreamsApiTypeHint = object
-    TStream = object
+_TStream = T.TypeVar("_TStream", bound="TStream")
+
+BaseStreamsApiTypeHint: T.Any = T.Generic[_TStream]
 
 
 class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):

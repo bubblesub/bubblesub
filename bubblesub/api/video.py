@@ -16,7 +16,6 @@
 
 """Video stream API."""
 
-import typing as T
 from pathlib import Path
 
 from bubblesub.api.base_streams_api import BaseStreamsApi, TStream
@@ -25,13 +24,7 @@ from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
 from bubblesub.api.video_stream import VideoStream
 
-# TODO: remove this condition when switching to Python 3.7
-if T.TYPE_CHECKING:
-    # this trigger a mypy error at the moment, but once bubblesub switches to
-    # Python 3.7, this issue will get resolved on its own.
-    VideoApiBaseClass = BaseStreamsApi[VideoStream]
-else:
-    VideoApiBaseClass = BaseStreamsApi
+VideoApiBaseClass = BaseStreamsApi[VideoStream]
 
 
 class VideoApi(VideoApiBaseClass):

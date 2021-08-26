@@ -37,7 +37,6 @@ install_packages = [
     "pluginbase",
     "lazy_import",
     "sortedcontainers",
-    "dataclasses;python_version<'3.7'",
     "pynvim",
 ]
 
@@ -59,6 +58,7 @@ setup(
     package_data={
         "bubblesub": ["data/*", "data/**/*", "ui/assets/*", "ui/assets/**/*"]
     },
+    python_requires=">=3.9",
     install_requires=install_packages,
     extras_require={
         "develop": [
@@ -77,6 +77,7 @@ setup(
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Text Editors",
         "Topic :: Multimedia :: Sound/Audio",
         "Topic :: Multimedia :: Video",

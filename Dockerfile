@@ -10,7 +10,7 @@ ENV MPV_PACKAGES="\
 ENV FFMPEG_PACKAGES="\
     libavcodec-dev libavformat-dev libavdevice-dev zlib1g-dev"
 ENV BUBBLESUB_PACKAGES="\
-    python3.8 python3.8-dev python3-pip python3-enchant xvfb qt5-default"
+    python3.9 python3.9-dev python3-pip python3-enchant xvfb qt5-default"
 ENV EXTRA_PACKAGES="\
     neovim"
 
@@ -31,7 +31,7 @@ RUN apt-get clean -y && \
 
 # Set Python environment
 RUN rm -f /usr/bin/python && \
-    ln -s /usr/bin/python3.8 /usr/bin/python && \
+    ln -s /usr/bin/python3.9 /usr/bin/python && \
     python -m pip install -U pip && \
     pip install setuptools
 
