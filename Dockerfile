@@ -10,7 +10,7 @@ ENV MPV_PACKAGES="\
 ENV FFMPEG_PACKAGES="\
     libavcodec-dev libavformat-dev libavdevice-dev zlib1g-dev"
 ENV BUBBLESUB_PACKAGES="\
-    python3.9 python3.9-dev python3-pip python3-enchant xvfb qt5-default"
+    python3.9 python3.9-dev python3.9-distutils enchant libfftw3-dev xvfb qt5-default"
 ENV EXTRA_PACKAGES="\
     neovim"
 
@@ -30,10 +30,10 @@ RUN apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Set Python environment
-RUN rm -f /usr/bin/python && \
-    ln -s /usr/bin/python3.9 /usr/bin/python && \
-    python -m pip install -U pip && \
-    pip install setuptools
+RUN wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py && \
+    python3.9 get-pip.py && \
+    python3.9 -m pip install setuptools && \
+    python3.9 -m pip install Cython  # https://github.com/pyFFTW/pyFFTW/issues/252
 
 # Disable git sslVerify
 RUN git config --global http.sslVerify false
@@ -53,7 +53,7 @@ COPY setup.py .
 COPY pyproject.toml .
 RUN locale-gen en_US.UTF-8 && \
     export LC_ALL=en_US.UTF-8 && \
-    pip install -e .[develop]
+    python3.9 -m pip install -e .[develop]
 
 # Install bubblesub
 COPY bubblesub bubblesub
@@ -68,4 +68,4 @@ CMD \
     # start a virtual X server for UI tests
     /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX; \
     # run the tests
-    pytest bubblesub/
+    python3.9 -m pytest bubblesub/
