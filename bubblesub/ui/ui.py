@@ -22,7 +22,9 @@ import types
 from typing import Any, Optional
 
 import quamash
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt, QThread, pyqtRemoveInputHook
+from PyQt5.QtGui import QPaintEvent, QPixmap
+from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from bubblesub.api import Api
 from bubblesub.api.log import LogLevel
@@ -31,32 +33,30 @@ from bubblesub.ui.assets import ASSETS_DIR
 from bubblesub.ui.main_window import MainWindow
 
 
-class MySplashScreen(QtWidgets.QSplashScreen):
+class MySplashScreen(QSplashScreen):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._painted = False
 
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowFlags(
-            QtCore.Qt.SplashScreen
-            | QtCore.Qt.FramelessWindowHint
-            | QtCore.Qt.WindowStaysOnTopHint
+            Qt.SplashScreen | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
         )
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+    def paintEvent(self, event: QPaintEvent) -> None:
         super().paintEvent(event)
         self._painted = True
 
     def showMessage(self, text: str) -> None:
         self._painted = False
-        super().showMessage(text, QtCore.Qt.AlignBottom, QtCore.Qt.white)
+        super().showMessage(text, Qt.AlignBottom, Qt.white)
         self._ensure_painted()
 
     def _ensure_painted(self) -> None:
         while not self._painted:
-            QtCore.QThread.usleep(1000)
-            QtWidgets.QApplication.processEvents()
+            QThread.usleep(1000)
+            QApplication.processEvents()
 
 
 class Logger:
@@ -95,17 +95,17 @@ class Logger:
 class Application:
     def __init__(self, args: argparse.Namespace):
         self._args = args
-        self._splash: Optional[QtWidgets.QSplashScreen] = None
+        self._splash: Optional[QSplashScreen] = None
 
-        QtCore.pyqtRemoveInputHook()
+        pyqtRemoveInputHook()
 
-        self._app = QtWidgets.QApplication(sys.argv)
+        self._app = QApplication(sys.argv)
         self._app.setApplicationName("bubblesub")
         self._loop = quamash.QEventLoop(self._app)
         asyncio.set_event_loop(self._loop)
 
     def splash_screen(self) -> None:
-        pixmap = QtGui.QPixmap(str(ASSETS_DIR / "bubblesub.png"))
+        pixmap = QPixmap(str(ASSETS_DIR / "bubblesub.png"))
         pixmap = pixmap.scaledToWidth(640)
         self._splash = MySplashScreen(pixmap)
         self._splash.show()

@@ -16,7 +16,7 @@
 
 import argparse
 
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMainWindow
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled
@@ -116,7 +116,7 @@ class SaveCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         path = self.api.subs.path
         if not path:
             path = await save_dialog(
@@ -173,7 +173,7 @@ class LoadVideoCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         path = await self.args.path.get_load_path(
             file_filter=VIDEO_FILE_FILTER,
         )

@@ -16,7 +16,7 @@
 
 import argparse
 
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMainWindow
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
@@ -30,7 +30,7 @@ class ShowViewCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         main_window.view_manager.set_view(self.args.view)
 
     @staticmethod

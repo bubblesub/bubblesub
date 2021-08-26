@@ -31,21 +31,21 @@ from ass_parser import (
     read_ass,
     write_ass,
 )
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.cfg import Config
 from bubblesub.util import first
 
 
-class SubtitlesApi(QtCore.QObject):
+class SubtitlesApi(QObject):
     """The subtitles API.
 
     Encapsulates ASS styles, subtitles and subtitle selection.
     """
 
-    loaded = QtCore.pyqtSignal()
-    saved = QtCore.pyqtSignal()
-    selection_changed = QtCore.pyqtSignal(list, bool)
+    loaded = pyqtSignal()
+    saved = pyqtSignal()
+    selection_changed = pyqtSignal(list, bool)
 
     def __init__(self, cfg: Config) -> None:
         """Initialize self.

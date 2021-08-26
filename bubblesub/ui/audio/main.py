@@ -16,7 +16,8 @@
 
 import enum
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QSplitter, QVBoxLayout, QWidget
 
 from bubblesub.api import Api
 from bubblesub.ui.audio.audio_preview import AudioPreview
@@ -35,9 +36,9 @@ class AutoSelectionStyle(enum.Enum):
     CONSTANT = "constant"
 
 
-class Audio(QtWidgets.QSplitter):
+class Audio(QSplitter):
     def __init__(
-        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+        self, api: Api, theme_mgr: ThemeManager, parent: QWidget
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -47,17 +48,17 @@ class Audio(QtWidgets.QSplitter):
         self._slider = AudioSlider(self._api, theme_mgr, self)
 
         self.setObjectName("spectrogram")
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.setFocusPolicy(Qt.StrongFocus)
 
-        top_part = QtWidgets.QWidget(self)
-        top_part_layout = QtWidgets.QVBoxLayout(top_part)
+        top_part = QWidget(self)
+        top_part_layout = QVBoxLayout(top_part)
         top_part_layout.setSpacing(0)
         top_part_layout.setContentsMargins(0, 0, 0, 0)
         top_part_layout.addWidget(self._audio_timeline)
         top_part_layout.addWidget(self._audio_preview)
 
-        bottom_part = QtWidgets.QWidget(self)
-        bottom_part_layout = QtWidgets.QVBoxLayout(bottom_part)
+        bottom_part = QWidget(self)
+        bottom_part_layout = QVBoxLayout(bottom_part)
         bottom_part_layout.setSpacing(0)
         bottom_part_layout.setContentsMargins(0, 0, 0, 0)
         bottom_part_layout.addWidget(self._video_preview)
@@ -68,7 +69,7 @@ class Audio(QtWidgets.QSplitter):
         self.setStretchFactor(0, 3)
         self.setStretchFactor(1, 1)
         self.setHandleWidth(0)
-        self.setOrientation(QtCore.Qt.Vertical)
+        self.setOrientation(Qt.Vertical)
 
         api.subs.loaded.connect(self._on_subs_load)
 

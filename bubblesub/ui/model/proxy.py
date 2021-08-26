@@ -21,18 +21,16 @@ from ass_parser.observable_sequence_mixin import (
     ObservableSequenceItemModificationEvent,
     ObservableSequenceItemRemovalEvent,
 )
-from PyQt5 import QtCore
+from PyQt5.QtCore import QAbstractTableModel, QModelIndex, QObject, Qt
 
 from bubblesub.model import ObservableList
 from bubblesub.util import make_ranges
 
 
-class ObservableListTableAdapter(QtCore.QAbstractTableModel):
+class ObservableListTableAdapter(QAbstractTableModel):
     """Make ObservableList usable as Qt's QAbstractTableModel."""
 
-    def __init__(
-        self, parent: QtCore.QObject, list_: ObservableList[Any]
-    ) -> None:
+    def __init__(self, parent: QObject, list_: ObservableList[Any]) -> None:
         """Initialize self.
 
         :param parent: owner object
@@ -46,9 +44,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
             self._proxy_items_removed
         )
 
-    def rowCount(
-        self, _parent: QtCore.QModelIndex = QtCore.QModelIndex()
-    ) -> int:
+    def rowCount(self, _parent: QModelIndex = QModelIndex()) -> int:
         """Return number of rows.
 
         :param _parent: unused
@@ -56,9 +52,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         """
         return len(self._list)
 
-    def columnCount(
-        self, _parent: QtCore.QModelIndex = QtCore.QModelIndex()
-    ) -> int:
+    def columnCount(self, _parent: QModelIndex = QModelIndex()) -> int:
         """Return number of columns.
 
         :param _parent: unused
@@ -66,9 +60,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         """
         return self._column_count
 
-    def data(
-        self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole
-    ) -> Any:
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Any:
         """Retrieve cell data at the specified position.
 
         :param index: cell position
@@ -81,9 +73,9 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
 
     def setData(
         self,
-        index: QtCore.QModelIndex,
+        index: QModelIndex,
         value: Any,
-        role: int = QtCore.Qt.DisplayRole,
+        role: int = Qt.DisplayRole,
     ) -> bool:
         """Update cell data at the specified position.
 
@@ -92,7 +84,7 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         :param role: what kind of information to set
         :return: whether the cell was changed
         """
-        if role == QtCore.Qt.EditRole:
+        if role == Qt.EditRole:
             row_idx = index.row()
             col_idx = index.column()
             if row_idx not in range(len(self._list)):
@@ -120,23 +112,23 @@ class ObservableListTableAdapter(QtCore.QAbstractTableModel):
         # self.dataChanged.emit(
         #     self.index(row_idx, 0),
         #     self.index(row_idx, self.columnCount() - 1),
-        #     [QtCore.Qt.DisplayRole | QtCore.Qt.BackgroundRole]
+        #     [Qt.DisplayRole | Qt.BackgroundRole]
         # )
         for col_idx in range(self.columnCount()):
             self.dataChanged.emit(
                 self.index(row_idx, col_idx),
                 self.index(row_idx, col_idx),
-                [QtCore.Qt.DisplayRole, QtCore.Qt.BackgroundRole],
+                [Qt.DisplayRole, Qt.BackgroundRole],
             )
 
     def _proxy_items_inserted(
         self, event: ObservableSequenceItemInsertionEvent
     ) -> None:
         for idx, count in make_ranges(item.index for item in event.items):
-            self.rowsInserted.emit(QtCore.QModelIndex(), idx, idx + count - 1)
+            self.rowsInserted.emit(QModelIndex(), idx, idx + count - 1)
 
     def _proxy_items_removed(
         self, event: ObservableSequenceItemRemovalEvent
     ) -> None:
         for idx, count in make_ranges(item.index for item in event.items):
-            self.rowsRemoved.emit(QtCore.QModelIndex(), idx, idx + count - 1)
+            self.rowsRemoved.emit(QModelIndex(), idx, idx + count - 1)

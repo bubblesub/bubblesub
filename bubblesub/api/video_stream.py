@@ -28,7 +28,7 @@ from typing import Any, Optional, Union
 import ffms2
 import numpy as np
 import PIL.Image
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
@@ -66,12 +66,12 @@ def _load_video_source(
         return source
 
 
-class VideoStream(QtCore.QObject):
+class VideoStream(QObject):
     """The video API."""
 
-    errored = QtCore.pyqtSignal()
-    changed = QtCore.pyqtSignal()
-    loaded = QtCore.pyqtSignal()
+    errored = pyqtSignal()
+    changed = pyqtSignal()
+    loaded = pyqtSignal()
 
     def __init__(
         self,

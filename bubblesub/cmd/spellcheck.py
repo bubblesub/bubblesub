@@ -16,7 +16,19 @@
 
 from typing import Optional
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtGui import QStandardItem, QStandardItemModel, QTextCursor
+from PyQt5.QtWidgets import (
+    QAbstractButton,
+    QDialogButtonBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListView,
+    QMainWindow,
+    QVBoxLayout,
+    QWidget,
+)
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
@@ -40,7 +52,7 @@ class _SpellCheckDialog(Dialog):
     def __init__(
         self,
         api: Api,
-        main_window: QtWidgets.QMainWindow,
+        main_window: QMainWindow,
         spell_checker: BaseSpellChecker,
     ) -> None:
         super().__init__(main_window)
@@ -49,25 +61,25 @@ class _SpellCheckDialog(Dialog):
         self._spell_checker = spell_checker
         self._lines_to_spellcheck = api.subs.selected_events
 
-        self._mispelt_text_edit = QtWidgets.QLineEdit(self)
+        self._mispelt_text_edit = QLineEdit(self)
         self._mispelt_text_edit.setReadOnly(True)
-        self._replacement_text_edit = QtWidgets.QLineEdit(self)
-        self._suggestions_list_view = QtWidgets.QListView(self)
-        self._suggestions_list_view.setModel(QtGui.QStandardItemModel())
+        self._replacement_text_edit = QLineEdit(self)
+        self._suggestions_list_view = QListView(self)
+        self._suggestions_list_view.setModel(QStandardItemModel())
         self._suggestions_list_view.clicked.connect(self._on_suggestion_click)
 
-        box = QtWidgets.QWidget(self)
-        box_layout = QtWidgets.QVBoxLayout(box)
+        box = QWidget(self)
+        box_layout = QVBoxLayout(box)
         box_layout.setContentsMargins(0, 0, 0, 0)
-        box_layout.addWidget(QtWidgets.QLabel("Mispelt word:", self))
+        box_layout.addWidget(QLabel("Mispelt word:", self))
         box_layout.addWidget(self._mispelt_text_edit)
-        box_layout.addWidget(QtWidgets.QLabel("Replacement:", self))
+        box_layout.addWidget(QLabel("Replacement:", self))
         box_layout.addWidget(self._replacement_text_edit)
-        box_layout.addWidget(QtWidgets.QLabel("Suggestions:", self))
+        box_layout.addWidget(QLabel("Suggestions:", self))
         box_layout.addWidget(self._suggestions_list_view)
 
-        strip = QtWidgets.QDialogButtonBox(self)
-        strip.setOrientation(QtCore.Qt.Vertical)
+        strip = QDialogButtonBox(self)
+        strip.setOrientation(Qt.Vertical)
         self.add_btn = strip.addButton("Add to dictionary", strip.ActionRole)
         self.ignore_btn = strip.addButton("Ignore", strip.ActionRole)
         self.ignore_all_btn = strip.addButton("Ignore all", strip.ActionRole)
@@ -76,15 +88,15 @@ class _SpellCheckDialog(Dialog):
         strip.clicked.connect(self.action)
         strip.rejected.connect(self.reject)
 
-        layout = QtWidgets.QHBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.setSpacing(24)
         layout.addWidget(box)
         layout.addWidget(strip)
 
         self.setWindowTitle("Spell checker")
 
-    @async_slot(QtWidgets.QAbstractButton)
-    async def action(self, sender: QtWidgets.QAbstractButton) -> None:
+    @async_slot(QAbstractButton)
+    async def action(self, sender: QAbstractButton) -> None:
         if sender == self.replace_btn:
             await self._replace()
         elif sender == self.add_btn:
@@ -95,8 +107,8 @@ class _SpellCheckDialog(Dialog):
             await self._ignore_all()
 
     @property
-    def text_edit(self) -> QtWidgets.QWidget:
-        return self._main_window.findChild(QtWidgets.QWidget, "text-editor")
+    def text_edit(self) -> QWidget:
+        return self._main_window.findChild(QWidget, "text-editor")
 
     async def _replace(self) -> None:
         text = self.text_edit.toPlainText()
@@ -156,18 +168,18 @@ class _SpellCheckDialog(Dialog):
 
         cursor = self.text_edit.textCursor()
         cursor.setPosition(start)
-        cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
+        cursor.setPosition(end, QTextCursor.KeepAnchor)
         self.text_edit.setTextCursor(cursor)
 
         self._mispelt_text_edit.setText(mispelt_word)
 
         self._suggestions_list_view.model().clear()
         for suggestion in self._spell_checker.suggest(mispelt_word):
-            item = QtGui.QStandardItem(suggestion)
+            item = QStandardItem(suggestion)
             item.setEditable(False)
             self._suggestions_list_view.model().appendRow(item)
 
-    def _on_suggestion_click(self, event: QtCore.QEvent) -> None:
+    def _on_suggestion_click(self, event: QEvent) -> None:
         self._replacement_text_edit.setText(event.data())
 
 
@@ -182,7 +194,7 @@ class SpellCheckCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         spell_check_lang = (
             self.api.subs.language or self.api.cfg.opt["gui"]["spell_check"]
         )

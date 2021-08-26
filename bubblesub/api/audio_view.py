@@ -18,7 +18,7 @@
 
 from typing import Union
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.api.audio import AudioApi
 from bubblesub.api.audio_stream import AudioStream
@@ -27,11 +27,11 @@ from bubblesub.api.video import VideoApi
 from bubblesub.api.video_stream import VideoStream
 
 
-class AudioViewApi(QtCore.QObject):
+class AudioViewApi(QObject):
     """API for spectrogram preview."""
 
-    view_changed = QtCore.pyqtSignal()
-    selection_changed = QtCore.pyqtSignal()
+    view_changed = pyqtSignal()
+    selection_changed = pyqtSignal()
 
     def __init__(
         self, subs_api: SubtitlesApi, audio_api: AudioApi, video_api: VideoApi

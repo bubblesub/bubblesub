@@ -20,7 +20,9 @@ from dataclasses import dataclass
 from typing import Optional, cast
 
 from ass_parser import AssEvent
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QMouseEvent, QPainter, QPen, QWheelEvent
+from PyQt5.QtWidgets import QWidget
 
 from bubblesub.api import Api
 from bubblesub.api.audio_view import AudioViewApi
@@ -141,10 +143,10 @@ class DragModeExecutor:
         self._api = api
         self.selected_events: list[AssEvent] = []
 
-    def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def begin_drag(self, event: QMouseEvent, pts: int) -> None:
         self.selected_events = self._api.subs.selected_events[:]
 
-    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def apply_drag(self, event: QMouseEvent, pts: int) -> None:
         pass
 
     def end_drag(self) -> None:
@@ -154,7 +156,7 @@ class DragModeExecutor:
 class SelectionStartDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.SELECTION_START
 
-    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def apply_drag(self, event: QMouseEvent, pts: int) -> None:
         return self._api.audio.view.select(
             min(self._api.audio.view.selection_end, pts),
             self._api.audio.view.selection_end,
@@ -164,7 +166,7 @@ class SelectionStartDragModeExecutor(DragModeExecutor):
 class SelectionEndDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.SELECTION_END
 
-    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def apply_drag(self, event: QMouseEvent, pts: int) -> None:
         self._api.audio.view.select(
             self._api.audio.view.selection_start,
             max(self._api.audio.view.selection_start, pts),
@@ -174,14 +176,14 @@ class SelectionEndDragModeExecutor(DragModeExecutor):
 class VideoPositionDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.VIDEO_POSITION
 
-    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def apply_drag(self, event: QMouseEvent, pts: int) -> None:
         self._api.playback.seek(pts)
 
 
 class AudioViewDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.AUDIO_VIEW
 
-    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def apply_drag(self, event: QMouseEvent, pts: int) -> None:
         old_center = (
             self._api.audio.view.view_start
             + self._api.audio.view.view_size / 2
@@ -194,7 +196,7 @@ class AudioViewDragModeExecutor(DragModeExecutor):
 class SubtitleStartDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.SUBTITLE_START
 
-    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def apply_drag(self, event: QMouseEvent, pts: int) -> None:
         if self._api.video.current_stream:
             pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
         for ass_event in self.selected_events:
@@ -210,7 +212,7 @@ class SubtitleStartDragModeExecutor(DragModeExecutor):
 class SubtitleEndDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.SUBTITLE_END
 
-    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def apply_drag(self, event: QMouseEvent, pts: int) -> None:
         if self._api.video.current_stream:
             pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
         for ass_event in self.selected_events:
@@ -226,7 +228,7 @@ class SubtitleEndDragModeExecutor(DragModeExecutor):
 class NewSubtitleStartDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.NEW_SUBTITLE_START
 
-    def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def begin_drag(self, event: QMouseEvent, pts: int) -> None:
         super().begin_drag(event, pts)
         create_new_subtitle(self._api, pts, by_end=False)
 
@@ -234,7 +236,7 @@ class NewSubtitleStartDragModeExecutor(DragModeExecutor):
 class NewSubtitleEndDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.NEW_SUBTITLE_END
 
-    def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def begin_drag(self, event: QMouseEvent, pts: int) -> None:
         super().begin_drag(event, pts)
         create_new_subtitle(self._api, pts, by_end=True)
 
@@ -247,7 +249,7 @@ class SubtitleSplitDragModeExecutor(DragModeExecutor):
         self.source_events: list[AssEvent] = []
         self.copied_events: list[AssEvent] = []
 
-    def begin_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def begin_drag(self, event: QMouseEvent, pts: int) -> None:
         super().begin_drag(event, pts)
         self.source_events[:] = [
             source_event
@@ -266,7 +268,7 @@ class SubtitleSplitDragModeExecutor(DragModeExecutor):
             self.copied_events.append(new_event)
         self._api.subs.selected_indexes = [idx, idx + 1]
 
-    def apply_drag(self, event: QtGui.QMouseEvent, pts: int) -> None:
+    def apply_drag(self, event: QMouseEvent, pts: int) -> None:
         if self._api.video.current_stream:
             pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
         for ass_event in self.source_events:
@@ -275,8 +277,8 @@ class SubtitleSplitDragModeExecutor(DragModeExecutor):
             ass_event.start = pts
 
 
-class BaseAudioWidget(QtWidgets.QWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+class BaseAudioWidget(QWidget):
+    def __init__(self, api: Api, parent: QWidget) -> None:
         super().__init__(parent)
         self._api = api
         self._drag_mode: Optional[DragMode] = None
@@ -303,25 +305,23 @@ class BaseAudioWidget(QtWidgets.QWidget):
     def _view(self) -> AudioViewApi:
         return self._api.audio.view
 
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
         if self._drag_mode:
-            self.setCursor(QtCore.Qt.SizeHorCursor)
+            self.setCursor(Qt.SizeHorCursor)
             self._apply_drag(event)
 
-    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         self.end_drag_mode()
 
-    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        if event.modifiers() & QtCore.Qt.ControlModifier:
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        if event.modifiers() & Qt.ControlModifier:
             self._zoomed(
                 event.angleDelta().y(), event.pos().x() / self.width()
             )
         else:
             self._scrolled(event.angleDelta().y())
 
-    def begin_drag_mode(
-        self, drag_mode: DragMode, event: QtGui.QMouseEvent
-    ) -> None:
+    def begin_drag_mode(self, drag_mode: DragMode, event: QMouseEvent) -> None:
         if self._drag_mode:
             self._drag_mode_executors[self._drag_mode].end_drag()
         pts = self.pts_from_x(event.x())
@@ -330,12 +330,12 @@ class BaseAudioWidget(QtWidgets.QWidget):
         self._drag_mode_executors[self._drag_mode].apply_drag(event, pts)
 
     def end_drag_mode(self) -> None:
-        self.setCursor(QtCore.Qt.ArrowCursor)
+        self.setCursor(Qt.ArrowCursor)
         if self._drag_mode:
             self._drag_mode_executors[self._drag_mode].end_drag()
             self._drag_mode = None
 
-    def _apply_drag(self, event: QtGui.QMouseEvent) -> None:
+    def _apply_drag(self, event: QMouseEvent) -> None:
         pts = self.pts_from_x(event.x())
         self._drag_mode_executors[self._drag_mode].apply_drag(event, pts)
 
@@ -353,11 +353,9 @@ class BaseAudioWidget(QtWidgets.QWidget):
         distance *= 1 if delta < 0 else -1
         self._view.move_view(int(distance))
 
-    def _draw_frame(self, painter: QtGui.QPainter, bottom_line: bool) -> None:
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        )
-        painter.setBrush(QtCore.Qt.NoBrush)
+    def _draw_frame(self, painter: QPainter, bottom_line: bool) -> None:
+        painter.setPen(QPen(self.palette().text(), 1, Qt.SolidLine))
+        painter.setBrush(Qt.NoBrush)
         painter.drawRect(
             0,
             0,

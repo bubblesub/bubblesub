@@ -19,7 +19,7 @@
 from collections.abc import Iterator
 from typing import Any, Generic, Optional, TypeVar, Union, overload
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 TItem = TypeVar("TItem")
 
@@ -113,19 +113,19 @@ class ObservableObject:
         """
 
 
-class _ObservableListSignals(QtCore.QObject):
+class _ObservableListSignals(QObject):
     # QObject doesn't play nice with multiple inheritance, hence composition
-    item_modified = QtCore.pyqtSignal([int])
-    items_about_to_be_inserted = QtCore.pyqtSignal([int, int])
-    items_about_to_be_removed = QtCore.pyqtSignal([int, int])
-    items_about_to_be_moved = QtCore.pyqtSignal([int, int, int])
-    items_inserted = QtCore.pyqtSignal([int, int])
-    items_removed = QtCore.pyqtSignal([int, int])
-    items_moved = QtCore.pyqtSignal([int, int, int])
+    item_modified = pyqtSignal([int])
+    items_about_to_be_inserted = pyqtSignal([int, int])
+    items_about_to_be_removed = pyqtSignal([int, int])
+    items_about_to_be_moved = pyqtSignal([int, int, int])
+    items_inserted = pyqtSignal([int, int])
+    items_removed = pyqtSignal([int, int])
+    items_moved = pyqtSignal([int, int, int])
 
 
 class ObservableList(Generic[TItem]):
-    """Alternative to QtCore.QAbstractListModel that simplifies indexing."""
+    """Alternative to QAbstractListModel that simplifies indexing."""
 
     item_modified = property(lambda self: self._signals.item_modified)
     items_about_to_be_inserted = property(

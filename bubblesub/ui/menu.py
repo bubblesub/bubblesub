@@ -19,7 +19,7 @@ import functools
 from pathlib import Path
 from typing import Any, Union
 
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QAction, QMainWindow, QMenu, QWidget
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
@@ -31,14 +31,14 @@ from bubblesub.ui.themes import BaseTheme
 HotkeyMap = dict[tuple[HotkeyContext, str], str]
 
 
-def _window_from_menu(menu: QtWidgets.QMenu) -> QtWidgets.QWidget:
+def _window_from_menu(menu: QMenu) -> QWidget:
     window = menu
     while window.parent() is not None:
         window = window.parent()
     return window
 
 
-def _on_menu_about_to_show(log_api: LogApi, menu: QtWidgets.QMenu) -> None:
+def _on_menu_about_to_show(log_api: LogApi, menu: QMenu) -> None:
     window = _window_from_menu(menu)
     window.setProperty("focused-widget", window.focusWidget())
     for action in menu.actions():
@@ -49,16 +49,16 @@ def _on_menu_about_to_show(log_api: LogApi, menu: QtWidgets.QMenu) -> None:
             action.setEnabled(enabled)
 
 
-def _on_menu_about_to_hide(menu: QtWidgets.QMenu) -> None:
+def _on_menu_about_to_hide(menu: QMenu) -> None:
     window = _window_from_menu(menu)
     focused_widget = window.property("focused-widget")
     if focused_widget:
         focused_widget.setFocus()
 
 
-class CommandAction(QtWidgets.QAction):
+class CommandAction(QAction):
     def __init__(
-        self, api: Api, label: str, cmdline: str, parent: QtWidgets.QWidget
+        self, api: Api, label: str, cmdline: str, parent: QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
@@ -71,9 +71,9 @@ class CommandAction(QtWidgets.QAction):
             self.api.cmd.run(cmd)
 
 
-class LoadRecentFileAction(QtWidgets.QAction):
+class LoadRecentFileAction(QAction):
     def __init__(
-        self, api: Api, path: Union[str, Path], parent: QtWidgets.QWidget
+        self, api: Api, path: Union[str, Path], parent: QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
@@ -85,9 +85,9 @@ class LoadRecentFileAction(QtWidgets.QAction):
         self.api.subs.load_ass(self.path)
 
 
-class LoadThemeAction(QtWidgets.QAction):
+class LoadThemeAction(QAction):
     def __init__(
-        self, api: Api, theme: type[BaseTheme], parent: QtWidgets.QWidget
+        self, api: Api, theme: type[BaseTheme], parent: QWidget
     ) -> None:
         super().__init__(parent)
         self.api = api
@@ -101,7 +101,7 @@ class LoadThemeAction(QtWidgets.QAction):
     async def _run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         main_window.theme_mgr.apply_theme(self.theme.name)
 
 
@@ -118,21 +118,17 @@ class MenuBuilder:
         self.context = context
         self.hotkey_map = _build_hotkey_map(api)
 
-    def build(self, parent: QtWidgets.QWidget, menu_item: MenuItem) -> None:
+    def build(self, parent: QWidget, menu_item: MenuItem) -> None:
         method_name = "build_" + menu_item.type.value
         if hasattr(self, method_name):
             getattr(self, method_name)(parent, menu_item)
         else:
             self.api.log.error(f"unexpected menu item {menu_item.type.value}")
 
-    def build_separator(
-        self, parent: QtWidgets.QWidget, item: MenuItem
-    ) -> None:
+    def build_separator(self, parent: QWidget, item: MenuItem) -> None:
         parent.addSeparator()
 
-    def build_recent_files(
-        self, parent: QtWidgets.QWidget, item: MenuItem
-    ) -> None:
+    def build_recent_files(self, parent: QWidget, item: MenuItem) -> None:
         if item.label:
             parent = parent.addMenu(item.label)
         recent_files = self.api.cfg.opt.get("recent_files", [])
@@ -141,12 +137,12 @@ class MenuBuilder:
                 action = LoadRecentFileAction(self.api, recent_file, parent)
                 parent.addAction(action)
         else:
-            action = QtWidgets.QAction(parent)
+            action = QAction(parent)
             action.setText("(no recent files found)")
             action.setEnabled(False)
             parent.addAction(action)
 
-    def build_plugins(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+    def build_plugins(self, parent: QWidget, item: MenuItem) -> None:
         if item.label:
             parent = parent.addMenu(item.label)
         subitems = self.api.cmd.get_plugin_menu_items()
@@ -154,32 +150,30 @@ class MenuBuilder:
             for subitem in subitems:
                 self.build(parent, subitem)
         else:
-            action = QtWidgets.QAction(parent)
+            action = QAction(parent)
             action.setText("(no plugins found)")
             action.setEnabled(False)
             parent.addAction(action)
 
-    def build_themes(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+    def build_themes(self, parent: QWidget, item: MenuItem) -> None:
         if item.label:
             parent = parent.addMenu(item.label)
         for theme in BaseTheme.__subclasses__():
             action = LoadThemeAction(self.api, theme, parent)
             parent.addAction(action)
 
-    def build_submenu(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+    def build_submenu(self, parent: QWidget, item: MenuItem) -> None:
         submenu = parent.addMenu(item.label)
         for subitem in item.children or []:
             self.build(submenu, subitem)
 
-    def build_placeholder(
-        self, parent: QtWidgets.QWidget, item: MenuItem
-    ) -> None:
-        action = QtWidgets.QAction(parent)
+    def build_placeholder(self, parent: QWidget, item: MenuItem) -> None:
+        action = QAction(parent)
         action.setText(item.label)
         action.setEnabled(False)
         parent.addAction(action)
 
-    def build_command(self, parent: QtWidgets.QWidget, item: MenuItem) -> None:
+    def build_command(self, parent: QWidget, item: MenuItem) -> None:
         assert item.label
         assert item.cmdline
 
@@ -198,7 +192,7 @@ class MenuBuilder:
 
 def setup_menu(
     api: Api,
-    parent: QtWidgets.QWidget,
+    parent: QWidget,
     root_item: MenuItem,
     context: HotkeyContext,
 ) -> Any:

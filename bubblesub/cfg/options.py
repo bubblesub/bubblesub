@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 import yaml
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import DATA_DIR
@@ -31,9 +31,9 @@ def _get_user_path(root_dir: Path) -> Path:
     return root_dir / "options.yaml"
 
 
-class _OptionsConfigSignals(QtCore.QObject):
+class _OptionsConfigSignals(QObject):
     # QObject doesn't play nice with multiple inheritance, hence composition
-    changed = QtCore.pyqtSignal()
+    changed = pyqtSignal()
 
 
 class OptionsConfig(SubConfig):

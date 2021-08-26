@@ -19,15 +19,17 @@ import re
 import weakref
 from typing import Any
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QObject
+from PyQt5.QtGui import QColor, QIcon
+from PyQt5.QtWidgets import QWidget
 
 from bubblesub.api import Api
 from bubblesub.ui.themes.base import BaseTheme
 from bubblesub.ui.themes.system import SystemLightTheme
 
 
-class ThemeManager(QtCore.QObject):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+class ThemeManager(QObject):
+    def __init__(self, api: Api, parent: QWidget) -> None:
         super().__init__(parent)
         self._api = api
         self._theme: BaseTheme = SystemLightTheme()
@@ -68,7 +70,7 @@ class ThemeManager(QtCore.QObject):
     @functools.lru_cache(maxsize=None)
     def get_color(self, color_name: str) -> None:
         if color_name not in self._theme.palette:
-            return QtGui.QColor()
+            return QColor()
         color_name = self._theme.palette[color_name]
         color_value = tuple(
             int(match.group(1), 16)
@@ -76,11 +78,11 @@ class ThemeManager(QtCore.QObject):
                 "([0-9a-fA-F]{2})", color_name.lstrip("#")
             )
         )
-        return QtGui.QColor(*color_value)
+        return QColor(*color_value)
 
-    def get_icon(self, name: str) -> QtGui.QIcon:
+    def get_icon(self, name: str) -> QIcon:
         return self.current_theme.get_icon(name)
 
-    def set_icon(self, widget: QtWidgets.QWidget, name: str) -> None:
+    def set_icon(self, widget: QWidget, name: str) -> None:
         widget.setIcon(self.get_icon(name))
         self._icons_to_update[weakref.ref(widget)] = name

@@ -14,7 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QModelIndex, QObject, QRect, QSize, Qt
+from PyQt5.QtGui import (
+    QFont,
+    QFontDatabase,
+    QFontInfo,
+    QFontMetrics,
+    QIcon,
+    QPainter,
+    QPen,
+)
+from PyQt5.QtWidgets import (
+    QAbstractItemDelegate,
+    QComboBox,
+    QStyle,
+    QStyleOptionViewItem,
+    QWidget,
+)
 
 from bubblesub.api import Api
 from bubblesub.ui.assets import ASSETS_DIR
@@ -25,7 +41,7 @@ def refresh_font_db() -> None:
     # Qt doesn't expose API to refresh the fonts, so we try to trick it into
     # invalidating its internal database by adding a dummy application font.
     # On Linux, this works with `fc-cache -r`.
-    font_db = QtGui.QFontDatabase()
+    font_db = QFontDatabase()
     font_db.addApplicationFont(str(ASSETS_DIR / "AdobeBlank.ttf"))
     font_db.removeAllApplicationFonts()
 
@@ -37,65 +53,61 @@ def _get_font_families() -> list[str]:
                 family
                 if " [" not in family
                 else family[0 : family.index(" [")]
-                for family in QtGui.QFontDatabase().families()
+                for family in QFontDatabase().families()
             }
         )
     )
 
 
-class _FontFamilyDelegate(QtWidgets.QAbstractItemDelegate):
-    def __init__(self, parent: QtCore.QObject) -> None:
+class _FontFamilyDelegate(QAbstractItemDelegate):
+    def __init__(self, parent: QObject) -> None:
         super().__init__(parent)
-        self.truetype = QtGui.QIcon(
+        self.truetype = QIcon(
             ":/qt-project.org/styles/commonstyle/images/fonttruetype-16.png"
         )
-        self.bitmap = QtGui.QIcon(
+        self.bitmap = QIcon(
             ":/qt-project.org/styles/commonstyle/images/fontbitmap-16.png"
         )
         self.sample_text = "abc123"
 
     def paint(
         self,
-        painter: QtGui.QPainter,
-        option: QtWidgets.QStyleOptionViewItem,
-        idx: QtCore.QModelIndex,
+        painter: QPainter,
+        option: QStyleOptionViewItem,
+        idx: QModelIndex,
     ) -> None:
-        font_family = idx.data(QtCore.Qt.DisplayRole)
-        font = QtGui.QFont(option.font)
-        font.setPointSize(QtGui.QFontInfo(font).pointSize() * 3 / 2)
-        font2 = QtGui.QFont(font)
+        font_family = idx.data(Qt.DisplayRole)
+        font = QFont(option.font)
+        font.setPointSize(QFontInfo(font).pointSize() * 3 / 2)
+        font2 = QFont(font)
         font2.setFamily(font_family)
 
-        if option.state & QtWidgets.QStyle.State_Selected:
+        if option.state & QStyle.State_Selected:
             painter.save()
             painter.setBrush(option.palette.highlight())
-            painter.setPen(QtCore.Qt.NoPen)
+            painter.setPen(Qt.NoPen)
             painter.drawRect(option.rect)
-            painter.setPen(QtGui.QPen(option.palette.highlightedText(), 0))
+            painter.setPen(QPen(option.palette.highlightedText(), 0))
 
         icon = self.bitmap
-        if QtGui.QFontDatabase().isSmoothlyScalable(font_family):
+        if QFontDatabase().isSmoothlyScalable(font_family):
             icon = self.truetype
         actual_size = icon.actualSize(option.rect.size())
 
-        icon.paint(
-            painter, option.rect, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-        )
-        if option.direction == QtCore.Qt.RightToLeft:
+        icon.paint(painter, option.rect, Qt.AlignLeft | Qt.AlignVCenter)
+        if option.direction == Qt.RightToLeft:
             option.rect.setRight(option.rect.right() - actual_size.width() - 4)
         else:
             option.rect.setLeft(option.rect.left() + actual_size.width() + 4)
 
-        half1 = QtCore.QRect(option.rect)
-        half2 = QtCore.QRect(option.rect)
+        half1 = QRect(option.rect)
+        half2 = QRect(option.rect)
         half1.setRight(half1.right() / 2)
         half2.setLeft(half1.right())
 
         painter.drawText(
             half1,
-            QtCore.Qt.AlignVCenter
-            | QtCore.Qt.AlignLeading
-            | QtCore.Qt.TextSingleLine,
+            Qt.AlignVCenter | Qt.AlignLeading | Qt.TextSingleLine,
             font_family,
         )
 
@@ -103,39 +115,35 @@ class _FontFamilyDelegate(QtWidgets.QAbstractItemDelegate):
         painter.setFont(font2)
         painter.drawText(
             half2,
-            QtCore.Qt.AlignVCenter
-            | QtCore.Qt.AlignLeading
-            | QtCore.Qt.TextSingleLine,
+            Qt.AlignVCenter | Qt.AlignLeading | Qt.TextSingleLine,
             self.sample_text,
         )
         painter.setFont(old)
 
-        if option.state & QtWidgets.QStyle.State_Selected:
+        if option.state & QStyle.State_Selected:
             painter.restore()
 
     def sizeHint(
-        self, option: QtWidgets.QStyleOptionViewItem, idx: QtCore.QModelIndex
-    ) -> QtCore.QSize:
-        font_family = idx.data(QtCore.Qt.DisplayRole)
-        font = QtGui.QFont(option.font)
-        font.setPointSize(QtGui.QFontInfo(font).pointSize() * 3 / 2)
-        metrics = QtGui.QFontMetrics(font)
+        self, option: QStyleOptionViewItem, idx: QModelIndex
+    ) -> QSize:
+        font_family = idx.data(Qt.DisplayRole)
+        font = QFont(option.font)
+        font.setPointSize(QFontInfo(font).pointSize() * 3 / 2)
+        metrics = QFontMetrics(font)
         box = metrics.boundingRect(font_family + self.sample_text)
         w = box.width()
         h = metrics.height()
 
-        return QtCore.QSize(w, h)
+        return QSize(w, h)
 
 
-class FontComboBox(QtWidgets.QComboBox):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+class FontComboBox(QComboBox):
+    def __init__(self, api: Api, parent: QWidget) -> None:
         super().__init__(
             parent,
             editable=True,
-            insertPolicy=QtWidgets.QComboBox.NoInsert,
-            sizeAdjustPolicy=(
-                QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon
-            ),
+            insertPolicy=QComboBox.NoInsert,
+            sizeAdjustPolicy=(QComboBox.AdjustToMinimumContentsLengthWithIcon),
         )
         self.addItems(_get_font_families())
         if api.cfg.opt["gui"]["preview_fonts"]:

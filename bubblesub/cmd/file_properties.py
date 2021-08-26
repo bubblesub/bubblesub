@@ -18,7 +18,25 @@ from collections import OrderedDict
 from typing import cast
 
 import ass_tag_parser
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QCheckBox,
+    QComboBox,
+    QDialogButtonBox,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QSpinBox,
+    QTableView,
+    QVBoxLayout,
+    QWidget,
+)
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
@@ -78,24 +96,24 @@ def _rescale_ass_tags(api: Api, x_factor: float, y_factor: float) -> None:
         event.text = ass_tag_parser.compose_ass(ass_line)
 
 
-class _OptionsGropuBox(QtWidgets.QGroupBox):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+class _OptionsGropuBox(QGroupBox):
+    def __init__(self, api: Api, parent: QWidget) -> None:
         super().__init__("Options:", parent)
         self._api = api
 
-        self.res_x_edit = QtWidgets.QSpinBox(self)
+        self.res_x_edit = QSpinBox(self)
         self.res_x_edit.setMinimum(0)
         self.res_x_edit.setMaximum(99999)
-        self.res_y_edit = QtWidgets.QSpinBox(self)
+        self.res_y_edit = QSpinBox(self)
         self.res_y_edit.setMinimum(0)
         self.res_y_edit.setMaximum(99999)
 
-        get_resolution_button = QtWidgets.QPushButton("Take from video", self)
+        get_resolution_button = QPushButton("Take from video", self)
         get_resolution_button.clicked.connect(
             self._on_get_resolution_button_click
         )
 
-        self.ycbcr_matrix_combo_box = QtWidgets.QComboBox(self)
+        self.ycbcr_matrix_combo_box = QComboBox(self)
         for value in [
             "TV.601",
             "PC.601",
@@ -108,7 +126,7 @@ class _OptionsGropuBox(QtWidgets.QGroupBox):
         ]:
             self.ycbcr_matrix_combo_box.addItem(value, userData=value)
 
-        self.wrap_mode_combo_box = QtWidgets.QComboBox(self)
+        self.wrap_mode_combo_box = QComboBox(self)
         for key, value in {
             "0": "Smart wrapping, top line is wider",
             "1": "End-of-line word wrapping, only \\N breaks",
@@ -117,25 +135,23 @@ class _OptionsGropuBox(QtWidgets.QGroupBox):
         }.items():
             self.wrap_mode_combo_box.addItem(value, userData=key)
 
-        self.scale_check_box = QtWidgets.QCheckBox(
-            "Scale borders and shadows", self
-        )
+        self.scale_check_box = QCheckBox("Scale borders and shadows", self)
 
-        layout = QtWidgets.QGridLayout(self)
+        layout = QGridLayout(self)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 2)
 
-        layout.addWidget(QtWidgets.QLabel("Resolution:", self), 0, 0)
-        sublayout = QtWidgets.QHBoxLayout()
+        layout.addWidget(QLabel("Resolution:", self), 0, 0)
+        sublayout = QHBoxLayout()
         sublayout.addWidget(self.res_x_edit)
         sublayout.addWidget(self.res_y_edit)
         sublayout.addWidget(get_resolution_button)
         layout.addLayout(sublayout, 0, 1)
 
-        layout.addWidget(QtWidgets.QLabel("YCbCr matrix:", self), 1, 0)
+        layout.addWidget(QLabel("YCbCr matrix:", self), 1, 0)
         layout.addWidget(self.ycbcr_matrix_combo_box, 1, 1)
 
-        layout.addWidget(QtWidgets.QLabel("Wrap style:", self), 2, 0)
+        layout.addWidget(QLabel("Wrap style:", self), 2, 0)
         layout.addWidget(self.wrap_mode_combo_box, 2, 1)
 
         layout.addWidget(self.scale_check_box, 3, 1)
@@ -149,37 +165,37 @@ class _OptionsGropuBox(QtWidgets.QGroupBox):
             self.res_y_edit.setValue(0)
 
 
-class _MetadataGroupBox(QtWidgets.QGroupBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+class _MetadataGroupBox(QGroupBox):
+    def __init__(self, parent: QWidget) -> None:
         super().__init__("Meta data:", parent)
-        self.model = QtGui.QStandardItemModel(self)
+        self.model = QStandardItemModel(self)
         self.model.setHorizontalHeaderLabels(["Key", "Value"])
 
-        self._table_view = QtWidgets.QTableView(self)
+        self._table_view = QTableView(self)
         self._table_view.setModel(self.model)
         self._table_view.setTabKeyNavigation(False)
 
         self._table_view.horizontalHeader().setSectionResizeMode(
-            0, QtWidgets.QHeaderView.ResizeToContents
+            0, QHeaderView.ResizeToContents
         )
         self._table_view.horizontalHeader().setSectionResizeMode(
-            1, QtWidgets.QHeaderView.Stretch
+            1, QHeaderView.Stretch
         )
 
         self._table_view.verticalHeader().setSectionsMovable(True)
         self._table_view.verticalHeader().setDragEnabled(True)
         self._table_view.verticalHeader().setDragDropMode(
-            QtWidgets.QAbstractItemView.InternalMove
+            QAbstractItemView.InternalMove
         )
 
         self._table_view.verticalHeader().setDefaultSectionSize(
             self._table_view.fontMetrics().height() * 1.8
         )
 
-        strip = QtWidgets.QWidget(self)
-        add_row_button = QtWidgets.QPushButton("Add new row", strip)
-        del_rows_button = QtWidgets.QPushButton("Remove selected rows", strip)
-        layout = QtWidgets.QHBoxLayout(strip)
+        strip = QWidget(self)
+        add_row_button = QPushButton("Add new row", strip)
+        del_rows_button = QPushButton("Remove selected rows", strip)
+        layout = QHBoxLayout(strip)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(add_row_button)
         layout.addWidget(del_rows_button)
@@ -188,7 +204,7 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
         add_row_button.clicked.connect(self._on_add_button_click)
         del_rows_button.clicked.connect(self._on_delete_rows_button_click)
 
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.addWidget(self._table_view)
         layout.addWidget(strip)
 
@@ -203,9 +219,7 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
         return metadata
 
     def _on_add_button_click(self) -> None:
-        self.model.appendRow(
-            [QtGui.QStandardItem(""), QtGui.QStandardItem("")]
-        )
+        self.model.appendRow([QStandardItem(""), QStandardItem("")])
 
     def _on_delete_rows_button_click(self) -> None:
         rows = set(
@@ -217,15 +231,15 @@ class _MetadataGroupBox(QtWidgets.QGroupBox):
 
 
 class _FilePropertiesDialog(Dialog):
-    def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
+    def __init__(self, api: Api, main_window: QMainWindow) -> None:
         super().__init__(main_window)
         self._main_window = main_window
         self._api = api
 
         self._metadata_group_box = _MetadataGroupBox(self)
 
-        strip = QtWidgets.QDialogButtonBox(self)
-        strip.setOrientation(QtCore.Qt.Horizontal)
+        strip = QDialogButtonBox(self)
+        strip.setOrientation(Qt.Horizontal)
         strip.addButton("OK", strip.AcceptRole)
         apply_button = strip.addButton("Apply", strip.ApplyRole)
         apply_button.clicked.connect(self._commit)
@@ -235,7 +249,7 @@ class _FilePropertiesDialog(Dialog):
 
         self._options_group_box = _OptionsGropuBox(api, self)
 
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.addWidget(self._options_group_box)
         layout.addWidget(self._metadata_group_box)
         layout.addWidget(strip)
@@ -243,7 +257,7 @@ class _FilePropertiesDialog(Dialog):
         self.accepted.connect(self._commit)
 
         self._load()
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
+        self.setAttribute(Qt.WA_DeleteOnClose, False)
         self.setWindowTitle("File properties")
         self.resize(600, 600)
 
@@ -282,7 +296,7 @@ class _FilePropertiesDialog(Dialog):
                 "ScriptType",
             ]:
                 self._metadata_group_box.model.appendRow(
-                    [QtGui.QStandardItem(key), QtGui.QStandardItem(value)]
+                    [QStandardItem(key), QStandardItem(value)]
                 )
 
     @async_slot()
@@ -340,7 +354,7 @@ class FilePropertiesCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         with self.api.undo.capture():
             dialog = _FilePropertiesDialog(self.api, main_window)
             await async_dialog_exec(dialog)

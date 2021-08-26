@@ -19,7 +19,8 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 from ass_parser import AssEvent
-from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import QModelIndex, QObject, Qt, QVariant
+from PyQt5.QtGui import QColor
 
 from bubblesub.api import Api
 from bubblesub.ass_util import character_count
@@ -190,7 +191,7 @@ class AssEventsModel(ObservableListTableAdapter):
         self,
         api: Api,
         theme_mgr: ThemeManager,
-        parent: QtCore.QObject,
+        parent: QObject,
         **kwargs: Any,
     ) -> None:
         super().__init__(parent, api.subs.events)
@@ -199,35 +200,35 @@ class AssEventsModel(ObservableListTableAdapter):
         self._options = AssEventsModelOptions(**kwargs)
 
     def headerData(
-        self, idx: int, orientation: int, role: int = QtCore.Qt.DisplayRole
+        self, idx: int, orientation: int, role: int = Qt.DisplayRole
     ) -> Any:
-        if orientation == QtCore.Qt.Vertical:
-            if role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Vertical:
+            if role == Qt.DisplayRole:
                 return idx + 1
-            if role == QtCore.Qt.TextAlignmentRole:
-                return QtCore.Qt.AlignRight
+            if role == Qt.TextAlignmentRole:
+                return Qt.AlignRight
 
-        if orientation == QtCore.Qt.Horizontal:
-            if role == QtCore.Qt.DisplayRole:
+        if orientation == Qt.Horizontal:
+            if role == Qt.DisplayRole:
                 return _COLUMNS[AssEventsModelColumn(idx)].header
-            if role == QtCore.Qt.TextAlignmentRole:
+            if role == Qt.TextAlignmentRole:
                 if idx in {
                     AssEventsModelColumn.TEXT,
                     AssEventsModelColumn.NOTE,
                 }:
-                    return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-                return QtCore.Qt.AlignCenter
+                    return Qt.AlignLeft | Qt.AlignVCenter
+                return Qt.AlignCenter
 
-        return QtCore.QVariant()
+        return QVariant()
 
-    def flags(self, index: QtCore.QModelIndex) -> int:
-        ret = QtCore.Qt.ItemIsEnabled
-        ret |= QtCore.Qt.ItemIsSelectable
+    def flags(self, index: QModelIndex) -> int:
+        ret = Qt.ItemIsEnabled
+        ret |= Qt.ItemIsSelectable
         if (
             self._options.editable
             and _COLUMNS[AssEventsModelColumn(index.column())].editable
         ):
-            ret |= QtCore.Qt.ItemIsEditable
+            ret |= Qt.ItemIsEditable
         return cast(int, ret)
 
     @property
@@ -237,29 +238,29 @@ class AssEventsModel(ObservableListTableAdapter):
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> Any:
         subtitle = self._list[row_idx]
 
-        if role == QtCore.Qt.BackgroundRole:
+        if role == Qt.BackgroundRole:
             if subtitle.is_comment:
                 return self._theme_mgr.get_color("grid/comment")
             if col_idx == AssEventsModelColumn.CHARS_PER_SEC:
                 return self._get_background_cps(subtitle)
 
-        if role == QtCore.Qt.TextAlignmentRole:
+        if role == Qt.TextAlignmentRole:
             if col_idx in {
                 AssEventsModelColumn.TEXT,
                 AssEventsModelColumn.NOTE,
             }:
-                return QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-            return QtCore.Qt.AlignCenter
+                return Qt.AlignLeft | Qt.AlignVCenter
+            return Qt.AlignCenter
 
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             column = _COLUMNS[AssEventsModelColumn(col_idx)]
             return column.display(subtitle)
 
-        if role == QtCore.Qt.EditRole:
+        if role == Qt.EditRole:
             column = _COLUMNS[AssEventsModelColumn(col_idx)]
             return column.read(subtitle)
 
-        return QtCore.QVariant()
+        return QVariant()
 
     def _set_data(
         self, row_idx: int, col_idx: int, role: int, new_value: Any
@@ -274,7 +275,7 @@ class AssEventsModel(ObservableListTableAdapter):
 
     def _get_background_cps(self, subtitle: AssEvent) -> Any:
         if subtitle.duration == 0:
-            return QtCore.QVariant()
+            return QVariant()
 
         ratio = character_count(subtitle.text) / (
             abs(subtitle.duration) / 1000.0
@@ -287,7 +288,7 @@ class AssEventsModel(ObservableListTableAdapter):
         ratio = max(0, ratio)
         ratio /= character_limit
         ratio = min(1, ratio)
-        return QtGui.QColor(
+        return QColor(
             blend_colors(
                 self.parent().palette().base().color(),
                 self.parent().palette().highlight().color(),

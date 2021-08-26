@@ -19,16 +19,16 @@
 from fractions import Fraction
 from typing import Union
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.api.subs import SubtitlesApi
 
 
-class VideoViewApi(QtCore.QObject):
+class VideoViewApi(QObject):
     """API for video preview."""
 
-    zoom_changed = QtCore.pyqtSignal()
-    pan_changed = QtCore.pyqtSignal()
+    zoom_changed = pyqtSignal()
+    pan_changed = pyqtSignal()
 
     def __init__(self, subs_api: SubtitlesApi) -> None:
         """Initialize self.

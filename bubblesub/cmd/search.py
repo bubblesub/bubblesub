@@ -21,7 +21,24 @@ import re
 from typing import Any, Optional, cast
 
 from ass_parser import AssEvent
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QTextCursor
+from PyQt5.QtWidgets import (
+    QAbstractButton,
+    QCheckBox,
+    QComboBox,
+    QDialogButtonBox,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPlainTextEdit,
+    QRadioButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
@@ -54,7 +71,7 @@ def _create_search_regex(
 
 
 class _SearchModeHandler(abc.ABC):
-    def __init__(self, main_window: QtWidgets.QMainWindow) -> None:
+    def __init__(self, main_window: QMainWindow) -> None:
         self.main_window = main_window
 
     @abc.abstractmethod
@@ -69,11 +86,11 @@ class _SearchModeHandler(abc.ABC):
     def get_subject_widget_name(self) -> str:
         raise NotImplementedError("not implemented")
 
-    def get_subject_widget(self) -> QtWidgets.QWidget:
+    def get_subject_widget(self) -> QWidget:
         widget = self.main_window.findChild(
-            QtWidgets.QWidget, self.get_subject_widget_name()
+            QWidget, self.get_subject_widget_name()
         )
-        if isinstance(widget, QtWidgets.QComboBox):
+        if isinstance(widget, QComboBox):
             widget = widget.lineEdit()
         return widget
 
@@ -81,12 +98,12 @@ class _SearchModeHandler(abc.ABC):
         self, selection_start: int, selection_end: int
     ) -> None:
         widget = self.get_subject_widget()
-        if isinstance(widget, QtWidgets.QPlainTextEdit):
+        if isinstance(widget, QPlainTextEdit):
             cursor = widget.textCursor()
             cursor.setPosition(selection_start)
-            cursor.setPosition(selection_end, QtGui.QTextCursor.KeepAnchor)
+            cursor.setPosition(selection_end, QTextCursor.KeepAnchor)
             widget.setTextCursor(cursor)
-        elif isinstance(widget, QtWidgets.QLineEdit):
+        elif isinstance(widget, QLineEdit):
             widget.setSelection(
                 selection_start, selection_end - selection_start
             )
@@ -96,10 +113,10 @@ class _SearchModeHandler(abc.ABC):
 
     def get_selection_from_widget(self) -> tuple[int, int]:
         widget = self.get_subject_widget()
-        if isinstance(widget, QtWidgets.QPlainTextEdit):
+        if isinstance(widget, QPlainTextEdit):
             cursor = widget.textCursor()
             return (cursor.selectionStart(), cursor.selectionEnd())
-        if isinstance(widget, QtWidgets.QLineEdit):
+        if isinstance(widget, QLineEdit):
             return (
                 widget.selectionStart(),
                 widget.selectionStart() + len(widget.selectedText()),
@@ -108,17 +125,17 @@ class _SearchModeHandler(abc.ABC):
 
     def get_widget_text(self) -> str:
         widget = self.get_subject_widget()
-        if isinstance(widget, QtWidgets.QPlainTextEdit):
+        if isinstance(widget, QPlainTextEdit):
             return cast(str, widget.toPlainText())
-        if isinstance(widget, QtWidgets.QLineEdit):
+        if isinstance(widget, QLineEdit):
             return widget.text()
         raise AssertionError(f"unknown search widget type ({type(widget)})")
 
     def set_widget_text(self, text: str) -> None:
         widget = self.get_subject_widget()
-        if isinstance(widget, QtWidgets.QPlainTextEdit):
+        if isinstance(widget, QPlainTextEdit):
             widget.document().setPlainText(text)
-        if isinstance(widget, QtWidgets.QLineEdit):
+        if isinstance(widget, QLineEdit):
             widget.setText(text)
         else:
             raise AssertionError(
@@ -133,7 +150,7 @@ class _TextSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.text = value.replace("\n", "\\N")
 
-    def get_subject_widget_name(self) -> QtWidgets.QWidget:
+    def get_subject_widget_name(self) -> QWidget:
         return "text-editor"
 
 
@@ -144,7 +161,7 @@ class _NoteSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.note = value.replace("\n", "\\N")
 
-    def get_subject_widget_name(self) -> QtWidgets.QWidget:
+    def get_subject_widget_name(self) -> QWidget:
         return "note-editor"
 
 
@@ -155,7 +172,7 @@ class _ActorSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.actor = value
 
-    def get_subject_widget_name(self) -> QtWidgets.QWidget:
+    def get_subject_widget_name(self) -> QWidget:
         return "actor-editor"
 
 
@@ -166,7 +183,7 @@ class _StyleSearchModeHandler(_SearchModeHandler):
     def set_subject_text(self, sub: AssEvent, value: str) -> None:
         sub.style = value
 
-    def get_subject_widget_name(self) -> QtWidgets.QWidget:
+    def get_subject_widget_name(self) -> QWidget:
         return "style-editor"
 
 
@@ -282,16 +299,16 @@ def _count(
     return count
 
 
-class _SearchModeGroupBox(QtWidgets.QGroupBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+class _SearchModeGroupBox(QGroupBox):
+    def __init__(self, parent: QWidget) -> None:
         super().__init__("Search mode:", parent)
         self._radio_buttons = {
-            SearchMode.TEXT: QtWidgets.QRadioButton("Text", self),
-            SearchMode.NOTE: QtWidgets.QRadioButton("Note", self),
-            SearchMode.ACTOR: QtWidgets.QRadioButton("Actor", self),
-            SearchMode.STYLE: QtWidgets.QRadioButton("Style", self),
+            SearchMode.TEXT: QRadioButton("Text", self),
+            SearchMode.NOTE: QRadioButton("Note", self),
+            SearchMode.ACTOR: QRadioButton("Actor", self),
+            SearchMode.STYLE: QRadioButton("Style", self),
         }
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         for radio_button in self._radio_buttons.values():
             layout.addWidget(radio_button)
         self._radio_buttons[SearchMode.TEXT].setChecked(True)
@@ -306,17 +323,15 @@ class _SearchModeGroupBox(QtWidgets.QGroupBox):
         raise AssertionError
 
 
-class _SearchTextEdit(QtWidgets.QComboBox):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+class _SearchTextEdit(QComboBox):
+    def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
         self.setEditable(True)
         self.setMaxCount(MAX_HISTORY_ENTRIES)
-        self.setInsertPolicy(QtWidgets.QComboBox.NoInsert)
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
-        )
+        self.setInsertPolicy(QComboBox.NoInsert)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         completer = self.completer()
-        completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
+        completer.setCaseSensitivity(Qt.CaseSensitive)
         self.setCompleter(completer)
 
 
@@ -324,7 +339,7 @@ class _SearchDialog(Dialog):
     def __init__(
         self,
         api: Api,
-        main_window: QtWidgets.QMainWindow,
+        main_window: QMainWindow,
         show_replace_controls: bool,
     ) -> None:
         super().__init__(main_window)
@@ -332,18 +347,16 @@ class _SearchDialog(Dialog):
         self._api = api
 
         self.search_text_edit = _SearchTextEdit(self)
-        self.replacement_text_edit = QtWidgets.QLineEdit(self)
-        self.case_chkbox = QtWidgets.QCheckBox("Case sensitivity", self)
-        self.regex_chkbox = QtWidgets.QCheckBox(
-            "Use regular expressions", self
-        )
+        self.replacement_text_edit = QLineEdit(self)
+        self.case_chkbox = QCheckBox("Case sensitivity", self)
+        self.regex_chkbox = QCheckBox("Use regular expressions", self)
         self.search_mode_group_box = _SearchModeGroupBox(self)
 
-        search_label = QtWidgets.QLabel("Text to search for:", self)
-        replace_label = QtWidgets.QLabel("Text to replace with:", self)
+        search_label = QLabel("Text to search for:", self)
+        replace_label = QLabel("Text to replace with:", self)
 
-        strip = QtWidgets.QDialogButtonBox(self)
-        strip.setOrientation(QtCore.Qt.Vertical)
+        strip = QDialogButtonBox(self)
+        strip.setOrientation(Qt.Vertical)
         self.find_next_btn = strip.addButton("Find next", strip.ActionRole)
         self.find_next_btn.setDefault(True)
         self.find_prev_btn = strip.addButton("Find previous", strip.ActionRole)
@@ -356,8 +369,8 @@ class _SearchDialog(Dialog):
         strip.clicked.connect(self.action)
         strip.rejected.connect(self.reject)
 
-        settings_box = QtWidgets.QWidget(self)
-        settings_box_layout = QtWidgets.QVBoxLayout(settings_box)
+        settings_box = QWidget(self)
+        settings_box_layout = QVBoxLayout(settings_box)
         settings_box_layout.setSpacing(16)
         settings_box_layout.setContentsMargins(0, 0, 0, 0)
         for widget in [
@@ -378,7 +391,7 @@ class _SearchDialog(Dialog):
             self.replace_sel_btn.hide()
             self.replace_all_btn.hide()
 
-        layout = QtWidgets.QHBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.setSpacing(24)
         layout.addWidget(settings_box)
         layout.addWidget(strip)
@@ -396,8 +409,8 @@ class _SearchDialog(Dialog):
         self._save_opt()
         return super().reject()
 
-    @async_slot(QtWidgets.QAbstractButton)
-    async def action(self, sender: QtWidgets.QAbstractButton) -> None:
+    @async_slot(QAbstractButton)
+    async def action(self, sender: QAbstractButton) -> None:
         self._save_opt()
         if sender == self.replace_sel_btn:
             await self._replace_selection()
@@ -516,7 +529,7 @@ class SearchCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         dialog = _SearchDialog(
             self.api, main_window, show_replace_controls=False
         )
@@ -530,7 +543,7 @@ class SearchAndReplaceCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         dialog = _SearchDialog(
             self.api, main_window, show_replace_controls=True
         )
@@ -548,7 +561,7 @@ class SearchRepeatCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         handler = _HANDLERS[self.api.cfg.opt["search"]["mode"]](main_window)
         result = _search(
             self.api,

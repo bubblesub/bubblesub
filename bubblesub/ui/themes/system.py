@@ -16,7 +16,7 @@
 
 from pathlib import Path
 
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QApplication
 
 from bubblesub.ui.themes.base import BaseTheme
 from bubblesub.ui.themes.dark import DarkTheme
@@ -28,8 +28,8 @@ class SystemLightTheme(BaseTheme):
     title = "system (with light icons)"
 
     def apply(self) -> None:
-        QtWidgets.QApplication.setStyle("")
-        QtWidgets.QApplication.instance().setStyleSheet("")
+        QApplication.setStyle("")
+        QApplication.instance().setStyleSheet("")
 
     @property
     def palette(self) -> dict[str, str]:
@@ -44,8 +44,8 @@ class SystemDarkTheme(BaseTheme):
     title = "system (with dark icons)"
 
     def apply(self) -> None:
-        QtWidgets.QApplication.setStyle("")
-        QtWidgets.QApplication.instance().setStyleSheet("")
+        QApplication.setStyle("")
+        QApplication.instance().setStyleSheet("")
 
     @property
     def palette(self) -> dict[str, str]:

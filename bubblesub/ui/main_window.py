@@ -17,7 +17,9 @@
 import asyncio
 import enum
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QEvent, QObject, Qt
+from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QWidget
 
 from bubblesub.api import Api
 from bubblesub.cfg.hotkeys import HotkeyContext
@@ -42,7 +44,7 @@ class ClosingState(enum.IntEnum):
     CONFIRMED = 3
 
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, api: Api) -> None:
         super().__init__()
 
@@ -64,41 +66,39 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor_splitter = build_splitter(
             self,
             [(4, self.audio), (1, self.editor)],
-            orientation=QtCore.Qt.Vertical,
+            orientation=Qt.Vertical,
         )
 
         self.top_bar = build_splitter(
             self,
             [(1, self.video), (1, self.editor_splitter)],
-            orientation=QtCore.Qt.Horizontal,
+            orientation=Qt.Horizontal,
         )
 
         self.console_splitter = build_splitter(
             self,
             [(2, self.subs_grid), (1, self.console)],
-            orientation=QtCore.Qt.Horizontal,
+            orientation=Qt.Horizontal,
         )
 
         self.main_splitter = build_splitter(
             self,
             [(1, self.top_bar), (5, self.console_splitter)],
-            orientation=QtCore.Qt.Vertical,
+            orientation=Qt.Vertical,
         )
 
         self.video.layout().setContentsMargins(0, 0, 2, 0)
         self.editor_splitter.setContentsMargins(2, 0, 0, 0)
 
-        self.main_wrapper = QtWidgets.QWidget(self)
-        layout = QtWidgets.QHBoxLayout(self.main_wrapper)
+        self.main_wrapper = QWidget(self)
+        layout = QHBoxLayout(self.main_wrapper)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.addWidget(self.main_splitter)
 
         self.setCentralWidget(self.main_wrapper)
         self.setStatusBar(self.status_bar)
 
-        self.setWindowIcon(
-            QtGui.QIcon(str(ASSETS_DIR / "bubblesub-icon-64.png"))
-        )
+        self.setWindowIcon(QIcon(str(ASSETS_DIR / "bubblesub-icon-64.png")))
 
         self.subs_grid.setFocus()
         self.subs_grid.restore_grid_columns()
@@ -130,20 +130,18 @@ class MainWindow(QtWidgets.QMainWindow):
         api.subs.loaded.connect(self._update_title)
         api.cmd.commands_loaded.connect(self._setup_menu)
         api.cfg.opt.changed.connect(self._setup_menu)
-        QtWidgets.QApplication.instance().installEventFilter(self)
+        QApplication.instance().installEventFilter(self)
 
-    def eventFilter(
-        self, source: QtCore.QObject, event: QtCore.QEvent
-    ) -> bool:
+    def eventFilter(self, source: QObject, event: QEvent) -> bool:
         if (
-            event.type() == QtCore.QEvent.WindowBlocked
+            event.type() == QEvent.WindowBlocked
             and not self._api.playback.is_paused
         ):
             # pause video for modal dialogs
             self._api.playback.is_paused = True
         return False
 
-    def closeEvent(self, event: QtCore.QEvent) -> None:
+    def closeEvent(self, event: QEvent) -> None:
         if self._closing_state == ClosingState.CONFIRMED:
             self._api.gui.terminated.emit()
             event.accept()
@@ -174,7 +172,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def _restore_splitters(self) -> None:
-        def _load(widget: QtWidgets.QWidget, key: str) -> None:
+        def _load(widget: QWidget, key: str) -> None:
             data = self._api.cfg.opt["gui"]["splitters"].get(key, None)
             if data:
                 widget.restoreState(data)
@@ -199,7 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
             font_def = self._api.cfg.opt["gui"]["fonts"]["main"]
         except KeyError:
             return
-        font = QtGui.QFont()
+        font = QFont()
         font.fromString(font_def)
         self.setFont(font)
 

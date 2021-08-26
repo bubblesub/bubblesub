@@ -21,19 +21,20 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Optional
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox, QWidget
 
 import bubblesub.api  # pylint: disable=unused-import
 from bubblesub.ui.util import SUBS_FILE_FILTER, async_dialog_exec, save_dialog
 
 
-class GuiApi(QtCore.QObject):
+class GuiApi(QObject):
     """The GUI API."""
 
-    terminated = QtCore.pyqtSignal()
-    request_quit = QtCore.pyqtSignal()
-    request_begin_update = QtCore.pyqtSignal()
-    request_end_update = QtCore.pyqtSignal()
+    terminated = pyqtSignal()
+    request_quit = pyqtSignal()
+    request_begin_update = pyqtSignal()
+    request_end_update = pyqtSignal()
 
     def __init__(self, api: "bubblesub.api.Api") -> None:
         """Initialize self.
@@ -43,9 +44,9 @@ class GuiApi(QtCore.QObject):
         super().__init__()
         self.last_directory: Optional[Path] = None
         self._api = api
-        self._main_window: Optional[QtWidgets.QWidget] = None
+        self._main_window: Optional[QWidget] = None
 
-    def set_main_window(self, main_window: QtWidgets.QWidget) -> None:
+    def set_main_window(self, main_window: QWidget) -> None:
         """Set main window instance, needed to interact with the GUI.
 
         :param main_window: main window instance
@@ -59,7 +60,7 @@ class GuiApi(QtCore.QObject):
         :return: true if the widget is visible, false otherwise
         """
         assert self._main_window
-        widget = self._main_window.findChild(QtWidgets.QWidget, widget_name)
+        widget = self._main_window.findChild(QWidget, widget_name)
         if widget is None:
             raise RuntimeError(f"widget {widget_name} cannot be found")
         return widget.isVisible()
@@ -90,10 +91,10 @@ class GuiApi(QtCore.QObject):
         doc_path = self._api.subs.path
         doc_name = doc_path.name if doc_path else "Untitled"
 
-        box = QtWidgets.QMessageBox(self._main_window)
+        box = QMessageBox(self._main_window)
         box.setWindowTitle("Question")
         box.setText(f'Do you wish to save changes to "{doc_name}"?')
-        box.setIcon(QtWidgets.QMessageBox.Question)
+        box.setIcon(QMessageBox.Question)
         box.addButton(box.Save)
         box.addButton(box.Discard)
         box.addButton(box.Cancel)

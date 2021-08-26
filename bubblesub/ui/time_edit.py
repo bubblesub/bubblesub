@@ -18,13 +18,15 @@
 
 from typing import Any
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QRegExp, Qt, pyqtProperty, pyqtSignal
+from PyQt5.QtGui import QKeyEvent, QRegExpValidator
+from PyQt5.QtWidgets import QLineEdit, QVBoxLayout, QWidget
 
 from bubblesub.util import ms_to_str, str_to_ms
 
 
-class _TimeLineEdit(QtWidgets.QLineEdit):
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+class _TimeLineEdit(QLineEdit):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handle up and down arrows key presses to increment or decrement the
         PTS value of the TimeEdit widget.
 
@@ -32,25 +34,25 @@ class _TimeLineEdit(QtWidgets.QLineEdit):
         """
         super().keyPressEvent(event)
 
-        if not event.key() in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Down):
+        if not event.key() in (Qt.Key_Up, Qt.Key_Down):
             return
 
         value = self.parent().get_value()
         delta = 10
-        if event.key() == QtCore.Qt.Key_Up:
+        if event.key() == Qt.Key_Up:
             value += delta
-        elif event.key() == QtCore.Qt.Key_Down:
+        elif event.key() == Qt.Key_Down:
             value -= delta
 
         self.parent().set_value(value)
 
 
-class TimeEdit(QtWidgets.QWidget):
-    value_changed = QtCore.pyqtSignal(int)
+class TimeEdit(QWidget):
+    value_changed = pyqtSignal(int)
 
     def __init__(
         self,
-        parent: QtWidgets.QWidget,
+        parent: QWidget,
         allow_negative: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -65,7 +67,7 @@ class TimeEdit(QtWidgets.QWidget):
         self._allow_negative = False
 
         self._edit = _TimeLineEdit(self)
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addWidget(self._edit)
@@ -88,7 +90,7 @@ class TimeEdit(QtWidgets.QWidget):
         self._reset_mask()
         self._reset_text()
 
-    @QtCore.pyqtProperty(int, user=True)
+    @pyqtProperty(int, user=True)
     def _qt_value(self, user=True) -> int:
         return self._value
 
@@ -123,8 +125,8 @@ class TimeEdit(QtWidgets.QWidget):
         if self._allow_negative:
             self._edit.setInputMask("X99:99:99.999")
             self._edit.setValidator(
-                QtGui.QRegExpValidator(
-                    QtCore.QRegExp(r"[+-]\d\d:\d\d:\d\d\.\d\d\d"),
+                QRegExpValidator(
+                    QRegExp(r"[+-]\d\d:\d\d:\d\d\.\d\d\d"),
                     self.parent(),
                 )
             )

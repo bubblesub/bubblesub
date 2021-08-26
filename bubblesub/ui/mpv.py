@@ -34,7 +34,9 @@ from mpv import (
     _mpv_opengl_cb_set_update_callback,
     _mpv_opengl_cb_uninit_gl,
 )
-from PyQt5 import QtCore, QtOpenGL, QtWidgets
+from PyQt5.QtCore import QMetaObject, Qt, QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtOpenGL import QGLContext
+from PyQt5.QtWidgets import QOpenGLWidget, QWidget
 
 from bubblesub.api import Api
 from bubblesub.api.audio_stream import AudioStream
@@ -44,19 +46,17 @@ from bubblesub.util import ms_to_str
 
 
 def get_proc_addr(_, name):
-    glctx = QtOpenGL.QGLContext.currentContext()
+    glctx = QGLContext.currentContext()
     if glctx is None:
         return None
     addr = int(glctx.getProcAddress(name.decode("utf-8")))
     return addr
 
 
-class MpvWidget(QtWidgets.QOpenGLWidget):
-    _schedule_update = QtCore.pyqtSignal()
+class MpvWidget(QOpenGLWidget):
+    _schedule_update = pyqtSignal()
 
-    def __init__(
-        self, api: Api, parent: Optional[QtWidgets.QWidget] = None
-    ) -> None:
+    def __init__(self, api: Api, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._api = api
 
@@ -75,7 +75,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         self.on_update_fake_c = OpenGlCbUpdateFn(self.on_update_fake)
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
         _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_c, None)
-        self.frameSwapped.connect(self.swapped, QtCore.Qt.DirectConnection)
+        self.frameSwapped.connect(self.swapped, Qt.DirectConnection)
 
         for key, value in {
             # "config": False,
@@ -104,7 +104,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
 
         self._opengl = None
 
-        self._timer = QtCore.QTimer(parent=None)
+        self._timer = QTimer(parent=None)
         self._timer.setInterval(api.cfg.opt["video"]["subs_sync_interval"])
         self._timer.timeout.connect(self._refresh_subs_if_needed)
 
@@ -116,7 +116,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         api.audio.stream_unloaded.connect(self._on_audio_state_change)
         api.audio.current_stream_switched.connect(self._on_audio_state_change)
         api.playback.request_seek.connect(
-            self._on_request_seek, QtCore.Qt.DirectConnection
+            self._on_request_seek, Qt.DirectConnection
         )
         api.playback.request_playback.connect(self._on_request_playback)
         api.playback.playback_speed_changed.connect(
@@ -147,7 +147,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
             self.mpv_gl, self.defaultFramebufferObject(), w, -h
         )
 
-    @QtCore.pyqtSlot()
+    @pyqtSlot()
     def maybe_update(self):
         if self._destroyed:
             return
@@ -164,7 +164,7 @@ class MpvWidget(QtWidgets.QOpenGLWidget):
         # maybe_update method should run on the thread that creates the
         # OpenGLContext, which in general is the main thread.
         # QMetaObject.invokeMethod can do this trick.
-        QtCore.QMetaObject.invokeMethod(self, "maybe_update")
+        QMetaObject.invokeMethod(self, "maybe_update")
 
     def on_update_fake(self, ctx=None):
         pass

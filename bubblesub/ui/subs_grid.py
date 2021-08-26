@@ -19,7 +19,28 @@ import functools
 import re
 from typing import Optional
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import (
+    QEvent,
+    QItemSelection,
+    QItemSelectionModel,
+    QModelIndex,
+    QPoint,
+    Qt,
+    QTimer,
+    QVariant,
+)
+from PyQt5.QtGui import QBrush, QColor, QPainter, QPalette, QTextCharFormat
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QAction,
+    QHeaderView,
+    QMenu,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
+    QTableView,
+    QWidget,
+)
 
 from bubblesub.api import Api
 from bubblesub.cfg.hotkeys import HotkeyContext
@@ -33,12 +54,12 @@ HIGHLIGHTABLE_CHUNKS = {"\N{FULLWIDTH ASTERISK}", "\\N", "\\h", "\\n"}
 SEEK_THRESHOLD = datetime.timedelta(seconds=0.2)
 
 
-class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
+class SubtitlesGridDelegate(QStyledItemDelegate):
     def __init__(
         self,
         api: Api,
         theme_mgr: ThemeManager,
-        parent: QtWidgets.QWidget,
+        parent: QWidget,
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -48,26 +69,26 @@ class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
     def on_theme_change(self) -> None:
         self._format = self._create_format()
 
-    def _create_format(self) -> QtGui.QTextCharFormat:
-        fmt = QtGui.QTextCharFormat()
+    def _create_format(self) -> QTextCharFormat:
+        fmt = QTextCharFormat()
         fmt.setForeground(self._theme_mgr.get_color("grid/ass-mark"))
         return fmt
 
     def paint(
         self,
-        painter: QtGui.QPainter,
-        option: QtWidgets.QStyleOptionViewItem,
-        index: QtCore.QModelIndex,
+        painter: QPainter,
+        option: QStyleOptionViewItem,
+        index: QModelIndex,
     ) -> None:
         model = self.parent().model()
         if not model:
             return
-        text = self._process_text(model.data(index, QtCore.Qt.DisplayRole))
-        alignment = model.data(index, QtCore.Qt.TextAlignmentRole)
-        background = model.data(index, QtCore.Qt.BackgroundRole)
+        text = self._process_text(model.data(index, Qt.DisplayRole))
+        alignment = model.data(index, Qt.TextAlignmentRole)
+        background = model.data(index, Qt.BackgroundRole)
 
         painter.save()
-        if option.state & QtWidgets.QStyle.State_Selected:
+        if option.state & QStyle.State_Selected:
             self._paint_selected(painter, option, text, alignment)
         else:
             self._paint_regular(painter, option, text, alignment, background)
@@ -78,29 +99,29 @@ class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
 
     def _paint_selected(
         self,
-        painter: QtGui.QPainter,
-        option: QtWidgets.QStyleOptionViewItem,
+        painter: QPainter,
+        option: QStyleOptionViewItem,
         text: str,
         alignment: int,
     ) -> None:
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(option.palette.color(QtGui.QPalette.Highlight))
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(option.palette.color(QPalette.Highlight))
         painter.drawRect(option.rect)
 
-        painter.setPen(option.palette.color(QtGui.QPalette.HighlightedText))
+        painter.setPen(option.palette.color(QPalette.HighlightedText))
         painter.drawText(option.rect, alignment, text)
 
     def _paint_regular(
         self,
-        painter: QtGui.QPainter,
-        option: QtWidgets.QStyleOptionViewItem,
+        painter: QPainter,
+        option: QStyleOptionViewItem,
         text: str,
         alignment: int,
-        background: QtGui.QColor,
+        background: QColor,
     ) -> None:
-        if not isinstance(background, QtCore.QVariant):
-            painter.setPen(QtCore.Qt.NoPen)
-            painter.setBrush(QtGui.QBrush(background))
+        if not isinstance(background, QVariant):
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(background))
             painter.drawRect(option.rect)
 
         rect = option.rect
@@ -113,23 +134,23 @@ class SubtitlesGridDelegate(QtWidgets.QStyledItemDelegate):
             painter.setPen(
                 self._theme_mgr.get_color("grid/ass-mark")
                 if chunk in HIGHLIGHTABLE_CHUNKS
-                else option.palette.color(QtGui.QPalette.Text)
+                else option.palette.color(QPalette.Text)
             )
 
             # chunk = metrics.elidedText(
-            #     chunk, QtCore.Qt.ElideRight, rect.width()
+            #     chunk, Qt.ElideRight, rect.width()
             # )
 
             painter.drawText(rect, alignment, chunk)
             rect = rect.adjusted(metrics.width(chunk), 0, 0, 0)
 
 
-class SubtitlesGrid(QtWidgets.QTableView):
+class SubtitlesGrid(QTableView):
     def __init__(
         self,
         api: Api,
         theme_mgr: ThemeManager,
-        parent: QtWidgets.QWidget,
+        parent: QWidget,
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -144,7 +165,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         self._scheduled_seek: Optional[int] = None
         self._last_seek = datetime.datetime.min
 
-        self._timer = QtCore.QTimer(self)
+        self._timer = QTimer(self)
         self._timer.setInterval(SEEK_THRESHOLD.total_seconds())
         self._timer.timeout.connect(self._execute_scheduled_seek)
 
@@ -152,7 +173,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
             self._api, self._theme_mgr, self
         )
 
-        self._subs_menu = QtWidgets.QMenu(self)
+        self._subs_menu = QMenu(self)
 
         api.cmd.commands_loaded.connect(self._rebuild_subs_menu)
         api.gui.terminated.connect(self._store_grid_columns)
@@ -161,7 +182,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
         api.subs.selection_changed.connect(self._sync_api_selection_to_grid)
 
     def _setup_subs_menu(self) -> None:
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._open_subs_menu)
         self._rebuild_subs_menu()
 
@@ -177,11 +198,11 @@ class SubtitlesGrid(QtWidgets.QTableView):
         if not self.model():
             return
         header = self.horizontalHeader()
-        header.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        header.setContextMenuPolicy(Qt.ActionsContextMenu)
         for col_idx in {AssEventsModelColumn.TEXT, AssEventsModelColumn.NOTE}:
             self.setItemDelegateForColumn(col_idx, self._subs_grid_delegate)
             self.horizontalHeader().setSectionResizeMode(
-                col_idx, QtWidgets.QHeaderView.Stretch
+                col_idx, QHeaderView.Stretch
             )
         for col_idx in {
             AssEventsModelColumn.LONG_DURATION,
@@ -193,9 +214,9 @@ class SubtitlesGrid(QtWidgets.QTableView):
         }:
             self.setColumnHidden(col_idx, True)
         for column in AssEventsModelColumn:
-            action = QtWidgets.QAction(
+            action = QAction(
                 self,
-                text=self.model().headerData(column, QtCore.Qt.Horizontal),
+                text=self.model().headerData(column, Qt.Horizontal),
                 checkable=True,
                 checked=not self.isColumnHidden(column),
             )
@@ -205,7 +226,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
             )
             header.addAction(action)
 
-    def toggle_column(self, action: QtWidgets.QAction) -> None:
+    def toggle_column(self, action: QAction) -> None:
         column: AssEventsModelColumn = action.data()
         self.horizontalHeader().setSectionHidden(
             column.value, not action.isChecked()
@@ -223,7 +244,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
     def keyboardSearch(self, text: str) -> None:
         pass
 
-    def changeEvent(self, event: QtCore.QEvent) -> None:
+    def changeEvent(self, event: QEvent) -> None:
         self._subs_grid_delegate.on_theme_change()
 
     def _store_grid_columns(self) -> None:
@@ -231,7 +252,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
             self.horizontalHeader().saveState()
         )
 
-    def _open_subs_menu(self, position: QtCore.QPoint) -> None:
+    def _open_subs_menu(self, position: QPoint) -> None:
         self._subs_menu.exec_(self.viewport().mapToGlobal(position))
 
     def _collect_rows(self) -> list[int]:
@@ -245,7 +266,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
     def _on_subs_load(self) -> None:
         try:
             self.setModel(AssEventsModel(self._api, self._theme_mgr, self))
-            self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+            self.setSelectionBehavior(QAbstractItemView.SelectRows)
             self.selectionModel().selectionChanged.connect(
                 self._sync_grid_selection_to_api
             )
@@ -284,7 +305,7 @@ class SubtitlesGrid(QtWidgets.QTableView):
             self._sync_grid_selection_to_api
         )
 
-        selection = QtCore.QItemSelection()
+        selection = QItemSelection()
         for row in self._api.subs.selected_indexes:
             idx = self.model().index(row, 0)
             selection.select(idx, idx)
@@ -299,9 +320,9 @@ class SubtitlesGrid(QtWidgets.QTableView):
 
         self.selectionModel().select(
             selection,
-            QtCore.QItemSelectionModel.Rows
-            | QtCore.QItemSelectionModel.Current
-            | QtCore.QItemSelectionModel.Select,
+            QItemSelectionModel.Rows
+            | QItemSelectionModel.Current
+            | QItemSelectionModel.Select,
         )
 
         self.selectionModel().selectionChanged.connect(

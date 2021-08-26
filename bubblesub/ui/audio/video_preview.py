@@ -19,7 +19,9 @@ import uuid
 from typing import Any
 
 import numpy as np
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QObject, QSize, pyqtSignal
+from PyQt5.QtGui import QImage, QPainter, QPaintEvent, QPixmap, QResizeEvent
+from PyQt5.QtWidgets import QSizePolicy, QWidget
 
 from bubblesub.api import Api
 from bubblesub.api.log import LogApi
@@ -36,8 +38,8 @@ CHUNK_SIZE = 500
 VIDEO_BAND_SIZE = 10
 
 
-class VideoBandWorkerSignals(QtCore.QObject):
-    cache_updated = QtCore.pyqtSignal()
+class VideoBandWorkerSignals(QObject):
+    cache_updated = pyqtSignal()
 
 
 class VideoBandWorker(QueueWorker):
@@ -101,11 +103,9 @@ class VideoBandWorker(QueueWorker):
 
 
 class VideoPreview(BaseLocalAudioWidget):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+    def __init__(self, api: Api, parent: QWidget) -> None:
         super().__init__(api, parent)
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Preferred
-        )
+        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
 
         self._pixels: np.array = np.zeros([0, 0, 3], dtype=np.uint8)
 
@@ -119,8 +119,8 @@ class VideoPreview(BaseLocalAudioWidget):
         api.audio.view.view_changed.connect(self.repaint_if_needed)
         api.gui.terminated.connect(self.shutdown)
 
-    def sizeHint(self) -> QtCore.QSize:
-        return QtCore.QSize(0, VIDEO_BAND_SIZE)
+    def sizeHint(self) -> QSize:
+        return QSize(0, VIDEO_BAND_SIZE)
 
     def _get_paint_cache_key(self) -> int:
         with self._api.video.stream_lock:
@@ -141,20 +141,20 @@ class VideoPreview(BaseLocalAudioWidget):
     def shutdown(self) -> None:
         self._worker.stop()
 
-    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+    def resizeEvent(self, event: QResizeEvent) -> None:
         self._pixels = np.zeros(
             [BAND_RESOLUTION, self.width(), 3], dtype=np.uint8
         )
 
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
-        painter = QtGui.QPainter()
+    def paintEvent(self, event: QPaintEvent) -> None:
+        painter = QPainter()
 
         painter.begin(self)
         self._draw_video_band(painter)
         self._draw_frame(painter, bottom_line=False)
         painter.end()
 
-    def _draw_video_band(self, painter: QtGui.QPainter) -> None:
+    def _draw_video_band(self, painter: QPainter) -> None:
         current_stream = self._api.video.current_stream
         if not current_stream or not current_stream.timecodes:
             return
@@ -174,14 +174,14 @@ class VideoPreview(BaseLocalAudioWidget):
             for x, frame_idx in enumerate(frame_idx_range):
                 pixels[x] = cache[frame_idx]
 
-        image = QtGui.QImage(
+        image = QImage(
             self._pixels.data,
             self._pixels.shape[1],
             self._pixels.shape[0],
             self._pixels.strides[0],
-            QtGui.QImage.Format_RGB888,
+            QImage.Format_RGB888,
         )
         painter.save()
         painter.scale(1, painter.viewport().height() / (BAND_RESOLUTION - 1))
-        painter.drawPixmap(0, 0, QtGui.QPixmap.fromImage(image))
+        painter.drawPixmap(0, 0, QPixmap.fromImage(image))
         painter.restore()

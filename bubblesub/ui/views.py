@@ -16,7 +16,8 @@
 
 import enum
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QMainWindow, QWidget
 
 from bubblesub.api import Api
 
@@ -88,8 +89,8 @@ VIEW_WIDGET_VISIBILITY_MAP = {
 }
 
 
-class ViewManager(QtCore.QObject):
-    def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
+class ViewManager(QObject):
+    def __init__(self, api: Api, main_window: QMainWindow) -> None:
         super().__init__(main_window)
         self._api = api
         self._main_window = main_window
@@ -110,16 +111,14 @@ class ViewManager(QtCore.QObject):
                 widget.value
             )
             if visibility is not None:
-                self._main_window.findChild(
-                    QtWidgets.QWidget, widget.value
-                ).setVisible(visibility)
+                self._main_window.findChild(QWidget, widget.value).setVisible(
+                    visibility
+                )
 
     def store_view(self) -> None:
         visibility_map = {}
         for target_widget in TargetWidget:
-            widget = self._main_window.findChild(
-                QtWidgets.QWidget, target_widget.value
-            )
+            widget = self._main_window.findChild(QWidget, target_widget.value)
 
             parent = widget.parent()
             parents_visible = parent.isVisible()
@@ -140,6 +139,6 @@ class ViewManager(QtCore.QObject):
         self._api.playback.is_paused = True
 
         for widget, visible in visibility_map.items():
-            self._main_window.findChild(
-                QtWidgets.QWidget, widget.value
-            ).setVisible(visible)
+            self._main_window.findChild(QWidget, widget.value).setVisible(
+                visible
+            )

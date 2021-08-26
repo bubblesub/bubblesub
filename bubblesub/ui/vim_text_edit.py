@@ -21,19 +21,27 @@ import logging
 from collections.abc import Iterator
 from typing import Any, Optional
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import (
+    QFocusEvent,
+    QInputMethodEvent,
+    QKeyEvent,
+    QSyntaxHighlighter,
+    QTextCursor,
+)
+from PyQt5.QtWidgets import QPlainTextEdit, QTextEdit, QWidget
 
 KEYMAP = {
-    QtCore.Qt.Key_Return: "<CR>",
-    QtCore.Qt.Key_Escape: "\x1B",
-    QtCore.Qt.Key_Backspace: "<BS>",
-    QtCore.Qt.Key_Delete: "<Del>",
-    QtCore.Qt.Key_Right: "<Right>",
-    QtCore.Qt.Key_Left: "<Left>",
-    QtCore.Qt.Key_Up: "<Up>",
-    QtCore.Qt.Key_Down: "<Down>",
-    QtCore.Qt.Key_Home: "<Home>",
-    QtCore.Qt.Key_End: "<End>",
+    Qt.Key_Return: "<CR>",
+    Qt.Key_Escape: "\x1B",
+    Qt.Key_Backspace: "<BS>",
+    Qt.Key_Delete: "<Del>",
+    Qt.Key_Right: "<Right>",
+    Qt.Key_Left: "<Left>",
+    Qt.Key_Up: "<Up>",
+    Qt.Key_Down: "<Down>",
+    Qt.Key_Home: "<Home>",
+    Qt.Key_End: "<End>",
 }
 
 
@@ -47,16 +55,16 @@ def rel_pos_to_abs_pos(lines: list[str], row: int, col: int) -> int:
     )
 
 
-class VimTextEdit(QtWidgets.QPlainTextEdit):
-    def __init__(self, parent: QtWidgets.QWidget, **kwargs: Any) -> None:
+class VimTextEdit(QPlainTextEdit):
+    def __init__(self, parent: QWidget, **kwargs: Any) -> None:
         self._nvim = None
         self._vim_mode_enabled = False
         self.vim_arguments = []
         self._signals_connected = 0
         super().__init__(parent, **kwargs)
         self._connect_ui_signals()
-        self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
-        self.highlighter: Optional[QtGui.QSyntaxHighlighter]
+        self.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self.highlighter: Optional[QSyntaxHighlighter]
 
         self.selectionChanged.connect(self._selection_changed)
         self.cursorPositionChanged.connect(self._cursor_position_changed)
@@ -135,7 +143,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
     def _connect_ui_signals(self) -> None:
         self._signals_connected += 1
 
-    def inputMethodEvent(self, event: QtGui.QInputMethodEvent) -> None:
+    def inputMethodEvent(self, event: QInputMethodEvent) -> None:
         if self.vim_mode_enabled and self._nvim:
             with self._ignore_ui_signals(), self._reconnect_guard():
                 self._nvim.input(event.commitString())
@@ -143,7 +151,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         else:
             super().inputMethodEvent(event)
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if self.vim_mode_enabled and self._nvim:
             with self._ignore_ui_signals(), self._reconnect_guard():
                 if event.key() in KEYMAP:
@@ -157,7 +165,7 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
         else:
             super().keyPressEvent(event)
 
-    def focusInEvent(self, event: QtGui.QFocusEvent) -> None:
+    def focusInEvent(self, event: QFocusEvent) -> None:
         super().focusInEvent(event)
         if self.vim_mode_enabled and self._nvim:
             with self._ignore_ui_signals():
@@ -263,10 +271,10 @@ class VimTextEdit(QtWidgets.QPlainTextEdit):
             self.setExtraSelections(ess)
 
     def _create_extra_selection(
-        self, cursor: QtGui.QTextCursor
-    ) -> QtWidgets.QTextEdit.ExtraSelection:
+        self, cursor: QTextCursor
+    ) -> QTextEdit.ExtraSelection:
         palette = self.palette()
-        selection = QtWidgets.QTextEdit.ExtraSelection()
+        selection = QTextEdit.ExtraSelection()
         selection.format.setBackground(palette.color(palette.Highlight))
         selection.format.setForeground(palette.color(palette.HighlightedText))
         selection.cursor = cursor

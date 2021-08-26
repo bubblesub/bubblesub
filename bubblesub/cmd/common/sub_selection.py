@@ -23,7 +23,7 @@ from typing import Any, Optional
 
 import regex
 from ass_parser import AssEvent
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QInputDialog, QMainWindow
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandCanceled
@@ -202,21 +202,21 @@ class SubtitlesSelection:
         return [value - 1]
 
     async def _show_number_dialog(
-        self, main_window: QtWidgets.QMainWindow
+        self, main_window: QMainWindow
     ) -> Optional[int]:
-        dialog = QtWidgets.QInputDialog(main_window)
+        dialog = QInputDialog(main_window)
         dialog.setLabelText("Line number to jump to:")
         dialog.setIntMinimum(1)
         dialog.setIntMaximum(len(self.api.subs.events))
         if self.api.subs.has_selection:
             dialog.setIntValue(self.api.subs.selected_indexes[0] + 1)
-        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+        dialog.setInputMode(QInputDialog.IntInput)
         if await async_dialog_exec(dialog):
             return dialog.intValue()
         return None
 
     async def _show_time_dialog(
-        self, main_window: QtWidgets.QMainWindow
+        self, main_window: QMainWindow
     ) -> Optional[int]:
         ret = await time_jump_dialog(
             main_window,

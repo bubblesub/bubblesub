@@ -20,7 +20,27 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QEvent, QObject, Qt, pyqtSignal
+from PyQt5.QtGui import (
+    QCursor,
+    QFont,
+    QFontDatabase,
+    QKeyEvent,
+    QSyntaxHighlighter,
+    QTextCharFormat,
+    QTextCursor,
+    QWheelEvent,
+)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QHBoxLayout,
+    QLineEdit,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import CommandError
@@ -72,23 +92,21 @@ def collect_command_arguments(compl: Completion, api: Api) -> None:
             )
 
 
-class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
+class ConsoleSyntaxHighlight(QSyntaxHighlighter):
     def __init__(
-        self, api: Api, theme_mgr: ThemeManager, parent: QtCore.QObject
+        self, api: Api, theme_mgr: ThemeManager, parent: QObject
     ) -> None:
         super().__init__(parent)
         self._api = api
         self._theme_mgr = theme_mgr
 
-        self._font = QtGui.QFontDatabase.systemFont(
-            QtGui.QFontDatabase.FixedFont
-        )
-        self._style_map: dict[str, QtGui.QTextCharFormat] = {}
+        self._font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        self._style_map: dict[str, QTextCharFormat] = {}
 
-        self._invisible_fmt = QtGui.QTextCharFormat()
+        self._invisible_fmt = QTextCharFormat()
         self._invisible_fmt.setFontStretch(1)
         self._invisible_fmt.setFontPointSize(1)
-        self._invisible_fmt.setForeground(QtCore.Qt.transparent)
+        self._invisible_fmt.setForeground(Qt.transparent)
 
         self._regex = re.compile(
             r"^"
@@ -100,10 +118,10 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
 
         self.update_style_map()
 
-    def get_font(self) -> QtGui.QFont:
+    def get_font(self) -> QFont:
         return self._font
 
-    def set_font(self, font: QtGui.QFont) -> None:
+    def set_font(self, font: QFont) -> None:
         self._font = font
         self.update_style_map()
 
@@ -116,11 +134,9 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
             "c": self._get_format("console/command"),
             "timestamp": self._get_format("console/timestamp"),
         }
-        QtWidgets.QApplication.setOverrideCursor(
-            QtGui.QCursor(QtCore.Qt.WaitCursor)
-        )
+        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
         self.rehighlight()
-        QtWidgets.QApplication.restoreOverrideCursor()
+        QApplication.restoreOverrideCursor()
 
     def highlightBlock(self, text: str) -> None:
         for match in re.finditer(self._regex, text):
@@ -143,18 +159,18 @@ class ConsoleSyntaxHighlight(QtGui.QSyntaxHighlighter):
                 self._style_map[match.group("log_level")],
             )
 
-    def _get_format(self, color_name: str) -> QtGui.QTextCharFormat:
-        fmt = QtGui.QTextCharFormat()
+    def _get_format(self, color_name: str) -> QTextCharFormat:
+        fmt = QTextCharFormat()
         fmt.setForeground(self._theme_mgr.get_color(color_name))
         fmt.setFont(self._font)
         return fmt
 
 
-class ConsoleLogWindow(QtWidgets.QTextEdit):
-    scroll_lock_changed = QtCore.pyqtSignal()
+class ConsoleLogWindow(QTextEdit):
+    scroll_lock_changed = pyqtSignal()
 
     def __init__(
-        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+        self, api: Api, theme_mgr: ThemeManager, parent: QWidget
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -164,7 +180,7 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         self._syntax_highlight = ConsoleSyntaxHighlight(api, theme_mgr, self)
         self.setObjectName("console-window")
         self.setReadOnly(True)
-        self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+        self.setLineWrapMode(QTextEdit.NoWrap)
 
     def log(self, level: LogLevel, text: str) -> None:
         if level == LogLevel.DEBUG:
@@ -174,8 +190,8 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         old_pos_y = self.verticalScrollBar().value()
         separator = "" if self._empty else "\n"
 
-        self.moveCursor(QtGui.QTextCursor.End)
-        cursor = QtGui.QTextCursor(self.textCursor())
+        self.moveCursor(QTextCursor.End)
+        cursor = QTextCursor(self.textCursor())
         cursor.insertText(
             f"{separator}"
             f"[{level.name.lower()[0]}] "
@@ -195,11 +211,11 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         )
         self._empty = False
 
-    def changeEvent(self, event: QtCore.QEvent) -> None:
+    def changeEvent(self, event: QEvent) -> None:
         self._syntax_highlight.update_style_map()
 
-    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        if event.modifiers() & QtCore.Qt.ControlModifier:
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        if event.modifiers() & Qt.ControlModifier:
             distance = 1 if event.angleDelta().y() > 0 else -1
             font = self._syntax_highlight.get_font()
             new_size = font.pointSize() + distance
@@ -225,8 +241,8 @@ class ConsoleLogWindow(QtWidgets.QTextEdit):
         self.scroll_lock_changed.emit()
 
 
-class ConsoleInput(QtWidgets.QLineEdit):
-    def __init__(self, api: Api, parent: QtWidgets.QWidget) -> None:
+class ConsoleInput(QLineEdit):
+    def __init__(self, api: Api, parent: QWidget) -> None:
         super().__init__(parent)
         self._api = api
         self._edited = False
@@ -236,23 +252,21 @@ class ConsoleInput(QtWidgets.QLineEdit):
         self._history_pos = 0
 
         self.setObjectName("console-input")
-        self.setFont(
-            QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
-        )
+        self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
 
         api.cfg.opt.changed.connect(self._on_options_load)
         api.gui.terminated.connect(self._on_quit)
         self.returnPressed.connect(self._on_return_press)
         self.textEdited.connect(self._on_edit)
 
-    def event(self, event: QtCore.QEvent) -> bool:
-        if event.type() != QtCore.QEvent.KeyPress:
+    def event(self, event: QEvent) -> bool:
+        if event.type() != QEvent.KeyPress:
             return super().event(event)
 
         if not self.text():
             return super().event(event)
 
-        if event.key() not in {QtCore.Qt.Key_Tab, QtCore.Qt.Key_Backtab}:
+        if event.key() not in {Qt.Key_Tab, Qt.Key_Backtab}:
             return super().event(event)
 
         if self._compl is None:
@@ -260,9 +274,9 @@ class ConsoleInput(QtWidgets.QLineEdit):
             if not compl.suggestions:
                 return True
             self._compl = compl
-            self._compl.index = 0 if event.key() == QtCore.Qt.Key_Tab else -1
+            self._compl.index = 0 if event.key() == Qt.Key_Tab else -1
         else:
-            self._compl.index += 1 if event.key() == QtCore.Qt.Key_Tab else 1
+            self._compl.index += 1 if event.key() == Qt.Key_Tab else 1
 
         self._compl.index %= len(self._compl.suggestions)
         self.setText(
@@ -271,16 +285,16 @@ class ConsoleInput(QtWidgets.QLineEdit):
         )
         return True
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if not self._edited or not self.text():
-            if event.key() == QtCore.Qt.Key_Up:
+            if event.key() == Qt.Key_Up:
                 if self._history_pos > 0:
                     self._history_pos -= 1
                     self.setText(self._history[self._history_pos])
                     self._edited = False
                 return
 
-            if event.key() == QtCore.Qt.Key_Down:
+            if event.key() == Qt.Key_Down:
                 if self._history_pos + 1 < len(self._history):
                     self._history_pos += 1
                     self.setText(self._history[self._history_pos])
@@ -342,9 +356,9 @@ class ConsoleInput(QtWidgets.QLineEdit):
         return compl
 
 
-class Console(QtWidgets.QWidget):
+class Console(QWidget):
     def __init__(
-        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+        self, api: Api, theme_mgr: ThemeManager, parent: QWidget
     ) -> None:
         super().__init__(parent)
         self._api = api
@@ -353,10 +367,10 @@ class Console(QtWidgets.QWidget):
 
         self.log_window = ConsoleLogWindow(api, theme_mgr, self)
 
-        strip = QtWidgets.QWidget(self)
+        strip = QWidget(self)
         self.input = ConsoleInput(api, strip)
-        self.auto_scroll_chkbox = QtWidgets.QCheckBox("Auto scroll", strip)
-        self.clear_btn = QtWidgets.QPushButton("Clear", strip)
+        self.auto_scroll_chkbox = QCheckBox("Auto scroll", strip)
+        self.clear_btn = QPushButton("Clear", strip)
         self.auto_scroll_chkbox.setChecked(not self.log_window.scroll_lock)
 
         self.clear_btn.clicked.connect(self._on_clear_btn_click)
@@ -367,14 +381,14 @@ class Console(QtWidgets.QWidget):
             self._on_auto_scroll_chkbox_change
         )
 
-        strip_layout = QtWidgets.QHBoxLayout(strip)
+        strip_layout = QHBoxLayout(strip)
         strip_layout.setSpacing(4)
         strip_layout.setContentsMargins(0, 0, 0, 0)
         strip_layout.addWidget(self.input)
         strip_layout.addWidget(self.auto_scroll_chkbox)
         strip_layout.addWidget(self.clear_btn)
 
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setSpacing(4)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.log_window)

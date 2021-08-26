@@ -17,7 +17,7 @@
 import argparse
 
 from ass_parser import AssEvent
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMainWindow
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
@@ -37,7 +37,7 @@ class SubtitlesShiftCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         subs = await self.args.target.get_subtitles()
         if not subs:
             raise CommandUnavailable("nothing to update")
@@ -57,7 +57,7 @@ class SubtitlesShiftCommand(BaseCommand):
                 sub.end_update()
 
     async def _get_delta(
-        self, subs: list[AssEvent], main_window: QtWidgets.QMainWindow
+        self, subs: list[AssEvent], main_window: QMainWindow
     ) -> Pts:
         ret = await time_jump_dialog(
             main_window,

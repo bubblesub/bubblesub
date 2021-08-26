@@ -23,7 +23,7 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
 
 from bubblesub.api.log import LogApi
 
@@ -53,11 +53,11 @@ def synchronized(wrapped: Any = None, lock: Any = None) -> Any:
     return _wrapper
 
 
-class _WorkerSignals(QtCore.QObject):
-    finished = QtCore.pyqtSignal(object)
+class _WorkerSignals(QObject):
+    finished = pyqtSignal(object)
 
 
-class QueueWorker(QtCore.QRunnable):
+class QueueWorker(QRunnable):
     """Worker thread for continuous task queues."""
 
     def __init__(self, log_api: LogApi) -> None:
@@ -138,7 +138,7 @@ class QueueWorker(QtCore.QRunnable):
         """Called when the thread finishes."""
 
 
-class OneShotWorker(QtCore.QRunnable):
+class OneShotWorker(QRunnable):
     """Worker thread for one shot tasks."""
 
     def __init__(self, log_api: LogApi, func: Callable[[], Any]) -> None:
@@ -169,7 +169,7 @@ class ThreadingApi:
         :param log_api: logging API
         """
         self._log_api = log_api
-        self._thread_pool = QtCore.QThreadPool()
+        self._thread_pool = QThreadPool()
 
     def schedule_task(
         self,
@@ -187,7 +187,7 @@ class ThreadingApi:
         worker.signals.finished.connect(complete_callback)
         self._thread_pool.start(worker)
 
-    def schedule_runnable(self, runnable: QtCore.QRunnable) -> None:
+    def schedule_runnable(self, runnable: QRunnable) -> None:
         """Schedule a QRunnable to run in the background thread pool.
 
         :param runnable: QRunnable to schedule

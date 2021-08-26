@@ -16,7 +16,25 @@
 
 from typing import Any, Optional
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QEvent, QObject, Qt
+from PyQt5.QtGui import (
+    QFont,
+    QKeyEvent,
+    QSyntaxHighlighter,
+    QTextCharFormat,
+    QWheelEvent,
+)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QSpinBox,
+    QWidget,
+)
 
 from bubblesub.api import Api
 from bubblesub.ass_util import spell_check_ass_line
@@ -31,13 +49,13 @@ from bubblesub.ui.util import (
 from bubblesub.ui.vim_text_edit import VimTextEdit
 
 
-class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
+class SpellCheckHighlighter(QSyntaxHighlighter):
     def __init__(self, api: Api, *args: Any) -> None:
         super().__init__(*args)
         self._api = api
-        self._fmt = QtGui.QTextCharFormat()
-        self._fmt.setUnderlineColor(QtCore.Qt.red)
-        self._fmt.setUnderlineStyle(QtGui.QTextCharFormat.SpellCheckUnderline)
+        self._fmt = QTextCharFormat()
+        self._fmt.setUnderlineColor(Qt.red)
+        self._fmt.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
         self._fmt.setFontUnderline(True)
 
         self._api.subs.script_info.changed.subscribe(
@@ -71,9 +89,7 @@ class SpellCheckHighlighter(QtGui.QSyntaxHighlighter):
 
 
 class TextEdit(VimTextEdit):
-    def __init__(
-        self, api: Api, parent: QtWidgets.QWidget, **kwargs: Any
-    ) -> None:
+    def __init__(self, api: Api, parent: QWidget, **kwargs: Any) -> None:
         super().__init__(parent, **kwargs)
         self._z_mode = False
         self._api = api
@@ -83,15 +99,15 @@ class TextEdit(VimTextEdit):
             pass
         else:
             if font_def:
-                font = QtGui.QFont()
+                font = QFont()
                 font.fromString(font_def)
                 self.setFont(font)
 
         self.setMinimumHeight(get_text_edit_row_height(self, 2))
         self.vim_mode_enabled = self._api.cfg.opt["basic"]["vim_mode"]
 
-    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        if event.modifiers() & QtCore.Qt.ControlModifier:
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        if event.modifiers() & Qt.ControlModifier:
             distance = 1 if event.angleDelta().y() > 0 else -1
             new_size = self.font().pointSize() + distance
             if new_size < 5:
@@ -103,7 +119,7 @@ class TextEdit(VimTextEdit):
                 self.objectName()
             ] = self.font().toString()
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if self.vim_mode_enabled and self._nvim:
             response = self._nvim.request("nvim_get_mode")
             mode = response["mode"]
@@ -134,42 +150,40 @@ class TextEdit(VimTextEdit):
         super().keyPressEvent(event)
 
 
-class Editor(QtWidgets.QWidget):
+class Editor(QWidget):
     def __init__(
-        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+        self, api: Api, theme_mgr: ThemeManager, parent: QWidget
     ) -> None:
         super().__init__(parent)
         self._api = api
         self._theme_mgr = theme_mgr
 
-        self.style_edit = QtWidgets.QComboBox(
+        self.style_edit = QComboBox(
             self,
             editable=True,
             minimumWidth=200,
-            insertPolicy=QtWidgets.QComboBox.NoInsert,
+            insertPolicy=QComboBox.NoInsert,
             objectName="style-editor",
         )
 
-        self.actor_edit = QtWidgets.QComboBox(
+        self.actor_edit = QComboBox(
             self,
             editable=True,
-            insertPolicy=QtWidgets.QComboBox.NoInsert,
+            insertPolicy=QComboBox.NoInsert,
             objectName="actor-editor",
         )
 
-        self.layer_edit = QtWidgets.QSpinBox(
-            self, minimum=0, objectName="layer-editor"
-        )
+        self.layer_edit = QSpinBox(self, minimum=0, objectName="layer-editor")
 
-        self.margin_l_edit = QtWidgets.QSpinBox(
+        self.margin_l_edit = QSpinBox(
             self, minimum=0, maximum=999, objectName="margin-left-editor"
         )
 
-        self.margin_v_edit = QtWidgets.QSpinBox(
+        self.margin_v_edit = QSpinBox(
             self, minimum=0, maximum=999, objectName="margin-vertical-editor"
         )
 
-        self.margin_r_edit = QtWidgets.QSpinBox(
+        self.margin_r_edit = QSpinBox(
             self, minimum=0, maximum=999, objectName="margin-right-editor"
         )
 
@@ -178,7 +192,7 @@ class Editor(QtWidgets.QWidget):
         self.duration_edit = TimeEdit(self, objectName="duration-editor")
         self.duration_edit.setDisabled(True)
 
-        self.comment_checkbox = QtWidgets.QCheckBox(
+        self.comment_checkbox = QCheckBox(
             "Comment", self, objectName="comment-checkbox"
         )
 
@@ -194,13 +208,13 @@ class Editor(QtWidgets.QWidget):
             objectName="note-editor",
         )
 
-        margins_layout = QtWidgets.QHBoxLayout(spacing=4)
+        margins_layout = QHBoxLayout(spacing=4)
         margins_layout.setContentsMargins(0, 0, 0, 0)
         margins_layout.addWidget(self.margin_l_edit)
         margins_layout.addWidget(self.margin_v_edit)
         margins_layout.addWidget(self.margin_r_edit)
 
-        bar_layout = QtWidgets.QGridLayout(spacing=4)
+        bar_layout = QGridLayout(spacing=4)
         bar_layout.setContentsMargins(0, 0, 0, 0)
         for row, column, label, widget in {
             (0, 0, "Style:", self.style_edit),
@@ -213,15 +227,13 @@ class Editor(QtWidgets.QWidget):
             (3, 1, "", self.comment_checkbox),
         }:
             if label:
-                bar_layout.addWidget(
-                    QtWidgets.QLabel(label, self), row, column * 2
-                )
-            if isinstance(widget, QtWidgets.QLayout):
+                bar_layout.addWidget(QLabel(label, self), row, column * 2)
+            if isinstance(widget, QLayout):
                 bar_layout.addLayout(widget, row, column * 2 + 1)
             else:
                 bar_layout.addWidget(widget, row, column * 2 + 1)
 
-        layout = QtWidgets.QHBoxLayout(self, spacing=6)
+        layout = QHBoxLayout(self, spacing=6)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(bar_layout)
         layout.addWidget(self.text_edit)
@@ -235,13 +247,11 @@ class Editor(QtWidgets.QWidget):
 
         self._data_widget_mapper: Optional[ImmediateDataWidgetMapper] = None
 
-        QtWidgets.QApplication.instance().installEventFilter(self)
+        QApplication.instance().installEventFilter(self)
 
-    def eventFilter(
-        self, source: QtCore.QObject, event: QtCore.QEvent
-    ) -> bool:
-        if isinstance(source, QtWidgets.QWidget) and self.isAncestorOf(source):
-            if event.type() == QtCore.QEvent.FocusOut:
+    def eventFilter(self, source: QObject, event: QEvent) -> bool:
+        if isinstance(source, QWidget) and self.isAncestorOf(source):
+            if event.type() == QEvent.FocusOut:
                 self._api.undo.push()
         return False
 

@@ -17,7 +17,9 @@
 import functools
 from pathlib import Path
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import QApplication
 
 from bubblesub.ui.assets import ASSETS_DIR
 
@@ -27,8 +29,8 @@ class BaseTheme:
     title: str = NotImplemented
 
     def apply(self) -> None:
-        QtWidgets.QApplication.setStyle("fusion")
-        QtWidgets.QApplication.instance().setStyleSheet(
+        QApplication.setStyle("fusion")
+        QApplication.instance().setStyleSheet(
             (ASSETS_DIR / f"{self.name}.qss")
             .read_text()
             .replace("$ASSETS_DIR", str(ASSETS_DIR))
@@ -39,13 +41,13 @@ class BaseTheme:
         raise NotImplementedError("not implemented")
 
     @functools.lru_cache(maxsize=None)
-    def get_icon(self, name: str) -> QtGui.QIcon:
-        pixmap = QtGui.QPixmap(str(self.get_icon_path(name))).scaled(
-            QtCore.QSize(48, 48),
-            QtCore.Qt.KeepAspectRatio,
-            QtCore.Qt.SmoothTransformation,
+    def get_icon(self, name: str) -> QIcon:
+        pixmap = QPixmap(str(self.get_icon_path(name))).scaled(
+            QSize(48, 48),
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation,
         )
-        return QtGui.QIcon(pixmap)
+        return QIcon(pixmap)
 
     def get_icon_path(self, name: str) -> Path:
         paths = [

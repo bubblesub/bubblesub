@@ -20,7 +20,7 @@ from copy import copy
 from typing import cast
 
 from ass_parser import AssEvent
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QInputDialog, QMainWindow
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandCanceled, CommandUnavailable
@@ -91,15 +91,15 @@ class SubtitlesMoveCommand(BaseCommand):
         return sub_copies
 
     async def _show_dialog(
-        self, main_window: QtWidgets.QMainWindow, indexes: list[int]
+        self, main_window: QMainWindow, indexes: list[int]
     ) -> int:
-        dialog = QtWidgets.QInputDialog(main_window)
+        dialog = QInputDialog(main_window)
         dialog.setLabelText("Line number to move subtitles to:")
         dialog.setIntMinimum(1)
         dialog.setIntMaximum(len(self.api.subs.events))
         if indexes:
             dialog.setIntValue(indexes[0] + 1)
-        dialog.setInputMode(QtWidgets.QInputDialog.IntInput)
+        dialog.setInputMode(QInputDialog.IntInput)
         if not await async_dialog_exec(dialog):
             raise CommandCanceled
         return cast(int, dialog.intValue()) - 1

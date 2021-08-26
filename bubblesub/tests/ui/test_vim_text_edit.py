@@ -21,21 +21,23 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtWidgets import QWidget
 
 from bubblesub.ui.vim_text_edit import VimTextEdit
 
 KEYMAP = {
-    "<CR>": QtCore.Qt.Key_Return,
-    "<Esc>": QtCore.Qt.Key_Escape,
-    "<BS>": QtCore.Qt.Key_Backspace,
-    "<Del>": QtCore.Qt.Key_Delete,
-    "<Right>": QtCore.Qt.Key_Right,
-    "<Left>": QtCore.Qt.Key_Left,
-    "<Up>": QtCore.Qt.Key_Up,
-    "<Down>": QtCore.Qt.Key_Down,
-    "<Home>": QtCore.Qt.Key_Home,
-    "<End>": QtCore.Qt.Key_End,
+    "<CR>": Qt.Key_Return,
+    "<Esc>": Qt.Key_Escape,
+    "<BS>": Qt.Key_Backspace,
+    "<Del>": Qt.Key_Delete,
+    "<Right>": Qt.Key_Right,
+    "<Left>": Qt.Key_Left,
+    "<Up>": Qt.Key_Up,
+    "<Down>": Qt.Key_Down,
+    "<Home>": Qt.Key_Home,
+    "<End>": Qt.Key_End,
 }
 
 TESTS = []
@@ -547,18 +549,18 @@ TESTS += [
 
 
 @pytest.fixture(scope="session")
-def root_qt_widget() -> QtWidgets.QWidget:
+def root_qt_widget() -> QWidget:
     """Construct a root QT widget that child objects can reference to avoid
     early garbage collection.
 
     :return: root QT widget for testing
     """
-    return QtWidgets.QWidget()
+    return QWidget()
 
 
 @pytest.fixture(scope="session")
 def text_edit(  # pylint: disable=redefined-outer-name
-    qapp: Any, root_qt_widget: QtWidgets.QWidget
+    qapp: Any, root_qt_widget: QWidget
 ) -> None:
     """Construct VimTextEdit instance for testing.
 
@@ -599,10 +601,10 @@ def test_vim_text_edit(  # pylint: disable=redefined-outer-name
             key_num = ord(key)
             key_text = key
         text_edit.keyPressEvent(
-            QtGui.QKeyEvent(
-                QtCore.QEvent.KeyPress,
+            QKeyEvent(
+                QEvent.KeyPress,
                 key_num,
-                QtCore.Qt.KeyboardModifiers(),
+                Qt.KeyboardModifiers(),
                 0,
                 0,
                 0,
@@ -610,10 +612,10 @@ def test_vim_text_edit(  # pylint: disable=redefined-outer-name
             )
         )
         text_edit.keyReleaseEvent(
-            QtGui.QKeyEvent(
-                QtCore.QEvent.KeyRelease,
+            QKeyEvent(
+                QEvent.KeyRelease,
                 key_num,
-                QtCore.Qt.KeyboardModifiers(),
+                Qt.KeyboardModifiers(),
                 0,
                 0,
                 0,

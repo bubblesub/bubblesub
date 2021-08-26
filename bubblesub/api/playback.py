@@ -20,7 +20,7 @@ import enum
 from fractions import Fraction
 from typing import Optional, Union
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, Qt, pyqtSignal
 
 from bubblesub.api.audio import AudioApi
 from bubblesub.api.log import LogApi
@@ -41,20 +41,20 @@ class PlaybackFrontendState(enum.Enum):
     READY = enum.auto()
 
 
-class PlaybackApi(QtCore.QObject):
+class PlaybackApi(QObject):
     """The playback API."""
 
-    state_changed = QtCore.pyqtSignal(PlaybackFrontendState)
-    current_pts_changed = QtCore.pyqtSignal()
-    volume_changed = QtCore.pyqtSignal()
-    pause_changed = QtCore.pyqtSignal(bool)
-    mute_changed = QtCore.pyqtSignal()
-    playback_speed_changed = QtCore.pyqtSignal()
+    state_changed = pyqtSignal(PlaybackFrontendState)
+    current_pts_changed = pyqtSignal()
+    volume_changed = pyqtSignal()
+    pause_changed = pyqtSignal(bool)
+    mute_changed = pyqtSignal()
+    playback_speed_changed = pyqtSignal()
 
     # hooks for ui renderer
-    request_seek = QtCore.pyqtSignal(int, bool)
-    request_playback = QtCore.pyqtSignal(object, object)
-    receive_current_pts_change = QtCore.pyqtSignal(int)
+    request_seek = pyqtSignal(int, bool)
+    request_playback = pyqtSignal(object, object)
+    receive_current_pts_change = pyqtSignal(int)
 
     def __init__(
         self,
@@ -84,7 +84,7 @@ class PlaybackApi(QtCore.QObject):
         self._current_pts = 0
 
         self.receive_current_pts_change.connect(
-            self._on_current_pts_change, QtCore.Qt.DirectConnection
+            self._on_current_pts_change, Qt.DirectConnection
         )
 
     def seek(self, pts: int, precise: bool = True) -> None:

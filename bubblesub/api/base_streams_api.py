@@ -23,7 +23,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Generic, Optional, Protocol, TypeVar
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.api.threading import synchronized
 
@@ -32,9 +32,9 @@ class TStream(Protocol):  # pylint: disable=no-member
     """Base stream protocol."""
 
     uid: uuid.UUID
-    loaded: QtCore.pyqtSignal
-    changed: QtCore.pyqtSignal
-    errored: QtCore.pyqtSignal
+    loaded: pyqtSignal
+    changed: pyqtSignal
+    errored: pyqtSignal
     path: Path
 
 
@@ -43,18 +43,18 @@ _TStream = TypeVar("_TStream", bound="TStream")
 BaseStreamsApiTypeHint: Any = Generic[_TStream]
 
 
-class BaseStreamsApi(QtCore.QObject, BaseStreamsApiTypeHint):
+class BaseStreamsApi(QObject, BaseStreamsApiTypeHint):
     """Common functions for audio and video stream manager APIs."""
 
     stream_lock = threading.RLock()
 
-    current_stream_switched = QtCore.pyqtSignal(object)
+    current_stream_switched = pyqtSignal(object)
 
-    stream_created = QtCore.pyqtSignal(object)
-    stream_changed = QtCore.pyqtSignal(object)
-    stream_errored = QtCore.pyqtSignal(object)
-    stream_loaded = QtCore.pyqtSignal(object)
-    stream_unloaded = QtCore.pyqtSignal(object)
+    stream_created = pyqtSignal(object)
+    stream_changed = pyqtSignal(object)
+    stream_errored = pyqtSignal(object)
+    stream_loaded = pyqtSignal(object)
+    stream_unloaded = pyqtSignal(object)
 
     def __init__(self) -> None:
         """Initialize self."""

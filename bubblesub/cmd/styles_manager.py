@@ -26,7 +26,33 @@ from ass_parser import (
     AssStyle,
     AssStyleList,
 )
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import (
+    QItemSelection,
+    QItemSelectionModel,
+    pyqtProperty,
+    pyqtSignal,
+)
+from PyQt5.QtGui import QImage, QMouseEvent, QPixmap, QResizeEvent
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QFrame,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QInputDialog,
+    QLabel,
+    QListView,
+    QMainWindow,
+    QPlainTextEdit,
+    QPushButton,
+    QRadioButton,
+    QSizePolicy,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
@@ -45,15 +71,15 @@ from bubblesub.ui.util import (
 )
 
 
-class _StylePreview(QtWidgets.QGroupBox):
-    preview_text_changed = QtCore.pyqtSignal([])
+class _StylePreview(QGroupBox):
+    preview_text_changed = pyqtSignal([])
 
     def __init__(
         self,
         api: Api,
         model: AssStylesModel,
-        selection_model: QtCore.QItemSelectionModel,
-        parent: QtWidgets.QWidget,
+        selection_model: QItemSelectionModel,
+        parent: QWidget,
     ) -> None:
         super().__init__("Preview", parent)
         self._api = api
@@ -61,27 +87,27 @@ class _StylePreview(QtWidgets.QGroupBox):
 
         self._renderer = AssRenderer()
 
-        self._editor = QtWidgets.QPlainTextEdit()
+        self._editor = QPlainTextEdit()
         self._editor.setPlainText(api.cfg.opt["styles"]["preview_test_text"])
         self._editor.setFixedWidth(400)
         self._editor.setTabChangesFocus(True)
         self._editor.setFixedHeight(get_text_edit_row_height(self._editor, 2))
 
-        self._background_combobox = QtWidgets.QComboBox()
+        self._background_combobox = QComboBox()
         for i, path in enumerate(get_assets("style_preview_bk")):
             self._background_combobox.addItem(path.name, path.resolve())
             if path.name == api.cfg.opt["styles"]["preview_background"]:
                 self._background_combobox.setCurrentIndex(i)
 
-        self._preview_box = QtWidgets.QLabel(self)
+        self._preview_box = QLabel(self)
         self._preview_box.setLineWidth(1)
-        self._preview_box.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self._preview_box.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self._preview_box.setFrameShape(QFrame.StyledPanel)
+        self._preview_box.setFrameShadow(QFrame.Sunken)
         self._preview_box.setSizePolicy(
-            QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored
+            QSizePolicy.Ignored, QSizePolicy.Ignored
         )
 
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.addWidget(self._editor)
         layout.addWidget(self._background_combobox)
         layout.addWidget(self._preview_box)
@@ -178,47 +204,47 @@ class _StylePreview(QtWidgets.QGroupBox):
         image = PIL.Image.composite(subs_image, image, subs_image)
 
         image = PIL.ImageQt.ImageQt(image)
-        image = QtGui.QImage(image)
-        self._preview_box.setPixmap(QtGui.QPixmap.fromImage(image))
+        image = QImage(image)
+        self._preview_box.setPixmap(QPixmap.fromImage(image))
 
 
-class _StyleList(QtWidgets.QWidget):
+class _StyleList(QWidget):
     def __init__(
         self,
         api: Api,
         model: AssStylesModel,
-        selection_model: QtCore.QItemSelectionModel,
-        parent: QtWidgets.QWidget,
+        selection_model: QItemSelectionModel,
+        parent: QWidget,
     ) -> None:
         super().__init__(parent)
         self._api = api
         self._model = model
         selection_model.selectionChanged.connect(self._on_selection_change)
 
-        self._styles_list_view = QtWidgets.QListView(self)
+        self._styles_list_view = QListView(self)
         self._styles_list_view.setModel(model)
         self._styles_list_view.setSelectionModel(selection_model)
 
-        self._add_button = QtWidgets.QPushButton("Add", self)
+        self._add_button = QPushButton("Add", self)
         self._add_button.clicked.connect(self._on_add_button_click)
-        self._remove_button = QtWidgets.QPushButton("Remove", self)
+        self._remove_button = QPushButton("Remove", self)
         self._remove_button.setEnabled(False)
         self._remove_button.clicked.connect(self._on_remove_button_click)
-        self._duplicate_button = QtWidgets.QPushButton("Duplicate", self)
+        self._duplicate_button = QPushButton("Duplicate", self)
         self._duplicate_button.setEnabled(False)
         self._duplicate_button.clicked.connect(self._on_duplicate_button_click)
-        self._move_up_button = QtWidgets.QPushButton("Move up", self)
+        self._move_up_button = QPushButton("Move up", self)
         self._move_up_button.setEnabled(False)
         self._move_up_button.clicked.connect(self._on_move_up_button_click)
-        self._move_down_button = QtWidgets.QPushButton("Move down", self)
+        self._move_down_button = QPushButton("Move down", self)
         self._move_down_button.setEnabled(False)
         self._move_down_button.clicked.connect(self._on_move_down_button_click)
-        self._rename_button = QtWidgets.QPushButton("Rename", self)
+        self._rename_button = QPushButton("Rename", self)
         self._rename_button.setEnabled(False)
         self._rename_button.clicked.connect(self._on_rename_button_click)
 
-        strip = QtWidgets.QWidget(self)
-        strip_layout = QtWidgets.QGridLayout(strip)
+        strip = QWidget(self)
+        strip_layout = QGridLayout(strip)
         strip_layout.setContentsMargins(0, 0, 0, 0)
         strip_layout.addWidget(self._add_button, 0, 0)
         strip_layout.addWidget(self._remove_button, 0, 1)
@@ -227,7 +253,7 @@ class _StyleList(QtWidgets.QWidget):
         strip_layout.addWidget(self._move_down_button, 1, 1)
         strip_layout.addWidget(self._rename_button, 1, 2)
 
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._styles_list_view)
         layout.addWidget(strip)
@@ -248,8 +274,8 @@ class _StyleList(QtWidgets.QWidget):
 
     def _on_selection_change(
         self,
-        selected: QtCore.QItemSelection,
-        _deselected: QtCore.QItemSelection,
+        selected: QItemSelection,
+        _deselected: QItemSelection,
     ) -> None:
         anything_selected = len(selected.indexes()) > 0
         self._remove_button.setEnabled(anything_selected)
@@ -276,8 +302,7 @@ class _StyleList(QtWidgets.QWidget):
 
         self._styles_list_view.selectionModel().select(
             self._model.index(idx, 0),
-            QtCore.QItemSelectionModel.Clear
-            | QtCore.QItemSelectionModel.Select,
+            QItemSelectionModel.Clear | QItemSelectionModel.Select,
         )
 
     async def _prompt_for_unique_style_name(
@@ -285,10 +310,10 @@ class _StyleList(QtWidgets.QWidget):
     ) -> Optional[str]:
         prompt_text = "Name of the new style:"
         while True:
-            dialog = QtWidgets.QInputDialog(self)
+            dialog = QInputDialog(self)
             dialog.setLabelText(prompt_text)
             dialog.setTextValue(style_name)
-            dialog.setInputMode(QtWidgets.QInputDialog.TextInput)
+            dialog.setInputMode(QInputDialog.TextInput)
             if not await async_dialog_exec(dialog):
                 return None
             style_name = dialog.textValue()
@@ -322,7 +347,7 @@ class _StyleList(QtWidgets.QWidget):
         with self._api.undo.capture():
             del self._api.subs.styles[idx]
 
-    def _on_duplicate_button_click(self, event: QtGui.QMouseEvent) -> None:
+    def _on_duplicate_button_click(self, event: QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -335,11 +360,10 @@ class _StyleList(QtWidgets.QWidget):
             self._api.subs.styles.insert(idx + 1, style_copy)
         self._styles_list_view.selectionModel().select(
             self._model.index(idx + 1, 0),
-            QtCore.QItemSelectionModel.Clear
-            | QtCore.QItemSelectionModel.Select,
+            QItemSelectionModel.Clear | QItemSelectionModel.Select,
         )
 
-    def _on_move_up_button_click(self, event: QtGui.QMouseEvent) -> None:
+    def _on_move_up_button_click(self, event: QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -350,11 +374,10 @@ class _StyleList(QtWidgets.QWidget):
             self._api.subs.styles.move(idx, 1, idx - 1)
         self._styles_list_view.selectionModel().select(
             self._model.index(idx - 1, 0),
-            QtCore.QItemSelectionModel.Clear
-            | QtCore.QItemSelectionModel.Select,
+            QItemSelectionModel.Clear | QItemSelectionModel.Select,
         )
 
-    def _on_move_down_button_click(self, event: QtGui.QMouseEvent) -> None:
+    def _on_move_down_button_click(self, event: QMouseEvent) -> None:
         style = self._selected_style
         assert style is not None
 
@@ -365,8 +388,7 @@ class _StyleList(QtWidgets.QWidget):
             self._api.subs.styles.move(idx, 1, idx + 1)
         self._styles_list_view.selectionModel().select(
             self._model.index(idx + 1, 0),
-            QtCore.QItemSelectionModel.Clear
-            | QtCore.QItemSelectionModel.Select,
+            QItemSelectionModel.Clear | QItemSelectionModel.Select,
         )
 
     @async_slot()
@@ -389,15 +411,15 @@ class _StyleList(QtWidgets.QWidget):
                     line.style_name = new_name
 
         self._styles_list_view.selectionModel().select(
-            self._model.index(idx, 0), QtCore.QItemSelectionModel.Select
+            self._model.index(idx, 0), QItemSelectionModel.Select
         )
 
 
-class _FontGroupBox(QtWidgets.QGroupBox):
+class _FontGroupBox(QGroupBox):
     def __init__(
         self,
         api: Api,
-        parent: QtWidgets.QWidget,
+        parent: QWidget,
         mapper: ImmediateDataWidgetMapper,
     ) -> None:
         super().__init__("Font", parent)
@@ -406,20 +428,20 @@ class _FontGroupBox(QtWidgets.QGroupBox):
             refresh_font_db()
 
         self.font_name_edit = FontComboBox(api, self)
-        self.font_size_edit = QtWidgets.QSpinBox(self)
+        self.font_size_edit = QSpinBox(self)
         self.font_size_edit.setMinimum(0)
         self.font_size_edit.setMaximum(999)
-        self.bold_checkbox = QtWidgets.QCheckBox("Bold", self)
-        self.italic_checkbox = QtWidgets.QCheckBox("Italic", self)
-        self.underline_checkbox = QtWidgets.QCheckBox("Underline", self)
-        self.strike_out_checkbox = QtWidgets.QCheckBox("Strike-out", self)
+        self.bold_checkbox = QCheckBox("Bold", self)
+        self.italic_checkbox = QCheckBox("Italic", self)
+        self.underline_checkbox = QCheckBox("Underline", self)
+        self.strike_out_checkbox = QCheckBox("Strike-out", self)
 
-        layout = QtWidgets.QGridLayout(self)
-        layout.addWidget(QtWidgets.QLabel("Name:", self), 0, 0)
+        layout = QGridLayout(self)
+        layout.addWidget(QLabel("Name:", self), 0, 0)
         layout.addWidget(self.font_name_edit, 0, 1, 1, 2)
-        layout.addWidget(QtWidgets.QLabel("Size:", self), 1, 0)
+        layout.addWidget(QLabel("Size:", self), 1, 0)
         layout.addWidget(self.font_size_edit, 1, 1, 1, 2)
-        layout.addWidget(QtWidgets.QLabel("Style:", self), 2, 0)
+        layout.addWidget(QLabel("Style:", self), 2, 0)
         layout.addWidget(self.bold_checkbox, 2, 1)
         layout.addWidget(self.italic_checkbox, 3, 1)
         layout.addWidget(self.underline_checkbox, 2, 2)
@@ -437,15 +459,15 @@ class _FontGroupBox(QtWidgets.QGroupBox):
         )
 
 
-class _AlignmentGroupBox(QtWidgets.QGroupBox):
-    changed = QtCore.pyqtSignal()
+class _AlignmentGroupBox(QGroupBox):
+    changed = pyqtSignal()
 
     def __init__(
-        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
+        self, parent: QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Alignment", parent)
         self.radio_buttons = {
-            x: QtWidgets.QRadioButton(
+            x: QRadioButton(
                 [
                     "\N{SOUTH WEST ARROW}",
                     "\N{DOWNWARDS ARROW}",
@@ -461,7 +483,7 @@ class _AlignmentGroupBox(QtWidgets.QGroupBox):
             )
             for x in range(1, 10)
         }
-        layout = QtWidgets.QGridLayout(self)
+        layout = QGridLayout(self)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 1)
         layout.setColumnStretch(2, 1)
@@ -490,12 +512,12 @@ class _AlignmentGroupBox(QtWidgets.QGroupBox):
         if value in self.radio_buttons:
             self.radio_buttons[value].setChecked(True)
 
-    value = QtCore.pyqtProperty(int, get_value, set_value, user=True)
+    value = pyqtProperty(int, get_value, set_value, user=True)
 
 
-class _ColorsGroupBox(QtWidgets.QGroupBox):
+class _ColorsGroupBox(QGroupBox):
     def __init__(
-        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
+        self, parent: QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Colors", parent)
         self.primary_color_button = ColorPicker(self)
@@ -503,16 +525,16 @@ class _ColorsGroupBox(QtWidgets.QGroupBox):
         self.outline_color_button = ColorPicker(self)
         self.back_color_button = ColorPicker(self)
 
-        layout = QtWidgets.QGridLayout(self)
+        layout = QGridLayout(self)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 2)
-        layout.addWidget(QtWidgets.QLabel("Primary:", self), 0, 0)
+        layout.addWidget(QLabel("Primary:", self), 0, 0)
         layout.addWidget(self.primary_color_button, 0, 1)
-        layout.addWidget(QtWidgets.QLabel("Secondary:", self), 1, 0)
+        layout.addWidget(QLabel("Secondary:", self), 1, 0)
         layout.addWidget(self.secondary_color_button, 1, 1)
-        layout.addWidget(QtWidgets.QLabel("Outline:", self), 2, 0)
+        layout.addWidget(QLabel("Outline:", self), 2, 0)
         layout.addWidget(self.outline_color_button, 2, 1)
-        layout.addWidget(QtWidgets.QLabel("Shadow:", self), 3, 0)
+        layout.addWidget(QLabel("Shadow:", self), 3, 0)
         layout.addWidget(self.back_color_button, 3, 1)
 
         mapper.add_mapping(
@@ -529,24 +551,24 @@ class _ColorsGroupBox(QtWidgets.QGroupBox):
         )
 
 
-class _OutlineGroupBox(QtWidgets.QGroupBox):
+class _OutlineGroupBox(QGroupBox):
     def __init__(
-        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
+        self, parent: QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Outline", parent)
-        self.outline_width_edit = QtWidgets.QDoubleSpinBox(self)
+        self.outline_width_edit = QDoubleSpinBox(self)
         self.outline_width_edit.setMinimum(0)
         self.outline_width_edit.setMaximum(999)
-        self.shadow_width_edit = QtWidgets.QDoubleSpinBox(self)
+        self.shadow_width_edit = QDoubleSpinBox(self)
         self.shadow_width_edit.setMinimum(0)
         self.shadow_width_edit.setMaximum(999)
 
-        layout = QtWidgets.QGridLayout(self)
+        layout = QGridLayout(self)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 2)
-        layout.addWidget(QtWidgets.QLabel("Outline:", self), 0, 0)
+        layout.addWidget(QLabel("Outline:", self), 0, 0)
         layout.addWidget(self.outline_width_edit, 0, 1)
-        layout.addWidget(QtWidgets.QLabel("Shadow:", self), 1, 0)
+        layout.addWidget(QLabel("Shadow:", self), 1, 0)
         layout.addWidget(self.shadow_width_edit, 1, 1)
 
         mapper.add_mapping(
@@ -557,29 +579,29 @@ class _OutlineGroupBox(QtWidgets.QGroupBox):
         )
 
 
-class _MarginGroupBox(QtWidgets.QGroupBox):
+class _MarginGroupBox(QGroupBox):
     def __init__(
-        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
+        self, parent: QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Margins", parent)
-        self.margin_left_edit = QtWidgets.QSpinBox(self)
+        self.margin_left_edit = QSpinBox(self)
         self.margin_left_edit.setMinimum(0)
         self.margin_left_edit.setMaximum(999)
-        self.margin_right_edit = QtWidgets.QSpinBox(self)
+        self.margin_right_edit = QSpinBox(self)
         self.margin_right_edit.setMinimum(0)
         self.margin_right_edit.setMaximum(999)
-        self.margin_vertical_edit = QtWidgets.QSpinBox(self)
+        self.margin_vertical_edit = QSpinBox(self)
         self.margin_vertical_edit.setMinimum(0)
         self.margin_vertical_edit.setMaximum(999)
 
-        layout = QtWidgets.QGridLayout(self)
+        layout = QGridLayout(self)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 2)
-        layout.addWidget(QtWidgets.QLabel("Left:", self), 0, 0)
+        layout.addWidget(QLabel("Left:", self), 0, 0)
         layout.addWidget(self.margin_left_edit, 0, 1)
-        layout.addWidget(QtWidgets.QLabel("Right:", self), 1, 0)
+        layout.addWidget(QLabel("Right:", self), 1, 0)
         layout.addWidget(self.margin_right_edit, 1, 1)
-        layout.addWidget(QtWidgets.QLabel("Vertical:", self), 2, 0)
+        layout.addWidget(QLabel("Vertical:", self), 2, 0)
         layout.addWidget(self.margin_vertical_edit, 2, 1)
 
         mapper.add_mapping(
@@ -593,34 +615,34 @@ class _MarginGroupBox(QtWidgets.QGroupBox):
         )
 
 
-class _MiscGroupBox(QtWidgets.QGroupBox):
+class _MiscGroupBox(QGroupBox):
     def __init__(
-        self, parent: QtWidgets.QWidget, mapper: ImmediateDataWidgetMapper
+        self, parent: QWidget, mapper: ImmediateDataWidgetMapper
     ) -> None:
         super().__init__("Transformations", parent)
-        self.scale_x_edit = QtWidgets.QDoubleSpinBox(self)
+        self.scale_x_edit = QDoubleSpinBox(self)
         self.scale_x_edit.setMinimum(0)
         self.scale_x_edit.setMaximum(999)
-        self.scale_y_edit = QtWidgets.QDoubleSpinBox(self)
+        self.scale_y_edit = QDoubleSpinBox(self)
         self.scale_y_edit.setMinimum(0)
         self.scale_y_edit.setMaximum(999)
-        self.angle_edit = QtWidgets.QDoubleSpinBox(self)
+        self.angle_edit = QDoubleSpinBox(self)
         self.angle_edit.setMinimum(0)
         self.angle_edit.setMaximum(999)
-        self.spacing_edit = QtWidgets.QDoubleSpinBox(self)
+        self.spacing_edit = QDoubleSpinBox(self)
         self.spacing_edit.setMinimum(0)
         self.spacing_edit.setMaximum(999)
 
-        layout = QtWidgets.QGridLayout(self)
+        layout = QGridLayout(self)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 2)
-        layout.addWidget(QtWidgets.QLabel("Scale X:", self), 0, 0)
+        layout.addWidget(QLabel("Scale X:", self), 0, 0)
         layout.addWidget(self.scale_x_edit, 0, 1)
-        layout.addWidget(QtWidgets.QLabel("Scale Y:", self), 1, 0)
+        layout.addWidget(QLabel("Scale Y:", self), 1, 0)
         layout.addWidget(self.scale_y_edit, 1, 1)
-        layout.addWidget(QtWidgets.QLabel("Angle:", self), 2, 0)
+        layout.addWidget(QLabel("Angle:", self), 2, 0)
         layout.addWidget(self.angle_edit, 2, 1)
-        layout.addWidget(QtWidgets.QLabel("Spacing:", self), 3, 0)
+        layout.addWidget(QLabel("Spacing:", self), 3, 0)
         layout.addWidget(self.spacing_edit, 3, 1)
 
         mapper.add_mapping(self.scale_x_edit, AssStylesModelColumn.SCALE_X)
@@ -629,13 +651,13 @@ class _MiscGroupBox(QtWidgets.QGroupBox):
         mapper.add_mapping(self.spacing_edit, AssStylesModelColumn.SPACING)
 
 
-class _StyleEditor(QtWidgets.QWidget):
+class _StyleEditor(QWidget):
     def __init__(
         self,
         api: Api,
         model: AssStylesModel,
-        selection_model: QtCore.QItemSelectionModel,
-        parent: QtWidgets.QWidget,
+        selection_model: QItemSelectionModel,
+        parent: QWidget,
     ) -> None:
         super().__init__(parent)
         self._mapper = ImmediateDataWidgetMapper(
@@ -650,29 +672,29 @@ class _StyleEditor(QtWidgets.QWidget):
         self.margins_group_box = _MarginGroupBox(self, self._mapper)
         self.alignment_group_box = _AlignmentGroupBox(self, self._mapper)
 
-        left_widget = QtWidgets.QWidget(self)
-        left_layout = QtWidgets.QVBoxLayout(left_widget)
+        left_widget = QWidget(self)
+        left_layout = QVBoxLayout(left_widget)
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.addWidget(self.font_group_box)
         left_layout.addWidget(self.colors_group_box)
         left_layout.addWidget(self.outline_group_box)
 
-        right_widget = QtWidgets.QWidget(self)
-        right_layout = QtWidgets.QVBoxLayout(right_widget)
+        right_widget = QWidget(self)
+        right_layout = QVBoxLayout(right_widget)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.addWidget(self.misc_group_box)
         right_layout.addWidget(self.margins_group_box)
         right_layout.addWidget(self.alignment_group_box)
 
-        layout = QtWidgets.QHBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(left_widget)
         layout.addWidget(right_widget)
 
     def _on_selection_change(
         self,
-        selected: QtCore.QItemSelection,
-        _deselected: QtCore.QItemSelection,
+        selected: QItemSelection,
+        _deselected: QItemSelection,
     ) -> None:
         if len(selected.indexes()) == 1:
             self.setEnabled(True)
@@ -683,10 +705,10 @@ class _StyleEditor(QtWidgets.QWidget):
 
 
 class _StylesManagerDialog(Dialog):
-    def __init__(self, api: Api, main_window: QtWidgets.QMainWindow) -> None:
+    def __init__(self, api: Api, main_window: QMainWindow) -> None:
         super().__init__(main_window)
         model = AssStylesModel(self, api.subs.styles)
-        selection_model = QtCore.QItemSelectionModel(model)
+        selection_model = QItemSelectionModel(model)
 
         self._style_list = _StyleList(api, model, selection_model, self)
         self._style_editor = _StyleEditor(api, model, selection_model, self)
@@ -694,7 +716,7 @@ class _StylesManagerDialog(Dialog):
         self._preview_box = _StylePreview(api, model, selection_model, self)
         self._preview_box.preview_text_changed.connect(self._sync_preview_text)
 
-        layout = QtWidgets.QHBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.addWidget(self._style_list)
         layout.addWidget(self._style_editor)
         layout.addWidget(self._preview_box)
@@ -703,7 +725,7 @@ class _StylesManagerDialog(Dialog):
 
         self._sync_preview_text()
 
-    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+    def resizeEvent(self, event: QResizeEvent) -> None:
         self._preview_box.update_preview()
 
     def _sync_preview_text(self) -> None:
@@ -723,7 +745,7 @@ class ManageStylesCommand(BaseCommand):
     async def run(self) -> None:
         await self.api.gui.exec(self._run_with_gui)
 
-    async def _run_with_gui(self, main_window: QtWidgets.QMainWindow) -> None:
+    async def _run_with_gui(self, main_window: QMainWindow) -> None:
         with self.api.undo.capture():
             dialog = _StylesManagerDialog(self.api, main_window)
             await async_dialog_exec(dialog)

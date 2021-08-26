@@ -25,7 +25,7 @@ from typing import IO, ContextManager, Optional, Union, cast
 
 import ffms2
 import numpy as np
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.api.log import LogApi
 from bubblesub.api.threading import ThreadingApi
@@ -73,12 +73,12 @@ def _load_audio_source(
         return source
 
 
-class AudioStream(QtCore.QObject):
+class AudioStream(QObject):
     """The audio source."""
 
-    errored = QtCore.pyqtSignal()
-    changed = QtCore.pyqtSignal()
-    loaded = QtCore.pyqtSignal()
+    errored = pyqtSignal()
+    changed = pyqtSignal()
+    loaded = pyqtSignal()
 
     def __init__(
         self, threading_api: ThreadingApi, log_api: LogApi, path: Path

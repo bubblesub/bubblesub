@@ -22,7 +22,7 @@ import enum
 import traceback
 from collections.abc import Iterator
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.cfg import Config
 
@@ -37,10 +37,10 @@ class LogLevel(enum.Enum):
     COMMAND_ECHO = "cmd-echo"
 
 
-class LogApi(QtCore.QObject):
+class LogApi(QObject):
     """The logging API."""
 
-    logged = QtCore.pyqtSignal(LogLevel, str)
+    logged = pyqtSignal(LogLevel, str)
 
     def __init__(self, cfg: Config) -> None:
         """Initialize self.

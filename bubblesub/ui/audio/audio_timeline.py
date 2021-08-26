@@ -14,7 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtGui import (
+    QFont,
+    QMouseEvent,
+    QPainter,
+    QPaintEvent,
+    QPen,
+    QPolygonF,
+)
+from PyQt5.QtWidgets import QWidget
 
 from bubblesub.api import Api
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
@@ -23,7 +32,7 @@ from bubblesub.ui.themes import ThemeManager
 
 class AudioTimeline(BaseLocalAudioWidget):
     def __init__(
-        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+        self, api: Api, theme_mgr: ThemeManager, parent: QWidget
     ) -> None:
         super().__init__(api, parent)
         self._theme_mgr = theme_mgr
@@ -35,7 +44,7 @@ class AudioTimeline(BaseLocalAudioWidget):
 
         api.audio.view.view_changed.connect(self.repaint_if_needed)
         api.playback.current_pts_changed.connect(
-            self.repaint, QtCore.Qt.DirectConnection
+            self.repaint, Qt.DirectConnection
         )
 
     def _get_paint_cache_key(self) -> int:
@@ -56,8 +65,8 @@ class AudioTimeline(BaseLocalAudioWidget):
                 )
             )
 
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
-        painter = QtGui.QPainter()
+    def paintEvent(self, event: QPaintEvent) -> None:
+        painter = QPainter()
         painter.begin(self)
         self._draw_scale(painter)
         self._draw_frame(painter, bottom_line=False)
@@ -65,14 +74,14 @@ class AudioTimeline(BaseLocalAudioWidget):
         self._draw_video_pos(painter)
         painter.end()
 
-    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        if event.button() == QtCore.Qt.LeftButton:
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        if event.button() == Qt.LeftButton:
             self.begin_drag_mode(DragMode.VIDEO_POSITION, event)
-        elif event.button() == QtCore.Qt.MiddleButton:
+        elif event.button() == Qt.MiddleButton:
             self.begin_drag_mode(DragMode.VIDEO_POSITION, event)
             self.end_drag_mode()
 
-    def _draw_scale(self, painter: QtGui.QPainter) -> None:
+    def _draw_scale(self, painter: QPainter) -> None:
         h = painter.viewport().height()
         one_second = 1000
         one_minute = 60 * one_second
@@ -82,10 +91,8 @@ class AudioTimeline(BaseLocalAudioWidget):
             int(self._view.view_end + one_minute) // one_minute
         ) * one_minute
 
-        painter.setPen(
-            QtGui.QPen(self.palette().text(), 1, QtCore.Qt.SolidLine)
-        )
-        painter.setFont(QtGui.QFont(self.font().family(), 8))
+        painter.setPen(QPen(self.palette().text(), 1, Qt.SolidLine))
+        painter.setFont(QFont(self.font().family(), 8))
         text_height = painter.fontMetrics().capHeight()
 
         for pts in range(start_pts, end_pts, one_second):
@@ -115,31 +122,31 @@ class AudioTimeline(BaseLocalAudioWidget):
                 continue
             painter.drawText(x + 2, text_height + (h - text_height) / 2, text)
 
-    def _draw_keyframes(self, painter: QtGui.QPainter) -> None:
+    def _draw_keyframes(self, painter: QPainter) -> None:
         h = painter.viewport().height()
         color = self._theme_mgr.get_color("spectrogram/keyframe")
-        painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
+        painter.setPen(QPen(color, 1, Qt.SolidLine))
         if self._api.video.current_stream:
             for keyframe in self._api.video.current_stream.keyframes:
                 timecode = self._api.video.current_stream.timecodes[keyframe]
                 x = round(self.pts_to_x(timecode))
                 painter.drawLine(x, 0, x, h)
 
-    def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
+    def _draw_video_pos(self, painter: QPainter) -> None:
         if not self._api.playback.current_pts:
             return
         x = round(self.pts_to_x(self._api.playback.current_pts))
-        painter.setPen(QtCore.Qt.NoPen)
+        painter.setPen(Qt.NoPen)
         painter.setBrush(self._theme_mgr.get_color("spectrogram/video-marker"))
 
         width = 7
-        polygon = QtGui.QPolygonF()
+        polygon = QPolygonF()
         for x, y in [
             (x - width // 2, 0),
             (x + width // 2, 0),
             (x + width // 2, painter.viewport().height()),
             (x - width // 2, painter.viewport().height()),
         ]:
-            polygon.append(QtCore.QPoint(x, y))
+            polygon.append(QPoint(x, y))
 
         painter.drawPolygon(polygon)

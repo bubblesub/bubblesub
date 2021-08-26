@@ -19,16 +19,17 @@ from collections.abc import Callable
 from typing import Any, cast
 
 from ass_parser import AssColor, AssStyle
-from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import QModelIndex, Qt, QVariant
+from PyQt5.QtGui import QColor
 
 from bubblesub.ui.model.proxy import ObservableListTableAdapter
 
 
-def _serialize_color(color: AssColor) -> QtGui.QColor:
-    return QtGui.QColor(color.red, color.green, color.blue, 255 - color.alpha)
+def _serialize_color(color: AssColor) -> QColor:
+    return QColor(color.red, color.green, color.blue, 255 - color.alpha)
 
 
-def _deserialize_color(color: QtGui.QColor) -> AssColor:
+def _deserialize_color(color: QColor) -> AssColor:
     return AssColor(
         color.red(), color.green(), color.blue(), 255 - color.alpha()
     )
@@ -146,16 +147,12 @@ _WRITER_MAP = {
 
 
 class AssStylesModel(ObservableListTableAdapter):
-    def flags(self, index: QtCore.QModelIndex) -> int:
+    def flags(self, index: QModelIndex) -> int:
         if index.column() == AssStylesModelColumn.NAME:
-            return cast(
-                int, QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-            )
+            return cast(int, Qt.ItemIsEnabled | Qt.ItemIsSelectable)
         return cast(
             int,
-            QtCore.Qt.ItemIsEnabled
-            | QtCore.Qt.ItemIsSelectable
-            | QtCore.Qt.ItemIsEditable,
+            Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable,
         )
 
     @property
@@ -163,10 +160,10 @@ class AssStylesModel(ObservableListTableAdapter):
         return len(AssStylesModelColumn)
 
     def _get_data(self, row_idx: int, col_idx: int, role: int) -> Any:
-        if role in (QtCore.Qt.DisplayRole, QtCore.Qt.EditRole):
+        if role in (Qt.DisplayRole, Qt.EditRole):
             style = self._list[row_idx]
             return _READER_MAP[AssStylesModelColumn(col_idx)](style)
-        return QtCore.QVariant()
+        return QVariant()
 
     def _set_data(
         self, row_idx: int, col_idx: int, role: int, new_value: Any

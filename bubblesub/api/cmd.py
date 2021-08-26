@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 from pluginbase import PluginBase
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 import bubblesub.api  # pylint: disable=unused-import
 from bubblesub.cfg.menu import MenuItem
@@ -188,12 +188,12 @@ class BaseCommand(abc.ABC):
         """
 
 
-class CommandApi(QtCore.QObject):
+class CommandApi(QObject):
     """The command API."""
 
     CORE_COMMAND = "bubblesub.api.cmd.core"
     USER_COMMAND = "bubblesub.api.cmd.user"
-    commands_loaded = QtCore.pyqtSignal()
+    commands_loaded = pyqtSignal()
 
     def __init__(self, api: "bubblesub.api.Api") -> None:
         """Initialize self.

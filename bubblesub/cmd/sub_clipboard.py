@@ -18,7 +18,7 @@ import argparse
 from copy import copy
 
 from ass_parser import AssEventList
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QApplication
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError, CommandUnavailable
@@ -40,22 +40,22 @@ class SubtitlesCopyCommand(BaseCommand):
             raise CommandUnavailable("nothing to copy")
 
         if self.args.subject == "text":
-            QtWidgets.QApplication.clipboard().setText(
+            QApplication.clipboard().setText(
                 "\n".join(sub.text for sub in subs)
             )
         elif self.args.subject == "notes":
-            QtWidgets.QApplication.clipboard().setText(
+            QApplication.clipboard().setText(
                 "\n".join(sub.note for sub in subs)
             )
         elif self.args.subject == "times":
-            QtWidgets.QApplication.clipboard().setText(
+            QApplication.clipboard().setText(
                 "\n".join(
                     "{} - {}".format(ms_to_str(sub.start), ms_to_str(sub.end))
                     for sub in subs
                 )
             )
         elif self.args.subject == "all":
-            QtWidgets.QApplication.clipboard().setText(
+            QApplication.clipboard().setText(
                 AssEventList(data=list(map(copy, subs))).to_ass_string()
             )
         else:
@@ -98,7 +98,7 @@ class SubtitlesPasteCommand(BaseCommand):
             raise AssertionError
 
     def _paste_from_clipboard(self, idx: int) -> None:
-        text = QtWidgets.QApplication.clipboard().text()
+        text = QApplication.clipboard().text()
         if not text:
             raise CommandUnavailable("clipboard is empty, aborting")
 
@@ -143,7 +143,7 @@ class SubtitlesPasteIntoCommand(BaseCommand):
         return self.args.target.makes_sense
 
     async def run(self) -> None:
-        text = QtWidgets.QApplication.clipboard().text()
+        text = QApplication.clipboard().text()
         if not text:
             self.api.log.error("clipboard is empty, aborting")
             return

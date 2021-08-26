@@ -22,7 +22,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, Optional
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from bubblesub.cfg.base import ConfigError, SubConfig
 from bubblesub.data import DATA_DIR
@@ -57,11 +57,11 @@ class Hotkey:
         self.cmdline = cmdline
 
 
-class _HotkeysConfigSignals(QtCore.QObject):
+class _HotkeysConfigSignals(QObject):
     # QObject doesn't play nice with multiple inheritance, hence composition
-    changed = QtCore.pyqtSignal([Hotkey])
-    added = QtCore.pyqtSignal([Hotkey])
-    deleted = QtCore.pyqtSignal([Hotkey])
+    changed = pyqtSignal([Hotkey])
+    added = pyqtSignal([Hotkey])
+    deleted = pyqtSignal([Hotkey])
 
 
 class HotkeysConfig(SubConfig):

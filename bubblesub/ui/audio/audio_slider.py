@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QBrush, QMouseEvent, QPainter, QPaintEvent, QPen
+from PyQt5.QtWidgets import QWidget
 
 from bubblesub.api import Api
 from bubblesub.ui.audio.base import (
@@ -27,7 +29,7 @@ from bubblesub.ui.themes import ThemeManager
 
 class AudioSlider(BaseGlobalAudioWidget):
     def __init__(
-        self, api: Api, theme_mgr: ThemeManager, parent: QtWidgets.QWidget
+        self, api: Api, theme_mgr: ThemeManager, parent: QWidget
     ) -> None:
         super().__init__(api, parent)
         self._theme_mgr = theme_mgr
@@ -37,7 +39,7 @@ class AudioSlider(BaseGlobalAudioWidget):
         api.audio.view.selection_changed.connect(self.repaint_if_needed)
         api.audio.view.view_changed.connect(self.repaint_if_needed)
         api.playback.current_pts_changed.connect(
-            self.repaint, QtCore.Qt.DirectConnection
+            self.repaint, Qt.DirectConnection
         )
         api.subs.loaded.connect(self._on_subs_load)
 
@@ -63,8 +65,8 @@ class AudioSlider(BaseGlobalAudioWidget):
                 )
             )
 
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
-        painter = QtGui.QPainter()
+    def paintEvent(self, event: QPaintEvent) -> None:
+        painter = QPainter()
         painter.begin(self)
         self._draw_subtitle_rects(painter)
         self._draw_slider(painter)
@@ -72,43 +74,43 @@ class AudioSlider(BaseGlobalAudioWidget):
         self._draw_frame(painter, bottom_line=True)
         painter.end()
 
-    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        if event.button() == QtCore.Qt.LeftButton:
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        if event.button() == Qt.LeftButton:
             self.begin_drag_mode(DragMode.AUDIO_VIEW, event)
-        elif event.button() == QtCore.Qt.MiddleButton:
+        elif event.button() == Qt.MiddleButton:
             self.begin_drag_mode(DragMode.AUDIO_VIEW, event)
             self.end_drag_mode()
 
-    def _draw_video_pos(self, painter: QtGui.QPainter) -> None:
+    def _draw_video_pos(self, painter: QPainter) -> None:
         if not self._api.playback.current_pts:
             return
         x = round(self.pts_to_x(self._api.playback.current_pts))
         painter.setPen(
-            QtGui.QPen(
+            QPen(
                 self._theme_mgr.get_color("spectrogram/video-marker"),
                 1,
-                QtCore.Qt.SolidLine,
+                Qt.SolidLine,
             )
         )
-        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.setBrush(Qt.NoBrush)
         painter.drawLine(x, 0, x, self.height())
 
-    def _draw_subtitle_rects(self, painter: QtGui.QPainter) -> None:
+    def _draw_subtitle_rects(self, painter: QPainter) -> None:
         h = self.height()
-        painter.setPen(QtCore.Qt.NoPen)
+        painter.setPen(Qt.NoPen)
         color = self.palette().highlight().color()
         color.setAlpha(40)
-        painter.setBrush(QtGui.QBrush(color))
+        painter.setBrush(QBrush(color))
         for line in self._api.subs.events:
             x1 = round(self.pts_to_x(line.start))
             x2 = round(self.pts_to_x(line.end))
             painter.drawRect(x1, 0, x2 - x1, h - 1)
 
-    def _draw_slider(self, painter: QtGui.QPainter) -> None:
+    def _draw_slider(self, painter: QPainter) -> None:
         h = self.height()
         band_size = h // 4
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(QtGui.QBrush(self.palette().highlight()))
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(self.palette().highlight()))
         x1 = round(self.pts_to_x(self._view.view_start))
         x2 = round(self.pts_to_x(self._view.view_end))
         painter.drawRect(x1, 0, x2 - x1, band_size)

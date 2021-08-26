@@ -17,7 +17,9 @@
 import functools
 from typing import Optional, Union
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QApplication, QShortcut, QWidget
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand, CommandError
@@ -26,14 +28,14 @@ from bubblesub.cfg.hotkeys import Hotkey, HotkeyContext
 
 class HotkeyManager:
     def __init__(
-        self, api: Api, context_map: dict[HotkeyContext, QtWidgets.QWidget]
+        self, api: Api, context_map: dict[HotkeyContext, QWidget]
     ) -> None:
         self._api = api
         self._hotkey_context_map = context_map
 
         self._cmd_map: dict[
-            tuple[QtWidgets.QWidget, str],
-            tuple[QtWidgets.QShortcut, list[BaseCommand]],
+            tuple[QWidget, str],
+            tuple[QShortcut, list[BaseCommand]],
         ] = {}
 
         self._rebuild()
@@ -69,7 +71,7 @@ class HotkeyManager:
 
         if cmdline is None:
             result: Optional[
-                tuple[QtWidgets.QShortcut, list[BaseCommand]],
+                tuple[QShortcut, list[BaseCommand]],
             ] = self._cmd_map.pop((widget, shortcut), None)
             if result:
                 qt_shortcut, _cmds = result
@@ -84,7 +86,7 @@ class HotkeyManager:
             return
 
         def _on_activate(keys: str) -> None:
-            widget = QtWidgets.QApplication.focusWidget()
+            widget = QApplication.focusWidget()
             if not widget:
                 widget = self._hotkey_context_map[HotkeyContext.GLOBAL]
             while widget:
@@ -95,8 +97,8 @@ class HotkeyManager:
                     break
                 widget = widget.parent()
 
-        qt_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(shortcut), widget)
-        qt_shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        qt_shortcut = QShortcut(QKeySequence(shortcut), widget)
+        qt_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
         qt_shortcut.activatedAmbiguously.connect(qt_shortcut.activated.emit)
         qt_shortcut.activated.connect(
             functools.partial(_on_activate, shortcut)

@@ -21,7 +21,48 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Optional, cast
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import (
+    QAbstractItemModel,
+    QDir,
+    QModelIndex,
+    QObject,
+    Qt,
+    QVariant,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
+)
+from PyQt5.QtGui import (
+    QColor,
+    QFontMetrics,
+    QMouseEvent,
+    QPainter,
+    QPaintEvent,
+    QPixmap,
+    qRgb,
+)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QDoubleSpinBox,
+    QFileDialog,
+    QFrame,
+    QHBoxLayout,
+    QItemDelegate,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QPlainTextEdit,
+    QPushButton,
+    QRadioButton,
+    QSizePolicy,
+    QSpinBox,
+    QSplitter,
+    QVBoxLayout,
+    QWidget,
+)
 from pyqtcolordialog import QColorDialog
 
 from bubblesub.ui.assets import ASSETS_DIR
@@ -39,7 +80,7 @@ def async_slot(*args: Any) -> Callable[..., Callable[..., None]]:
     def real_decorator(
         func: Callable[..., "asyncio.Future[Any]"]
     ) -> Callable[..., None]:
-        @QtCore.pyqtSlot(*args)
+        @pyqtSlot(*args)
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> None:
             asyncio.ensure_future(func(*args, **kwargs))
@@ -49,114 +90,110 @@ def async_slot(*args: Any) -> Callable[..., Callable[..., None]]:
     return real_decorator
 
 
-def async_dialog_exec(dialog: QtWidgets.QDialog) -> Any:
+def async_dialog_exec(dialog: QDialog) -> Any:
     future: "asyncio.Future" = asyncio.Future()
     dialog.finished.connect(future.set_result)
     dialog.open()
     return future
 
 
-async def show_error(msg: str, parent: QtWidgets.QWidget) -> None:
-    box = QtWidgets.QMessageBox(parent)
+async def show_error(msg: str, parent: QWidget) -> None:
+    box = QMessageBox(parent)
     box.setWindowTitle("Error")
-    box.setIcon(QtWidgets.QMessageBox.Critical)
+    box.setIcon(QMessageBox.Critical)
     box.setText(msg)
     await async_dialog_exec(box)
 
 
-async def show_notice(msg: str, parent: QtWidgets.QWidget) -> None:
-    box = QtWidgets.QMessageBox(parent)
+async def show_notice(msg: str, parent: QWidget) -> None:
+    box = QMessageBox(parent)
     box.setWindowTitle("Information")
-    box.setIcon(QtWidgets.QMessageBox.Information)
+    box.setIcon(QMessageBox.Information)
     box.setText(msg)
     await async_dialog_exec(box)
 
 
-async def show_prompt(msg: str, parent: QtWidgets.QWidget) -> bool:
-    box = QtWidgets.QMessageBox(parent)
+async def show_prompt(msg: str, parent: QWidget) -> bool:
+    box = QMessageBox(parent)
     box.setWindowTitle("Question")
     box.setText(msg)
-    box.setIcon(QtWidgets.QMessageBox.Question)
-    box.addButton("Yes", QtWidgets.QMessageBox.YesRole)
-    box.addButton("No", QtWidgets.QMessageBox.NoRole)
+    box.setIcon(QMessageBox.Question)
+    box.addButton("Yes", QMessageBox.YesRole)
+    box.addButton("No", QMessageBox.NoRole)
     return await async_dialog_exec(box) == 0
 
 
-def blend_colors(
-    color1: QtGui.QColor, color2: QtGui.QColor, ratio: float
-) -> int:
-    return QtGui.qRgb(
+def blend_colors(color1: QColor, color2: QColor, ratio: float) -> int:
+    return qRgb(
         int(color1.red() * (1 - ratio) + color2.red() * ratio),
         int(color1.green() * (1 - ratio) + color2.green() * ratio),
         int(color1.blue() * (1 - ratio) + color2.blue() * ratio),
     )
 
 
-class ColorPickerPreview(QtWidgets.QFrame):
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+class ColorPickerPreview(QFrame):
+    def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
-        self._background = QtGui.QPixmap(
+        self._background = QPixmap(
             str(ASSETS_DIR / "style_preview_bk" / "grid.png")
         )
-        self._color = QtGui.QColor(0, 0, 0, 0)
-        self.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        self._color = QColor(0, 0, 0, 0)
+        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
-        painter = QtGui.QPainter()
+    def paintEvent(self, event: QPaintEvent) -> None:
+        painter = QPainter()
         painter.begin(self)
         painter.drawTiledPixmap(self.frameRect(), self._background)
         painter.fillRect(self.frameRect(), self._color)
         painter.end()
         super().paintEvent(event)
 
-    def set_color(self, color: QtGui.QColor) -> None:
+    def set_color(self, color: QColor) -> None:
         self._color = color
         self.update()
 
 
-class ColorPicker(QtWidgets.QWidget):
-    changed = QtCore.pyqtSignal()
+class ColorPicker(QWidget):
+    changed = pyqtSignal()
 
-    def __init__(self, parent: QtWidgets.QWidget) -> None:
+    def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
         self._preview = ColorPickerPreview(self)
-        self._preview.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum
-        )
-        self._button = QtWidgets.QPushButton("Change", self)
+        self._preview.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        self._button = QPushButton("Change", self)
         self._button.clicked.connect(self._on_button_click)
-        layout = QtWidgets.QHBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._preview)
         layout.addWidget(self._button)
         self._preview.setMinimumHeight(self._button.height())
-        self._color = QtGui.QColor(0, 0, 0, 0)
+        self._color = QColor(0, 0, 0, 0)
 
-    def _on_button_click(self, event: QtGui.QMouseEvent) -> None:
+    def _on_button_click(self, event: QMouseEvent) -> None:
         color = QColorDialog.getColor(self._color, self)
         if color.isValid():
             self.set_color(color)
 
-    def get_color(self) -> QtGui.QColor:
+    def get_color(self) -> QColor:
         return self._color
 
-    def set_color(self, color: QtGui.QColor) -> None:
+    def set_color(self, color: QColor) -> None:
         if self._color != color:
             self._preview.set_color(color)
             self._color = color
             self.changed.emit()
 
-    color = QtCore.pyqtProperty(QtGui.QColor, get_color, set_color, user=True)
+    color = pyqtProperty(QColor, get_color, set_color, user=True)
 
 
-class Dialog(QtWidgets.QDialog):
+class Dialog(QDialog):
     """A dialog that automatically closes and disconnects all signals after
     exiting.
     """
 
-    def __init__(self, main_window: QtWidgets.QMainWindow) -> None:
+    def __init__(self, main_window: QMainWindow) -> None:
         super().__init__(main_window)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.setAttribute(Qt.WA_DeleteOnClose, True)
 
     def done(self, code: int) -> None:
         ret = super().done(code)
@@ -165,16 +202,14 @@ class Dialog(QtWidgets.QDialog):
 
 
 async def load_dialog(
-    parent: QtWidgets.QWidget,
+    parent: QWidget,
     file_filter: str,
     directory: Optional[Path] = None,
 ) -> Optional[Path]:
     real_directory = (
-        str(directory)
-        if directory is not None
-        else cast(str, QtCore.QDir.homePath())
+        str(directory) if directory is not None else cast(str, QDir.homePath())
     )
-    dialog = QtWidgets.QFileDialog(
+    dialog = QFileDialog(
         parent, "Open File", directory=real_directory, filter=file_filter
     )
     dialog.setFileMode(dialog.ExistingFile)
@@ -185,20 +220,18 @@ async def load_dialog(
 
 
 async def save_dialog(
-    parent: QtWidgets.QWidget,
+    parent: QWidget,
     file_filter: Optional[str],
     directory: Optional[Path] = None,
     file_name: Optional[str] = None,
 ) -> Optional[Path]:
     real_directory = (
-        str(directory)
-        if directory is not None
-        else cast(str, QtCore.QDir.homePath())
+        str(directory) if directory is not None else cast(str, QDir.homePath())
     )
     if file_name:
         real_directory += "/" + file_name
 
-    dialog = QtWidgets.QFileDialog(
+    dialog = QFileDialog(
         parent,
         "Save File",
         directory=real_directory,
@@ -212,27 +245,27 @@ async def save_dialog(
 
 
 async def time_jump_dialog(
-    parent: QtWidgets.QWidget,
+    parent: QWidget,
     value: int = 0,
     relative_label: str = "Time:",
     absolute_label: str = "Time:",
     relative_checked: bool = True,
     show_radio: bool = True,
 ) -> Optional[tuple[int, bool]]:
-    class TimeJumpDialog(QtWidgets.QDialog):
-        def __init__(self, parent: QtWidgets.QWidget) -> None:
+    class TimeJumpDialog(QDialog):
+        def __init__(self, parent: QWidget) -> None:
             super().__init__(parent)
             self.setWindowTitle("Select time...")
 
-            self._label = QtWidgets.QLabel("", self)
+            self._label = QLabel("", self)
             self._time_edit = TimeEdit(self)
-            self._radio_rel = QtWidgets.QRadioButton("Relative", self)
-            self._radio_abs = QtWidgets.QRadioButton("Absolute", self)
+            self._radio_rel = QRadioButton("Relative", self)
+            self._radio_abs = QRadioButton("Absolute", self)
             if relative_checked:
                 self._radio_rel.setChecked(True)
             else:
                 self._radio_abs.setChecked(True)
-            strip = QtWidgets.QDialogButtonBox(self)
+            strip = QDialogButtonBox(self)
             strip.addButton(strip.Ok)
             strip.addButton(strip.Cancel)
 
@@ -245,7 +278,7 @@ async def time_jump_dialog(
             self._radio_rel.clicked.connect(self._on_radio_click)
             self._radio_abs.clicked.connect(self._on_radio_click)
 
-            layout = QtWidgets.QVBoxLayout(self)
+            layout = QVBoxLayout(self)
             layout.addWidget(self._label)
             layout.addWidget(self._time_edit)
             layout.addWidget(self._radio_rel)
@@ -272,10 +305,8 @@ async def time_jump_dialog(
     return None
 
 
-def get_text_edit_row_height(
-    editor: QtWidgets.QPlainTextEdit, rows: int
-) -> int:
-    metrics = QtGui.QFontMetrics(editor.document().defaultFont())
+def get_text_edit_row_height(editor: QPlainTextEdit, rows: int) -> int:
+    metrics = QFontMetrics(editor.document().defaultFont())
     margins = editor.contentsMargins()
     return (
         metrics.lineSpacing() * rows
@@ -286,24 +317,24 @@ def get_text_edit_row_height(
     )
 
 
-class ImmediateDataWidgetMapper(QtCore.QObject):
+class ImmediateDataWidgetMapper(QObject):
     def __init__(
         self,
-        model: QtCore.QAbstractItemModel,
-        signal_map: Optional[dict[QtWidgets.QWidget, str]] = None,
+        model: QAbstractItemModel,
+        signal_map: Optional[dict[QWidget, str]] = None,
     ) -> None:
         super().__init__()
         self._model = model
-        self._mappings: list[tuple[QtWidgets.QWidget, int]] = []
+        self._mappings: list[tuple[QWidget, int]] = []
         self._row_idx: Optional[int] = None
-        self._item_delegate = QtWidgets.QItemDelegate(self)
+        self._item_delegate = QItemDelegate(self)
         self._ignoring = 0
 
-        self._signal_map: dict[QtWidgets.QWidget, str] = {
-            QtWidgets.QCheckBox: "clicked",
-            QtWidgets.QSpinBox: "valueChanged",
-            QtWidgets.QDoubleSpinBox: "valueChanged",
-            QtWidgets.QComboBox: "currentTextChanged",
+        self._signal_map: dict[QWidget, str] = {
+            QCheckBox: "clicked",
+            QSpinBox: "valueChanged",
+            QDoubleSpinBox: "valueChanged",
+            QComboBox: "currentTextChanged",
             ColorPicker: "changed",
             TimeEdit: "value_changed",
         }
@@ -312,7 +343,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
 
         model.dataChanged.connect(self._model_data_change)
 
-    def add_mapping(self, widget: QtWidgets.QWidget, idx: int) -> None:
+    def add_mapping(self, widget: QWidget, idx: int) -> None:
         for type_, signal_name in self._signal_map.items():
             if isinstance(widget, type_):
                 signal = getattr(widget, signal_name)
@@ -337,7 +368,7 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
                     self._write_to_model(widget, self._row_idx, col_idx)
 
     def _model_data_change(
-        self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex
+        self, top_left: QModelIndex, bottom_right: QModelIndex
     ) -> None:
         if self._row_idx is None or self._ignoring:
             return
@@ -349,19 +380,19 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
                 self._write_to_widget(widget, self._row_idx, col_idx)
 
     def _write_to_widget(
-        self, widget: QtWidgets.QWidget, row_idx: Optional[int], col_idx: int
+        self, widget: QWidget, row_idx: Optional[int], col_idx: int
     ) -> None:
         if self._ignoring:
             return
         name = widget.metaObject().userProperty().name()
         cur_value = (
-            QtCore.QVariant()
+            QVariant()
             if row_idx is None
-            else self._model.index(row_idx, col_idx).data(QtCore.Qt.EditRole)
+            else self._model.index(row_idx, col_idx).data(Qt.EditRole)
         )
         prev_value = widget.property(name)
         if cur_value != prev_value:
-            if isinstance(widget, QtWidgets.QComboBox) and row_idx is not None:
+            if isinstance(widget, QComboBox) and row_idx is not None:
                 widget.blockSignals(True)
                 cb_row_idx = widget.findText(cur_value)
                 widget.setCurrentIndex(cb_row_idx)
@@ -369,18 +400,18 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
             widget.setProperty(name, cur_value)
 
     def _write_to_model(
-        self, widget: QtWidgets.QWidget, row_idx: int, col_idx: int
+        self, widget: QWidget, row_idx: int, col_idx: int
     ) -> None:
         name = widget.metaObject().userProperty().name()
         cur_value = widget.property(name)
         prev_value = self._model.data(
-            self._model.index(row_idx, col_idx), QtCore.Qt.EditRole
+            self._model.index(row_idx, col_idx), Qt.EditRole
         )
         if cur_value != prev_value:
             self._model.setData(
                 self._model.index(row_idx, col_idx),
                 cur_value,
-                QtCore.Qt.EditRole,
+                Qt.EditRole,
             )
 
     @contextlib.contextmanager
@@ -393,11 +424,11 @@ class ImmediateDataWidgetMapper(QtCore.QObject):
 
 
 def build_splitter(
-    parent: QtWidgets.QWidget,
-    widgets: list[tuple[int, QtWidgets.QWidget]],
+    parent: QWidget,
+    widgets: list[tuple[int, QWidget]],
     orientation: int,
-) -> QtWidgets.QSplitter:
-    splitter = QtWidgets.QSplitter(parent, orientation=orientation)
+) -> QSplitter:
+    splitter = QSplitter(parent, orientation=orientation)
     for i, item in enumerate(widgets):
         stretch_factor, widget = item
         splitter.addWidget(widget)

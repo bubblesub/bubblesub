@@ -14,21 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QFrame, QLabel, QStatusBar, QWidget
 
 import bubblesub.api
 import bubblesub.util
 
 
-class StatusBar(QtWidgets.QStatusBar):
-    def __init__(
-        self, api: bubblesub.api.Api, parent: QtWidgets.QWidget
-    ) -> None:
+class StatusBar(QStatusBar):
+    def __init__(self, api: bubblesub.api.Api, parent: QWidget) -> None:
         super().__init__(parent)
         self._api = api
-        self._subs_label = QtWidgets.QLabel(self)
-        self._video_frame_label = QtWidgets.QLabel(self)
-        self._audio_selection_label = QtWidgets.QLabel(self)
+        self._subs_label = QLabel(self)
+        self._video_frame_label = QLabel(self)
+        self._audio_selection_label = QLabel(self)
         self.setSizeGripEnabled(False)
 
         self.setObjectName("status")
@@ -40,9 +38,7 @@ class StatusBar(QtWidgets.QStatusBar):
             self._video_frame_label,
             self._audio_selection_label,
         ]:
-            label.setFrameStyle(
-                QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken
-            )
+            label.setFrameStyle(QFrame.Panel | QFrame.Sunken)
             label.setLineWidth(1)
 
         self.addPermanentWidget(self._subs_label)
