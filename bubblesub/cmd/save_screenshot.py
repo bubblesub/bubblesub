@@ -17,7 +17,7 @@
 import argparse
 
 from bubblesub.api import Api
-from bubblesub.api.cmd import BaseCommand, CommandUnavailable
+from bubblesub.api.cmd import BaseCommand
 from bubblesub.cmd.common import FancyPath, Pts
 from bubblesub.util import ms_to_str
 
@@ -33,17 +33,11 @@ class SaveScreenshotCommand(BaseCommand):
     @property
     def is_enabled(self) -> bool:
         return (
-            self.api.video.current_stream is not None
+            self.api.video.has_current_stream
             and self.api.video.current_stream.is_ready
         )
 
     async def run(self) -> None:
-        if (
-            not self.api.video.current_stream
-            or not self.api.video.current_stream.path
-        ):
-            raise CommandUnavailable
-
         pts = await self.args.pts.get()
         path = await self.args.path.get_save_path(
             file_filter="Portable Network Graphics (*.png)",

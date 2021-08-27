@@ -55,7 +55,7 @@ class SubtitlesStretchCommand(BaseCommand):
                 start
                 + (pts - old_start) * (end - start) / (old_end - old_start)
             )
-            if not self.args.no_align and self.api.video.current_stream:
+            if not self.args.no_align and self.api.video.has_current_stream:
                 pts = self.api.video.current_stream.align_pts_to_near_frame(
                     pts
                 )

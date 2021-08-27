@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import QWidget
 
 from bubblesub.api import Api
 from bubblesub.api.audio_view import AudioViewApi
+from bubblesub.errors import ResourceUnavailable
 
 SLIDER_SIZE = 20
 
@@ -47,6 +48,13 @@ class InsertionPoint:
     idx: int
     start: int
     end: int
+
+
+def try_align_pts_to_near_frame(api: Api, pts: int) -> int:
+    try:
+        return api.video.current_stream.align_pts_to_near_frame(pts)
+    except ResourceUnavailable:
+        return pts
 
 
 def get_subtitle_insertion_point(
@@ -113,17 +121,14 @@ def get_subtitle_insertion_point(
 
 
 def create_new_subtitle(api: Api, pts: int, by_end: bool) -> None:
-    current_video_stream = api.video.current_stream
-    if current_video_stream:
-        pts = current_video_stream.align_pts_to_near_frame(pts)
+    pts = try_align_pts_to_near_frame(api, pts)
+
     insertion_point = get_subtitle_insertion_point(api, pts, by_end)
-    if current_video_stream:
-        insertion_point.start = current_video_stream.align_pts_to_near_frame(
-            insertion_point.start
-        )
-        insertion_point.end = current_video_stream.align_pts_to_near_frame(
-            insertion_point.end
-        )
+
+    insertion_point.start = try_align_pts_to_near_frame(
+        api, insertion_point.start
+    )
+    insertion_point.end = try_align_pts_to_near_frame(api, insertion_point.end)
 
     api.subs.events.insert(
         insertion_point.idx,
@@ -197,8 +202,7 @@ class SubtitleStartDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.SUBTITLE_START
 
     def apply_drag(self, event: QMouseEvent, pts: int) -> None:
-        if self._api.video.current_stream:
-            pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
+        pts = try_align_pts_to_near_frame(self._api, pts)
         for ass_event in self.selected_events:
             ass_event.start = pts
             if ass_event.start > ass_event.end:
@@ -213,8 +217,7 @@ class SubtitleEndDragModeExecutor(DragModeExecutor):
     drag_mode = DragMode.SUBTITLE_END
 
     def apply_drag(self, event: QMouseEvent, pts: int) -> None:
-        if self._api.video.current_stream:
-            pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
+        pts = try_align_pts_to_near_frame(self._api, pts)
         for ass_event in self.selected_events:
             ass_event.end = pts
             if ass_event.start > ass_event.end:
@@ -269,8 +272,7 @@ class SubtitleSplitDragModeExecutor(DragModeExecutor):
         self._api.subs.selected_indexes = [idx, idx + 1]
 
     def apply_drag(self, event: QMouseEvent, pts: int) -> None:
-        if self._api.video.current_stream:
-            pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
+        pts = try_align_pts_to_near_frame(self._api, pts)
         for ass_event in self.source_events:
             ass_event.end = pts
         for ass_event in self.copied_events:

@@ -237,7 +237,12 @@ class ListVideoCommand(BaseCommand):
             return
 
         for idx, stream in enumerate(self.api.video.streams):
-            marker = "X" if stream == self.api.video.current_stream else " "
+            marker = (
+                "X"
+                if self.api.video.has_current_stream
+                and stream == self.api.video.current_stream
+                else " "
+            )
             self.api.log.info(f"{marker} {idx}. {stream.uid} {stream.path} ")
 
 
@@ -302,7 +307,12 @@ class ListAudioCommand(BaseCommand):
             return
 
         for idx, stream in enumerate(self.api.audio.streams):
-            marker = "X" if stream == self.api.audio.current_stream else " "
+            marker = (
+                "X"
+                if self.api.audio.has_current_stream
+                and stream == self.api.audio.current_stream
+                else " "
+            )
             self.api.log.info(
                 f"{marker} {idx}. {stream.uid} {stream.path} "
                 f"(delay: {stream.delay} ms)"
@@ -319,11 +329,9 @@ class SetAudioDelayCommand(BaseCommand):
 
     @property
     def is_enabled(self) -> bool:
-        return self.api.audio.current_stream is not None
+        return self.api.audio.has_current_stream
 
     async def run(self) -> None:
-        if not self.api.audio.current_stream:
-            raise CommandUnavailable
         self.api.audio.current_stream.delay = self.args.delay
 
     @staticmethod

@@ -27,13 +27,26 @@ import ffms2
 import numpy as np
 from PyQt5.QtCore import QObject, pyqtBoundSignal, pyqtSignal
 
-from bubblesub.api.base_streams_api import BaseStream
+from bubblesub.api.base_stream import BaseStream, StreamUnavailable
 from bubblesub.api.log import LogApi
 from bubblesub.api.threading import ThreadingApi
 from bubblesub.fmt.wav import write_wav
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
+
+
+class AudioStreamUnavailable(StreamUnavailable):
+    """Exception raised when trying to access audio stream properties when it
+    is not fully loaded yet.
+    """
+
+    def __init__(self, text: Optional[str] = None) -> None:
+        """Initialize self.
+
+        :param text: optional text error
+        """
+        super().__init__(text or "audio stream is not available right now")
 
 
 def _load_audio_source(
@@ -96,12 +109,12 @@ class AudioStream(BaseStream, QObject):
 
         self.uid = uuid.uuid4()
 
-        self._min_time = 0
-        self._max_time = 0
-        self._channel_count = 0
-        self._bits_per_sample = 0
-        self._sample_count = 0
-        self._sample_rate = 0
+        self._min_time: Optional[int] = None
+        self._max_time: Optional[int] = None
+        self._channel_count: Optional[int] = None
+        self._bits_per_sample: Optional[int] = None
+        self._sample_count: Optional[int] = None
+        self._sample_rate: Optional[int] = None
         self._sample_format: Optional[int] = None
         self._path = path
         self._delay = 0
@@ -124,9 +137,9 @@ class AudioStream(BaseStream, QObject):
 
     @property
     def is_ready(self) -> bool:
-        """Return whether if the audio is loaded.
+        """Return whether the audio is loaded.
 
-        :return: whether if the audio is loaded
+        :return: whether the audio is loaded
         """
         return self._source is not None
 
@@ -134,56 +147,84 @@ class AudioStream(BaseStream, QObject):
     def channel_count(self) -> int:
         """Return channel count for currently loaded audio source.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: channel count or 0 if no audio source
         """
+        if self._channel_count is None:
+            raise AudioStreamUnavailable
         return self._channel_count
 
     @property
     def bits_per_sample(self) -> int:
         """Return bits per sample for currently loaded audio source.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: bits per sample or 0 if no audio source
         """
+        if self._bits_per_sample is None:
+            raise AudioStreamUnavailable
         return self._bits_per_sample
 
     @property
     def sample_rate(self) -> int:
         """Return sample rate for currently loaded audio source.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: sample rate or 0 if no audio source
         """
+        if self._sample_rate is None:
+            raise AudioStreamUnavailable
         return self._sample_rate
 
     @property
     def sample_format(self) -> Optional[int]:
         """Return sample format for currently loaded audio source.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: sample format or None if no audio source
         """
+        if self._sample_format is None:
+            raise AudioStreamUnavailable
         return self._sample_format
 
     @property
     def sample_count(self) -> int:
         """Return sample count for currently loaded audio source.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: sample count or 0 if no audio source
         """
+        if self._sample_count is None:
+            raise AudioStreamUnavailable
         return self._sample_count
 
     @property
     def min_time(self) -> int:
         """Return minimum time in milliseconds (generally 0).
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: audio start or 0 if no audio source
         """
+        if self._min_time is None:
+            raise AudioStreamUnavailable
         return self._min_time
 
     @property
     def max_time(self) -> int:
         """Return maximum time in milliseconds.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: audio end or 0 if no audio source
         """
+        if self._max_time is None:
+            raise AudioStreamUnavailable
         return self._max_time
 
     @property

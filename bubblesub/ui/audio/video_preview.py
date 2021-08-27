@@ -29,6 +29,7 @@ from bubblesub.api.threading import QueueWorker
 from bubblesub.api.video import VideoApi
 from bubblesub.api.video_stream import VideoStream
 from bubblesub.cache import load_cache, save_cache
+from bubblesub.errors import ResourceUnavailable
 from bubblesub.ui.audio.base import BaseLocalAudioWidget
 from bubblesub.util import chunks, sanitize_file_name
 
@@ -130,7 +131,7 @@ class VideoPreview(BaseLocalAudioWidget):
                     # frame bitmaps
                     (
                         self._api.video.current_stream.uid
-                        if self._api.video.current_stream
+                        if self._api.video.has_current_stream
                         else None
                     ),
                     # audio view
@@ -156,31 +157,36 @@ class VideoPreview(BaseLocalAudioWidget):
         painter.end()
 
     def _draw_video_band(self, painter: QPainter) -> None:
-        current_stream = self._api.video.current_stream
-        if not current_stream or not current_stream.timecodes:
+        try:
+            current_stream = self._api.video.current_stream
+            pixels = self._pixels.transpose(1, 0, 2)
+
+            min_pts = self.pts_from_x(0)
+            max_pts = self.pts_from_x(self.width() - 1)
+
+            pts_range = np.linspace(min_pts, max_pts, self.width())
+            frame_idx_range = current_stream.frame_idx_from_pts(pts_range)
+
+            cache = self._worker.cache.get(current_stream.uid)
+            if cache is not None:
+                for x, frame_idx in enumerate(frame_idx_range):
+                    pixels[x] = cache[frame_idx]
+
+            # pylint: disable=unsubscriptable-object
+            image = QImage(
+                self._pixels.data,
+                self._pixels.shape[1],
+                self._pixels.shape[0],
+                self._pixels.strides[0],
+                QImage.Format_RGB888,
+            )
+            # pylint: enable=unsubscriptable-object
+
+            painter.save()
+            painter.scale(
+                1, painter.viewport().height() / (BAND_RESOLUTION - 1)
+            )
+            painter.drawPixmap(0, 0, QPixmap.fromImage(image))
+            painter.restore()
+        except ResourceUnavailable:
             return
-
-        pixels = self._pixels.transpose(1, 0, 2)
-
-        min_pts = self.pts_from_x(0)
-        max_pts = self.pts_from_x(self.width() - 1)
-
-        pts_range = np.linspace(min_pts, max_pts, self.width())
-        frame_idx_range = current_stream.frame_idx_from_pts(pts_range)
-
-        cache = self._worker.cache.get(current_stream.uid)
-        if cache is not None:
-            for x, frame_idx in enumerate(frame_idx_range):
-                pixels[x] = cache[frame_idx]
-
-        image = QImage(
-            self._pixels.data,
-            self._pixels.shape[1],
-            self._pixels.shape[0],
-            self._pixels.strides[0],  # pylint: disable=unsubscriptable-object
-            QImage.Format_RGB888,
-        )
-        painter.save()
-        painter.scale(1, painter.viewport().height() / (BAND_RESOLUTION - 1))
-        painter.drawPixmap(0, 0, QPixmap.fromImage(image))
-        painter.restore()

@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from copy import copy
+from fractions import Fraction
 from typing import Optional, cast
 
 import PIL.Image
@@ -57,6 +58,7 @@ from PyQt5.QtWidgets import (
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
 from bubblesub.ass_renderer import AssRenderer
+from bubblesub.errors import ResourceUnavailable
 from bubblesub.ui.assets import get_assets
 from bubblesub.ui.font_combo_box import FontComboBox, refresh_font_db
 from bubblesub.ui.model.styles import AssStylesModel, AssStylesModelColumn
@@ -161,7 +163,7 @@ class _StylePreview(QGroupBox):
         fake_style = copy(selected_style)
         fake_style.name = "Default"
         if (
-            self._api.video.current_stream
+            self._api.video.has_current_stream
             and self._api.video.current_stream.is_ready
         ):
             fake_style.scale(
@@ -193,13 +195,13 @@ class _StylePreview(QGroupBox):
         self._renderer.set_source(
             fake_style_list, fake_event_list, fake_script_info, resolution
         )
+        try:
+            aspect_ratio = self._api.video.current_stream.aspect_ratio
+        except ResourceUnavailable:
+            aspect_ratio = Fraction(1)
         subs_image = self._renderer.render(
             time=0,
-            aspect_ratio=(
-                self._api.video.current_stream.aspect_ratio
-                if self._api.video.current_stream
-                else 1
-            ),
+            aspect_ratio=aspect_ratio,
         )
         image = PIL.Image.composite(subs_image, image, subs_image)
 

@@ -37,7 +37,7 @@ class SubtitleInsertCommand(BaseCommand):
         else:
             raise AssertionError
 
-        if not self.args.no_align and self.api.video.current_stream:
+        if not self.args.no_align and self.api.video.has_current_stream:
             start = self.api.video.current_stream.align_pts_to_near_frame(
                 start
             )

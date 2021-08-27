@@ -42,6 +42,7 @@ from bubblesub.api import Api
 from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.threading import QueueWorker
 from bubblesub.ass_util import ass_to_plaintext
+from bubblesub.errors import ResourceUnavailable
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.themes import ThemeManager
 from bubblesub.ui.util import blend_colors
@@ -108,47 +109,55 @@ class SpectrumWorker(QueueWorker):
     def _get_spectrogram_for_block_idx(
         self, block_idx: int
     ) -> Optional[SpectrumColumn]:
-        audio_stream = self._api.audio.current_stream
-        video_stream = self._api.video.current_stream
-        if not audio_stream or not audio_stream.is_ready or self._fftw is None:
+        if self._fftw is None:
             return None
 
-        first_sample = block_idx << DERIVATION_DISTANCE
-        sample_count = 2 << DERIVATION_SIZE
+        try:
+            audio_stream = self._api.audio.current_stream
+            video_stream = self._api.video.current_stream
 
-        if video_stream and video_stream.timecodes:
-            first_sample -= (
-                video_stream.timecodes[0] * audio_stream.sample_rate // 1000
+            first_sample = block_idx << DERIVATION_DISTANCE
+            sample_count = 2 << DERIVATION_SIZE
+
+            if video_stream and video_stream.timecodes:
+                first_sample -= (
+                    video_stream.timecodes[0]
+                    * audio_stream.sample_rate
+                    // 1000
+                )
+            first_sample = max(first_sample, 0)
+
+            samples = audio_stream.get_samples(first_sample, sample_count)
+            samples = np.mean(samples, axis=1)
+            sample_fmt = audio_stream.sample_format
+
+            if sample_fmt == ffms2.FFMS_FMT_S16:
+                samples /= 32768.0
+            elif sample_fmt == ffms2.FFMS_FMT_S32:
+                samples /= 4_294_967_296.0
+            elif sample_fmt not in (ffms2.FFMS_FMT_FLT, ffms2.FFMS_FMT_DBL):
+                raise RuntimeError(f"unknown sample format: {sample_fmt}")
+
+            self._input[0 : len(samples)] = samples
+
+            out = self._fftw()
+
+            scale_factor = 9 / np.sqrt(2 * (2 << DERIVATION_SIZE))
+            out = np.log10(
+                np.sqrt(
+                    np.real(out) * np.real(out) + np.imag(out) * np.imag(out)
+                )
+                * scale_factor
+                + 1
             )
-        first_sample = max(first_sample, 0)
 
-        samples = audio_stream.get_samples(first_sample, sample_count)
-        samples = np.mean(samples, axis=1)
-        sample_fmt = audio_stream.sample_format
-
-        if sample_fmt == ffms2.FFMS_FMT_S16:
-            samples /= 32768.0
-        elif sample_fmt == ffms2.FFMS_FMT_S32:
-            samples /= 4_294_967_296.0
-        elif sample_fmt not in (ffms2.FFMS_FMT_FLT, ffms2.FFMS_FMT_DBL):
-            raise RuntimeError(f"unknown sample format: {sample_fmt}")
-
-        self._input[0 : len(samples)] = samples
-
-        out = self._fftw()
-
-        scale_factor = 9 / np.sqrt(2 * (2 << DERIVATION_SIZE))
-        out = np.log10(
-            np.sqrt(np.real(out) * np.real(out) + np.imag(out) * np.imag(out))
-            * scale_factor
-            + 1
-        )
-
-        out *= int(255 * self._api.playback.volume / 100)
-        out = np.clip(out, 0, 255)
-        out = np.flip(out, axis=0)
-        out = out.astype(dtype=np.uint8)
-        return out
+            out *= int(255 * self._api.playback.volume / 100)
+            out = np.clip(out, 0, 255)
+            out = np.flip(out, axis=0)
+            out = out.astype(dtype=np.uint8)
+            return out
+        except ResourceUnavailable:
+            return None
 
 
 class SubtitleRect:
@@ -212,7 +221,10 @@ class AudioPreview(BaseLocalAudioWidget):
         self._generate_color_table()
 
         self.setMouseTracking(True)
-        QApplication.instance().installEventFilter(self)
+
+        app = QApplication.instance()
+        assert app
+        app.installEventFilter(self)
 
         api.audio.stream_loaded.connect(self._on_audio_state_change)
         api.audio.stream_unloaded.connect(self._on_audio_state_change)
@@ -255,7 +267,7 @@ class AudioPreview(BaseLocalAudioWidget):
                     # frames, keyframes
                     (
                         self._api.video.current_stream.uid
-                        if self._api.video.current_stream
+                        if self._api.video.has_current_stream
                         else None
                     ),
                     # audio view
@@ -381,25 +393,25 @@ class AudioPreview(BaseLocalAudioWidget):
         self._schedule_current_audio_view()
 
     def _schedule_current_audio_view(self) -> None:
-        audio_stream = self._api.audio.current_stream
-        if not audio_stream:
-            return
+        try:
+            delay = self._api.audio.current_stream.delay
+            sample_rate = self._api.audio.current_stream.sample_rate
+        except ResourceUnavailable:
+            delay = 0
+            sample_rate = 0
 
         self.repaint_if_needed()
         self._spectrum_worker.clear_tasks()
 
         min_pts = self.pts_from_x(0)
         max_pts = self.pts_from_x(self.width() * 2 - 1)
-        if audio_stream:
-            min_pts -= audio_stream.delay
-            max_pts -= audio_stream.delay
+        min_pts -= delay
+        max_pts -= delay
 
         pts_range = np.linspace(min_pts, max_pts, self.width())
-        block_idx_range = np.round(
-            pts_range
-            * (audio_stream.sample_rate if audio_stream else 0)
-            / 1000.0
-        ).astype(dtype=np.int32) // (2 ** DERIVATION_DISTANCE)
+        block_idx_range = np.round(pts_range * sample_rate / 1000.0).astype(
+            dtype=np.int32
+        ) // (2 ** DERIVATION_DISTANCE)
 
         blocks_to_update = [
             block_idx
@@ -416,7 +428,12 @@ class AudioPreview(BaseLocalAudioWidget):
     def _draw_spectrogram(self, painter: QPainter) -> None:
         pixels = self._pixels.transpose()
         zero_column = np.zeros([pixels.shape[1]], dtype=np.uint8)
-        audio_stream = self._api.audio.current_stream
+        try:
+            delay = self._api.audio.current_stream.delay
+            sample_rate = self._api.audio.current_stream.sample_rate
+        except ResourceUnavailable:
+            delay = 0
+            sample_rate = 0
 
         cached_blocks = (
             list(self._spectrum_worker.cache.keys())
@@ -426,16 +443,13 @@ class AudioPreview(BaseLocalAudioWidget):
 
         min_pts = self.pts_from_x(0)
         max_pts = self.pts_from_x(self.width() - 1)
-        if audio_stream:
-            min_pts -= audio_stream.delay
-            max_pts -= audio_stream.delay
+        min_pts -= delay
+        max_pts -= delay
 
         pts_range = np.linspace(min_pts, max_pts, self.width())
-        block_idx_range = np.round(
-            pts_range
-            * (audio_stream.sample_rate if audio_stream else 0)
-            / 1000.0
-        ).astype(dtype=np.int32) // (2 ** DERIVATION_DISTANCE)
+        block_idx_range = np.round(pts_range * sample_rate / 1000.0).astype(
+            dtype=np.int32
+        ) // (2 ** DERIVATION_DISTANCE)
 
         for x, block_idx in enumerate(block_idx_range):
             column = zero_column
@@ -467,11 +481,15 @@ class AudioPreview(BaseLocalAudioWidget):
     def _draw_keyframes(self, painter: QPainter) -> None:
         h = painter.viewport().height()
         painter.setPen(self._pens["spectrogram/keyframe"])
-        if self._api.video.current_stream:
-            for keyframe in self._api.video.current_stream.keyframes:
-                timecode = self._api.video.current_stream.timecodes[keyframe]
-                x = round(self.pts_to_x(timecode))
-                painter.drawLine(x, 0, x, h)
+        try:
+            keyframes = self._api.video.current_stream.keyframes
+            timecodes = self._api.video.current_stream.timecodes
+        except ResourceUnavailable:
+            return
+        for keyframe in keyframes:
+            timecode = timecodes[keyframe]
+            x = round(self.pts_to_x(timecode))
+            painter.drawLine(x, 0, x, h)
 
     def _recompute_rects(self, painter: QPainter) -> None:
         self._rects[:] = []
@@ -578,8 +596,10 @@ class AudioPreview(BaseLocalAudioWidget):
         if not self._mouse_pos:
             return
         pts = self.pts_from_x(self._mouse_pos.x())
-        if self._api.video.current_stream:
+        try:
             pts = self._api.video.current_stream.align_pts_to_near_frame(pts)
+        except ResourceUnavailable:
+            pass
         x = round(self.pts_to_x(pts))
 
         painter.setPen(self._pens["spectrogram/mouse-marker"])
@@ -593,10 +613,12 @@ class AudioPreview(BaseLocalAudioWidget):
 
         if self._mouse_pos:
             pts = self.pts_from_x(self._mouse_pos.x())
-            if self._api.video.current_stream:
+            try:
                 pts = self._api.video.current_stream.align_pts_to_near_frame(
                     pts
                 )
+            except ResourceUnavailable:
+                pass
             x = int(self.pts_to_x(pts))
             self.update(x, 0, x, self.height())
 
@@ -604,10 +626,12 @@ class AudioPreview(BaseLocalAudioWidget):
 
         if self._mouse_pos:
             pts = self.pts_from_x(self._mouse_pos.x())
-            if self._api.video.current_stream:
+            try:
                 pts = self._api.video.current_stream.align_pts_to_near_frame(
                     pts
                 )
+            except ResourceUnavailable:
+                pass
             x = int(self.pts_to_x(pts))
             self.update(x, 0, x, self.height())
 

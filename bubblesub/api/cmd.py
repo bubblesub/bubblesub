@@ -36,6 +36,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 import bubblesub.api  # pylint: disable=unused-import
 from bubblesub.cfg.menu import MenuItem
+from bubblesub.errors import ResourceUnavailable
 
 
 class CommandError(RuntimeError):
@@ -50,7 +51,7 @@ class CommandCanceled(CommandError):
         super().__init__("canceled")
 
 
-class CommandUnavailable(CommandError):
+class CommandUnavailable(ResourceUnavailable, CommandError):
     """The given command cannot be evaluated."""
 
     def __init__(self, text: Optional[str] = None) -> None:
@@ -265,7 +266,7 @@ class CommandApi(QObject):
             if not cmd.is_enabled:
                 raise CommandUnavailable
             await cmd.run()
-        except (CommandCanceled, CommandUnavailable) as ex:
+        except (CommandCanceled, ResourceUnavailable) as ex:
             if not cmd.silent:
                 self._api.log.warn(str(ex))
             return False

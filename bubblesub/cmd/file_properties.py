@@ -40,6 +40,7 @@ from PyQt5.QtWidgets import (
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
+from bubblesub.errors import ResourceUnavailable
 from bubblesub.ui.util import (
     Dialog,
     async_dialog_exec,
@@ -157,10 +158,10 @@ class _OptionsGropuBox(QGroupBox):
         layout.addWidget(self.scale_check_box, 3, 1)
 
     def _on_get_resolution_button_click(self) -> None:
-        if self._api.video.current_stream:
+        try:
             self.res_x_edit.setValue(self._api.video.current_stream.width)
             self.res_y_edit.setValue(self._api.video.current_stream.height)
-        else:
+        except ResourceUnavailable:
             self.res_x_edit.setValue(0)
             self.res_y_edit.setValue(0)
 

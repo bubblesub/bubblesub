@@ -42,6 +42,7 @@ from bubblesub.api import Api
 from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.playback import PlaybackFrontendState
 from bubblesub.api.video_stream import VideoStream
+from bubblesub.errors import ResourceUnavailable
 from bubblesub.util import ms_to_str
 
 
@@ -306,8 +307,17 @@ class MpvWidget(QOpenGLWidget):
         vid: Optional[int] = None
         aid: Optional[int] = None
 
-        current_audio_stream = self._api.audio.current_stream
-        current_video_stream = self._api.video.current_stream
+        current_audio_stream: Optional[AudioStream]
+        try:
+            current_audio_stream = self._api.audio.current_stream
+        except ResourceUnavailable:
+            current_audio_stream = None
+
+        current_video_stream: Optional[VideoStream]
+        try:
+            current_video_stream = self._api.video.current_stream
+        except ResourceUnavailable:
+            current_video_stream = None
 
         for track in track_list:
             track_type = track["type"]

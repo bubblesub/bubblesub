@@ -45,6 +45,7 @@ from bubblesub.api.playback import (
     MIN_PLAYBACK_SPEED,
     MIN_VOLUME,
 )
+from bubblesub.errors import ResourceUnavailable
 from bubblesub.ui.mpv import MpvWidget
 from bubblesub.ui.themes import ThemeManager
 from bubblesub.util import all_subclasses
@@ -85,9 +86,6 @@ class MousePosCalculator:
         )
 
     def get_video_pos(self, event: QMouseEvent) -> Optional[QPointF]:
-        if not self._api.video.current_stream:
-            return None
-
         zoom = self._api.video.view.zoom
         pan_x = self._api.video.view.pan_x
         pan_y = self._api.video.view.pan_y
@@ -95,8 +93,11 @@ class MousePosCalculator:
         display_w = self.display_width
         display_h = self.display_height
         display_ar = display_w / display_h
-        video_w = self._api.video.current_stream.width
-        video_h = self._api.video.current_stream.height
+        try:
+            video_w = self._api.video.current_stream.width
+            video_h = self._api.video.current_stream.height
+        except ResourceUnavailable:
+            return None
         video_ar = video_w / video_h
 
         if display_ar > video_ar:

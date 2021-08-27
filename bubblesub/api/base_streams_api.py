@@ -20,31 +20,14 @@ import threading
 import uuid
 from functools import partial
 from pathlib import Path
-from typing import ClassVar, Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 
-from PyQt5.QtCore import QObject, pyqtBoundSignal, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 
+from bubblesub.api.base_stream import BaseStream, StreamUnavailable
 from bubblesub.api.threading import synchronized
 
-
-class BaseStream:
-    """Base stream."""
-
-    uid: uuid.UUID
-    loaded: ClassVar[pyqtBoundSignal]
-    changed: ClassVar[pyqtBoundSignal]
-    errored: ClassVar[pyqtBoundSignal]
-
-    @property
-    def path(self) -> Path:
-        """Return stream source path.
-
-        :return: path
-        """
-        raise NotImplementedError("not implemented")
-
-
-TStream = TypeVar("TStream", bound="BaseStream")
+TStream = TypeVar("TStream", bound=BaseStream)
 
 
 class BaseStreamsApi(Generic[TStream], QObject):
@@ -158,12 +141,36 @@ class BaseStreamsApi(Generic[TStream], QObject):
 
     @property
     @synchronized(lock=stream_lock)
-    def current_stream(self) -> Optional[TStream]:
+    def current_stream(self) -> TStream:
         """Return currently loaded stream.
+
+        Raises an exception if there is no stream loaded yet.
 
         :return: stream
         """
+        if not self._current_stream:
+            raise StreamUnavailable("stream is not available right now")
         return self._current_stream
+
+    @property
+    @synchronized(lock=stream_lock)
+    def has_current_stream(self) -> bool:
+        """Return whether there is a current stream.
+
+        Should be avoided in favor of:
+
+        ```
+        try:
+            current_stream = stream_api.current_stream
+        except ResourceUnavailable:
+            current_stream = None
+
+        as checking has_current_stream, then accessing current_stream is prone
+        to races.
+
+        :return: whether current_stream property is available
+        """
+        return self._current_stream is not None
 
     @property
     @synchronized(lock=stream_lock)
@@ -200,9 +207,9 @@ class BaseStreamsApi(Generic[TStream], QObject):
 
         Does nothing if there are no loaded streams.
         """
-        if not self.current_stream:
+        if not self._current_stream:
             return
-        uid = self.current_stream.uid
+        uid = self._current_stream.uid
         idx = self.get_stream_index(uid)
         assert idx is not None
         idx += 1

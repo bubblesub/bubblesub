@@ -26,6 +26,7 @@ from PyQt5.QtGui import (
 from PyQt5.QtWidgets import QWidget
 
 from bubblesub.api import Api
+from bubblesub.errors import ResourceUnavailable
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.themes import ThemeManager
 
@@ -54,7 +55,7 @@ class AudioTimeline(BaseLocalAudioWidget):
                     # keyframes
                     (
                         self._api.video.current_stream.uid
-                        if self._api.video.current_stream
+                        if self._api.video.has_current_stream
                         else None
                     ),
                     # audio view
@@ -126,11 +127,15 @@ class AudioTimeline(BaseLocalAudioWidget):
         h = painter.viewport().height()
         color = self._theme_mgr.get_color("spectrogram/keyframe")
         painter.setPen(QPen(color, 1, Qt.PenStyle.SolidLine))
-        if self._api.video.current_stream:
-            for keyframe in self._api.video.current_stream.keyframes:
-                timecode = self._api.video.current_stream.timecodes[keyframe]
-                x = round(self.pts_to_x(timecode))
-                painter.drawLine(x, 0, x, h)
+        try:
+            keyframes = self._api.video.current_stream.keyframes
+            timecodes = self._api.video.current_stream.timecodes
+        except ResourceUnavailable:
+            return
+        for keyframe in keyframes:
+            timecode = timecodes[keyframe]
+            x = round(self.pts_to_x(timecode))
+            painter.drawLine(x, 0, x, h)
 
     def _draw_video_pos(self, painter: QPainter) -> None:
         if not self._api.playback.current_pts:

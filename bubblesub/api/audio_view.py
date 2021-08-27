@@ -25,6 +25,7 @@ from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.video import VideoApi
 from bubblesub.api.video_stream import VideoStream
+from bubblesub.errors import ResourceUnavailable
 
 
 class AudioViewApi(QObject):
@@ -198,30 +199,44 @@ class AudioViewApi(QObject):
         self.zoom_view(1, 0.5)  # emits view_changed
 
     def _extend_view(self) -> None:
+        sources = [self._max]
+        sources.extend(sub.start for sub in self._subs_api.events)
+        sources.extend(sub.end for sub in self._subs_api.events)
+
+        try:
+            max_pts = self._video_api.current_stream.max_pts
+        except ResourceUnavailable:
+            pass
+        else:
+            sources.append(max_pts)
+
+        try:
+            max_time = self._audio_api.current_stream.max_time
+        except ResourceUnavailable:
+            pass
+        else:
+            sources.append(max_time)
+
         self._min = 0
-        self._max = max(
-            [self._max]
-            + [
-                self._video_api.current_stream.max_pts
-                if self._video_api.current_stream
-                else 0
-            ]
-            + [
-                self._audio_api.current_stream.max_time
-                if self._audio_api.current_stream
-                else 0
-            ]
-            + [sub.start for sub in self._subs_api.events]
-            + [sub.end for sub in self._subs_api.events]
-        )
+        self._max = max(sources)
 
     def _on_audio_state_change(self, stream: AudioStream) -> None:
-        if stream == self._audio_api.current_stream:
+        try:
+            current_stream = self._audio_api.current_stream
+        except ResourceUnavailable:
+            return
+
+        if stream == current_stream:
             self._extend_view()
             self.reset_view()
 
     def _on_video_state_change(self, stream: VideoStream) -> None:
-        if stream == self._video_api.current_stream:
+        try:
+            current_stream = self._audio_api.current_stream
+        except ResourceUnavailable:
+            return
+
+        if stream == current_stream:
             self._extend_view()
             self.reset_view()
 

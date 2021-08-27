@@ -26,6 +26,7 @@ from bubblesub.api.audio import AudioApi
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.video import VideoApi
+from bubblesub.errors import ResourceUnavailable
 
 MIN_PLAYBACK_SPEED = Fraction(0.1)
 MAX_PLAYBACK_SPEED = Fraction(10)
@@ -196,14 +197,23 @@ class PlaybackApi(QObject):
 
         :return: maximum video position, 0 if no video
         """
-        return max(
-            self._audio_api.current_stream.max_time
-            if self._audio_api.current_stream
-            else 0,
-            self._video_api.current_stream.max_pts
-            if self._video_api.current_stream
-            else 0,
-        )
+        sources = [0]
+
+        try:
+            max_pts = self._video_api.current_stream.max_pts
+        except ResourceUnavailable:
+            pass
+        else:
+            sources.append(max_pts)
+
+        try:
+            max_time = self._audio_api.current_stream.max_time
+        except ResourceUnavailable:
+            pass
+        else:
+            sources.append(max_time)
+
+        return max(sources)
 
     @property
     def is_paused(self) -> bool:

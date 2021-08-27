@@ -19,7 +19,6 @@
 import asyncio
 import bisect
 import threading
-import time
 import uuid
 from fractions import Fraction
 from pathlib import Path
@@ -30,7 +29,7 @@ import numpy as np
 import PIL.Image
 from PyQt5.QtCore import QObject, pyqtBoundSignal, pyqtSignal
 
-from bubblesub.api.base_streams_api import BaseStream
+from bubblesub.api.base_stream import BaseStream, StreamUnavailable
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
@@ -39,6 +38,19 @@ from bubblesub.ass_renderer import AssRenderer
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()
 _PIX_FMT = [ffms2.get_pix_fmt("rgb24")]
+
+
+class VideoStreamUnavailable(StreamUnavailable):
+    """Exception raised when trying to access video stream properties when it
+    is not fully loaded yet.
+    """
+
+    def __init__(self, text: Optional[str] = None) -> None:
+        """Initialize self.
+
+        :param text: optional text error
+        """
+        super().__init__(text or "video stream is not available right now")
 
 
 def _load_video_source(
@@ -96,12 +108,12 @@ class VideoStream(BaseStream, QObject):
         self.uid = uuid.uuid4()
 
         self._path = path
-        self._timecodes: list[int] = []
-        self._keyframes: list[int] = []
-        self._frame_rate = Fraction(0, 1)
-        self._aspect_ratio = Fraction(1, 1)
-        self._width = 0
-        self._height = 0
+        self._timecodes: Optional[list[int]] = None
+        self._keyframes: Optional[list[int]] = None
+        self._frame_rate: Optional[Fraction] = None
+        self._aspect_ratio: Optional[Fraction] = None
+        self._width: Optional[int] = None
+        self._height: Optional[int] = None
 
         self._ass_renderer = AssRenderer()
         self._source: Union[None, ffms2.VideoSource] = None
@@ -124,9 +136,9 @@ class VideoStream(BaseStream, QObject):
 
     @property
     def is_ready(self) -> bool:
-        """Return whether if the video is loaded.
+        """Return whether the video is loaded.
 
-        :return: whether if the video is loaded
+        :return: whether the video is loaded
         """
         return self._source is not None
 
@@ -165,8 +177,6 @@ class VideoStream(BaseStream, QObject):
         pts = self.align_pts_to_prev_frame(pts)
         idx = self.timecodes.index(pts)
         frame = self.get_frame(idx, grab_width, grab_height)
-        if not frame:
-            raise RuntimeError(f"error while grabbing frame #{idx}")
         if not frame.flags.c_contiguous:
             frame = frame.copy(order="C")
         image = PIL.Image.frombytes("RGB", (grab_width, grab_height), frame)
@@ -179,7 +189,7 @@ class VideoStream(BaseStream, QObject):
                 (grab_width, grab_height),
             )
             subs_image = self._ass_renderer.render(
-                time=pts, aspect_ratio=self._aspect_ratio
+                time=pts, aspect_ratio=self.aspect_ratio
             )
             image = PIL.Image.composite(subs_image, image, subs_image)
 
@@ -251,57 +261,79 @@ class VideoStream(BaseStream, QObject):
     def frame_rate(self) -> Fraction:
         """Return the frame rate.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: video frame rate
         """
+        if self._frame_rate is None:
+            raise VideoStreamUnavailable
         return self._frame_rate
 
     @property
     def width(self) -> int:
         """Return horizontal video resolution.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: video width in pixels
         """
+        if self._width is None:
+            raise VideoStreamUnavailable
         return self._width
 
     @property
     def height(self) -> int:
         """Return vertical video resolution.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: video height in pixels
         """
+        if self._height is None:
+            raise VideoStreamUnavailable
         return self._height
 
     @property
     def aspect_ratio(self) -> Fraction:
         """Return the frame aspect ratio.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: video frame aspect ratio
         """
+        if self._aspect_ratio is None:
+            raise VideoStreamUnavailable
         return self._aspect_ratio
 
     @property
     def timecodes(self) -> list[int]:
         """Return video frames' PTS.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: video frames' PTS
         """
-        if not self._wait_for_source():
-            return []
+        if self._timecodes is None:
+            raise VideoStreamUnavailable
         return self._timecodes
 
     @property
     def keyframes(self) -> list[int]:
         """Return video keyframes' indexes.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: video keyframes' indexes
         """
-        if not self._wait_for_source():
-            return []
+        if self._keyframes is None:
+            raise VideoStreamUnavailable
         return self._keyframes
 
     @property
     def min_pts(self) -> int:
         """Return minimum video time in milliseconds.
+
+        Raises an exception if the stream is not fully loaded yet.
 
         :return: minimum PTS
         """
@@ -313,15 +345,15 @@ class VideoStream(BaseStream, QObject):
     def max_pts(self) -> int:
         """Return maximum video time in milliseconds.
 
+        Raises an exception if the stream is not fully loaded yet.
+
         :return: maximum PTS
         """
         if not self.timecodes:
             return 0
         return self.timecodes[-1]
 
-    def get_frame(
-        self, frame_idx: int, width: int, height: int
-    ) -> Optional[np.ndarray]:
+    def get_frame(self, frame_idx: int, width: int, height: int) -> np.ndarray:
         """Get raw video data from the currently loaded video source.
 
         :param frame_idx: frame number
@@ -330,12 +362,8 @@ class VideoStream(BaseStream, QObject):
         :return: numpy image
         """
         with _SAMPLER_LOCK:
-            if (
-                not self._wait_for_source()
-                or frame_idx < 0
-                or frame_idx >= len(self.timecodes)
-            ):
-                return None
+            if frame_idx < 0 or frame_idx >= len(self.timecodes):
+                raise ValueError("bad frame")
             assert self._source
 
             new_output_fmt = (_PIX_FMT, width, height, ffms2.FFMS_RESIZER_AREA)
@@ -352,7 +380,7 @@ class VideoStream(BaseStream, QObject):
 
     async def async_get_frame(
         self, frame_idx: int, width: int, height: int
-    ) -> Optional[np.ndarray]:
+    ) -> np.ndarray:
         """Get raw video data from the currently loaded video source
         asynchronously.
 
@@ -379,12 +407,10 @@ class VideoStream(BaseStream, QObject):
                 self.errored.emit()
                 return
 
-            self._timecodes = [
-                int(round(pts)) for pts in source.track.timecodes
-            ]
-            self._keyframes = source.track.keyframes[:]
-            self._timecodes.sort()
-            self._keyframes.sort()
+            self._timecodes = sorted(
+                [int(round(pts)) for pts in source.track.timecodes]
+            )
+            self._keyframes = sorted(source.track.keyframes[:])
 
             self._frame_rate = Fraction(
                 self._source.properties.FPSNumerator,
@@ -405,14 +431,5 @@ class VideoStream(BaseStream, QObject):
 
             frame = source.get_frame(0)
             self._width = frame.EncodedWidth
-            self._height = int(frame.EncodedHeight / self._aspect_ratio)
+            self._height = int(frame.EncodedHeight / self.aspect_ratio)
             self.loaded.emit()
-
-    def _wait_for_source(self) -> bool:
-        if self._source is None:
-            return False
-        while self._source is _LOADING:
-            time.sleep(0.01)
-        if self._source is None:
-            return False
-        return True
