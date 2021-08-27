@@ -93,6 +93,13 @@ class TextEdit(VimTextEdit):
         super().__init__(parent)
         self._z_mode = False
         self._api = api
+
+        self.setMinimumHeight(get_text_edit_row_height(self, 2))
+        self.vim_mode_enabled = self._api.cfg.opt["basic"]["vim_mode"]
+
+        self.objectNameChanged.connect(self._on_object_name_change)
+
+    def _on_object_name_change(self) -> None:
         try:
             font_def = self._api.cfg.opt["gui"]["fonts"][self.objectName()]
         except KeyError:
@@ -102,9 +109,6 @@ class TextEdit(VimTextEdit):
                 font = QFont()
                 font.fromString(font_def)
                 self.setFont(font)
-
-        self.setMinimumHeight(get_text_edit_row_height(self, 2))
-        self.vim_mode_enabled = self._api.cfg.opt["basic"]["vim_mode"]
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
