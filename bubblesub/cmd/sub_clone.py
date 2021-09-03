@@ -46,9 +46,7 @@ class SubtitlesCloneCommand(BaseCommand):
                 sub_copy = copy(self.api.subs.events[idx])
                 self.api.subs.events.insert(idx + 1, sub_copy)
                 sub_copies.append(sub_copy)
-            self.api.subs.selected_indexes = [
-                sub.index for sub in sub_copies if sub.index is not None
-            ]
+            self.api.subs.selected_indexes = [sub.index for sub in sub_copies]
 
     @staticmethod
     def decorate_parser(api: Api, parser: argparse.ArgumentParser) -> None:

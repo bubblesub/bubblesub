@@ -329,11 +329,7 @@ class AudioPreview(BaseLocalAudioWidget):
                     rect.label_x1 <= event.x() <= rect.label_x2
                     and rect.label_y1 <= event.y() <= rect.label_y2
                 ):
-                    self._api.subs.selected_indexes = (
-                        [rect.event.index]
-                        if rect.event.index is not None
-                        else []
-                    )
+                    self._api.subs.selected_indexes = [rect.event.index]
                     return
 
         if event.button() == Qt.MouseButton.LeftButton:

@@ -264,7 +264,6 @@ class SubtitleSplitDragModeExecutor(DragModeExecutor):
             return
         idx: int
         for source_event in reversed(self.source_events):
-            assert source_event.index
             idx = source_event.index
             new_event = copy(source_event)
             self._api.subs.events.insert(idx + 1, new_event)

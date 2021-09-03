@@ -76,7 +76,7 @@ class SubtitlesSplitKaraokeCommand(BaseCommand):
                 new_selection += new_subs
 
             self.api.subs.selected_indexes = [
-                sub.index for sub in new_selection if sub.index is not None
+                sub.index for sub in new_selection
             ]
 
     def _get_syllables(self, text: str) -> Iterable[_Syllable]:

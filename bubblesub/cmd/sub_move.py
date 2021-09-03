@@ -53,9 +53,7 @@ class SubtitlesMoveCommand(BaseCommand):
             else:
                 raise AssertionError
 
-            self.api.subs.selected_indexes = [
-                sub.index for sub in sub_copies if sub.index is not None
-            ]
+            self.api.subs.selected_indexes = [sub.index for sub in sub_copies]
 
     def _move_above(self, indexes: list[int]) -> Iterable[AssEvent]:
         if indexes[0] == 0:

@@ -152,7 +152,6 @@ class _SpellCheckDialog(Dialog):
             for start, end, word in spell_check_ass_line(
                 self._spell_checker, line.text.replace("\\N", "\n")
             ):
-                assert line.index is not None
                 if (
                     len(self._api.subs.selected_indexes) > 1
                     or line.index > self._api.subs.selected_indexes[0]
