@@ -22,19 +22,8 @@ from typing import Any, Optional
 
 import mpv
 from ass_parser import write_ass
-from mpv import (
-    MPV,
-    MpvSubApi,
-    OpenGlCbGetProcAddrFn,
-    OpenGlCbUpdateFn,
-    _mpv_get_sub_api,
-    _mpv_opengl_cb_draw,
-    _mpv_opengl_cb_init_gl,
-    _mpv_opengl_cb_report_flip,
-    _mpv_opengl_cb_set_update_callback,
-    _mpv_opengl_cb_uninit_gl,
-)
-from PyQt5.QtCore import QMetaObject, Qt, QTimer, pyqtSignal, pyqtSlot
+from mpv import MPV, MpvRenderContext, OpenGlCbGetProcAddrFn
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot
 from PyQt5.QtOpenGL import QGLContext
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget
 
@@ -66,16 +55,9 @@ class MpvWidget(QOpenGLWidget):
         self._destroyed = False
         self._need_subs_refresh = False
 
-        self.mpv = MPV(
-            vo="opengl-cb", ytdl=False, loglevel="info", log_handler=print
-        )
-        self.mpv_gl = _mpv_get_sub_api(
-            self.mpv.handle, MpvSubApi.MPV_SUB_API_OPENGL_CB
-        )
-        self.on_update_c = OpenGlCbUpdateFn(self.on_update)
-        self.on_update_fake_c = OpenGlCbUpdateFn(self.on_update_fake)
+        self.mpv = MPV(ytdl=False, loglevel="info", log_handler=print)
+        self.mpv_gl = None
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
-        _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_c, None)
         self.frameSwapped.connect(
             self.swapped, Qt.ConnectionType.DirectConnection
         )
@@ -140,15 +122,26 @@ class MpvWidget(QOpenGLWidget):
         self._timer.start()
 
     def initializeGL(self) -> None:
-        _mpv_opengl_cb_init_gl(self.mpv_gl, None, self.get_proc_addr_c, None)
+        self.mpv_gl = MpvRenderContext(
+            self.mpv,
+            "opengl",
+            opengl_init_params={"get_proc_address": self.get_proc_addr_c},
+        )
+        self.mpv_gl.update_cb = self.on_update
 
     def paintGL(self) -> None:
-        ratio = self.devicePixelRatioF()
-        w = int(self.width() * ratio)
-        h = int(self.height() * ratio)
-        _mpv_opengl_cb_draw(
-            self.mpv_gl, self.defaultFramebufferObject(), w, -h
-        )
+        if self.mpv_gl:
+            ratio = self.devicePixelRatioF()
+            w = int(self.width() * ratio)
+            h = int(self.height() * ratio)
+            self.mpv_gl.render(
+                flip_y=True,
+                opengl_fbo={
+                    "fbo": self.defaultFramebufferObject(),
+                    "w": w,
+                    "h": h,
+                },
+            )
 
     @pyqtSlot()
     def maybe_update(self) -> None:
@@ -163,25 +156,21 @@ class MpvWidget(QOpenGLWidget):
         else:
             self.update()
 
-    def on_update(self, ctx: Any = None) -> None:
-        # maybe_update method should run on the thread that creates the
-        # OpenGLContext, which in general is the main thread.
-        # QMetaObject.invokeMethod can do this trick.
-        QMetaObject.invokeMethod(self, "maybe_update")
+    def on_update(self) -> None:
+        self._schedule_update.emit()
 
-    def on_update_fake(self, ctx: Any = None) -> None:
+    def on_update_fake(self) -> None:
         pass
 
     def swapped(self) -> None:
-        _mpv_opengl_cb_report_flip(self.mpv_gl, 0)
+        if self.mpv_gl:
+            self.mpv_gl.report_swap()
 
     def closeEvent(self, _: Any) -> None:
         self.makeCurrent()
         if self.mpv_gl:
-            _mpv_opengl_cb_set_update_callback(
-                self.mpv_gl, self.on_update_fake_c, None
-            )
-        _mpv_opengl_cb_uninit_gl(self.mpv_gl)
+            self.mpv_gl.update_cb = self.on_update_fake
+            self.mpv_gl.free()
 
     def _on_subs_load(self) -> None:
         self._api.subs.script_info.changed.subscribe(
