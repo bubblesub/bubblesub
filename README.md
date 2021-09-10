@@ -42,7 +42,7 @@
     - Python 3.9
     - [`libmpv`](https://github.com/mpv-player/mpv.git)
     - [`ffms`](https://github.com/FFMS/ffms2)
-    - [`fftw`](https://github.com/FFTW/fftw3)
+    - [`fftw`](https://github.com/FFTW/fftw3) (`pip install cython` first)
     - `Qt5` bindings
 - Clone the repository: `git clone https://github.com/bubblesub/bubblesub`
 - Enter its directory: `cd bubblesub`
