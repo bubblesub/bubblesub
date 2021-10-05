@@ -152,9 +152,11 @@ class VideoPreview(BaseLocalAudioWidget):
         painter = QPainter()
 
         painter.begin(self)
-        self._draw_video_band(painter)
-        self._draw_frame(painter, bottom_line=False)
-        painter.end()
+        try:
+            self._draw_video_band(painter)
+            self._draw_frame(painter, bottom_line=False)
+        finally:
+            painter.end()
 
     def _draw_video_band(self, painter: QPainter) -> None:
         try:

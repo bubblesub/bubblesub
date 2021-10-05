@@ -303,17 +303,17 @@ class AudioPreview(BaseLocalAudioWidget):
         painter = QPainter()
         painter.begin(self)
 
-        self._recompute_rects(painter)
-
-        self._draw_spectrogram(painter)
-        self._draw_subtitle_rects(painter)
-        self._draw_selection(painter)
-        self._draw_frame(painter, bottom_line=False)
-        self._draw_keyframes(painter)
-        self._draw_video_pos(painter)
-        self._draw_mouse(painter)
-
-        painter.end()
+        try:
+            self._recompute_rects(painter)
+            self._draw_spectrogram(painter)
+            self._draw_subtitle_rects(painter)
+            self._draw_selection(painter)
+            self._draw_frame(painter, bottom_line=False)
+            self._draw_keyframes(painter)
+            self._draw_video_pos(painter)
+            self._draw_mouse(painter)
+        finally:
+            painter.end()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         ctrl = event.modifiers() & Qt.KeyboardModifier.ControlModifier

@@ -69,11 +69,13 @@ class AudioTimeline(BaseLocalAudioWidget):
     def paintEvent(self, event: QPaintEvent) -> None:
         painter = QPainter()
         painter.begin(self)
-        self._draw_scale(painter)
-        self._draw_frame(painter, bottom_line=False)
-        self._draw_keyframes(painter)
-        self._draw_video_pos(painter)
-        painter.end()
+        try:
+            self._draw_scale(painter)
+            self._draw_frame(painter, bottom_line=False)
+            self._draw_keyframes(painter)
+            self._draw_video_pos(painter)
+        finally:
+            painter.end()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.MouseButton.LeftButton:

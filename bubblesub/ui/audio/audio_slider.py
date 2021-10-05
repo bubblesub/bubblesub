@@ -68,11 +68,13 @@ class AudioSlider(BaseGlobalAudioWidget):
     def paintEvent(self, event: QPaintEvent) -> None:
         painter = QPainter()
         painter.begin(self)
-        self._draw_subtitle_rects(painter)
-        self._draw_slider(painter)
-        self._draw_video_pos(painter)
-        self._draw_frame(painter, bottom_line=True)
-        painter.end()
+        try:
+            self._draw_subtitle_rects(painter)
+            self._draw_slider(painter)
+            self._draw_video_pos(painter)
+            self._draw_frame(painter, bottom_line=True)
+        finally:
+            painter.end()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.MouseButton.LeftButton:

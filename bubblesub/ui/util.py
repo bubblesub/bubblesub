@@ -143,9 +143,11 @@ class ColorPickerPreview(QFrame):
     def paintEvent(self, event: QPaintEvent) -> None:
         painter = QPainter()
         painter.begin(self)
-        painter.drawTiledPixmap(self.frameRect(), self._background)
-        painter.fillRect(self.frameRect(), self._color)
-        painter.end()
+        try:
+            painter.drawTiledPixmap(self.frameRect(), self._background)
+            painter.fillRect(self.frameRect(), self._color)
+        finally:
+            painter.end()
         super().paintEvent(event)
 
     def set_color(self, color: QColor) -> None:
