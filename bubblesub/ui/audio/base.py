@@ -374,7 +374,9 @@ class BaseAudioWidget(QWidget):
 
 class BaseLocalAudioWidget(BaseAudioWidget):
     def pts_to_x(self, pts: int) -> float:
-        scale = self.width() / max(1, self._view.view_size)
+        if not self._view.view_size:
+            return 0
+        scale = self.width() / self._view.view_size
         return (pts - self._view.view_start) * scale
 
     def pts_from_x(self, x: float) -> int:
