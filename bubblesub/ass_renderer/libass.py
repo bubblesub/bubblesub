@@ -25,6 +25,7 @@ from collections.abc import Callable, Iterator
 from typing import Any, Optional
 
 import ass_parser
+from ass_parser import write_ass
 
 _libass_path = ctypes.util.find_library("ass") or ctypes.util.find_library(
     "libass"
@@ -115,7 +116,7 @@ def _make_libass_property(name: str, types: list[Any]) -> property:
     return property(getter, _make_libass_setter(name, types))
 
 
-class AssContext(ctypes.Structure):
+class AssLibrary(ctypes.Structure):
     fonts_dir = _make_libass_property("ass_set_fonts_dir", [ctypes.c_char_p])
     extract_fonts = _make_libass_property(
         "ass_set_extract_fonts", [ctypes.c_int]
@@ -185,8 +186,8 @@ class AssRenderer(ctypes.Structure):
         "ass_set_line_position", [ctypes.c_double]
     )
 
-    def _after_init(self, ctx: "AssContext") -> None:
-        self._ctx = ctx
+    def _after_init(self, library: "AssLibrary") -> None:
+        self._library = library
         self._fonts_set = False
         self._internal_fields: Any = {}
 
@@ -265,45 +266,11 @@ class AssStyle(ctypes.Structure):
         ("encoding", ctypes.c_int),
         ("treat_fontname_as_pattern", ctypes.c_int),
         ("blur", ctypes.c_double),
-        ("jsutify", ctypes.c_int),
+        ("justify", ctypes.c_int),
     ]
-
-    @staticmethod
-    def _numpad_align(val: int) -> int:
-        v = (val - 1) // 3
-        if v != 0:
-            v = 3 - v
-        res = ((val - 1) % 3) + 1
-        res += v * 4
-        return res
 
     def _after_init(self, track: "AssTrack") -> None:
         self._track = track
-
-    def populate(self, style: ass_parser.AssStyle) -> None:
-        self.name = _encode_str(style.name)
-        self.fontname = _encode_str(style.font_name)
-        self.fontsize = style.font_size
-        self.primary_color = _color_to_int(style.primary_color)
-        self.secondary_color = _color_to_int(style.secondary_color)
-        self.outline_color = _color_to_int(style.outline_color)
-        self.back_color = _color_to_int(style.back_color)
-        self.bold = style.bold
-        self.italic = style.italic
-        self.underline = style.underline
-        self.strike_out = style.strike_out
-        self.scale_x = style.scale_x / 100.0
-        self.scale_y = style.scale_y / 100.0
-        self.spacing = style.spacing
-        self.angle = style.angle
-        self.border_style = style.border_style
-        self.outline = style.outline
-        self.shadow = style.shadow
-        self.alignment = AssStyle._numpad_align(style.alignment)
-        self.margin_l = style.margin_left
-        self.margin_r = style.margin_right
-        self.margin_v = style.margin_vertical
-        self.encoding = style.encoding
 
 
 class AssEvent(ctypes.Structure):
@@ -324,24 +291,6 @@ class AssEvent(ctypes.Structure):
 
     def _after_init(self, track: "AssTrack") -> None:
         self._track = track
-
-    def _style_name_to_style_id(self, name: str) -> int:
-        for i, style in enumerate(self._track.styles):
-            if style.name is not None and style.name.decode("utf-8") == name:
-                return i
-        return -1
-
-    def populate(self, event: ass_parser.AssEvent) -> None:
-        self.start_ms = int(event.start)
-        self.duration_ms = int(event.end - event.start)
-        self.layer = event.layer
-        self.style_id = self._style_name_to_style_id(event.style_name)
-        self.name = _encode_str(event.actor)
-        self.margin_l = event.margin_left
-        self.margin_r = event.margin_right
-        self.margin_v = event.margin_vertical
-        self.effect = _encode_str(event.effect)
-        self.text = _encode_str(event.text)
 
 
 class AssTrack(ctypes.Structure):
@@ -369,87 +318,52 @@ class AssTrack(ctypes.Structure):
         ("ycbcr_matrix", ctypes.c_int),
         ("default_style", ctypes.c_int),
         ("name", ctypes.c_char_p),
-        ("library", ctypes.POINTER(AssContext)),
+        ("library", ctypes.POINTER(AssLibrary)),
         ("parser_priv", ctypes.c_void_p),
     ]
 
-    def _after_init(self, ctx: AssContext) -> None:
-        self._ctx = ctx
-
-    @property
-    def styles(self) -> list[AssStyle]:
-        if self.n_styles == 0:
-            return []
-        return ctypes.cast(
-            self.styles_arr, ctypes.POINTER(AssStyle * self.n_styles)
-        ).contents
-
-    @property
-    def events(self) -> list[AssEvent]:
-        if self.n_events == 0:
-            return []
-        return ctypes.cast(
-            self.events_arr, ctypes.POINTER(AssEvent * self.n_events)
-        ).contents
-
-    def make_style(self) -> AssStyle:
-        style = self.styles_arr[_libass.ass_alloc_style(ctypes.byref(self))]
-        style._after_init(self)
-        return style
-
-    def make_event(self) -> AssEvent:
-        event = self.events_arr[_libass.ass_alloc_event(ctypes.byref(self))]
-        event._after_init(self)
-        return event
+    def _after_init(self, library: AssLibrary) -> None:
+        self._library = library
 
     def __del__(self) -> None:
-        # XXX: we can't use ass_free_track because it assumes we've allocated
-        #      our strings in the heap (wat), so we just free them with libc.
-        _libc.free(self.styles_arr)
-        _libc.free(self.events_arr)
-        _libc.free(ctypes.byref(self))
+        _libass.ass_free_track(ctypes.byref(self))
 
-    def populate(
-        self,
-        style_list: ass_parser.AssStyleList,
-        event_list: ass_parser.AssEventList,
+    def load_ass_file(
+        self, ass_file: ass_parser.AssFile, video_resolution: tuple[int, int]
     ) -> None:
         self.type = AssTrack.TYPE_ASS
 
-        self.style_format = _encode_str(
-            "Name, Fontname, Fontsize, "
-            "PrimaryColour, SecondaryColour, OutlineColour, BackColour, "
-            "Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, "
-            "Angle, BorderStyle, Outline, Shadow, Alignment, "
-            "MarginL, MarginR, MarginV, Encoding"
+        text = write_ass(ass_file).encode("utf-8")
+        _libass.ass_process_data(ctypes.byref(self), text, len(text))
+
+        self.play_res_x = int(
+            ass_file.script_info.get("PlayResX") or video_resolution[0]
         )
-
-        self.event_format = _encode_str(
-            "Layer, Start, End, AssStyle, Name, "
-            "MarginL, MarginR, MarginV, Effect, Text"
+        self.play_res_y = int(
+            ass_file.script_info.get("PlayResY") or video_resolution[1]
         )
-
-        for source_style in style_list:
-            style = self.make_style()
-            style.populate(source_style)
-
-        for source_event in event_list:
-            if source_event.is_comment:
-                continue
-            event = self.make_event()
-            event.populate(source_event)
+        self.wrap_style = int(ass_file.script_info.get("WrapStyle") or 1)
+        self.scaled_border_and_shadow = (
+            ass_file.script_info.get("ScaledBorderAndShadow", "yes") == "yes"
+        )
 
 
 _libc.free.argtypes = [ctypes.c_void_p]
-_libass.ass_library_init.restype = ctypes.POINTER(AssContext)
-_libass.ass_library_done.argtypes = [ctypes.POINTER(AssContext)]
-_libass.ass_renderer_init.argtypes = [ctypes.POINTER(AssContext)]
+_libass.ass_library_init.restype = ctypes.POINTER(AssLibrary)
+_libass.ass_library_done.argtypes = [ctypes.POINTER(AssLibrary)]
+_libass.ass_renderer_init.argtypes = [ctypes.POINTER(AssLibrary)]
 _libass.ass_renderer_init.restype = ctypes.POINTER(AssRenderer)
 _libass.ass_renderer_done.argtypes = [ctypes.POINTER(AssRenderer)]
-_libass.ass_new_track.argtypes = [ctypes.POINTER(AssContext)]
+_libass.ass_new_track.argtypes = [ctypes.POINTER(AssLibrary)]
 _libass.ass_new_track.restype = ctypes.POINTER(AssTrack)
+_libass.ass_process_data.restype = None
+_libass.ass_process_data.argtypes = [
+    ctypes.POINTER(AssTrack),
+    ctypes.c_char_p,
+    ctypes.c_int,
+]
 _libass.ass_set_style_overrides.argtypes = [
-    ctypes.POINTER(AssContext),
+    ctypes.POINTER(AssLibrary),
     ctypes.POINTER(ctypes.c_char_p),
 ]
 _libass.ass_set_fonts.argtypes = [
@@ -469,7 +383,7 @@ _libass.ass_render_frame.argtypes = [
 ]
 _libass.ass_render_frame.restype = ctypes.POINTER(AssImage)
 _libass.ass_read_memory.argtypes = [
-    ctypes.POINTER(AssContext),
+    ctypes.POINTER(AssLibrary),
     ctypes.c_char_p,
     ctypes.c_size_t,
     ctypes.c_char_p,

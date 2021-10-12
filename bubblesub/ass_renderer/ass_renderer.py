@@ -23,7 +23,7 @@ from typing import Optional, Union
 
 import numpy as np
 import PIL.Image
-from ass_parser import AssEventList, AssScriptInfo, AssStyleList
+from ass_parser import AssFile
 
 from bubblesub.ass_renderer import libass
 
@@ -33,47 +33,28 @@ class AssRenderer:
 
     def __init__(self) -> None:
         """Initialize self."""
-        self._ctx = libass.AssContext()
-        self._renderer = self._ctx.make_renderer()
+        self._library = libass.AssLibrary()
+        self._renderer = self._library.make_renderer()
         self._renderer.set_fonts()
         self._track: Optional[libass.AssTrack] = None
-        self.style_list: Optional[AssStyleList] = None
-        self.event_list: Optional[AssEventList] = None
-        self.script_info: Optional[AssScriptInfo] = None
+        self.ass_file: Optional[AssFile] = None
         self.video_resolution: Optional[tuple[int, int]] = None
 
     def set_source(
         self,
-        style_list: AssStyleList,
-        event_list: AssEventList,
-        script_info: AssScriptInfo,
+        ass_file: AssFile,
         video_resolution: tuple[int, int],
     ) -> None:
         """Set source ASS data.
 
-        :param style_list: list of ASS styles
-        :param event_list: list of ASS events
-        :param script_info: ASS script info
+        :param ass_file: source ASS file
         :param video_resolution: (width, height) tuple
         """
-        self.style_list = style_list
-        self.event_list = event_list
-        self.script_info = script_info
+        self.ass_file = ass_file
         self.video_resolution = video_resolution
 
-        self._track = self._ctx.make_track()
-        self._track.populate(style_list, event_list)
-
-        self._track.play_res_x = int(
-            script_info.get("PlayResX") or video_resolution[0]
-        )
-        self._track.play_res_y = int(
-            script_info.get("PlayResY") or video_resolution[1]
-        )
-        self._track.wrap_style = int(script_info.get("WrapStyle") or 1)
-        self._track.scaled_border_and_shadow = (
-            script_info.get("ScaledBorderAndShadow", "yes") == "yes"
-        )
+        self._track = self._library.make_track()
+        self._track.load_ass_file(ass_file, video_resolution)
 
         self._renderer.storage_size = (
             self._track.play_res_x,

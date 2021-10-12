@@ -20,13 +20,7 @@ from typing import Optional, cast
 
 import PIL.Image
 import PIL.ImageQt
-from ass_parser import (
-    AssEvent,
-    AssEventList,
-    AssScriptInfo,
-    AssStyle,
-    AssStyleList,
-)
+from ass_parser import AssEvent, AssFile, AssStyle
 from PyQt5.QtCore import (
     QItemSelection,
     QItemSelectionModel,
@@ -160,6 +154,7 @@ class _StylePreview(QGroupBox):
             self._preview_box.clear()
             return
 
+        fake_file = AssFile()
         fake_style = copy(selected_style)
         fake_style.name = "Default"
         if (
@@ -169,8 +164,7 @@ class _StylePreview(QGroupBox):
             fake_style.scale(
                 resolution[1] / self._api.video.current_stream.height
             )
-        fake_style_list = AssStyleList()
-        fake_style_list.append(fake_style)
+        fake_file.styles.append(fake_style)
 
         fake_event = AssEvent(
             start=0,
@@ -178,10 +172,7 @@ class _StylePreview(QGroupBox):
             text=self.preview_text.replace("\n", "\\N"),
             style_name=fake_style.name,
         )
-        fake_event_list = AssEventList()
-        fake_event_list.append(fake_event)
-
-        fake_script_info = AssScriptInfo()
+        fake_file.events.append(fake_event)
 
         image = PIL.Image.new(mode="RGBA", size=resolution)
 
@@ -192,9 +183,7 @@ class _StylePreview(QGroupBox):
                 for x in range(0, resolution[0], background.width):
                     image.paste(background, (x, y))
 
-        self._renderer.set_source(
-            fake_style_list, fake_event_list, fake_script_info, resolution
-        )
+        self._renderer.set_source(fake_file, resolution)
         try:
             aspect_ratio = self._api.video.current_stream.aspect_ratio
         except ResourceUnavailable:

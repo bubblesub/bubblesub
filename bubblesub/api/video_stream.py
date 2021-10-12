@@ -183,9 +183,7 @@ class VideoStream(BaseStream, QObject):
 
         if include_subtitles:
             self._ass_renderer.set_source(
-                self._subs_api.styles,
-                self._subs_api.events,
-                self._subs_api.script_info,
+                self._subs_api.ass_file,
                 (grab_width, grab_height),
             )
             subs_image = self._ass_renderer.render(
