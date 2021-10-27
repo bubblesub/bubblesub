@@ -49,6 +49,7 @@ class MpvWidget(QOpenGLWidget):
     def __init__(self, api: Api, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._api = api
+        self._end = None
 
         locale.setlocale(locale.LC_NUMERIC, "C")
 
@@ -233,13 +234,7 @@ class MpvWidget(QOpenGLWidget):
     def _set_end(self, end: Optional[int]) -> None:
         if not self._api.playback.is_ready:
             return
-        if end is None:
-            ret = "none"
-        else:
-            end = max(0, end - 1)
-            ret = ms_to_str(end)
-        if self.mpv.end != ret:
-            self.mpv.end = ret
+        self._end = end
 
     def _on_request_seek(self, pts: int, precise: bool) -> None:
         self._set_end(None)  # mpv refuses to seek beyond --end
@@ -348,6 +343,8 @@ class MpvWidget(QOpenGLWidget):
     def _on_mpv_time_pos_change(self, prop_name: str, new_value: Any) -> None:
         pts = round((new_value or 0) * 1000)
         self._api.playback.receive_current_pts_change.emit(pts)
+        if self._end and pts >= self._end:
+            self.mpv.pause = True
 
     def _on_mpv_pause_change(self, prop_name: str, new_value: Any) -> None:
         self._api.playback.pause_changed.disconnect(self._on_pause_change)
