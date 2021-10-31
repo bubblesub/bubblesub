@@ -49,7 +49,7 @@ WORKDIR bubblesub
 # Install bubblesub dependencies
 RUN mkdir -p bubblesub && \
     touch bubblesub/__init__.py
-COPY setup.py .
+COPY setup.cfg .
 COPY pyproject.toml .
 RUN locale-gen en_US.UTF-8 && \
     export LC_ALL=en_US.UTF-8 && \
