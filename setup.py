@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # bubblesub - ASS subtitle editor
 # Copyright (C) 2018 Marcin Kurczewski
@@ -16,70 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
+"""Setup routine."""
+import setuptools
 
-from setuptools import find_packages, setup
-
-install_packages = [
-    "ffms2",
-    "numpy",
-    "pyfftw",
-    "PyQT5",
-    "quamash",
-    "regex",
-    "pyqtcolordialog",
-    "python-mpv",
-    "ass-parser",
-    "ass-tag-parser",
-    "Pillow",
-    "pyyaml",
-    "parsimonious",
-    "pluginbase",
-    "lazy-import",
-    "sortedcontainers",
-    "pynvim",
-]
-
-if os.name == "nt":
-    install_packages.append("pyspellchecker")
-else:
-    install_packages.append("pyenchant")
-
-setup(
-    author="Marcin Kurczewski",
-    author_email="rr-@sakuya.pl",
-    name="bubblesub",
-    long_description="ASS subtitle editor",
-    version="0.0",
-    url="https://github.com/bubblesub/bubblesub",
-    packages=find_packages(),
-    entry_points={"console_scripts": ["bubblesub = bubblesub.__main__:main"]},
-    package_dir={"bubblesub": "bubblesub"},
-    package_data={
-        "bubblesub": ["data/*", "data/**/*", "ui/assets/*", "ui/assets/**/*"]
-    },
-    python_requires=">=3.9",
-    install_requires=install_packages,
-    extras_require={
-        "develop": [
-            "docstring_parser",
-            "mypy",
-            "pytest",
-            "pytest-qt",
-            "pyScss",
-        ]
-    },
-    classifiers=[
-        "Environment :: X11 Applications :: Qt",
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-        "Natural Language :: English",
-        "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.9",
-        "Topic :: Text Editors",
-        "Topic :: Multimedia :: Sound/Audio",
-        "Topic :: Multimedia :: Video",
-    ],
-)
+setuptools.setup()
