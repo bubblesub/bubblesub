@@ -28,25 +28,6 @@ from bubblesub.spell_check import BaseSpellChecker
 
 
 @lru_cache(maxsize=5000)
-def ass_to_plaintext(text: str) -> str:
-    """Strip ASS tags from an ASS line.
-
-    :param text: input ASS line
-    :return: plain text
-    """
-    try:
-        ass_line = ass_tag_parser.parse_ass(text)
-    except ass_tag_parser.ParseError:
-        ret = str(regex.sub("{[^}]*}", "", text))
-    else:
-        ret = ""
-        for item in ass_line:
-            if isinstance(item, ass_tag_parser.AssText):
-                ret += item.text
-    return ret.replace("\\h", " ").replace("\\n", " ").replace("\\N", "\n")
-
-
-@lru_cache(maxsize=5000)
 def character_count(text: str) -> int:
     """Count how many characters an ASS line contains.
 
@@ -56,7 +37,12 @@ def character_count(text: str) -> int:
     :return: number of characters
     """
     return len(
-        regex.sub(r"\W+", "", ass_to_plaintext(text), flags=regex.I | regex.U)
+        regex.sub(
+            r"\W+",
+            "",
+            ass_tag_parser.ass_to_plaintext(text),
+            flags=regex.I | regex.U,
+        )
     )
 
 

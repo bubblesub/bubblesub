@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 import ffms2
 import numpy as np
 from ass_parser import AssEvent
+from ass_tag_parser import ass_to_plaintext
 from PyQt5.QtCore import QEvent, QObject, QPoint, Qt, pyqtSignal
 from PyQt5.QtGui import (
     QBrush,
@@ -41,7 +42,6 @@ from sortedcontainers import SortedDict
 from bubblesub.api import Api
 from bubblesub.api.audio_stream import AudioStream
 from bubblesub.api.threading import QueueWorker
-from bubblesub.ass_util import ass_to_plaintext
 from bubblesub.errors import ResourceUnavailable
 from bubblesub.ui.audio.base import SLIDER_SIZE, BaseLocalAudioWidget, DragMode
 from bubblesub.ui.themes import ThemeManager
