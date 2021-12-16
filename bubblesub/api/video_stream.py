@@ -27,13 +27,13 @@ from typing import Any, ClassVar, Optional, Union, cast
 import ffms2
 import numpy as np
 import PIL.Image
+from ass_renderer import AssRenderer
 from PyQt5.QtCore import QObject, pyqtBoundSignal, pyqtSignal
 
 from bubblesub.api.base_stream import BaseStream, StreamUnavailable
 from bubblesub.api.log import LogApi
 from bubblesub.api.subs import SubtitlesApi
 from bubblesub.api.threading import ThreadingApi
-from bubblesub.ass_renderer import AssRenderer
 
 _LOADING = object()
 _SAMPLER_LOCK = threading.Lock()

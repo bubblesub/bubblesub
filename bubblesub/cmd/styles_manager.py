@@ -21,6 +21,7 @@ from typing import Optional, cast
 import PIL.Image
 import PIL.ImageQt
 from ass_parser import AssEvent, AssFile, AssStyle
+from ass_renderer import AssRenderer
 from PyQt5.QtCore import (
     QItemSelection,
     QItemSelectionModel,
@@ -51,7 +52,6 @@ from PyQt5.QtWidgets import (
 
 from bubblesub.api import Api
 from bubblesub.api.cmd import BaseCommand
-from bubblesub.ass_renderer import AssRenderer
 from bubblesub.errors import ResourceUnavailable
 from bubblesub.ui.assets import get_assets
 from bubblesub.ui.font_combo_box import FontComboBox, refresh_font_db
