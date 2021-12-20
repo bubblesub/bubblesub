@@ -47,17 +47,14 @@ RUN git clone https://github.com/FFMS/ffms2.git && \
 WORKDIR bubblesub
 
 # Install bubblesub dependencies
-RUN mkdir -p bubblesub && \
-    touch bubblesub/__init__.py
+COPY bubblesub bubblesub
 COPY setup.cfg .
 COPY pyproject.toml .
 RUN locale-gen en_US.UTF-8 && \
     export LC_ALL=en_US.UTF-8 && \
-    python3.9 -m pip install -e .[develop]
+    python3.9 -m pip install .[develop]
 
-# Install bubblesub
-COPY bubblesub bubblesub
-# ...but not local development garbage
+# Remove local development garbage
 RUN find . -type d -name __pycache__ -exec rm -r {} \+
 
 # Find libffms2.so
