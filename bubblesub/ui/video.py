@@ -108,8 +108,8 @@ class MousePosCalculator:
         # coordinates of the video frame
         scaled_video_w = video_w * scale
         scaled_video_h = video_h * scale
-        scaled_video_w *= 2 ** zoom
-        scaled_video_h *= 2 ** zoom
+        scaled_video_w *= 2**zoom
+        scaled_video_h *= 2**zoom
         scaled_video_x = (display_w - scaled_video_w) / 2
         scaled_video_y = (display_h - scaled_video_h) / 2
         scaled_video_x += pan_x * scaled_video_w
@@ -219,12 +219,12 @@ class RelativeAxisVideoMouseHandler(VideoMouseHandler):
         value_x = self._initial_value_x + (
             display_pos.x() - self._initial_display_pos.x()
         ) * 2 * self.default_scale / (
-            self.default_scale ** self._api.video.view.zoom
+            self.default_scale**self._api.video.view.zoom
         )
         value_y = self._initial_value_y + (
             display_pos.y() - self._initial_display_pos.y()
         ) * 2 * self.default_scale / (
-            self.default_scale ** self._api.video.view.zoom
+            self.default_scale**self._api.video.view.zoom
         )
 
         for sub in sel:
@@ -296,10 +296,10 @@ class PanVideoMouseHandler(VideoMouseHandler):
         display_pos = self._mouse_pos_calc.get_display_pos(event)
         self._api.video.view.pan_x = self._initial_pan_x + (
             display_pos.x() - self._initial_display_pos.x()
-        ) / (2 ** self._api.video.view.zoom)
+        ) / (2**self._api.video.view.zoom)
         self._api.video.view.pan_y = self._initial_pan_y + (
             display_pos.y() - self._initial_display_pos.y()
-        ) / (2 ** self._api.video.view.zoom)
+        ) / (2**self._api.video.view.zoom)
 
     def on_middle_click(self, event: QMouseEvent) -> None:
         self._api.video.view.pan = (
@@ -348,7 +348,7 @@ class SubRotationHandler(VideoMouseHandler):
         display_pos = self._mouse_pos_calc.get_display_pos(event)
         angle = self._initial_angle + (
             display_pos.x() - self._initial_display_pos.x()
-        ) * 360 / (2 ** self._api.video.view.zoom)
+        ) * 360 / (2**self._api.video.view.zoom)
         for sub in sel:
             text = sub.text
             text = self._get_regex(axis).sub("", text)

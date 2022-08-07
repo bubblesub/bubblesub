@@ -407,7 +407,7 @@ class AudioPreview(BaseLocalAudioWidget):
         pts_range = np.linspace(min_pts, max_pts, self.width())
         block_idx_range = np.round(pts_range * sample_rate / 1000.0).astype(
             dtype=np.int32
-        ) // (2 ** DERIVATION_DISTANCE)
+        ) // (2**DERIVATION_DISTANCE)
 
         blocks_to_update = [
             block_idx
@@ -445,7 +445,7 @@ class AudioPreview(BaseLocalAudioWidget):
         pts_range = np.linspace(min_pts, max_pts, self.width())
         block_idx_range = np.round(pts_range * sample_rate / 1000.0).astype(
             dtype=np.int32
-        ) // (2 ** DERIVATION_DISTANCE)
+        ) // (2**DERIVATION_DISTANCE)
 
         for x, block_idx in enumerate(block_idx_range):
             column = zero_column

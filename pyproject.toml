@@ -54,7 +54,6 @@ disable = [
     "too-many-instance-attributes",
     "too-many-public-methods",
     "too-few-public-methods",
-    "no-self-use",
 ]
 
 [tool.pylint.typecheck]
