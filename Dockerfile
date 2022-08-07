@@ -10,7 +10,7 @@ ENV MPV_PACKAGES="\
 ENV FFMPEG_PACKAGES="\
     libavcodec-dev libavformat-dev libavdevice-dev zlib1g-dev"
 ENV BUBBLESUB_PACKAGES="\
-    python3.9 python3.9-dev python3.9-distutils enchant libfftw3-dev xvfb qt5-default"
+    python3.10 python3.10-dev python3.10-distutils python3-pyqt5 python3-pyqt5.qtopengl libfftw3-dev xvfb libqt5gui5"
 ENV EXTRA_PACKAGES="\
     neovim"
 
@@ -23,17 +23,15 @@ RUN apt-get update && \
         $MPV_PACKAGES \
         $FFMPEG_PACKAGES \
         $BUBBLESUB_PACKAGES \
-        $EXTRA_PACKAGES
-
-# Cleanup
-RUN apt-get clean -y && \
+        $EXTRA_PACKAGES && \
+    apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Set Python environment
 RUN wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py && \
-    python3.9 get-pip.py && \
-    python3.9 -m pip install setuptools && \
-    python3.9 -m pip install Cython  # https://github.com/pyFFTW/pyFFTW/issues/252
+    python3.10 get-pip.py && \
+    python3.10 -m pip install setuptools && \
+    python3.10 -m pip install Cython  # https://github.com/pyFFTW/pyFFTW/issues/252
 
 # Disable git sslVerify
 RUN git config --global http.sslVerify false
@@ -47,12 +45,12 @@ RUN git clone https://github.com/FFMS/ffms2.git && \
 WORKDIR bubblesub
 
 # Install bubblesub dependencies
-COPY bubblesub bubblesub
 COPY setup.cfg .
 COPY pyproject.toml .
+COPY bubblesub bubblesub
 RUN locale-gen en_US.UTF-8 && \
     export LC_ALL=en_US.UTF-8 && \
-    python3.9 -m pip install .[develop]
+    python3.10 -m pip install .[develop]
 
 # Remove local development garbage
 RUN find . -type d -name __pycache__ -exec rm -r {} \+
@@ -65,4 +63,4 @@ CMD \
     # start a virtual X server for UI tests
     /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX; \
     # run the tests
-    python3.9 -m pytest bubblesub/
+    python3.10 -m pytest bubblesub/

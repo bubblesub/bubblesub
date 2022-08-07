@@ -22,7 +22,7 @@ from typing import Any, Optional
 
 import mpv
 from ass_parser import write_ass
-from mpv import MPV, MpvRenderContext, OpenGlCbGetProcAddrFn
+from mpv import MPV, MpvGlGetProcAddressFn, MpvRenderContext
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot
 from PyQt5.QtOpenGL import QGLContext
 from PyQt5.QtWidgets import QOpenGLWidget, QWidget
@@ -58,7 +58,7 @@ class MpvWidget(QOpenGLWidget):
 
         self.mpv = MPV(ytdl=False, loglevel="info", log_handler=print)
         self.mpv_gl = None
-        self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
+        self.get_proc_addr_c = MpvGlGetProcAddressFn(get_proc_addr)
         self.frameSwapped.connect(
             self.swapped, Qt.ConnectionType.DirectConnection
         )
