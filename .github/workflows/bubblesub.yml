@@ -1,6 +1,6 @@
 name: bubblesub
 
-on: [pull_request]
+on: [push]
 
 jobs:
   style:
