@@ -74,9 +74,8 @@ def _load_video_source(
     except ffms2.Error as ex:
         log_api.error(f"error loading video {uid} ({ex})")
         return None
-    else:
-        log_api.info(f"video {uid} finished loading")
-        return source
+    log_api.info(f"video {uid} finished loading")
+    return source
 
 
 class VideoStream(BaseStream, QObject):

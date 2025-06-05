@@ -43,10 +43,10 @@ class SaveAudioSampleCommand(BaseCommand):
 
         path = await self.args.path.get_save_path(
             file_filter="Waveform Audio File (*.wav)",
-            default_file_name="audio-{}-{}..{}.wav".format(
-                self.api.audio.current_stream.path.name,
-                ms_to_str(start),
-                ms_to_str(end),
+            default_file_name=(
+                "audio-"
+                f"{self.api.audio.current_stream.path.name}-"
+                f"{ms_to_str(start)}..{ms_to_str(end)}.wav"
             ),
         )
 

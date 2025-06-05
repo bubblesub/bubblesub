@@ -334,20 +334,28 @@ class AudioPreview(BaseLocalAudioWidget):
 
         if event.button() == Qt.MouseButton.LeftButton:
             self.begin_drag_mode(
-                DragMode.SUBTITLE_START
-                if shift
-                else DragMode.NEW_SUBTITLE_START
-                if ctrl
-                else DragMode.SELECTION_START,
+                (
+                    DragMode.SUBTITLE_START
+                    if shift
+                    else (
+                        DragMode.NEW_SUBTITLE_START
+                        if ctrl
+                        else DragMode.SELECTION_START
+                    )
+                ),
                 event,
             )
         elif event.button() == Qt.MouseButton.RightButton:
             self.begin_drag_mode(
-                DragMode.SUBTITLE_END
-                if shift
-                else DragMode.NEW_SUBTITLE_END
-                if ctrl
-                else DragMode.SELECTION_END,
+                (
+                    DragMode.SUBTITLE_END
+                    if shift
+                    else (
+                        DragMode.NEW_SUBTITLE_END
+                        if ctrl
+                        else DragMode.SELECTION_END
+                    )
+                ),
                 event,
             )
         elif event.button() == Qt.MouseButton.MiddleButton:

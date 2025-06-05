@@ -43,7 +43,7 @@ class BaseTheme:
     def palette(self) -> dict[str, str]:
         raise NotImplementedError("not implemented")
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
     def get_icon(self, name: str) -> QIcon:
         pixmap = QPixmap(str(self.get_icon_path(name))).scaled(
             QSize(48, 48),

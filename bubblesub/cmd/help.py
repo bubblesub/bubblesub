@@ -50,7 +50,7 @@ def get_usage(
     desc = " ".join(
         [cmd_name] + [format_action(action) for action in parser._actions]
     )
-    return "Usage: {}".format(add_backticks(desc, backticks=backticks))
+    return f"Usage: {add_backticks(desc, backticks=backticks)}"
 
 
 def get_params_help(
@@ -76,12 +76,11 @@ def get_params_help(
         desc += ": "
         desc += action.help
         if action.choices:
-            desc += " (can be {})".format(
-                ", ".join(
-                    add_backticks(f"{choice!s}", backticks=backticks)
-                    for choice in action.choices
-                )
-            )
+            choices = [
+                add_backticks(f"{choice!s}", backticks=backticks)
+                for choice in action.choices
+            ]
+            desc += f" (can be {', '.join(choices)})"
         desc += "\n"
     return desc.rstrip()
 
@@ -118,11 +117,8 @@ class HelpCommand(BaseCommand):
         self.api.log.info(cls.names[0])
 
         if len(cls.names) > 1:
-            self.api.log.info(
-                "(aliases: {})\n".format(
-                    ", ".join(f"{alias}" for alias in cls.names[1:])
-                )
-            )
+            aliases = [f"{alias}" for alias in cls.names[1:]]
+            self.api.log.info(f"(aliases: {', '.join(aliases)})\n")
 
         self.api.log.info(cls.help_text)
         if cls.help_text_extra:

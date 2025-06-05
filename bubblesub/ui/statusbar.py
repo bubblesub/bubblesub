@@ -74,24 +74,22 @@ class StatusBar(QStatusBar):
                 else:
                     ranges.append((idx, idx))
 
+            ranges_txt = [
+                format_range(low + 1, high + 1) for low, high in ranges
+            ]
             self._subs_label.setText(
-                "Subtitles: {}/{} ({}, {:.1%})".format(
-                    ",".join(
-                        format_range(low + 1, high + 1) for low, high in ranges
-                    ),
-                    total,
-                    count,
-                    count / total,
-                )
+                f"Subtitles: {','.join(ranges_txt)}/{total} "
+                f"({count}, {count / total:.1%})"
             )
 
     def _on_current_pts_change(self) -> None:
+        percent = self._api.playback.current_pts / max(
+            1, self._api.playback.max_pts
+        )
         self._video_frame_label.setText(
-            "Video frame: {} ({:.1%})".format(
-                bubblesub.util.ms_to_str(self._api.playback.current_pts),
-                self._api.playback.current_pts
-                / max(1, self._api.playback.max_pts),
-            )
+            "Video frame: "
+            f"{bubblesub.util.ms_to_str(self._api.playback.current_pts)} "
+            f"({percent:.1%})"
         )
 
     def _on_audio_selection_change(self) -> None:
@@ -107,9 +105,9 @@ class StatusBar(QStatusBar):
         end_delta = self._api.audio.view.selection_end - sub.end
 
         self._audio_selection_label.setText(
-            "Audio selection: {} / {} (duration: {})".format(
-                format_ms_delta(start_delta),
-                format_ms_delta(end_delta),
-                bubblesub.util.ms_to_str(self._api.audio.view.selection_size),
-            )
+            "Audio selection: "
+            f"{format_ms_delta(start_delta)} / {format_ms_delta(end_delta)} "
+            "(duration: "
+            f"{bubblesub.util.ms_to_str(self._api.audio.view.selection_size)}"
+            ")"
         )

@@ -438,9 +438,11 @@ class _SearchDialog(Dialog):
             self._api, self._handler, self._search_regex, self._target_text
         )
         await show_notice(
-            f"Replaced {count} occurences."
-            if count
-            else "No occurences found.",
+            (
+                f"Replaced {count} occurences."
+                if count
+                else "No occurences found."
+            ),
             self,
         )
 

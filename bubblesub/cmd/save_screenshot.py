@@ -41,8 +41,9 @@ class SaveScreenshotCommand(BaseCommand):
         pts = await self.args.pts.get()
         path = await self.args.path.get_save_path(
             file_filter="Portable Network Graphics (*.png)",
-            default_file_name="shot-{}-{}.png".format(
-                self.api.video.current_stream.path.name, ms_to_str(pts)
+            default_file_name=(
+                f"shot-{self.api.video.current_stream.path.name}-"
+                f"{ms_to_str(pts)}.png"
             ),
         )
 

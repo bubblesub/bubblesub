@@ -27,10 +27,10 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from bubblesub.api.base_stream import BaseStream, StreamUnavailable
 from bubblesub.api.threading import synchronized
 
-TStream = TypeVar("TStream", bound=BaseStream)
+T = TypeVar("T", bound=BaseStream)
 
 
-class BaseStreamsApi(Generic[TStream], QObject):
+class BaseStreamsApi(Generic[T], QObject):
     """Common functions for audio and video stream manager APIs."""
 
     stream_lock = threading.RLock()
@@ -46,8 +46,8 @@ class BaseStreamsApi(Generic[TStream], QObject):
     def __init__(self) -> None:
         """Initialize self."""
         super().__init__()
-        self._streams: list[TStream] = []
-        self._current_stream: Optional[TStream] = None
+        self._streams: list[T] = []
+        self._current_stream: Optional[T] = None
 
     @synchronized(lock=stream_lock)
     def unload_all_streams(self) -> None:
@@ -123,7 +123,7 @@ class BaseStreamsApi(Generic[TStream], QObject):
         if uid is None:
             self._set_current_stream(None)
         else:
-            stream: Optional[TStream]
+            stream: Optional[T]
             for stream in self._streams:
                 if stream.uid == uid:
                     break
@@ -141,7 +141,7 @@ class BaseStreamsApi(Generic[TStream], QObject):
 
     @property
     @synchronized(lock=stream_lock)
-    def current_stream(self) -> TStream:
+    def current_stream(self) -> T:
         """Return currently loaded stream.
 
         Raises an exception if there is no stream loaded yet.
@@ -174,31 +174,31 @@ class BaseStreamsApi(Generic[TStream], QObject):
 
     @property
     @synchronized(lock=stream_lock)
-    def streams(self) -> list[TStream]:
+    def streams(self) -> list[T]:
         """Return all loaded streams.
 
         :return: list of streams
         """
         return self._streams[:]
 
-    def _set_current_stream(self, stream: Optional[TStream]) -> None:
+    def _set_current_stream(self, stream: Optional[T]) -> None:
         if stream != self._current_stream:
             self._current_stream = stream
             self.current_stream_switched.emit(self._current_stream)
 
     @synchronized(lock=stream_lock)
-    def _on_stream_load(self, stream: TStream) -> None:
+    def _on_stream_load(self, stream: T) -> None:
         self.stream_loaded.emit(stream)
 
     @synchronized(lock=stream_lock)
-    def _on_stream_error(self, stream: TStream) -> None:
+    def _on_stream_error(self, stream: T) -> None:
         self.stream_errored.emit(stream)
 
     @synchronized(lock=stream_lock)
-    def _on_stream_change(self, stream: TStream) -> None:
+    def _on_stream_change(self, stream: T) -> None:
         self.stream_changed.emit(stream)
 
-    def _create_stream(self, path: Path) -> TStream:
+    def _create_stream(self, path: Path) -> T:
         raise NotImplementedError
 
     @synchronized(lock=stream_lock)

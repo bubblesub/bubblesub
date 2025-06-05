@@ -82,9 +82,8 @@ def _load_audio_source(
     except ffms2.Error as ex:
         log_api.error(f"error loading audio {uid} ({ex})")
         return None
-    else:
-        log_api.info(f"audio {uid} finished loading")
-        return source
+    log_api.info(f"audio {uid} finished loading")
+    return source
 
 
 class AudioStream(BaseStream, QObject):

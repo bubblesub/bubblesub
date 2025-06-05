@@ -78,7 +78,7 @@ AUDIO_FILE_FILTER = (
 
 def async_slot(*args: Any) -> Callable[..., Callable[..., None]]:
     def _outer(
-        func: Callable[..., asyncio.Future[Any]]
+        func: Callable[..., asyncio.Future[Any]],
     ) -> Callable[..., None]:
         @pyqtSlot(*args)
         @wraps(func)

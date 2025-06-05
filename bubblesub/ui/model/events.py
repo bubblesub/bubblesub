@@ -129,13 +129,8 @@ class _CpsColumn(_Column):
         super().__init__("CPS")
 
     def display(self, sub: AssEvent) -> Any:
-        return (
-            "{:.1f}".format(
-                character_count(sub.text) / max(1, sub.duration / 1000.0)
-            )
-            if sub.duration > 0
-            else "-"
-        )
+        value = character_count(sub.text) / max(1, sub.duration / 1000.0)
+        return f"{value:.1f}" if sub.duration > 0 else "-"
 
     def read(self, sub: AssEvent) -> Any:
         raise NotImplementedError("not implemented")

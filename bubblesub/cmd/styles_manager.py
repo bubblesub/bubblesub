@@ -140,8 +140,7 @@ class _StylePreview(QGroupBox):
             idx = self._selection_model.selectedIndexes()[0].row()
         except IndexError:
             return None
-        else:
-            return self._api.subs.styles[idx]
+        return self._api.subs.styles[idx]
 
     def update_preview(self) -> None:
         selected_style = self._selected_style
@@ -319,8 +318,8 @@ class _StyleList(QWidget):
             if not exists:
                 return style_name
 
-            prompt_text = '"{}" already exists. Choose different name:'.format(
-                style_name
+            prompt_text = (
+                f'"{style_name}" already exists. Choose different name:'
             )
 
     @async_slot()

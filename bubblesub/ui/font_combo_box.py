@@ -52,9 +52,11 @@ def _get_font_families() -> list[str]:
     return list(
         sorted(
             {
-                family
-                if " [" not in family
-                else family[0 : family.index(" [")]
+                (
+                    family
+                    if " [" not in family
+                    else family[0 : family.index(" [")]
+                )
                 for family in QFontDatabase().families()
             }
         )
