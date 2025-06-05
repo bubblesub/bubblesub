@@ -191,4 +191,4 @@ class VideoPreview(BaseLocalAudioWidget):
             painter.drawPixmap(0, 0, QPixmap.fromImage(image))
             painter.restore()
         except ResourceUnavailable:
-            return
+            pass

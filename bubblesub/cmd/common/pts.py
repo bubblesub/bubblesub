@@ -92,8 +92,8 @@ class _AsyncNodeVisitor:
 
     async def generic_visit(self, node: Any, visited: list[Any]) -> Any:
         raise NotImplementedError(
-            "No visitor method was defined for this expression: %s"
-            % node.expr.as_rule()
+            "No visitor method was defined for this expression: "
+            f"{node.expr.as_rule()}"
         )
 
     async def parse(self, text: str, pos: int = 0) -> Any:

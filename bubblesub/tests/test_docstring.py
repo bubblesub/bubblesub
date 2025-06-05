@@ -40,7 +40,9 @@ IGNORED_ARGUMENTS = {
 
 def get_nodes() -> Iterable[
     tuple[
-        Path, Union[ast.FunctionDef, ast.ClassDef, ast.Module], Optional[str]
+        Path,
+        Union[ast.FunctionDef, ast.ClassDef, ast.Module],
+        Optional[str],
     ]
 ]:
     """List AST nodes and their docstrings.

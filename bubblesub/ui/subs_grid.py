@@ -128,9 +128,7 @@ class SubtitlesGridDelegate(QStyledItemDelegate):
 
         rect = option.rect
         metrics = painter.fontMetrics()
-        regex = "({})".format(
-            "|".join(re.escape(sep) for sep in HIGHLIGHTABLE_CHUNKS)
-        )
+        regex = f"({'|'.join(re.escape(sep) for sep in HIGHLIGHTABLE_CHUNKS)})"
 
         for chunk in re.split(regex, text):
             painter.setPen(

@@ -26,14 +26,14 @@ from PyQt5.QtCore import QAbstractTableModel, QModelIndex, QObject, Qt
 
 from bubblesub.util import make_ranges
 
-TItem = TypeVar("TItem")
+T = TypeVar("T")
 
 
-class ObservableListTableAdapter(Generic[TItem], QAbstractTableModel):
+class ObservableListTableAdapter(Generic[T], QAbstractTableModel):
     """Make ObservableList usable as Qt's QAbstractTableModel."""
 
     def __init__(
-        self, parent: QObject, list_: ObservableSequenceMixin[TItem]
+        self, parent: QObject, list_: ObservableSequenceMixin[T]
     ) -> None:
         """Initialize self.
 

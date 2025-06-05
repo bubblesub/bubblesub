@@ -50,7 +50,7 @@ class SubtitlesCopyCommand(BaseCommand):
         elif self.args.subject == "times":
             QApplication.clipboard().setText(
                 "\n".join(
-                    "{} - {}".format(ms_to_str(sub.start), ms_to_str(sub.end))
+                    f"{ms_to_str(sub.start)} - {ms_to_str(sub.end)}"
                     for sub in subs
                 )
             )

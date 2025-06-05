@@ -25,10 +25,10 @@ from PyQt5.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal
 
 from bubblesub.api.log import LogApi
 
-TFunction = TypeVar("TFunction", bound=Callable[..., Any])
+T = TypeVar("T", bound=Callable[..., Any])
 
 
-def synchronized(lock: ContextManager) -> Callable[[TFunction], TFunction]:
+def synchronized(lock: ContextManager) -> Callable[[T], T]:
     """A decorator that lets the passed function run only when given lock is
     active.
 
@@ -36,12 +36,12 @@ def synchronized(lock: ContextManager) -> Callable[[TFunction], TFunction]:
     :return: decorated function
     """
 
-    def _outer(func: TFunction) -> TFunction:
+    def _outer(func: T) -> T:
         def _inner(*args: Any, **kwargs: Any) -> Any:
             with lock:
                 return func(*args, **kwargs)
 
-        return cast(TFunction, _inner)
+        return cast(T, _inner)
 
     return _outer
 

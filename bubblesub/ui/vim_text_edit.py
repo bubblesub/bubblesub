@@ -33,7 +33,7 @@ from PyQt5.QtWidgets import QPlainTextEdit, QTextEdit, QWidget
 
 KEYMAP = {
     Qt.Key.Key_Return: "<CR>",
-    Qt.Key.Key_Escape: "\x1B",
+    Qt.Key.Key_Escape: "\x1b",
     Qt.Key.Key_Backspace: "<BS>",
     Qt.Key.Key_Delete: "<Del>",
     Qt.Key.Key_Right: "<Right>",
@@ -84,8 +84,8 @@ class VimTextEdit(QPlainTextEdit):
     def reset(self) -> None:
         if self._vim_mode_enabled and self._nvim:
             with self._reconnect_guard():
-                self._nvim.input("\x1B")
-                self._nvim.input("\x1B")
+                self._nvim.input("\x1b")
+                self._nvim.input("\x1b")
                 with self._ignore_ui_signals():
                     self._sync_ui()
 
@@ -96,11 +96,11 @@ class VimTextEdit(QPlainTextEdit):
             with self._ignore_ui_signals(), self._reconnect_guard():
                 text = self.property(self.metaObject().userProperty().name())
 
-                self._nvim.input("\x1B")
-                self._nvim.input("\x1B")
+                self._nvim.input("\x1b")
+                self._nvim.input("\x1b")
                 self._nvim.command("%bufdo! bd!")
                 self._nvim.current.buffer[:] = text.splitlines()
-                self._nvim.input("\x1B")
+                self._nvim.input("\x1b")
 
     def _cursor_position_changed(self) -> None:
         if self._signals_connected <= 0:

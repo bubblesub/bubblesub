@@ -67,7 +67,7 @@ class ThemeManager(QObject):
     def current_theme(self) -> BaseTheme:
         return self._theme
 
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
     def get_color(self, color_name: str) -> QColor:
         if color_name not in self._theme.palette:
             return QColor()

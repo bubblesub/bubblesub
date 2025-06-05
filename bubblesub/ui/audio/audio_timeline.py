@@ -110,17 +110,18 @@ class AudioTimeline(BaseLocalAudioWidget):
 
             painter.drawLine(x, 0, x, gap)
             if pts % one_minute == 0:
-                text = "{:02}:{:02}".format(pts // one_minute, 0)
+                text = f"{pts // one_minute:02}:{0:02}"
             elif pts % (10 * one_second) == 0:
-                long_text = "{:02}:{:02}".format(
-                    pts // one_minute, (pts % one_minute) // one_second
+                long_text = (
+                    f"{pts // one_minute:02}:"
+                    f"{(pts % one_minute) // one_second:02}"
                 )
                 long_text_width = painter.fontMetrics().width(long_text)
                 next_label_x = round(self.pts_to_x(pts + 10 * one_second))
                 if long_text_width < next_label_x - x:
                     text = long_text
                 else:
-                    text = "{:02}".format((pts % one_minute) // one_second)
+                    text = f"{(pts % one_minute) // one_second:02}"
             else:
                 continue
             painter.drawText(x + 2, text_height + (h - text_height) // 2, text)
