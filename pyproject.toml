@@ -41,6 +41,7 @@ dependencies = [
     "pynvim",
     "pyenchant; platform_system==\"Linux\" and platform_machine==\"x86_64\"",
     "pyspellchecker; platform_system==\"Windows\" and platform_machine==\"x86_64\"",
+    "nest-asyncio>=1.6.0",
 ]
 
 [build-system]
