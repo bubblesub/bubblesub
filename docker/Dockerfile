@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:latest AS base
 
 ENV SYSTEM_PACKAGES="\
     build-essential software-properties-common locales autoconf automake \
@@ -25,6 +25,11 @@ RUN apt-get update && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get -y --no-install-recommends install \
+    ca-certificates \
+    curl
+
+
 # Set Python environment
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
@@ -36,26 +41,31 @@ RUN git clone https://github.com/FFMS/ffms2.git --branch 5.0 && \
     ./autogen.sh && \
     make && \
     make install
+RUN ldconfig
 
 WORKDIR /bubblesub
 
 # Install bubblesub dependencies
 COPY pyproject.toml .
-RUN mkdir bubblesub
+COPY README.md README.md
+COPY bubblesub bubblesub
 RUN uv sync --dev
 RUN uv pip install .
-COPY bubblesub bubblesub
 
-# Remove local development garbage
-RUN find . -type d -name __pycache__ -exec rm -r {} \+
+FROM base AS tests
 
-# Find libffms2.so
-RUN ldconfig
+COPY docker/entrypoint_tests.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-# Run pytest
-# ENTRYPOINT /bin/bash
-CMD \
-    # start a virtual X server for UI tests
-    /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX; \
-    # run the tests
-    uv run pytest bubblesub/
+FROM base AS bubblesub
+RUN apt-get update && apt-get -y --no-install-recommends install gosu
+USER root
+
+RUN mkdir /home/user
+RUN cp -r /bubblesub /home/user
+
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+WORKDIR /home/user
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
