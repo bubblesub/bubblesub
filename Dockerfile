@@ -1,7 +1,5 @@
 FROM ubuntu:latest
 
-MAINTAINER rr- "https://github.com/rr-"
-
 ENV SYSTEM_PACKAGES="\
     build-essential software-properties-common locales autoconf automake \
     libtool git-core pkg-config wget nasm libxkbcommon-x11-0"
@@ -10,12 +8,12 @@ ENV MPV_PACKAGES="\
 ENV FFMPEG_PACKAGES="\
     libavcodec-dev libavformat-dev libavdevice-dev zlib1g-dev"
 ENV BUBBLESUB_PACKAGES="\
-    python3.10 python3.10-dev python3.10-distutils python3-pyqt5 python3-pyqt5.qtopengl libfftw3-dev xvfb libqt5gui5"
+    python3.10 python3-pyqt5 python3-pyqt5.qtopengl libfftw3-dev xvfb libqt5gui5"
 ENV EXTRA_PACKAGES="\
     neovim"
 
 # Disable user-interaction
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 # Install dependencies
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends -y \
@@ -28,29 +26,25 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Set Python environment
-RUN wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py && \
-    python3.10 get-pip.py && \
-    python3.10 -m pip install setuptools && \
-    python3.10 -m pip install Cython  # https://github.com/pyFFTW/pyFFTW/issues/252
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Disable git sslVerify
 RUN git config --global http.sslVerify false
 # Install ffms2
-RUN git clone https://github.com/FFMS/ffms2.git && \
+RUN git clone https://github.com/FFMS/ffms2.git --branch 5.0 && \
     cd ffms2 && \
     ./autogen.sh && \
     make && \
     make install
 
-WORKDIR bubblesub
+WORKDIR /bubblesub
 
 # Install bubblesub dependencies
-COPY setup.cfg .
 COPY pyproject.toml .
+RUN mkdir bubblesub
+RUN uv sync --dev
+RUN uv pip install .
 COPY bubblesub bubblesub
-RUN locale-gen en_US.UTF-8 && \
-    export LC_ALL=en_US.UTF-8 && \
-    python3.10 -m pip install .[develop]
 
 # Remove local development garbage
 RUN find . -type d -name __pycache__ -exec rm -r {} \+
@@ -59,8 +53,9 @@ RUN find . -type d -name __pycache__ -exec rm -r {} \+
 RUN ldconfig
 
 # Run pytest
+# ENTRYPOINT /bin/bash
 CMD \
     # start a virtual X server for UI tests
     /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX; \
     # run the tests
-    python3.10 -m pytest bubblesub/
+    uv run pytest bubblesub/
