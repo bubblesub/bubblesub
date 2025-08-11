@@ -31,7 +31,7 @@ def test_run() -> None:
     """
     try:
         result = subprocess.run(
-            ["bubblesub"],
+            ["uv", "run", "-m", "bubblesub"],
             timeout=TIMEOUT,
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,

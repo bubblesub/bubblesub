@@ -44,8 +44,12 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "bubblesub"
 
 [dependency-groups]
 dev = [
@@ -56,33 +60,14 @@ dev = [
     "pyScss"
 ]
 
-# [project.dependencies]
-# ffms2 = "*"
-# numpy = "*"
-# pyfftw = "*"
-# PyQT5 = "*"
-# regex = "*"
-# Pillow = "*"
-# pyyaml = "*"
-# parsimonious = "*"
-# pluginbase = "*"
-# lazy-import = "*"
-# sortedcontainers = "*"
-# pynvim = "*"
-# pyenchant = { version = "*", markers = "platform_system == 'Linux' and platform_machine == 'x86_64'" }
-# pyspellchecker = { version = "*", markers = "platform_system == 'Windows' and platform_machine == 'x86_64'" }
-
 [project.scripts]
 bubblesub = "bubblesub.__main__:main"
-
-[tool.setuptools.packages.find]
-where = ["bubblesub"]
 
 [tool.black]
 line-length = 79
 
 [tool.isort]
-known_third_party = ["PIL", "PyQt5", "ass_tag_parser", "docstring_parser", "enchant", "ffms2", "lazy_import", "mpv", "numpy", "parsimonious", "pluginbase", "pyqtcolordialog", "pytest", "qasync", "regex", "setuptools", "sortedcontainers", "speech_recognition", "spellchecker", "yaml"]
+known_third_party = ["PIL", "PyQt5", "ass_tag_parser", "docstring_parser", "enchant", "ffms2", "lazy_import", "mpv", "numpy", "parsimonious", "pluginbase", "pyqtcolordialog", "pytest", "qasync", "regex", "sortedcontainers", "speech_recognition", "spellchecker", "yaml"]
 known_library = ["dataclasses"]
 profile = "black"
 line_length = 79

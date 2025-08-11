@@ -1,22 +1,52 @@
 ## Cheat sheet
 
-- To install development dependencies: `uv sync --dev`
-- To run from a vemv: `uv run -m bubblesub`
-- To run tests: `scripts/run_tests`
-- To run type checks: `scripts/run_mypy`
-- To generate themes and icons: `scripts/generate_assets`
-- To generate documentation: `scripts/generate_documentation`
+- To install development dependencies:
+    ```
+    uv sync --dev
+    ```
+- To run from a venv:
+    ```
+    uv run bubblesub
+    ```
+
+- To run via Docker:
+    ```
+    just build
+    just run
+    ```
+    The container will run at your current UID:GID, with your home directory
+    mounted in `/home/user/data`, and config directory (`~/.config/bubblesub`)
+    mounted in `/home/user/.config/bubblesub/`.
+
+## Dev stuff
+
+- To run tests:
+    ```
+    just build
+    just test
+    ```
+
+- To run type checks:
+    ```
+    just mypy
+    ````
+
+- To generate themes and icons:
+    ```
+    just assets
+    ```
+
+- To generate documentation:
+    ```
+    just docs
+    ```
 
 ## Pre-commit
 
-To enable pre-commit hooks, install [pre-commit](https://github.com/pre-commit/pre-commit):
+To enable pre-commit hooks which will run linters and formatters before each
+commit, install [pre-commit](https://github.com/pre-commit/pre-commit):
 
 ```
 pip install --user pre-commit
 pre-commit install
 ```
-
-Now every time you commit, the code should be automatically reformatted with
-[isort](https://github.com/timothycrosley/isort) and
-[black](https://github.com/python/black). Additionally you should get some
-extra information from pylint about other problems such as unused imports.
