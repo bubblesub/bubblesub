@@ -2,8 +2,8 @@
 import asyncio
 import sys
 
-import quamash
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from qasync import QEventLoop
 
 from bubblesub.ui.vim_text_edit import VimTextEdit
 
@@ -21,7 +21,7 @@ def main():
 
     app = QApplication(sys.argv)
     app.setApplicationName("bubblesub vim playground")
-    loop = quamash.QEventLoop(app)
+    loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
     # asyncio.events._set_running_loop(loop)
 

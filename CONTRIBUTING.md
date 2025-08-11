@@ -1,6 +1,7 @@
 ## Cheat sheet
 
-- To install development dependencies: `pip install --user -e '.[develop]'`
+- To install development dependencies: `uv sync --dev`
+- To run from a vemv: `uv run -m bubblesub`
 - To run tests: `scripts/run_tests`
 - To run type checks: `scripts/run_mypy`
 - To generate themes and icons: `scripts/generate_assets`

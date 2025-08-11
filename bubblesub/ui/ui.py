@@ -21,10 +21,10 @@ import traceback as tb
 import types
 from typing import Any, Optional, Union
 
-import quamash
 from PyQt5.QtCore import Qt, QThread, pyqtRemoveInputHook
 from PyQt5.QtGui import QColor, QGradient, QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QApplication, QSplashScreen
+from qasync import QEventLoop
 
 from bubblesub.api import Api
 from bubblesub.api.log import LogLevel
@@ -112,7 +112,7 @@ class Application:
 
         self._app = QApplication(sys.argv)
         self._app.setApplicationName("bubblesub")
-        self._loop = quamash.QEventLoop(self._app)
+        self._loop = QEventLoop(self._app)
         asyncio.set_event_loop(self._loop)
 
     def splash_screen(self) -> None:
