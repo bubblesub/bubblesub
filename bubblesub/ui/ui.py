@@ -21,6 +21,7 @@ import traceback as tb
 import types
 from typing import Any, Optional, Union
 
+import nest_asyncio
 from PyQt5.QtCore import Qt, QThread, pyqtRemoveInputHook
 from PyQt5.QtGui import QColor, QGradient, QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QApplication, QSplashScreen
@@ -113,6 +114,7 @@ class Application:
         self._app = QApplication(sys.argv)
         self._app.setApplicationName("bubblesub")
         self._loop = QEventLoop(self._app)
+        nest_asyncio.apply()
         asyncio.set_event_loop(self._loop)
 
     def splash_screen(self) -> None:
