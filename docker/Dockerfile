@@ -8,7 +8,7 @@ ENV MPV_PACKAGES="\
 ENV FFMPEG_PACKAGES="\
     libavcodec-dev libavformat-dev libavdevice-dev zlib1g-dev"
 ENV BUBBLESUB_PACKAGES="\
-    python3.10 python3-pyqt5 python3-pyqt5.qtopengl libfftw3-dev xvfb libqt5gui5"
+    python3 python3-pyqt5 python3-pyqt5.qtopengl libfftw3-dev xvfb libqt5gui5"
 ENV EXTRA_PACKAGES="\
     neovim"
 
